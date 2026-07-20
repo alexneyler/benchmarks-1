@@ -128,12 +128,12 @@ prepare() {
   python3 -c 'import setuptools'
 
   if [[ "$(node --version 2>/dev/null || true)" != "v${NODE_VERSION}" ]]; then
-    local archive="node-v${NODE_VERSION}-${NODE_ARCH}.tar.xz"
+    local archive="node-v${NODE_VERSION}-${NODE_ARCH}.tar.gz"
     local prefix="/opt/node-v${NODE_VERSION}-${NODE_ARCH}"
     curl -fsSL "https://nodejs.org/download/release/v${NODE_VERSION}/${archive}" -o "/tmp/${archive}"
     "${SUDO[@]}" rm -rf "$prefix"
     "${SUDO[@]}" mkdir -p "$prefix"
-    "${SUDO[@]}" tar -xJf "/tmp/${archive}" --strip-components=1 -C "$prefix"
+    "${SUDO[@]}" tar -xzf "/tmp/${archive}" --strip-components=1 -C "$prefix"
     for executable in node npm npx corepack; do
       "${SUDO[@]}" ln -sfn "$prefix/bin/$executable" "/usr/local/bin/$executable"
     done
