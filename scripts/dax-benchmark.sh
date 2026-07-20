@@ -120,7 +120,7 @@ prepare() {
       ;;
     dnf)
       "${SUDO[@]}" dnf makecache --quiet
-      "${SUDO[@]}" dnf install -y \
+      "${SUDO[@]}" dnf install -y --allowerasing \
         bash gcc gcc-c++ make ca-certificates curl git python3 python3-setuptools unzip
       ;;
   esac
