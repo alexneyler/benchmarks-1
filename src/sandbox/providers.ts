@@ -131,7 +131,7 @@ export const providers: ProviderConfig[] = [
         virtualCpu: 16,
         memoryMegabytes: 32768,
       }),
-    sandboxOptions: { image: 'node:22' },
+    // Use namespace's builtin:base image (default in @computesdk/namespace@1.6.14+)
   },
   {
     name: 'northflank',
