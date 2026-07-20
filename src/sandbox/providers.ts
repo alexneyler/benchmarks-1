@@ -183,7 +183,11 @@ export const providers: ProviderConfig[] = [
     name: 'upstash',
     requiredEnvVars: ['UPSTASH_BOX_API_KEY'],
     createCompute: () => upstash({ apiKey: process.env.UPSTASH_BOX_API_KEY! }),
-    sandboxOptions: { ephemeral: true },
+    // Note: ephemeral: true is intentionally omitted. The ComputeSDK wrapper's
+    // ephemeral path doesn't forward `size` to EphemeralBox.create(), so
+    // size: 'large' would be silently dropped. Using a regular Box ensures
+    // the resource sizing from DAX_RESOURCE_OPTIONS is applied.
+    sandboxOptions: {},
   },
   {
     name: 'vercel',
