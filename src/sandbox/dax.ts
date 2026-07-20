@@ -160,24 +160,36 @@ export async function runDaxBenchmark(config: ProviderConfig): Promise<DaxBenchm
   };
 }
 
+function buildHeredocCommand(script: string, path: string, runCommand: string): string {
+  const marker = '__DAX_BENCH_HEREDOC_' + Math.random().toString(36).slice(2) + '__';
+  return `cat > ${path} <<'${marker}'\n${script}\n${marker}\n${runCommand}`;
+}
+
 async function runDaxIteration(sandbox: any, providerName: string, timeout: number): Promise<DaxTimingResult> {
   // Load the benchmark script from the local filesystem rather than fetching
   // it over HTTP inside the sandbox. This eliminates a curl dependency
   // (several providers don't ship curl in their sandboxes).
   const benchScript = fs.readFileSync(BENCH_SCRIPT_PATH, 'utf8');
 
-  // Write the benchmark script to /tmp inside the sandbox via a single-quoted
-  // heredoc (so $ and backticks in the script are not expanded) and execute it
-  // directly with bash. A random marker avoids collisions with anything
-  // appearing on its own line inside the script. Running the benchmark script
-  // directly (without a Node.js wrapper) lets providers that ship a different
-  // Node.js version pre-installed (e.g. Vercel) reuse their own binary.
-  const marker = '__DAX_BENCH_HEREDOC_' + Math.random().toString(36).slice(2) + '__';
-  const shellCmd =
-    `cat > /tmp/dax-benchmark.sh <<'${marker}'\n` +
-    benchScript +
-    `\n${marker}\n` +
-    `BENCH_PROVIDER=${providerName} BENCH_REGION=unknown bash /tmp/dax-benchmark.sh`;
+  const targetPath = '/tmp/dax-benchmark.sh';
+  const runCommand = `BENCH_PROVIDER=${providerName} BENCH_REGION=unknown bash ${targetPath}`;
+
+  // Prefer the ComputeSDK filesystem API to write the script into the sandbox.
+  // Large heredoc commands fail on some providers (e.g. Upstash), so fall back
+  // to a single-quoted heredoc (so $ and backticks in the script are not
+  // expanded) when the filesystem API is unavailable. Running the benchmark
+  // script directly (without a Node.js wrapper) lets providers that ship a
+  // different Node.js version pre-installed (e.g. Vercel) reuse their own binary.
+  let shellCmd = runCommand;
+  if (sandbox.filesystem && typeof sandbox.filesystem.writeFile === 'function') {
+    try {
+      await sandbox.filesystem.writeFile(targetPath, benchScript);
+    } catch (err) {
+      shellCmd = buildHeredocCommand(benchScript, targetPath, runCommand);
+    }
+  } else {
+    shellCmd = buildHeredocCommand(benchScript, targetPath, runCommand);
+  }
 
   const totalStart = Date.now();
   const result = await withTimeout(
