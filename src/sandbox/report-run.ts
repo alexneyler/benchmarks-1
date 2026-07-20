@@ -10,6 +10,7 @@
 import { createBenchmarkClient, defineStep, defineTask } from '@computesdk/bench';
 import type { TaskResultRecord } from '@computesdk/bench';
 import { withTimeout } from '../util/timeout.js';
+import { LogBuffer, uploadWorkerLog } from './log-buffer.js';
 import type { ProviderConfig } from './types.js';
 
 export interface PlatformReportConfig {
@@ -38,6 +39,7 @@ export async function runSequentialWithPlatformReport(
 
   const compute = createCompute();
   const client = createBenchmarkClient({ apiKey: report.apiKey, baseUrl: report.baseUrl });
+  const logBuffer = new LogBuffer();
 
   console.log(`\n${'='.repeat(70)}`);
   console.log(`  MODE: SEQUENTIAL (reporting to platform)`);
@@ -50,25 +52,38 @@ export async function runSequentialWithPlatformReport(
   const dashboardUrl = `${report.baseUrl.replace(/\/api\/v1\/?$/, '')}/${report.orgSlug}/benchmarks/${report.benchmarkSlug}/runs/${runId}`;
 
   const task = defineTask<LifecycleState>('sandbox.lifecycle', [
-    defineStep<LifecycleState>('create', async ({ state }) => {
-      state.sandbox = await withTimeout(compute.sandbox.create(sandboxOptions), timeout, 'Sandbox creation timed out');
+    defineStep<LifecycleState>('create', async ({ state, taskIndex }) => {
+      try {
+        state.sandbox = await withTimeout(compute.sandbox.create(sandboxOptions), timeout, 'Sandbox creation timed out');
+        logBuffer.step(taskIndex, 'create', {});
+      } catch (error) {
+        logBuffer.step(taskIndex, 'create', { error: error instanceof Error ? error.message : String(error) });
+        throw error;
+      }
     }),
-    defineStep<LifecycleState>('exec.first-command', async ({ state }) => {
+    defineStep<LifecycleState>('exec.first-command', async ({ state, taskIndex }) => {
       const result = (await withTimeout(
         (state.sandbox as any).runCommand('node -v'),
         30_000,
         'First command execution timed out',
-      )) as { exitCode: number; stderr?: string };
+      )) as { exitCode: number; stdout?: string; stderr?: string };
+      logBuffer.step(taskIndex, 'exec.first-command', { stdout: result.stdout, stderr: result.stderr });
       if (result.exitCode !== 0) {
         throw new Error(`Command failed with exit code ${result.exitCode}: ${result.stderr || 'Unknown error'}`);
       }
     }),
-    defineStep<LifecycleState>('destroy', { reportConcurrency: false }, async ({ state }) => {
+    defineStep<LifecycleState>('destroy', { reportConcurrency: false }, async ({ state, taskIndex }) => {
       if (!state.sandbox) return;
-      await Promise.race([
-        (state.sandbox as any).destroy(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Destroy timeout')), destroyTimeoutMs)),
-      ]);
+      try {
+        await Promise.race([
+          (state.sandbox as any).destroy(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Destroy timeout')), destroyTimeoutMs)),
+        ]);
+        logBuffer.step(taskIndex, 'destroy', {});
+      } catch (error) {
+        logBuffer.step(taskIndex, 'destroy', { error: error instanceof Error ? error.message : String(error) });
+        throw error;
+      }
     }),
   ]);
 
@@ -86,6 +101,7 @@ export async function runSequentialWithPlatformReport(
         console.log(`  Iteration ${n}/${iterations}... FAILED: ${record.errorCode ?? 'unknown error'}`);
       }
     },
+    onFinish: (ctx) => uploadWorkerLog(ctx, logBuffer, name),
   });
 
   if (!result.assignment) {

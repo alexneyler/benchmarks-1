@@ -18,6 +18,7 @@ import { createBenchmarkClient, defineStep, defineTask } from '@computesdk/bench
 import type { TaskResultRecord, JsonObject } from '@computesdk/bench';
 import { withTimeout } from '../util/timeout.js';
 import { runDiskProbe, runCpuProbe, runPauseResumeProbe } from './dax-benchmark.js';
+import { LogBuffer, uploadWorkerLog } from './log-buffer.js';
 import type { ProviderConfig } from './types.js';
 import type { PlatformReportConfig } from './report-run.js';
 
@@ -39,6 +40,7 @@ export async function runDaxWithPlatformReport(
 
   const compute = createCompute();
   const client = createBenchmarkClient({ apiKey: report.apiKey, baseUrl: report.baseUrl });
+  const logBuffer = new LogBuffer();
 
   console.log(`\n${'='.repeat(70)}`);
   console.log(`  MODE: DAX (reporting to platform)`);
@@ -51,24 +53,57 @@ export async function runDaxWithPlatformReport(
   const dashboardUrl = `${report.baseUrl.replace(/\/api\/v1\/?$/, '')}/${report.orgSlug}/benchmarks/${report.benchmarkSlug}/runs/${runId}`;
 
   const task = defineTask<LifecycleState>('sandbox.dax', [
-    defineStep<LifecycleState>('create', async ({ state }) => {
-      state.sandbox = await withTimeout(compute.sandbox.create(sandboxOptions), timeout, 'Sandbox creation timed out');
+    defineStep<LifecycleState>('create', async ({ state, taskIndex }) => {
+      try {
+        state.sandbox = await withTimeout(compute.sandbox.create(sandboxOptions), timeout, 'Sandbox creation timed out');
+        logBuffer.step(taskIndex, 'create', {});
+      } catch (error) {
+        logBuffer.step(taskIndex, 'create', { error: error instanceof Error ? error.message : String(error) });
+        throw error;
+      }
     }),
-    defineStep<LifecycleState>('disk-probe', async ({ state }) => {
-      return (await runDiskProbe(state.sandbox, timeout)) as unknown as JsonObject;
+    defineStep<LifecycleState>('disk-probe', async ({ state, taskIndex }) => {
+      try {
+        const data = await runDiskProbe(state.sandbox, timeout);
+        logBuffer.step(taskIndex, 'disk-probe', { stdout: JSON.stringify(data) });
+        return data as unknown as JsonObject;
+      } catch (error) {
+        logBuffer.step(taskIndex, 'disk-probe', { error: error instanceof Error ? error.message : String(error) });
+        throw error;
+      }
     }),
-    defineStep<LifecycleState>('cpu-probe', async ({ state }) => {
-      return (await runCpuProbe(state.sandbox, timeout)) as unknown as JsonObject;
+    defineStep<LifecycleState>('cpu-probe', async ({ state, taskIndex }) => {
+      try {
+        const data = await runCpuProbe(state.sandbox, timeout);
+        logBuffer.step(taskIndex, 'cpu-probe', { stdout: JSON.stringify(data) });
+        return data as unknown as JsonObject;
+      } catch (error) {
+        logBuffer.step(taskIndex, 'cpu-probe', { error: error instanceof Error ? error.message : String(error) });
+        throw error;
+      }
     }),
-    defineStep<LifecycleState>('pause-resume-probe', async ({ state }) => {
-      return (await runPauseResumeProbe(state.sandbox, timeout)) as unknown as JsonObject;
+    defineStep<LifecycleState>('pause-resume-probe', async ({ state, taskIndex }) => {
+      try {
+        const data = await runPauseResumeProbe(state.sandbox, timeout);
+        logBuffer.step(taskIndex, 'pause-resume-probe', { stdout: JSON.stringify(data) });
+        return data as unknown as JsonObject;
+      } catch (error) {
+        logBuffer.step(taskIndex, 'pause-resume-probe', { error: error instanceof Error ? error.message : String(error) });
+        throw error;
+      }
     }),
-    defineStep<LifecycleState>('destroy', { reportConcurrency: false }, async ({ state }) => {
+    defineStep<LifecycleState>('destroy', { reportConcurrency: false }, async ({ state, taskIndex }) => {
       if (!state.sandbox) return;
-      await Promise.race([
-        (state.sandbox as any).destroy(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Destroy timeout')), destroyTimeoutMs)),
-      ]);
+      try {
+        await Promise.race([
+          (state.sandbox as any).destroy(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Destroy timeout')), destroyTimeoutMs)),
+        ]);
+        logBuffer.step(taskIndex, 'destroy', {});
+      } catch (error) {
+        logBuffer.step(taskIndex, 'destroy', { error: error instanceof Error ? error.message : String(error) });
+        throw error;
+      }
     }),
   ]);
 
@@ -90,6 +125,7 @@ export async function runDaxWithPlatformReport(
         console.log(`  Iteration ${n}/${iterations}... FAILED: ${record.errorCode ?? 'unknown error'}`);
       }
     },
+    onFinish: (ctx) => uploadWorkerLog(ctx, logBuffer, name),
   });
 
   if (!result.assignment) {
