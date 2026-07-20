@@ -116,12 +116,12 @@ prepare() {
     apt)
       "${SUDO[@]}" apt-get update -qq
       "${SUDO[@]}" env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-        bash build-essential ca-certificates curl git python3 python3-setuptools unzip xz-utils
+        bash build-essential ca-certificates curl git python3 python3-setuptools unzip
       ;;
     dnf)
       "${SUDO[@]}" dnf makecache --quiet
       "${SUDO[@]}" dnf install -y \
-        bash gcc gcc-c++ make ca-certificates curl git python3 python3-setuptools unzip xz-utils
+        bash gcc gcc-c++ make ca-certificates curl git python3 python3-setuptools unzip
       ;;
   esac
 
