@@ -94,7 +94,7 @@ export const providers: ProviderConfig[] = [
     name: 'e2b',
     requiredEnvVars: ['E2B_API_KEY'],
     createCompute: () => e2b({ apiKey: process.env.E2B_API_KEY! }),
-    sandboxOptions: { template: 'base-8cpu-16gb' },
+    sandboxOptions: { template: 'base-8cpu-16gb', timeout: 600_000 },
   },
   {
     name: 'hopx',
