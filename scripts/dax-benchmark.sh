@@ -128,7 +128,10 @@ prepare() {
   # setuptools is optional - only needed for node-gyp native module compilation,
   # not for the clone/install/typecheck benchmark. Skip the check entirely.
 
-  if [[ "$(node --version 2>/dev/null || true)" != "v${NODE_VERSION}" ]]; then
+  # Install Node.js only if it's not already available. Some sandboxes (e.g.
+  # Vercel) ship Node.js pre-installed; respect that rather than trying to
+  # override it (the symlink may not take precedence in PATH).
+  if ! command -v node >/dev/null 2>&1; then
     local archive="node-v${NODE_VERSION}-${NODE_ARCH}.tar.gz"
     local prefix="/opt/node-v${NODE_VERSION}-${NODE_ARCH}"
     if ! curl -fsSL "https://nodejs.org/download/release/v${NODE_VERSION}/${archive}" -o "/tmp/${archive}"; then
@@ -145,8 +148,8 @@ prepare() {
       "${SUDO[@]}" ln -sfn "$prefix/bin/$executable" "/usr/local/bin/$executable"
     done
   fi
-  if ! test "$(node --version)" = "v${NODE_VERSION}" 2>/dev/null; then
-    printf 'BENCH_ERROR\tprepare\tnode_version_mismatch_got_%s\n' "$(node -v 2>/dev/null || echo 'not_found')" >&2
+  if ! command -v node >/dev/null 2>&1; then
+    printf 'BENCH_ERROR\tprepare\tnode_not_found\n' >&2
     return 1
   fi
 }
