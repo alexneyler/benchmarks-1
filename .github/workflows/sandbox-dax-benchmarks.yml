@@ -46,7 +46,6 @@ jobs:
           - archil
           - beam
           - blaxel
-          - cloud-run
           - cloudflare
           - codesandbox
           - createos
