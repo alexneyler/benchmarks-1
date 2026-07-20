@@ -125,9 +125,8 @@ prepare() {
       ;;
   esac
 
-  if ! python3 -c 'import setuptools' 2>/dev/null; then
-    echo "WARNING: python3 setuptools not available - native module compilation may fail" >&2
-  fi
+  # setuptools is optional - only needed for node-gyp native module compilation,
+  # not for the clone/install/typecheck benchmark. Skip the check entirely.
 
   if [[ "$(node --version 2>/dev/null || true)" != "v${NODE_VERSION}" ]]; then
     local archive="node-v${NODE_VERSION}-${NODE_ARCH}.tar.gz"
