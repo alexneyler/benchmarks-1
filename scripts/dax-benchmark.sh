@@ -131,15 +131,24 @@ prepare() {
   if [[ "$(node --version 2>/dev/null || true)" != "v${NODE_VERSION}" ]]; then
     local archive="node-v${NODE_VERSION}-${NODE_ARCH}.tar.gz"
     local prefix="/opt/node-v${NODE_VERSION}-${NODE_ARCH}"
-    curl -fsSL "https://nodejs.org/download/release/v${NODE_VERSION}/${archive}" -o "/tmp/${archive}"
+    if ! curl -fsSL "https://nodejs.org/download/release/v${NODE_VERSION}/${archive}" -o "/tmp/${archive}"; then
+      printf 'BENCH_ERROR\tprepare\tnode_download_failed\n' >&2
+      return 1
+    fi
     "${SUDO[@]}" rm -rf "$prefix"
     "${SUDO[@]}" mkdir -p "$prefix"
-    "${SUDO[@]}" tar -xzf "/tmp/${archive}" --strip-components=1 -C "$prefix"
+    if ! "${SUDO[@]}" tar -xzf "/tmp/${archive}" --strip-components=1 -C "$prefix"; then
+      printf 'BENCH_ERROR\tprepare\tnode_extract_failed\n' >&2
+      return 1
+    fi
     for executable in node npm npx corepack; do
       "${SUDO[@]}" ln -sfn "$prefix/bin/$executable" "/usr/local/bin/$executable"
     done
   fi
-  test "$(node --version)" = "v${NODE_VERSION}"
+  if ! test "$(node --version)" = "v${NODE_VERSION}" 2>/dev/null; then
+    printf 'BENCH_ERROR\tprepare\tnode_version_mismatch_got_%s\n' "$(node -v 2>/dev/null || echo 'not_found')" >&2
+    return 1
+  fi
 }
 
 download_bun() {
