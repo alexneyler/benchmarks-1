@@ -1,26 +1,14 @@
 /**
  * Declarative config for `npm run bench <config-file>.ts`, an alternative to
- * the CLI-flag invocation in src/run.ts. Covers the core sandbox modes that
- * already support --report: sequential, staggered, burst/concurrent, dax.
+ * the CLI-flag invocation in src/run.ts. Covers the core sandbox modes,
+ * local JSON output only: sequential, staggered, burst/concurrent, dax.
  * Storage, snapshot-fork, browser, and browser-throughput stay flag-only.
+ * Platform reporting lives in src/benchmarks/*.bench.ts instead — see those
+ * files for the self-contained, always-reports pattern.
  */
 import type { SandboxTask } from './types.js';
 
 export type ConfigBenchmarkMode = 'sequential' | 'staggered' | 'burst' | 'concurrent' | 'dax';
-
-export interface BenchmarkReportConfig {
-  benchmarkSlug: string;
-  /** Dashboard display name (benchmarks.name). Default: a generic per-mode string like "Sandbox TTI (local)". */
-  name?: string;
-  /** Org slug for the printed dashboard link. Default: BENCHMARKS_PLATFORM_ORG_SLUG env, then 'computesdk'. */
-  orgSlug?: string;
-  /** Platform base URL (without /api/v1). Default: BENCHMARKS_PLATFORM_URL env, then http://localhost:3000. */
-  baseUrl?: string;
-  // apiKey is intentionally not configurable here — it's always sourced from
-  // COMPUTESDK_ADMIN_API_KEY / COMPUTESDK_API_KEY env vars (matches the
-  // flag-based path, which never sets it either), so a committed config file
-  // can't accidentally embed a secret.
-}
 
 export interface BenchmarkConfig {
   mode: ConfigBenchmarkMode;
@@ -32,8 +20,6 @@ export interface BenchmarkConfig {
   concurrency?: number;
   /** staggered only. Default: 200. */
   staggerDelayMs?: number;
-  /** Stream this run to a benchmarks-platform instance instead of only writing local JSON. */
-  report?: BenchmarkReportConfig;
   /** Print the resolved plan and exit without creating any sandboxes or writing results. */
   dryRun?: boolean;
   /**
@@ -53,15 +39,6 @@ const VALID_MODES: ConfigBenchmarkMode[] = ['sequential', 'staggered', 'burst', 
 export function defineBenchmark(config: BenchmarkConfig): BenchmarkConfig {
   if (!VALID_MODES.includes(config.mode)) {
     throw new Error(`Invalid mode "${config.mode}". Valid modes: ${VALID_MODES.join(', ')}`);
-  }
-  if (config.report && config.mode === 'staggered') {
-    throw new Error('report is not supported for mode "staggered" (matches the --report flag\'s mode restriction).');
-  }
-  if (config.report && (config.mode === 'burst' || config.mode === 'concurrent') && config.concurrency === undefined) {
-    throw new Error(
-      'report + mode "burst"/"concurrent" requires an explicit `concurrency` value (no implicit default of 100) ' +
-      'to avoid accidentally launching 100 concurrent sandboxes per provider.',
-    );
   }
   if (config.task && config.mode === 'dax') {
     throw new Error('task is not supported for mode "dax" (dax runs its own fixed disk/CPU/pause-resume probes).');

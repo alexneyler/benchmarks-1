@@ -5,5 +5,4 @@ export default defineBenchmark({
   mode: 'sequential',
   providers: ['e2b'],
   iterations: 2,
-  report: { benchmarkSlug: 'sandbox-tti-local' },
 });

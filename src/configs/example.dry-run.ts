@@ -5,6 +5,5 @@ export default defineBenchmark({
   mode: 'burst',
   providers: ['e2b', 'daytona'],
   concurrency: 5,
-  report: { benchmarkSlug: 'sandbox-burst-local' },
   dryRun: true,
 });

@@ -4,15 +4,11 @@ import './env.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { createBenchmarkClient } from '@computesdk/bench';
 import { runBenchmark } from './sandbox/benchmark.js';
 import { runConcurrentBenchmark } from './sandbox/concurrent.js';
 import { runStaggeredBenchmark } from './sandbox/staggered.js';
-import { runSequentialWithPlatformReport } from './sandbox/report-run.js';
-import { runBurstWithPlatformReport } from './sandbox/report-run-burst.js';
 import { runDaxBenchmark, writeDaxResultsJson } from './sandbox/dax-benchmark.js';
 import { computeDaxCompositeScores } from './sandbox/dax-scoring.js';
-import { runDaxWithPlatformReport } from './sandbox/report-run-dax.js';
 import { runStorageBenchmark, writeStorageResultsJson } from './storage/benchmark.js';
 import {
   runSnapshotForkBenchmark,
@@ -52,7 +48,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
 
 // `npm run bench <config-file>.ts` — an alternative to flag-based invocation
-// where mode/providers/report/dryRun all live in the file itself (see
+// where mode/providers/dryRun all live in the file itself (see
 // sandbox/bench-config.ts). Detected as a positional first arg that isn't a
 // flag and looks like a TS/JS file; short-circuited in main() before any
 // flag-based parsing/validation below is applied.
@@ -73,41 +69,11 @@ const staggerDelay = parseInt(getArgValue(args, '--stagger-delay') || '200', 10)
 const fileSizeArg = getArgValue(args, '--file-size') || '10MB';
 const datasetArg = getArgValue(args, '--dataset') || 'small';
 
-// --report streams this run to a real benchmarks-platform instance (via
-// @computesdk/bench) instead of only writing local JSON — see
-// sandbox/report-run.ts, sandbox/report-run-burst.ts, and
-// sandbox/report-run-dax.ts. Supported for --mode sequential, --mode burst
-// (or its --mode concurrent alias), and --mode dax.
-const reportToPlatform = args.includes('--report');
-const platformBaseUrl = (process.env.BENCHMARKS_PLATFORM_URL || 'http://localhost:3000').replace(/\/+$/, '') + '/api/v1';
-const platformOrgSlug = process.env.BENCHMARKS_PLATFORM_ORG_SLUG || 'computesdk';
-const platformBenchmarkSlug = getArgValue(args, '--benchmark-slug') || defaultBenchmarkSlugForMode(rawMode);
-const platformBenchmarkName = getArgValue(args, '--benchmark-name') || defaultBenchmarkNameForMode(rawMode);
-
-/** Default platform benchmark slug for a given mode, shared by the flag path and the config-file path. */
-function defaultBenchmarkSlugForMode(mode: string | undefined): string {
-  if (mode === 'burst' || mode === 'concurrent') return 'sandbox-burst-local';
-  if (mode === 'dax') return 'sandbox-dax-local';
-  return 'sandbox-tti-local';
-}
-
-/** Default platform dashboard display name for a given mode, shared by the flag path and the config-file path. */
-function defaultBenchmarkNameForMode(mode: string | undefined): string {
-  if (mode === 'burst' || mode === 'concurrent') return 'Sandbox burst TTI (local)';
-  if (mode === 'dax') return 'Dax sandbox benchmark (local)';
-  return 'Sandbox TTI (local)';
-}
-
 /** Settings a single core-sandbox-mode run (sequential/staggered/burst/dax) needs, whether sourced from CLI flags or a config file. */
 interface CoreRunSettings {
   iterations: number;
   concurrency: number;
   staggerDelay: number;
-  reportToPlatform: boolean;
-  platformBaseUrl: string;
-  platformOrgSlug: string;
-  platformBenchmarkSlug: string;
-  platformBenchmarkName: string;
 }
 
 function getArgValue(args: string[], flag: string): string | undefined {
@@ -154,82 +120,7 @@ function modeToDir(m: BenchmarkMode | 'storage' | 'snapshot-fork' | 'browser-thr
   }
 }
 
-/**
- * Creates ONE platform run shared across every provider in `participantNames`
- * (instead of each provider getting its own run+participant) — so a single
- * `--report` invocation covering multiple providers shows up as one run with
- * multiple participants on the dashboard, comparable side by side. Every
- * participant gets the same `totalTasks`/`workerCount`, which matches how
- * this CLI already applies one `--iterations`/`--concurrency` value across
- * all providers in a single invocation.
- */
-async function createSharedPlatformRun(input: {
-  benchmarkDisplayName: string;
-  runName: string;
-  totalTasks: number;
-  participantNames: string[];
-  benchmarkSlug: string;
-  baseUrl: string;
-  orgSlug: string;
-}): Promise<{ runId: string }> {
-  const client = createBenchmarkClient({ baseUrl: input.baseUrl });
-  await client.upsertBenchmark(input.benchmarkSlug, {
-    name: input.benchmarkDisplayName,
-    kind: 'sandbox',
-  });
-  const { run } = await client.createRun(input.benchmarkSlug, {
-    name: input.runName,
-    totalTasks: input.totalTasks,
-    workerCount: 1,
-    participants: input.participantNames,
-  });
-  const dashboardUrl = `${input.baseUrl.replace(/\/api\/v1\/?$/, '')}/${input.orgSlug}/benchmarks/${input.benchmarkSlug}/runs/${run.id}`;
-  console.log(`  Run created: ${run.id}  (participants: ${input.participantNames.join(', ')})`);
-  console.log(`  View at: ${dashboardUrl}\n`);
-  return { runId: run.id };
-}
-
 async function runMode(mode: BenchmarkMode, toRun: typeof providers, settings: CoreRunSettings): Promise<void> {
-  if (mode === 'sequential' && settings.reportToPlatform) {
-    const { runId } = await createSharedPlatformRun({
-      benchmarkDisplayName: settings.platformBenchmarkName,
-      runName: `sequential — ${settings.iterations} iterations`,
-      totalTasks: settings.iterations,
-      participantNames: toRun.map((p) => p.name),
-      benchmarkSlug: settings.platformBenchmarkSlug,
-      baseUrl: settings.platformBaseUrl,
-      orgSlug: settings.platformOrgSlug,
-    });
-    for (const providerConfig of toRun) {
-      await runSequentialWithPlatformReport(providerConfig, settings.iterations, {
-        benchmarkSlug: settings.platformBenchmarkSlug,
-        baseUrl: settings.platformBaseUrl,
-        orgSlug: settings.platformOrgSlug,
-      }, runId);
-    }
-    return;
-  }
-
-  if (mode === 'burst' && settings.reportToPlatform) {
-    const { runId } = await createSharedPlatformRun({
-      benchmarkDisplayName: settings.platformBenchmarkName,
-      runName: `burst — concurrency ${settings.concurrency}`,
-      totalTasks: settings.concurrency,
-      participantNames: toRun.map((p) => p.name),
-      benchmarkSlug: settings.platformBenchmarkSlug,
-      baseUrl: settings.platformBaseUrl,
-      orgSlug: settings.platformOrgSlug,
-    });
-    for (const providerConfig of toRun) {
-      await runBurstWithPlatformReport(providerConfig, settings.concurrency, {
-        benchmarkSlug: settings.platformBenchmarkSlug,
-        baseUrl: settings.platformBaseUrl,
-        orgSlug: settings.platformOrgSlug,
-      }, runId);
-    }
-    return;
-  }
-
   console.log('\n' + '='.repeat(70));
   console.log(`  MODE: ${mode.toUpperCase()}`);
   if (mode === 'sequential') {
@@ -453,29 +344,6 @@ async function runDax(toRun: typeof providers, daxIterations: number): Promise<v
   console.log(`Copied latest: ${latestPath}`);
 }
 
-/** Dax's report/local split, mirroring runMode's — extracted so the config-file path can drive it without duplicating the branch. */
-async function runDaxMode(toRun: typeof providers, settings: CoreRunSettings): Promise<void> {
-  if (settings.reportToPlatform) {
-    const { runId } = await createSharedPlatformRun({
-      benchmarkDisplayName: settings.platformBenchmarkName,
-      runName: `dax — ${settings.iterations} iterations`,
-      totalTasks: settings.iterations,
-      participantNames: toRun.map((p) => p.name),
-      benchmarkSlug: settings.platformBenchmarkSlug,
-      baseUrl: settings.platformBaseUrl,
-      orgSlug: settings.platformOrgSlug,
-    });
-    for (const providerConfig of toRun) {
-      await runDaxWithPlatformReport(providerConfig, settings.iterations, {
-        benchmarkSlug: settings.platformBenchmarkSlug,
-        baseUrl: settings.platformBaseUrl,
-        orgSlug: settings.platformOrgSlug,
-      }, runId);
-    }
-  } else {
-    await runDax(toRun, settings.iterations);
-  }
-}
 
 async function runBrowser(toRun: typeof browserProviders): Promise<void> {
   console.log('\n' + '='.repeat(70));
@@ -649,29 +517,10 @@ async function runBrowserThroughput(toRun: typeof throughputProviders): Promise<
   console.log(`Copied latest: ${latestPath}`);
 }
 
-const REPORTABLE_RAW_MODES = new Set(['sequential', 'burst', 'concurrent', 'dax']);
-
 async function main() {
   if (configFileArg) {
     await runFromConfigFile(configFileArg);
     return;
-  }
-
-  if (reportToPlatform && !REPORTABLE_RAW_MODES.has(rawMode ?? '')) {
-    console.error('--report currently only supports --mode sequential, --mode burst, or --mode dax (pass one explicitly, e.g. --mode dax).');
-    process.exit(1);
-  }
-
-  // A bare --report --mode burst would otherwise silently inherit the
-  // --concurrency default (100), reporting 100 real concurrent sandboxes to
-  // the platform per provider — require the caller to say so explicitly.
-  const concurrencyArgProvided = args.includes('--concurrency');
-  if (reportToPlatform && (rawMode === 'burst' || rawMode === 'concurrent') && !concurrencyArgProvided) {
-    console.error(
-      `--report --mode burst requires an explicit --concurrency (no implicit default of ${concurrency}) ` +
-      `to avoid accidentally launching ${concurrency} concurrent sandboxes per provider. Pass e.g. --concurrency 5.`,
-    );
-    process.exit(1);
   }
 
   const modes = getModesToRun();
@@ -746,7 +595,7 @@ async function main() {
 
     const toRun = selectProviders(providers, providerNames);
 
-    await runDaxMode(toRun, coreRunSettings());
+    await runDax(toRun, iterations);
     console.log('\nAll dax tests complete.');
     return;
   }
@@ -772,15 +621,10 @@ function coreRunSettings(): CoreRunSettings {
     iterations,
     concurrency,
     staggerDelay,
-    reportToPlatform,
-    platformBaseUrl,
-    platformOrgSlug,
-    platformBenchmarkSlug,
-    platformBenchmarkName,
   };
 }
 
-/** Loads a config file exporting `defineBenchmark({...})` (default or named `config` export) and dispatches to the same runMode/runDaxMode logic the flag path uses. */
+/** Loads a config file exporting `defineBenchmark({...})` (default or named `config` export) and dispatches to the same runMode logic the flag path uses. */
 async function runFromConfigFile(configPath: string): Promise<void> {
   const resolvedPath = path.resolve(process.cwd(), configPath);
   if (!fs.existsSync(resolvedPath)) {
@@ -809,11 +653,6 @@ async function runFromConfigFile(configPath: string): Promise<void> {
     iterations: config.iterations ?? 100,
     concurrency: config.concurrency ?? 100,
     staggerDelay: config.staggerDelayMs ?? 200,
-    reportToPlatform: !!config.report,
-    platformBaseUrl: (config.report?.baseUrl ?? process.env.BENCHMARKS_PLATFORM_URL ?? 'http://localhost:3000').replace(/\/+$/, '') + '/api/v1',
-    platformOrgSlug: config.report?.orgSlug ?? process.env.BENCHMARKS_PLATFORM_ORG_SLUG ?? 'computesdk',
-    platformBenchmarkSlug: config.report?.benchmarkSlug ?? defaultBenchmarkSlugForMode(mode),
-    platformBenchmarkName: config.report?.name ?? defaultBenchmarkNameForMode(mode),
   };
 
   console.log('ComputeSDK Sandbox Provider Benchmarks (config file)');
@@ -821,12 +660,12 @@ async function runFromConfigFile(configPath: string): Promise<void> {
   console.log(`Date: ${new Date().toISOString()}\n`);
 
   if (config.dryRun) {
-    printDryRunSummary(resolvedPath, config, mode, toRun, settings);
+    printDryRunSummary(resolvedPath, mode, toRun, settings);
     return;
   }
 
   if (mode === 'dax') {
-    await runDaxMode(toRun, settings);
+    await runDax(toRun, settings.iterations);
   } else {
     await runMode(mode as BenchmarkMode, toRun, settings);
   }
@@ -836,7 +675,6 @@ async function runFromConfigFile(configPath: string): Promise<void> {
 
 function printDryRunSummary(
   configPath: string,
-  config: BenchmarkConfig,
   mode: string,
   toRun: typeof providers,
   settings: CoreRunSettings,
@@ -856,11 +694,6 @@ function printDryRunSummary(
   } else {
     console.log(`  Concurrency:  ${settings.concurrency}`);
     if (mode === 'staggered') console.log(`  Stagger delay: ${settings.staggerDelay}ms`);
-  }
-  if (config.report) {
-    console.log(`  Report:       yes — benchmarkSlug=${settings.platformBenchmarkSlug}  name="${settings.platformBenchmarkName}"  baseUrl=${settings.platformBaseUrl}  orgSlug=${settings.platformOrgSlug}`);
-  } else {
-    console.log('  Report:       no (local results only)');
   }
   console.log('='.repeat(70));
   console.log('DRY RUN: no sandboxes created, no results written, no platform run created.');
