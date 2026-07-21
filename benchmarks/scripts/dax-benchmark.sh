@@ -138,13 +138,21 @@ prepare() {
   case "$PKG_MANAGER" in
     apt)
       "${SUDO[@]}" apt-get update -qq
+      # Required packages — must succeed.
       "${SUDO[@]}" env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-        bash build-essential ca-certificates curl git python3 python3-setuptools unzip
+        bash build-essential ca-certificates curl git python3
+      # Optional packages — not available on all minimal images (e.g. cloud-run).
+      "${SUDO[@]}" env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+        python3-setuptools unzip 2>/dev/null || true
       ;;
     dnf)
       "${SUDO[@]}" dnf makecache --quiet
+      # Required packages — must succeed.
       "${SUDO[@]}" dnf install -y --allowerasing \
-        bash gcc gcc-c++ make ca-certificates curl git python3 python3-setuptools unzip
+        bash gcc gcc-c++ make ca-certificates curl git python3
+      # Optional packages — not available on all minimal images.
+      "${SUDO[@]}" dnf install -y --allowerasing \
+        python3-setuptools unzip 2>/dev/null || true
       ;;
     apk)
       # build-base is Alpine's meta-package for gcc/g++/make/libc-dev.
@@ -189,7 +197,19 @@ download_bun() {
 }
 
 unpack_bun() {
-  unzip -q -j "$ROOT/bun.zip" "$BUN_INTERNAL_PATH" -d "$BUN_INSTALL/bin"
+  if command -v unzip >/dev/null 2>&1; then
+    unzip -q -j "$ROOT/bun.zip" "$BUN_INTERNAL_PATH" -d "$BUN_INSTALL/bin"
+  else
+    # Fallback for minimal images without unzip (e.g. cloud-run gVisor).
+    python3 -c "
+import zipfile, os, sys
+with zipfile.ZipFile('$ROOT/bun.zip') as z:
+    data = z.read('$BUN_INTERNAL_PATH')
+    os.makedirs('$BUN_INSTALL/bin', exist_ok=True)
+    with open(os.path.join('$BUN_INSTALL/bin', 'bun'), 'wb') as f:
+        f.write(data)
+"
+  fi
   chmod +x "$BUN_INSTALL/bin/bun"
 }
 
