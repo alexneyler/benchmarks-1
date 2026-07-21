@@ -1,3 +1,12 @@
+/**
+ * The actual workload measured inside a freshly-created sandbox. Receives the
+ * live sandbox instance; throw to mark the iteration as failed. Defaults to a
+ * `node -v` liveness check (see defaultSandboxTask in benchmark.ts) — set this
+ * to replace that check with custom code, e.g. from a self-contained config
+ * file's `task` field.
+ */
+export type SandboxTask = (sandbox: any) => Promise<void>;
+
 export interface ProviderConfig {
   /** Provider name */
   name: string;
@@ -13,6 +22,10 @@ export interface ProviderConfig {
   sandboxOptions?: Record<string, any>;
   /** Timeout for sandbox.destroy() in ms (default: 15000) */
   destroyTimeoutMs?: number;
+  /** Custom workload to run inside the sandbox. Default: node -v liveness check. */
+  task?: SandboxTask;
+  /** Timeout for `task` in ms (default: 30000) */
+  taskTimeoutMs?: number;
 }
 
 export interface TimingResult {

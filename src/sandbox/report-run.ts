@@ -11,6 +11,7 @@ import { createBenchmarkClient, defineStep, defineTask } from '@computesdk/bench
 import type { TaskResultRecord } from '@computesdk/bench';
 import { withTimeout } from '../util/timeout.js';
 import { LogBuffer, uploadWorkerLog } from './log-buffer.js';
+import { defaultSandboxTask } from './benchmark.js';
 import type { ProviderConfig } from './types.js';
 
 export interface PlatformReportConfig {
@@ -29,7 +30,7 @@ export async function runSequentialWithPlatformReport(
   report: PlatformReportConfig,
   runId: string,
 ): Promise<void> {
-  const { name, timeout = 120_000, requiredEnvVars, sandboxOptions, destroyTimeoutMs = 15_000, createCompute } = config;
+  const { name, timeout = 120_000, requiredEnvVars, sandboxOptions, destroyTimeoutMs = 15_000, createCompute, task: customTask, taskTimeoutMs = 30_000 } = config;
 
   const missingVars = requiredEnvVars.filter((v) => !process.env[v]);
   if (missingVars.length > 0) {
@@ -61,15 +62,17 @@ export async function runSequentialWithPlatformReport(
         throw error;
       }
     }),
-    defineStep<LifecycleState>('exec.first-command', async ({ state, taskIndex }) => {
-      const result = (await withTimeout(
-        (state.sandbox as any).runCommand('node -v'),
-        30_000,
-        'First command execution timed out',
-      )) as { exitCode: number; stdout?: string; stderr?: string };
-      logBuffer.step(taskIndex, 'exec.first-command', { stdout: result.stdout, stderr: result.stderr });
-      if (result.exitCode !== 0) {
-        throw new Error(`Command failed with exit code ${result.exitCode}: ${result.stderr || 'Unknown error'}`);
+    defineStep<LifecycleState>('exec.task', async ({ state, taskIndex }) => {
+      try {
+        await withTimeout(
+          (customTask ?? defaultSandboxTask)(state.sandbox),
+          taskTimeoutMs,
+          'Benchmark task timed out',
+        );
+        logBuffer.step(taskIndex, 'exec.task', {});
+      } catch (error) {
+        logBuffer.step(taskIndex, 'exec.task', { error: error instanceof Error ? error.message : String(error) });
+        throw error;
       }
     }),
     defineStep<LifecycleState>('destroy', { reportConcurrency: false }, async ({ state, taskIndex }) => {

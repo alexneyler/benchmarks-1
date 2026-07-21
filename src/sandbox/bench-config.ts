@@ -4,11 +4,14 @@
  * already support --report: sequential, staggered, burst/concurrent, dax.
  * Storage, snapshot-fork, browser, and browser-throughput stay flag-only.
  */
+import type { SandboxTask } from './types.js';
 
 export type ConfigBenchmarkMode = 'sequential' | 'staggered' | 'burst' | 'concurrent' | 'dax';
 
 export interface BenchmarkReportConfig {
   benchmarkSlug: string;
+  /** Dashboard display name (benchmarks.name). Default: a generic per-mode string like "Sandbox TTI (local)". */
+  name?: string;
   /** Org slug for the printed dashboard link. Default: BENCHMARKS_PLATFORM_ORG_SLUG env, then 'computesdk'. */
   orgSlug?: string;
   /** Platform base URL (without /api/v1). Default: BENCHMARKS_PLATFORM_URL env, then http://localhost:3000. */
@@ -33,6 +36,15 @@ export interface BenchmarkConfig {
   report?: BenchmarkReportConfig;
   /** Print the resolved plan and exit without creating any sandboxes or writing results. */
   dryRun?: boolean;
+  /**
+   * Custom workload to run inside each sandbox, making this config file fully
+   * self-contained (config + code in one place) instead of relying on the
+   * hardcoded `node -v` liveness check. Not supported for mode "dax", which
+   * has its own fixed disk/CPU/pause-resume probes.
+   */
+  task?: SandboxTask;
+  /** Timeout for `task` in ms. Default: 30000. */
+  taskTimeoutMs?: number;
 }
 
 const VALID_MODES: ConfigBenchmarkMode[] = ['sequential', 'staggered', 'burst', 'concurrent', 'dax'];
@@ -50,6 +62,9 @@ export function defineBenchmark(config: BenchmarkConfig): BenchmarkConfig {
       'report + mode "burst"/"concurrent" requires an explicit `concurrency` value (no implicit default of 100) ' +
       'to avoid accidentally launching 100 concurrent sandboxes per provider.',
     );
+  }
+  if (config.task && config.mode === 'dax') {
+    throw new Error('task is not supported for mode "dax" (dax runs its own fixed disk/CPU/pause-resume probes).');
   }
   return config;
 }

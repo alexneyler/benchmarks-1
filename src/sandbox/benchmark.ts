@@ -1,10 +1,18 @@
-import type { ProviderConfig, BenchmarkResult, TimingResult } from './types.js';
+import type { ProviderConfig, BenchmarkResult, TimingResult, SandboxTask } from './types.js';
 import { computeStats } from '../util/stats.js';
 import { withTimeout } from '../util/timeout.js';
 import { randomUUID } from 'node:crypto';
 
+/** Default task: a `node -v` liveness check. Used when a ProviderConfig/BenchmarkConfig doesn't supply `task`. */
+export const defaultSandboxTask: SandboxTask = async (sandbox: any) => {
+  const result = await sandbox.runCommand('node -v') as { exitCode: number; stderr?: string };
+  if (result.exitCode !== 0) {
+    throw new Error(`Command failed with exit code ${result.exitCode}: ${result.stderr || 'Unknown error'}`);
+  }
+};
+
 export async function runBenchmark(config: ProviderConfig): Promise<BenchmarkResult> {
-  const { name, iterations = 100, timeout = 120_000, requiredEnvVars, sandboxOptions, destroyTimeoutMs } = config;
+  const { name, iterations = 100, timeout = 120_000, requiredEnvVars, sandboxOptions, destroyTimeoutMs, task, taskTimeoutMs } = config;
 
   // Check if all required credentials are available
   const missingVars = requiredEnvVars.filter(v => !process.env[v]);
@@ -38,6 +46,8 @@ export async function runBenchmark(config: ProviderConfig): Promise<BenchmarkRes
         sandboxOptions,
         destroyTimeoutMs,
         reuseDetector,
+        task,
+        taskTimeoutMs,
       );
       results.push(iterationResult);
       console.log(`    TTI: ${(iterationResult.ttiMs / 1000).toFixed(2)}s`);
@@ -109,6 +119,8 @@ export async function runIteration(
   sandboxOptions?: Record<string, any>,
   destroyTimeoutMs: number = 15_000,
   reuseDetector?: ReuseDetector,
+  task?: SandboxTask,
+  taskTimeoutMs: number = 30_000,
 ): Promise<TimingResult> {
   let sandbox: any = null;
 
@@ -117,15 +129,11 @@ export async function runIteration(
 
     sandbox = await withTimeout(compute.sandbox.create(sandboxOptions), timeout, 'Sandbox creation timed out');
 
-    const result = await withTimeout(
-      sandbox.runCommand('node -v'),
-      30_000,
-      'First command execution timed out'
-    ) as { exitCode: number; stderr?: string };
-
-    if (result.exitCode !== 0) {
-      throw new Error(`Command failed with exit code ${result.exitCode}: ${result.stderr || 'Unknown error'}`);
-    }
+    await withTimeout(
+      (task ?? defaultSandboxTask)(sandbox),
+      taskTimeoutMs,
+      'Benchmark task timed out'
+    );
 
     const ttiMs = performance.now() - start;
 

@@ -82,12 +82,20 @@ const reportToPlatform = args.includes('--report');
 const platformBaseUrl = (process.env.BENCHMARKS_PLATFORM_URL || 'http://localhost:3000').replace(/\/+$/, '') + '/api/v1';
 const platformOrgSlug = process.env.BENCHMARKS_PLATFORM_ORG_SLUG || 'computesdk';
 const platformBenchmarkSlug = getArgValue(args, '--benchmark-slug') || defaultBenchmarkSlugForMode(rawMode);
+const platformBenchmarkName = getArgValue(args, '--benchmark-name') || defaultBenchmarkNameForMode(rawMode);
 
 /** Default platform benchmark slug for a given mode, shared by the flag path and the config-file path. */
 function defaultBenchmarkSlugForMode(mode: string | undefined): string {
   if (mode === 'burst' || mode === 'concurrent') return 'sandbox-burst-local';
   if (mode === 'dax') return 'sandbox-dax-local';
   return 'sandbox-tti-local';
+}
+
+/** Default platform dashboard display name for a given mode, shared by the flag path and the config-file path. */
+function defaultBenchmarkNameForMode(mode: string | undefined): string {
+  if (mode === 'burst' || mode === 'concurrent') return 'Sandbox burst TTI (local)';
+  if (mode === 'dax') return 'Dax sandbox benchmark (local)';
+  return 'Sandbox TTI (local)';
 }
 
 /** Settings a single core-sandbox-mode run (sequential/staggered/burst/dax) needs, whether sourced from CLI flags or a config file. */
@@ -99,6 +107,7 @@ interface CoreRunSettings {
   platformBaseUrl: string;
   platformOrgSlug: string;
   platformBenchmarkSlug: string;
+  platformBenchmarkName: string;
 }
 
 function getArgValue(args: string[], flag: string): string | undefined {
@@ -183,7 +192,7 @@ async function createSharedPlatformRun(input: {
 async function runMode(mode: BenchmarkMode, toRun: typeof providers, settings: CoreRunSettings): Promise<void> {
   if (mode === 'sequential' && settings.reportToPlatform) {
     const { runId } = await createSharedPlatformRun({
-      benchmarkDisplayName: 'Sandbox TTI (local)',
+      benchmarkDisplayName: settings.platformBenchmarkName,
       runName: `sequential — ${settings.iterations} iterations`,
       totalTasks: settings.iterations,
       participantNames: toRun.map((p) => p.name),
@@ -203,7 +212,7 @@ async function runMode(mode: BenchmarkMode, toRun: typeof providers, settings: C
 
   if (mode === 'burst' && settings.reportToPlatform) {
     const { runId } = await createSharedPlatformRun({
-      benchmarkDisplayName: 'Sandbox burst TTI (local)',
+      benchmarkDisplayName: settings.platformBenchmarkName,
       runName: `burst — concurrency ${settings.concurrency}`,
       totalTasks: settings.concurrency,
       participantNames: toRun.map((p) => p.name),
@@ -448,7 +457,7 @@ async function runDax(toRun: typeof providers, daxIterations: number): Promise<v
 async function runDaxMode(toRun: typeof providers, settings: CoreRunSettings): Promise<void> {
   if (settings.reportToPlatform) {
     const { runId } = await createSharedPlatformRun({
-      benchmarkDisplayName: 'Dax sandbox benchmark (local)',
+      benchmarkDisplayName: settings.platformBenchmarkName,
       runName: `dax — ${settings.iterations} iterations`,
       totalTasks: settings.iterations,
       participantNames: toRun.map((p) => p.name),
@@ -767,6 +776,7 @@ function coreRunSettings(): CoreRunSettings {
     platformBaseUrl,
     platformOrgSlug,
     platformBenchmarkSlug,
+    platformBenchmarkName,
   };
 }
 
@@ -786,7 +796,10 @@ async function runFromConfigFile(configPath: string): Promise<void> {
   }
 
   const mode = config.mode === 'concurrent' ? 'burst' : config.mode;
-  const toRun = selectProviders(providers, config.providers);
+  const selected = selectProviders(providers, config.providers);
+  const toRun = config.task
+    ? selected.map((p) => ({ ...p, task: config.task, taskTimeoutMs: config.taskTimeoutMs ?? p.taskTimeoutMs }))
+    : selected;
   if (toRun.length === 0) {
     console.error('No providers to run.');
     process.exit(1);
@@ -800,6 +813,7 @@ async function runFromConfigFile(configPath: string): Promise<void> {
     platformBaseUrl: (config.report?.baseUrl ?? process.env.BENCHMARKS_PLATFORM_URL ?? 'http://localhost:3000').replace(/\/+$/, '') + '/api/v1',
     platformOrgSlug: config.report?.orgSlug ?? process.env.BENCHMARKS_PLATFORM_ORG_SLUG ?? 'computesdk',
     platformBenchmarkSlug: config.report?.benchmarkSlug ?? defaultBenchmarkSlugForMode(mode),
+    platformBenchmarkName: config.report?.name ?? defaultBenchmarkNameForMode(mode),
   };
 
   console.log('ComputeSDK Sandbox Provider Benchmarks (config file)');
@@ -844,7 +858,7 @@ function printDryRunSummary(
     if (mode === 'staggered') console.log(`  Stagger delay: ${settings.staggerDelay}ms`);
   }
   if (config.report) {
-    console.log(`  Report:       yes — benchmarkSlug=${settings.platformBenchmarkSlug}  baseUrl=${settings.platformBaseUrl}  orgSlug=${settings.platformOrgSlug}`);
+    console.log(`  Report:       yes — benchmarkSlug=${settings.platformBenchmarkSlug}  name="${settings.platformBenchmarkName}"  baseUrl=${settings.platformBaseUrl}  orgSlug=${settings.platformOrgSlug}`);
   } else {
     console.log('  Report:       no (local results only)');
   }

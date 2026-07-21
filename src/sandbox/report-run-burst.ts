@@ -21,7 +21,7 @@ export async function runBurstWithPlatformReport(
   report: PlatformReportConfig,
   runId: string,
 ): Promise<void> {
-  const { name, timeout = 120_000, requiredEnvVars, sandboxOptions, destroyTimeoutMs = 15_000, createCompute } = config;
+  const { name, timeout = 120_000, requiredEnvVars, sandboxOptions, destroyTimeoutMs = 15_000, createCompute, task: customTask, taskTimeoutMs = 30_000 } = config;
 
   const missingVars = requiredEnvVars.filter((v) => !process.env[v]);
   if (missingVars.length > 0) {
@@ -43,63 +43,81 @@ export async function runBurstWithPlatformReport(
 
   const dashboardUrl = `${report.baseUrl.replace(/\/api\/v1\/?$/, '')}/${report.orgSlug}/benchmarks/${report.benchmarkSlug}/runs/${runId}`;
 
-  const task = defineTask<LifecycleState>('sandbox.lifecycle', [
-    defineStep<LifecycleState>('create', async ({ state, taskIndex }) => {
-      try {
-        state.sandbox = await withTimeout(compute.sandbox.create(sandboxOptions), timeout, 'Sandbox creation timed out');
-        logBuffer.step(taskIndex, 'create', {});
-      } catch (error) {
-        logBuffer.step(taskIndex, 'create', { error: error instanceof Error ? error.message : String(error) });
-        throw error;
-      }
-    }),
-    defineStep<LifecycleState>('First command: node -v', async ({ state, taskIndex }) => {
-      const result = (await withTimeout(
-        (state.sandbox as any).runCommand('node -v'),
-        30_000,
-        'First command execution timed out',
-      )) as { exitCode: number; stdout?: string; stderr?: string };
-      logBuffer.step(taskIndex, 'First command: node -v', { stdout: result.stdout, stderr: result.stderr });
-      if (result.exitCode !== 0) {
-        throw new Error(`Command failed with exit code ${result.exitCode}: ${result.stderr || 'Unknown error'}`);
-      }
-    }),
-    defineStep<LifecycleState>('Second command: echo bench', async ({ state, taskIndex }) => {
-      const result = (await withTimeout(
-        (state.sandbox as any).runCommand('echo bench-placeholder-2'),
-        30_000,
-        'Second command execution timed out',
-      )) as { exitCode: number; stdout?: string; stderr?: string };
-      logBuffer.step(taskIndex, 'Second command: echo bench', { stdout: result.stdout, stderr: result.stderr });
-      if (result.exitCode !== 0) {
-        throw new Error(`Command failed with exit code ${result.exitCode}: ${result.stderr || 'Unknown error'}`);
-      }
-    }),
-    defineStep<LifecycleState>('Third command: node -e console.log', async ({ state, taskIndex }) => {
-      const result = (await withTimeout(
-        (state.sandbox as any).runCommand('node -e "console.log(1+1)"'),
-        30_000,
-        'Third command execution timed out',
-      )) as { exitCode: number; stdout?: string; stderr?: string };
-      logBuffer.step(taskIndex, 'Third command: node -e console.log', { stdout: result.stdout, stderr: result.stderr });
-      if (result.exitCode !== 0) {
-        throw new Error(`Command failed with exit code ${result.exitCode}: ${result.stderr || 'Unknown error'}`);
-      }
-    }),
-    defineStep<LifecycleState>('destroy', { reportConcurrency: false }, async ({ state, taskIndex }) => {
-      if (!state.sandbox) return;
-      try {
-        await Promise.race([
-          (state.sandbox as any).destroy(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Destroy timeout')), destroyTimeoutMs)),
-        ]);
-        logBuffer.step(taskIndex, 'destroy', {});
-      } catch (error) {
-        logBuffer.step(taskIndex, 'destroy', { error: error instanceof Error ? error.message : String(error) });
-        throw error;
-      }
-    }),
-  ]);
+  const createStep = defineStep<LifecycleState>('create', async ({ state, taskIndex }) => {
+    try {
+      state.sandbox = await withTimeout(compute.sandbox.create(sandboxOptions), timeout, 'Sandbox creation timed out');
+      logBuffer.step(taskIndex, 'create', {});
+    } catch (error) {
+      logBuffer.step(taskIndex, 'create', { error: error instanceof Error ? error.message : String(error) });
+      throw error;
+    }
+  });
+
+  const destroyStep = defineStep<LifecycleState>('destroy', { reportConcurrency: false }, async ({ state, taskIndex }) => {
+    if (!state.sandbox) return;
+    try {
+      await Promise.race([
+        (state.sandbox as any).destroy(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Destroy timeout')), destroyTimeoutMs)),
+      ]);
+      logBuffer.step(taskIndex, 'destroy', {});
+    } catch (error) {
+      logBuffer.step(taskIndex, 'destroy', { error: error instanceof Error ? error.message : String(error) });
+      throw error;
+    }
+  });
+
+  // Self-contained configs (`task` set) run their own workload as a single step in place of
+  // the three hardcoded placeholder commands below, which remain the default when no task is set.
+  const workloadSteps = customTask
+    ? [
+        defineStep<LifecycleState>('exec.task', async ({ state, taskIndex }) => {
+          try {
+            await withTimeout(customTask(state.sandbox), taskTimeoutMs, 'Benchmark task timed out');
+            logBuffer.step(taskIndex, 'exec.task', {});
+          } catch (error) {
+            logBuffer.step(taskIndex, 'exec.task', { error: error instanceof Error ? error.message : String(error) });
+            throw error;
+          }
+        }),
+      ]
+    : [
+        defineStep<LifecycleState>('First command: node -v', async ({ state, taskIndex }) => {
+          const result = (await withTimeout(
+            (state.sandbox as any).runCommand('node -v'),
+            30_000,
+            'First command execution timed out',
+          )) as { exitCode: number; stdout?: string; stderr?: string };
+          logBuffer.step(taskIndex, 'First command: node -v', { stdout: result.stdout, stderr: result.stderr });
+          if (result.exitCode !== 0) {
+            throw new Error(`Command failed with exit code ${result.exitCode}: ${result.stderr || 'Unknown error'}`);
+          }
+        }),
+        defineStep<LifecycleState>('Second command: echo bench', async ({ state, taskIndex }) => {
+          const result = (await withTimeout(
+            (state.sandbox as any).runCommand('echo bench-placeholder-2'),
+            30_000,
+            'Second command execution timed out',
+          )) as { exitCode: number; stdout?: string; stderr?: string };
+          logBuffer.step(taskIndex, 'Second command: echo bench', { stdout: result.stdout, stderr: result.stderr });
+          if (result.exitCode !== 0) {
+            throw new Error(`Command failed with exit code ${result.exitCode}: ${result.stderr || 'Unknown error'}`);
+          }
+        }),
+        defineStep<LifecycleState>('Third command: node -e console.log', async ({ state, taskIndex }) => {
+          const result = (await withTimeout(
+            (state.sandbox as any).runCommand('node -e "console.log(1+1)"'),
+            30_000,
+            'Third command execution timed out',
+          )) as { exitCode: number; stdout?: string; stderr?: string };
+          logBuffer.step(taskIndex, 'Third command: node -e console.log', { stdout: result.stdout, stderr: result.stderr });
+          if (result.exitCode !== 0) {
+            throw new Error(`Command failed with exit code ${result.exitCode}: ${result.stderr || 'Unknown error'}`);
+          }
+        }),
+      ];
+
+  const task = defineTask<LifecycleState>('sandbox.lifecycle', [createStep, ...workloadSteps, destroyStep]);
 
   const result = await client.runWorker({
     benchmarkSlug: report.benchmarkSlug,
