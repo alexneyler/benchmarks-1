@@ -63,6 +63,12 @@ jobs:
       - name: Clear stale results from checkout
         run: rm -rf results/browser/
       - name: Load ${{ matrix.provider }} secrets from Namespace vault
+        env:
+          # Static-bearer fallback when OIDC isn't available (e.g. we move off
+          # Namespace runners). Resolver's auth precedence is
+          # NSC_VAULT_TOKEN > NSC_TOKEN_FILE, so this is a no-op when OIDC
+          # succeeds — it only takes over on non-Namespace runners.
+          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs --mode browser --provider ${{ matrix.provider }}
       - name: Run browser benchmark
         run: |
@@ -115,6 +121,12 @@ jobs:
       - name: Load ingest secrets from Namespace vault
         if: github.event_name != 'push'
         continue-on-error: true
+        env:
+          # Static-bearer fallback when OIDC isn't available (e.g. we move off
+          # Namespace runners). Resolver's auth precedence is
+          # NSC_VAULT_TOKEN > NSC_TOKEN_FILE, so this is a no-op when OIDC
+          # succeeds — it only takes over on non-Namespace runners.
+          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs INGEST_URL INGEST_SECRET
       - name: Ingest results to platform
         if: github.event_name != 'push'

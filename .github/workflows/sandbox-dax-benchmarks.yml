@@ -88,18 +88,36 @@ jobs:
           fi
       - name: Load E2B secrets from Namespace vault
         if: matrix.provider == 'e2b'
+        env:
+          # Static-bearer fallback when OIDC isn't available (e.g. we move off
+          # Namespace runners). Resolver's auth precedence is
+          # NSC_VAULT_TOKEN > NSC_TOKEN_FILE, so this is a no-op when OIDC
+          # succeeds — it only takes over on non-Namespace runners.
+          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs --mode sandbox --provider e2b
       - name: Build E2B template with 8 vCPU / 16 GiB
         if: matrix.provider == 'e2b'
         run: npx tsx scripts/build-e2b-template.ts
       - name: Load Superserve secrets from Namespace vault
         if: matrix.provider == 'superserve'
+        env:
+          # Static-bearer fallback when OIDC isn't available (e.g. we move off
+          # Namespace runners). Resolver's auth precedence is
+          # NSC_VAULT_TOKEN > NSC_TOKEN_FILE, so this is a no-op when OIDC
+          # succeeds — it only takes over on non-Namespace runners.
+          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs --mode sandbox --provider superserve
       - name: Build Superserve template with 8 vCPU / 16 GiB
         if: matrix.provider == 'superserve'
         run: npx tsx scripts/build-superserve-template.ts
       - name: Load Northflank secrets from Namespace vault
         if: matrix.provider == 'northflank'
+        env:
+          # Static-bearer fallback when OIDC isn't available (e.g. we move off
+          # Namespace runners). Resolver's auth precedence is
+          # NSC_VAULT_TOKEN > NSC_TOKEN_FILE, so this is a no-op when OIDC
+          # succeeds — it only takes over on non-Namespace runners.
+          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs --mode sandbox --provider northflank
       - name: Find Northflank plan for 8 vCPU / 16 GiB
         if: matrix.provider == 'northflank'
@@ -107,6 +125,12 @@ jobs:
       - name: Clear stale results from checkout
         run: rm -rf results/
       - name: Load ${{ matrix.provider }} secrets from Namespace vault
+        env:
+          # Static-bearer fallback when OIDC isn't available (e.g. we move off
+          # Namespace runners). Resolver's auth precedence is
+          # NSC_VAULT_TOKEN > NSC_TOKEN_FILE, so this is a no-op when OIDC
+          # succeeds — it only takes over on non-Namespace runners.
+          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs --mode sandbox --provider ${{ matrix.provider }}
       - name: Run dax benchmark
         env:
@@ -156,6 +180,12 @@ jobs:
       - name: Load ingest secrets from Namespace vault
         if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
         continue-on-error: true
+        env:
+          # Static-bearer fallback when OIDC isn't available (e.g. we move off
+          # Namespace runners). Resolver's auth precedence is
+          # NSC_VAULT_TOKEN > NSC_TOKEN_FILE, so this is a no-op when OIDC
+          # succeeds — it only takes over on non-Namespace runners.
+          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs INGEST_URL INGEST_SECRET
       - name: Ingest results to platform
         if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'

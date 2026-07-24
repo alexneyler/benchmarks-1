@@ -71,6 +71,12 @@ jobs:
       # Single job (no matrix), so loading every AI-gateway secret per run is
       # fine and avoids resolving per-provider scoping for round-robin asks.
       - name: Load AI gateway secrets from Namespace vault
+        env:
+          # Static-bearer fallback when OIDC isn't available (e.g. we move off
+          # Namespace runners). Resolver's auth precedence is
+          # NSC_VAULT_TOKEN > NSC_TOKEN_FILE, so this is a no-op when OIDC
+          # succeeds — it only takes over on non-Namespace runners.
+          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs
       - name: Run AI gateway benchmark
         run: |

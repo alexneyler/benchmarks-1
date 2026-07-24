@@ -78,6 +78,12 @@ jobs:
       - name: Clear stale results from checkout
         run: rm -rf results/snapshot-fork/
       - name: Load ${{ matrix.provider }} secrets from Namespace vault
+        env:
+          # Static-bearer fallback when OIDC isn't available (e.g. we move off
+          # Namespace runners). Resolver's auth precedence is
+          # NSC_VAULT_TOKEN > NSC_TOKEN_FILE, so this is a no-op when OIDC
+          # succeeds — it only takes over on non-Namespace runners.
+          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs --mode snapshot-fork --provider ${{ matrix.provider }}
       - name: Run snapshot/fork test
         run: |
