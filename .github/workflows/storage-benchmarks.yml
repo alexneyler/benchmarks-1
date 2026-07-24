@@ -40,6 +40,7 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write  # for Namespace OIDC federation via namespacelabs/nscloud-setup@v0
 
 jobs:
   bench:
@@ -59,6 +60,9 @@ jobs:
         file_size: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.file_size != '' && fromJson(format('["{0}"]', github.event.inputs.file_size))) || (github.event_name == 'push' && fromJson('["1MB"]')) || fromJson('["1MB","4MB","10MB","16MB"]') }}
     steps:
       - uses: actions/checkout@v4
+      # Establishes Namespace access via OIDC federation — writes NSC_TOKEN_FILE
+      # for the rest of the job; load-ns-secrets.mjs reads from there.
+      - uses: namespacelabs/nscloud-setup@v0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -73,8 +77,6 @@ jobs:
       - name: Clear stale results from checkout
         run: rm -rf results/storage/
       - name: Load ${{ matrix.provider }} secrets from Namespace vault
-        env:
-          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs --mode storage --provider ${{ matrix.provider }}
       - name: Run storage benchmark
         run: |
@@ -106,6 +108,9 @@ jobs:
           # A shallow (depth-1) clone can make `git rebase origin/<branch>`
           # fail when the remote has advanced past the shallow boundary.
           fetch-depth: 0
+      # Establishes Namespace access via OIDC federation — writes NSC_TOKEN_FILE
+      # for the rest of the job; load-ns-secrets.mjs reads from there.
+      - uses: namespacelabs/nscloud-setup@v0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -127,8 +132,6 @@ jobs:
       - name: Load ingest secrets from Namespace vault
         if: github.event_name != 'push'
         continue-on-error: true
-        env:
-          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs INGEST_URL INGEST_SECRET
       - name: Ingest results to platform
         if: github.event_name != 'push'

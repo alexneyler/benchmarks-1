@@ -24,7 +24,11 @@
 // to "sandbox". A required var absent from the vault is a warning, not a failure.
 //
 // Env:
-//   NSC_VAULT_TOKEN     (always required, including --print — it still calls the vault API) bearer token
+//   NSC_VAULT_TOKEN     static bearer token (PR #225 path). First-priority auth.
+//   NSC_TOKEN_FILE      JSON path written by `nsc auth exchange-github-token`
+//                       (invoked transitively by namespacelabs/nscloud-setup@v0).
+//                       Used as a fallback when NSC_VAULT_TOKEN is unset. The
+//                       file's `token` field is read.
 //   NSC_VAULT_ENDPOINT  override API host (default us.compute.namespaceapis.com)
 //   GITHUB_ENV          set by Actions; required unless --print
 import { appendFileSync, readFileSync } from 'node:fs';
@@ -49,15 +53,32 @@ const provider = flagValue('--provider');
 // Positional args = explicit var names (excludes flags and their values).
 const wantNames = argv.filter((a, i) => !a.startsWith('--') && !valueIdxs.has(i));
 
-const token = process.env.NSC_VAULT_TOKEN;
+// Auth precedence (first non-empty wins):
+//   1. NSC_VAULT_TOKEN  — explicit static bearer.
+//   2. NSC_TOKEN_FILE   — JSON token file written by nscloud-setup's
+//                         `nsc auth exchange-github-token` (or directly by
+//                         the Namespace runner at /var/run/nsc/token.json).
+//   The fallback path lets workflows drop NSC_VAULT_TOKEN entirely and rely
+//   on per-job OIDC federation via namespacelabs/nscloud-setup@v0.
+const inlineToken = process.env.NSC_VAULT_TOKEN;
+const tokenFile = process.env.NSC_TOKEN_FILE;
+let token = inlineToken;
+if (!token && tokenFile) {
+  try {
+    const parsed = JSON.parse(readFileSync(tokenFile, 'utf8'));
+    token = parsed?.token ?? '';
+  } catch (e) {
+    console.error(`NSC_TOKEN_FILE (${tokenFile}) unparseable: ${e.message || e}`);
+    process.exit(1);
+  }
+}
+if (!token) {
+  console.error('Neither NSC_VAULT_TOKEN nor NSC_TOKEN_FILE is set; run after namespacelabs/nscloud-setup@v0, or set NSC_VAULT_TOKEN.');
+  process.exit(1);
+}
 const host = process.env.NSC_VAULT_ENDPOINT || 'us.compute.namespaceapis.com';
 const githubEnv = process.env.GITHUB_ENV;
 const CONCURRENCY = 8;
-
-if (!token) {
-  console.error('NSC_VAULT_TOKEN is not set');
-  process.exit(1);
-}
 if (!printOnly && !githubEnv) {
   console.error('GITHUB_ENV is not set — run inside GitHub Actions, or pass --print to dry-run');
   process.exit(1);

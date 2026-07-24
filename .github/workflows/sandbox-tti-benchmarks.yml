@@ -48,6 +48,7 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write  # for Namespace OIDC federation via namespacelabs/nscloud-setup@v0
 
 jobs:
   bench:
@@ -87,6 +88,9 @@ jobs:
           - vercel
     steps:
       - uses: actions/checkout@v4
+      # Establishes Namespace access via OIDC federation — writes NSC_TOKEN_FILE
+      # for the rest of the job; load-ns-secrets.mjs reads from there.
+      - uses: namespacelabs/nscloud-setup@v0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -104,8 +108,6 @@ jobs:
         run: rm -rf results/
       - name: Load ${{ matrix.provider }} secrets from Namespace vault
         if: github.event_name != 'workflow_dispatch' || github.event.inputs.provider == '' || github.event.inputs.provider == matrix.provider
-        env:
-          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs --mode sandbox --provider ${{ matrix.provider }}
       - name: Run benchmark
         if: github.event_name != 'workflow_dispatch' || github.event.inputs.provider == '' || github.event.inputs.provider == matrix.provider
@@ -140,6 +142,7 @@ jobs:
           # A shallow (depth-1) clone can make `git rebase origin/<branch>`
           # fail when the remote has advanced past the shallow boundary.
           fetch-depth: 0
+      - uses: namespacelabs/nscloud-setup@v0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -161,8 +164,6 @@ jobs:
       - name: Load ingest secrets from Namespace vault
         if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
         continue-on-error: true  # ingest is best-effort (see the ingest step below); don't fail the job if secrets aren't seeded yet
-        env:
-          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
         run: node scripts/load-ns-secrets.mjs INGEST_URL INGEST_SECRET
       - name: Ingest results to platform
         if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'

@@ -37,6 +37,7 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write  # for Namespace OIDC federation via namespacelabs/nscloud-setup@v0
 
 jobs:
   bench:
@@ -53,6 +54,9 @@ jobs:
         with:
           # Full history so the rebase-on-push retry below has a merge base.
           fetch-depth: 0
+      # Establishes Namespace access via OIDC federation — writes NSC_TOKEN_FILE
+      # for the rest of the job; load-ns-secrets.mjs reads from there.
+      - uses: namespacelabs/nscloud-setup@v0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -64,11 +68,9 @@ jobs:
           else
             npm ci
           fi
+      # Single job (no matrix), so loading every AI-gateway secret per run is
+      # fine and avoids resolving per-provider scoping for round-robin asks.
       - name: Load AI gateway secrets from Namespace vault
-        env:
-          NSC_VAULT_TOKEN: ${{ secrets.NSC_VAULT_TOKEN }}
-        # Single job (no matrix), so loading every AI-gateway secret per run is
-        # fine and avoids resolving per-provider scoping for round-robin asks.
         run: node scripts/load-ns-secrets.mjs
       - name: Run AI gateway benchmark
         run: |
