@@ -9,8 +9,6 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
   contents: write
   pull-requests: write
-  issues: write
-  repository-projects: write
   id-token: write # Required for npm OIDC trusted publishing
 
 jobs:
@@ -49,19 +47,26 @@ jobs:
       - name: Build packages
         run: pnpm --filter benchsdk run build
 
+      - name: Test
+        run: pnpm --filter benchsdk run test
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
-          # --provenance generates signed attestations linking each package
-          # to this workflow run. Automatically enabled when using trusted
-          # publishers, but explicit here for clarity.
-          publish: pnpm changeset publish --provenance
+          # Provenance (signed attestations linking each package to this
+          # workflow run) is configured via the NPM_CONFIG_PROVENANCE env var
+          # below rather than a `--provenance` CLI flag, which @changesets/cli
+          # does not support.
+          publish: pnpm changeset publish
           title: "Version Packages"
           commit: "Version Packages"
         env:
           GITHUB_TOKEN: ${{ secrets.CHANGESET_TOKEN || secrets.GITHUB_TOKEN }}
-          # TODO: once the `benchsdk` package has a trusted publisher
-          # configured on npmjs.com, remove NPM_TOKEN entirely. For now it acts
-          # as a fallback for packages not yet configured for OIDC.
+          # Sequence: (1) publish once with NPM_TOKEN, (2) configure the trusted
+          # publisher for benchsdk on npmjs.com, (3) remove NPM_TOKEN from this
+          # workflow in a follow-up. Trusted publishers require an existing
+          # package on the registry, so OIDC cannot be used for the initial
+          # publication.
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

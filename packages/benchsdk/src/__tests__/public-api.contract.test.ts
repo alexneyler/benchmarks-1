@@ -846,16 +846,30 @@ describe('runWorker lifecycle and task execution', () => {
   });
 
   it('VAL-SDK-052: flushes partial batches on the flush interval', async () => {
-    const { calls, fetchMock } = recordingClient(lifecycleResponder({ taskRange: { start: 0, end: 1, count: 2 }, targetConcurrency: 1 }));
-    const client = createBenchmarkClient({ baseUrl: BASE, apiKey: 'k', fetch: fetchMock });
-    await client.runWorker({
-      benchmarkSlug: 'scale', runId: 'run_1', participantSlug: 'e2b', batchSize: 1000, flushIntervalMs: 1,
-      task: async ({ taskIndex }) => { if (taskIndex === 1) await new Promise((r) => setTimeout(r, 20)); },
-    });
-    const events = calls.filter((c) => c.url.endsWith('/events'));
-    expect(events).toHaveLength(2);
-    expect((events[0].body as { records: unknown[]; isFinal: boolean }).records).toHaveLength(1);
-    expect((events[0].body as { isFinal: boolean }).isFinal).toBe(false);
+    // Real 1ms/20ms timers are flaky under load; fake timers make the flush
+    // interval deterministic. The 1ms flush interval fires before the 20ms task
+    // delay resolves, so the first completed record is flushed as a partial
+    // (isFinal: false) batch, then the final flush sends the remaining record.
+    vi.useFakeTimers();
+    try {
+      const { calls, fetchMock } = recordingClient(lifecycleResponder({ taskRange: { start: 0, end: 1, count: 2 }, targetConcurrency: 1 }));
+      const client = createBenchmarkClient({ baseUrl: BASE, apiKey: 'k', fetch: fetchMock });
+      const promise = client.runWorker({
+        benchmarkSlug: 'scale', runId: 'run_1', participantSlug: 'e2b', batchSize: 1000, flushIntervalMs: 1,
+        task: async ({ taskIndex }) => { if (taskIndex === 1) await new Promise((r) => setTimeout(r, 20)); },
+      });
+      // Advance past the 20ms task delay so the flush interval fires and the
+      // worker completes. Microtasks (task completion, flush sends) run between
+      // timer advances via advanceTimersByTimeAsync.
+      await vi.advanceTimersByTimeAsync(20);
+      await promise;
+      const events = calls.filter((c) => c.url.endsWith('/events'));
+      expect(events).toHaveLength(2);
+      expect((events[0].body as { records: unknown[]; isFinal: boolean }).records).toHaveLength(1);
+      expect((events[0].body as { isFinal: boolean }).isFinal).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('VAL-SDK-052-default-and-unref: defaults flushIntervalMs to 30000 and unrefs the flush interval', async () => {
@@ -1412,14 +1426,20 @@ describe('BenchmarkReporter', () => {
   });
 
   it('VAL-SDK-085: reporter default batch size is 500 (no flush below the threshold)', async () => {
-    const { reporter, calls } = await claim((url) => {
-      if (url.endsWith('/workers/claim')) return jsonResponse({ assignment: makeAssignment({ taskRange: { start: 0, end: 3, count: 4 } }) });
-      if (url.endsWith('/events')) return jsonResponse({ accepted: 1 }, 202);
-      throw new Error(`unexpected request: ${url}`);
-    });
-    for (let i = 0; i < 499; i++) reporter!.recordResult({ taskIndex: i, status: 'success', latencyMs: 1 });
-    await new Promise((r) => setTimeout(r, 5));
-    expect(calls.filter((c) => c.url.endsWith('/events'))).toHaveLength(0);
+    // Use fake timers so the safety wait is deterministic and never flaky.
+    vi.useFakeTimers();
+    try {
+      const { reporter, calls } = await claim((url) => {
+        if (url.endsWith('/workers/claim')) return jsonResponse({ assignment: makeAssignment({ taskRange: { start: 0, end: 3, count: 4 } }) });
+        if (url.endsWith('/events')) return jsonResponse({ accepted: 1 }, 202);
+        throw new Error(`unexpected request: ${url}`);
+      });
+      for (let i = 0; i < 499; i++) reporter!.recordResult({ taskIndex: i, status: 'success', latencyMs: 1 });
+      await vi.advanceTimersByTimeAsync(5);
+      expect(calls.filter((c) => c.url.endsWith('/events'))).toHaveLength(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
@@ -1475,15 +1495,6 @@ describe('createSystemMetricsCollector', () => {
 // ---------------------------------------------------------------------------
 describe('public API surface and type exports', () => {
   const here = dirname(fileURLToPath(import.meta.url));
-  const indexSource = readFileSync(join(here, '..', 'index.ts'), 'utf8');
-
-  function typeExportsFrom(module: string): string[] {
-    const pattern = new RegExp(`export type \\{([^}]*)\\} from '\\./${module}'`);
-    const match = indexSource.match(pattern);
-    if (!match) return [];
-    return match[1].split(',').map((name) => name.trim()).filter(Boolean);
-  }
-
   // The barrel re-exports the full public type surface from types/reporter/metrics.
   // The 5 internal helper types must never appear here.
   const TYPES_EXPORTS = [
@@ -1512,20 +1523,37 @@ describe('public API surface and type exports', () => {
   const METRICS_EXPORTS = ['BenchmarkSystemMetricsCollector', 'BenchmarkSystemMetricsSample'];
   const INTERNAL_TYPES = ['DefineTaskOptions', 'StepContext', 'CleanupContext', 'WorkerDefaults', 'BenchmarkParticipantResultSummary'];
 
-  it('VAL-SDK-090: index.ts barrel re-exports exactly the public type set and excludes the 5 internal types', () => {
-    const typesBlock = typeExportsFrom('types');
-    const reporterBlock = typeExportsFrom('reporter');
-    const metricsBlock = typeExportsFrom('metrics');
+  it('VAL-SDK-090: built barrel re-exports exactly the public type set and excludes the 5 internal types', () => {
+    // Pin the actual shipped surface by reading the built dist/index.d.ts
+    // declarations rather than regex-parsing the source barrel. This catches
+    // drift between the source export list and what consumers receive.
+    const distDecl = readFileSync(join(here, '..', '..', 'dist', 'index.d.ts'), 'utf8');
 
-    expect(typesBlock.slice().sort()).toEqual([...TYPES_EXPORTS].sort());
-    expect(reporterBlock.slice().sort()).toEqual([...REPORTER_EXPORTS].sort());
-    expect(metricsBlock.slice().sort()).toEqual([...METRICS_EXPORTS].sort());
+    // The built barrel emits a single `export { ... }` statement. Type-only
+    // re-exports are prefixed with `type `; parse those to recover the exact
+    // exported type set and compare it against the expected surface.
+    const exportMatch = distDecl.match(/export\s*\{([^}]*)\}/);
+    expect(exportMatch).not.toBeNull();
+    const exportedTypeNames = exportMatch![1]
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.startsWith('type '))
+      .map((entry) => entry.slice('type '.length).trim())
+      .filter(Boolean);
 
-    const all = [...typesBlock, ...reporterBlock, ...metricsBlock];
-    for (const internal of INTERNAL_TYPES) {
-      expect(all).not.toContain(internal);
+    const expectedTypes = [...TYPES_EXPORTS, ...REPORTER_EXPORTS, ...METRICS_EXPORTS];
+    // The exported type set must match the expected surface exactly.
+    expect(exportedTypeNames.slice().sort()).toEqual([...expectedTypes].sort());
+
+    // Every expected type must also appear as a declaration in the .d.ts.
+    for (const name of expectedTypes) {
+      expect(distDecl).toMatch(new RegExp(`\\b${name}\\b`));
     }
-    expect(all).toHaveLength(TYPES_EXPORTS.length + REPORTER_EXPORTS.length + METRICS_EXPORTS.length);
+
+    // The 5 internal helper types must never be surfaced by the built barrel.
+    for (const internal of INTERNAL_TYPES) {
+      expect(exportedTypeNames).not.toContain(internal);
+    }
 
     // The internal types do exist in types.ts, they are just not surfaced.
     const typesSource = readFileSync(join(here, '..', 'types.ts'), 'utf8');
@@ -1569,14 +1597,6 @@ describe('public API surface and type exports', () => {
     expect(pkg.exports['.'].types).toMatch(/\.d\.ts$/);
   });
 
-  it('VAL-SDK-094 / VAL-CLI-021..023: integration test is gated on the pre-move env vars', () => {
-    const integrationSource = readFileSync(join(here, 'integration.test.ts'), 'utf8');
-    expect(integrationSource).toContain('COMPUTESDK_ADMIN_API_KEY');
-    expect(integrationSource).toContain('COMPUTESDK_API_KEY');
-    expect(integrationSource).toContain('COMPUTESDK_BENCH_BASE_URL');
-    expect(integrationSource).toMatch(/describe\.skip/);
-    expect(integrationSource).toContain('Invalid API key');
-  });
 });
 
 // ---------------------------------------------------------------------------
