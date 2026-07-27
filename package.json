@@ -13,7 +13,7 @@
     "bench:burst": "tsx benchmarks/src/run.ts --mode burst",
     "bench:burst:sdk": "tsx src/benchmarks/burst.bench.ts",
     "bench:sandbox:dax": "tsx benchmarks/src/run.ts --mode sandbox-dax",
-    "bench:sandbox:dax:sdk": "tsx src/benchmarks/dax.bench.ts",
+    "bench:sandbox:dax:sdk": "tsx benchmarks/sandbox/dax.bench.ts",
     "bench:blaxel": "tsx benchmarks/src/run.ts --provider blaxel",
     "bench:codesandbox": "tsx benchmarks/src/run.ts --provider codesandbox",
     "bench:daytona": "tsx benchmarks/src/run.ts --provider daytona",

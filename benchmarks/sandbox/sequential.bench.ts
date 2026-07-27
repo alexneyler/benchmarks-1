@@ -14,14 +14,14 @@
  *
  * See dax.bench.ts for the reference pattern this follows.
  */
-import '../env.js';
+import '../src/env.js';
 import { createBenchmarkClient } from '@computesdk/bench';
 import type { JsonObject, RunWorkerContext, DefineStepOptions, TaskResultRecord } from '@computesdk/bench';
-import { withTimeout } from '../util/timeout.js';
-import { formatError } from '../util/error.js';
-import { LogBuffer, uploadWorkerLog } from '../sandbox/log-buffer.js';
-import { providers } from '../sandbox/providers.js';
-import type { ProviderConfig } from '../sandbox/types.js';
+import { withTimeout } from '../src/util/timeout.js';
+import { formatError } from '../src/util/error.js';
+import { LogBuffer, uploadWorkerLog } from './log-buffer.js';
+import { providers } from './providers.js';
+import type { ProviderConfig } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Config — everything about *this* benchmark run.
