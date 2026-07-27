@@ -138,21 +138,27 @@ prepare() {
   case "$PKG_MANAGER" in
     apt)
       "${SUDO[@]}" apt-get update -qq
-      # Required packages — must succeed.
-      "${SUDO[@]}" env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-        bash build-essential ca-certificates curl git python3
-      # Optional packages — not available on all minimal images (e.g. cloud-run).
-      "${SUDO[@]}" env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-        python3-setuptools unzip 2>/dev/null || true
+      # python3-setuptools and unzip are missing from some minimal images (e.g.
+      # cloud-run's gVisor rootfs), and apt-get installs *nothing* when any
+      # argument is unknown, so drop unavailable ones instead of losing the
+      # whole transaction. unzip has a Python fallback in unpack_bun().
+      local packages=(bash build-essential ca-certificates curl git python3)
+      local optional
+      for optional in python3-setuptools unzip; do
+        if apt-cache show "$optional" >/dev/null 2>&1; then
+          packages+=("$optional")
+        fi
+      done
+      "${SUDO[@]}" env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${packages[@]}"
       ;;
     dnf)
       "${SUDO[@]}" dnf makecache --quiet
-      # Required packages — must succeed.
       "${SUDO[@]}" dnf install -y --allowerasing \
         bash gcc gcc-c++ make ca-certificates curl git python3
-      # Optional packages — not available on all minimal images.
-      "${SUDO[@]}" dnf install -y --allowerasing \
-        python3-setuptools unzip 2>/dev/null || true
+      local optional
+      for optional in python3-setuptools unzip; do
+        "${SUDO[@]}" dnf install -y --allowerasing "$optional" || true
+      done
       ;;
     apk)
       # build-base is Alpine's meta-package for gcc/g++/make/libc-dev.
@@ -200,15 +206,16 @@ unpack_bun() {
   if command -v unzip >/dev/null 2>&1; then
     unzip -q -j "$ROOT/bun.zip" "$BUN_INTERNAL_PATH" -d "$BUN_INSTALL/bin"
   else
-    # Fallback for minimal images without unzip (e.g. cloud-run gVisor).
-    python3 -c "
-import zipfile, os, sys
-with zipfile.ZipFile('$ROOT/bun.zip') as z:
-    data = z.read('$BUN_INTERNAL_PATH')
-    os.makedirs('$BUN_INSTALL/bin', exist_ok=True)
-    with open(os.path.join('$BUN_INSTALL/bin', 'bun'), 'wb') as f:
-        f.write(data)
-"
+    # Fallback for minimal images without unzip (e.g. cloud-run's gVisor rootfs).
+    python3 - "$ROOT/bun.zip" "$BUN_INTERNAL_PATH" "$BUN_INSTALL/bin" <<'PY'
+import os, shutil, sys, zipfile
+
+archive, member, dest_dir = sys.argv[1:4]
+os.makedirs(dest_dir, exist_ok=True)
+with zipfile.ZipFile(archive) as z, z.open(member) as src:
+    with open(os.path.join(dest_dir, 'bun'), 'wb') as dst:
+        shutil.copyfileobj(src, dst)
+PY
   fi
   chmod +x "$BUN_INSTALL/bin/bun"
 }
