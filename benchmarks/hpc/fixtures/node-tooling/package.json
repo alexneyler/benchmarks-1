@@ -1,0 +1,13 @@
+{
+  "name": "hpc-fixture-node-tooling",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tiny deterministic Node.js fixture used for the hpc-cpu-node and hpc-realworld suites. Designed to be runnable on any Node 18+ sandbox without external package installs (no npm install needed) so the benchmark isolates compute/disk/network cost of the sandbox itself from package-install variability.",
+  "main": "src/index.js",
+  "scripts": {
+    "bench": "node src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
