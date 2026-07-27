@@ -35,6 +35,9 @@ importers:
       '@computesdk/beam':
         specifier: ^0.3.0
         version: 0.3.0(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@6.0.6)
+      '@computesdk/bench':
+        specifier: ^0.1.8
+        version: 0.1.9
       '@computesdk/blaxel':
         specifier: ^1.6.18
         version: 1.6.18(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))(bufferutil@4.1.0)(utf-8-validate@6.0.6)
@@ -479,6 +482,10 @@ packages:
 
   '@computesdk/beam@0.3.0':
     resolution: {integrity: sha512-fdKdtyCutMPnsiIopG83eAs3K7qdW7EZEEE1UA237L6XlJlG9hnfs4ZM3BrIIggtN184KyWMurg8oh+W7sSriw==}
+
+  '@computesdk/bench@0.1.9':
+    resolution: {integrity: sha512-nXXOZdkYfgzAVkynKveTiGBdKQ2WqvkISW77FoxU2wml20cGUojBIu32oYSi0B662K7WOMNWkTwC2GdwGDPvhg==}
+    engines: {node: '>=18.0.0'}
 
   '@computesdk/blaxel@1.6.18':
     resolution: {integrity: sha512-gAOfdkzbRKOe1jSIGi5jXyzPBxU3bp81HwKtm6R19f//5PkV1tQv+m3RtPTIQTxi37Wv4DATyBAp289znfJwwQ==}
@@ -5569,6 +5576,8 @@ snapshots:
       - typescript
       - utf-8-validate
 
+  '@computesdk/bench@0.1.9': {}
+
   '@computesdk/blaxel@1.6.18(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
     dependencies:
       '@blaxel/core': 0.3.6(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))(bufferutil@4.1.0)(utf-8-validate@6.0.6)
@@ -5853,15 +5862,15 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
-  '@connectrpc/connect-node@2.1.2(@bufbuild/protobuf@2.12.1)(@connectrpc/connect@2.1.2(@bufbuild/protobuf@2.12.1))':
+  '@connectrpc/connect-node@2.1.2(@bufbuild/protobuf@2.12.1)(@connectrpc/connect@2.1.2(@bufbuild/protobuf@2.13.0))':
     dependencies:
       '@bufbuild/protobuf': 2.12.1
-      '@connectrpc/connect': 2.1.2(@bufbuild/protobuf@2.12.1)
+      '@connectrpc/connect': 2.1.2(@bufbuild/protobuf@2.13.0)
 
-  '@connectrpc/connect-web@2.1.2(@bufbuild/protobuf@2.13.0)(@connectrpc/connect@2.1.2(@bufbuild/protobuf@2.12.1))':
+  '@connectrpc/connect-web@2.1.2(@bufbuild/protobuf@2.13.0)(@connectrpc/connect@2.1.2(@bufbuild/protobuf@2.13.0))':
     dependencies:
       '@bufbuild/protobuf': 2.13.0
-      '@connectrpc/connect': 2.1.2(@bufbuild/protobuf@2.12.1)
+      '@connectrpc/connect': 2.1.2(@bufbuild/protobuf@2.13.0)
 
   '@connectrpc/connect@2.1.2(@bufbuild/protobuf@2.12.1)':
     dependencies:
@@ -7299,7 +7308,7 @@ snapshots:
     dependencies:
       '@bufbuild/protobuf': 2.12.1
       '@connectrpc/connect': 2.1.2(@bufbuild/protobuf@2.12.1)
-      '@connectrpc/connect-node': 2.1.2(@bufbuild/protobuf@2.12.1)(@connectrpc/connect@2.1.2(@bufbuild/protobuf@2.12.1))
+      '@connectrpc/connect-node': 2.1.2(@bufbuild/protobuf@2.12.1)(@connectrpc/connect@2.1.2(@bufbuild/protobuf@2.13.0))
       ws: 8.21.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     transitivePeerDependencies:
       - bufferutil
@@ -8124,7 +8133,7 @@ snapshots:
     dependencies:
       '@bufbuild/protobuf': 2.13.0
       '@connectrpc/connect': 2.1.2(@bufbuild/protobuf@2.13.0)
-      '@connectrpc/connect-web': 2.1.2(@bufbuild/protobuf@2.13.0)(@connectrpc/connect@2.1.2(@bufbuild/protobuf@2.12.1))
+      '@connectrpc/connect-web': 2.1.2(@bufbuild/protobuf@2.13.0)(@connectrpc/connect@2.1.2(@bufbuild/protobuf@2.13.0))
       chalk: 5.6.2
       compare-versions: 6.1.1
       dockerfile-ast: 0.7.1
