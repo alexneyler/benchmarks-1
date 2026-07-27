@@ -82,6 +82,7 @@
     "generate-browser-throughput-svg": "tsx benchmarks/browser/generate-throughput-svg.ts",
     "generate-pricing-svg": "tsx benchmarks/sandbox/generate-pricing-svg.ts",
     "bench:ai-gateway": "tsx benchmarks/src/run.ts --mode ai-gateway",
+    "bench:ai-gateway:sdk": "tsx benchmarks/ai-gateway/ai-gateway.bench.ts",
     "bench:ai-gateway:openrouter": "tsx benchmarks/src/run.ts --mode ai-gateway --provider openrouter",
     "bench:ai-gateway:vercel": "tsx benchmarks/src/run.ts --mode ai-gateway --provider vercel-ai-gateway",
     "bench:ai-gateway:cloudflare": "tsx benchmarks/src/run.ts --mode ai-gateway --provider cloudflare-ai-gateway",
