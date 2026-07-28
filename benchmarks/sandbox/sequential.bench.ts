@@ -8,9 +8,12 @@
  *   tsx benchmarks/sandbox/sequential.bench.ts --iterations 5 --provider e2b,modal
  */
 import '../src/env.js';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineBenchmark, runBenchmark } from '@benchsdk/cli';
 import { providers } from './providers.js';
 import { ttiTask, logTti } from './tti-task.js';
+import { writeSandboxLegacyResults } from './legacy-results.js';
 
 const config = defineBenchmark({
   benchmarkSlug: 'sandbox-tti-local',
@@ -23,8 +26,14 @@ const config = defineBenchmark({
   onResult: logTti,
 });
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 runBenchmark(config, providers, process.argv.slice(2))
-  .then(() => process.exit(0))
+  .then(async (outcome) => {
+    const resultsDir = path.resolve(__dirname, '../../results/sequential_tti');
+    await writeSandboxLegacyResults(outcome.participants, { resultsDir });
+    process.exit(0);
+  })
   .catch((err) => {
     console.error('Benchmark failed:', err);
     process.exit(1);
