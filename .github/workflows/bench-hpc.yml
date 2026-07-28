@@ -5,28 +5,25 @@ on:
     branches: [master]
     paths:
       - 'benchmarks/hpc/**'
-      - 'benchmarks/src/run.ts'
       - 'benchmarks/scripts/hpc-smoke.ts'
       - 'benchmarks/scripts/build-hpc-bundles.ts'
       - 'benchmarks/scripts/ensure-hpc-bundle.ts'
+      - 'benchmarks/src/run.ts'
+      - 'benchmarks/scripts/load-vault-secrets.sh'
       - 'package.json'
       - '.github/workflows/bench-hpc.yml'
   schedule:
-    - cron: '0 4 * * *' # Daily at 04:00 UTC; bench: matrix updates nightly.
+    - cron: '0 4 * * *' # Daily at 04:00 UTC; the matrix job fans out here.
   workflow_dispatch:
     inputs:
       replicas:
-        description: 'HPC replicates per (provider, suite)'
+        description: 'Replicates per (provider, suite). Dev signal is fine at R=3; weekly-extended is R=12.'
         required: false
         default: '3'
       provider:
-        description: 'Provider to run (leave empty for full matrix)'
+        description: 'Provider filter (leave empty for the full 3-provider matrix)'
         required: false
         default: ''
-      suite_id:
-        description: 'Optional suite filter (e.g. cpu-node / memory / all)'
-        required: false
-        default: 'all'
       dry_run:
         description: 'Run without ingesting or committing results'
         required: false
@@ -41,14 +38,13 @@ permissions:
   contents: write
   pull-requests: write
 
-# R=3 is the default in workflow_dispatch. Nightly schedule keeps R=3
-# for fast daily signal; the manually-triggered "extended matrix" job
-# (see `matrix-extended:`) bumps to R=12 weekly ceiling-tuning.
+# The matrix fans out (provider x suite_id). Each cell uses
+# args.hpc-replicas (default 3 in CI; nightly extended R=12 below).
 jobs:
   matrix:
     name: HPC ${{ matrix.provider }} ${{ matrix.suite_id }}
-    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:describe
-    timeout-minutes: 45 # cpu-node + realworld + pgbench at R=3 is ~3-4 min; buffer for slower runs.
+    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    timeout-minutes: 45 # cpu-node + realworld + pgbench at R=3 is ~3-4 min; bigger buffer for stack-cgroup sandboxes.
     strategy:
       fail-fast: false
       matrix:
@@ -61,9 +57,9 @@ jobs:
           - memory
           - disk
           - network-localhost
+          - network-wan
           - system
           - pgbench
-          - network-wan
           - realworld
           - latency
           - dns
@@ -76,6 +72,7 @@ jobs:
           node-version: 24
           cache: 'pnpm'
       - name: Install dependencies
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.provider == '' || github.event.inputs.provider == matrix.provider
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             pnpm update
@@ -83,22 +80,25 @@ jobs:
             pnpm install --frozen-lockfile
           fi
       - name: Build HPC bundles
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.provider == '' || github.event.inputs.provider == matrix.provider
         run: pnpm run build:hpc-bundles
-      - name: Load ${{ matrix.provider }} secrets from Namespace vault
-        run: |
-          nsc version ensure --at_least 0.0.550
-          node benchmarks/scripts/write-vault-envdef.mjs --mode sandbox --provider ${{ matrix.provider }} > /tmp/vault.envdef
-          eval "$(nsc vault export --envdef /tmp/vault.envdef --shell=bash)"
-        continue-on-error: true
+      - name: Clear stale results from checkout
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.provider == '' || github.event.inputs.provider == matrix.provider
+        run: rm -rf results/
       - name: Run HPC benchmark
+        # Vault is loaded as one step so an empty KEYS filter (provider not
+        # yet wired) fails fast with a clear ::error:: instead of letting a
+        # downstream orchestrator call exit non-zero on a missing API key.
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.provider == '' || github.event.inputs.provider == matrix.provider
         run: |
+          . benchmarks/scripts/load-vault-secrets.sh '^(E2B_API_KEY|DAYTONA_API_KEY|MODAL_TOKEN_ID|MODAL_TOKEN_SECRET|NSC_TOKEN)'
+
           pnpm run bench -- \
             --provider ${{ matrix.provider }} \
             --mode hpc-${{ matrix.suite_id }} \
-            --hpc-replicas ${{ github.event.inputs.replicas || '3' }}
-        continue-on-error: true
+            --hpc-replicas ${{ github.event.inputs.replicas || (github.event_name == 'push' && '3') || '3' }}
       - name: Upload results
-        if: always()
+        if: always() && (github.event_name != 'workflow_dispatch' || github.event.inputs.provider == '' || github.event.inputs.provider == matrix.provider)
         uses: actions/upload-artifact@v4
         with:
           name: results-${{ matrix.provider }}-hpc-${{ matrix.suite_id }}
@@ -106,14 +106,60 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  weekly-extended:
+    name: HPC R=12 ${{ matrix.provider }} ${{ matrix.suite_id }}
+    # Weekly ceiling-tuning run: piggybacks on the daily 04:00 UTC
+    # schedule (running it on the same nodepool keeps artifact naming /
+    # upload pipelines consistent with the always-on matrix).
+    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    timeout-minutes: 90
+    needs: matrix
+    if: github.event_name == 'schedule'
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: [e2b, daytona]
+        suite_id: [cpu-node, memory, system, pgbench, disk]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build HPC bundles
+        run: pnpm run build:hpc-bundles
+      - name: Clear stale results from checkout
+        run: rm -rf results/
+      - name: Run HPC R=12 ceiling-tuning benchmark
+        run: |
+          . benchmarks/scripts/load-vault-secrets.sh '^(E2B_API_KEY|DAYTONA_API_KEY|NSC_TOKEN)'
+          pnpm run bench -- \
+            --provider ${{ matrix.provider }} \
+            --mode hpc-${{ matrix.suite_id }} \
+            --hpc-replicas 12
+      - name: Upload extended results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: extended-${{ matrix.provider }}-hpc-${{ matrix.suite_id }}
+          path: results/
+          if-no-files-found: ignore
+          retention-days: 30
+
   collect:
     name: Collect HPC Results
-    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:describe
-    needs: matrix
+    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    needs: [matrix, weekly-extended]
     if: always()
     steps:
       - uses: actions/checkout@v4
         with:
+          # Full history so the rebase-on-push retry below has a merge base.
+          # A shallow (depth-1) clone can make `git rebase origin/<branch>`
+          # fail when the remote has advanced past the shallow boundary.
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -134,17 +180,20 @@ jobs:
           pattern: results-*
       - name: Generate SVG leaderboard + per-suite charts
         run: pnpm run generate-hpc-svg
-      - name: Load ingest secrets from Namespace vault
-        if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
-        continue-on-error: true
-        run: |
-          nsc version ensure --at_least 0.0.550
-          node benchmarks/scripts/write-vault-envdef.mjs INGEST_URL INGEST_SECRET > /tmp/vault.envdef
-          eval "$(nsc vault export --envdef /tmp/vault.envdef --shell=bash)"
+      - name: Upload SVGs as artifacts
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hpc-benchmark-svgs
+          path: 'hpc_*.svg'
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Ingest results to platform
         if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
-        continue-on-error: true
-        run: npx tsx benchmarks/src/ingest.ts --type hpc
+        continue-on-error: true  # ingest is best-effort (see the ingest step); don't fail the job if secrets aren't seeded yet
+        run: |
+          . benchmarks/scripts/load-vault-secrets.sh '^(INGEST_URL|INGEST_SECRET)'
+          npx tsx benchmarks/src/ingest.ts --type hpc
       - name: Post results to merged PR
         if: github.event_name == 'push'
         continue-on-error: true
@@ -156,25 +205,68 @@ jobs:
 
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const resultsDir = 'results';
-            const suites = fs.readdirSync(resultsDir).filter(d => d.startsWith('hpc_') && fs.existsSync(path.join(resultsDir, d, 'latest.json')));
+            const suiteDirs = fs.readdirSync(resultsDir)
+              .filter(d => d.startsWith('hpc_') && fs.existsSync(path.join(resultsDir, d, 'latest.json')))
+              .sort();
 
             let body = '## HPC Benchmark Results\n\n';
-            body += '| Provider | Suite | Score | Median | Unit | n | Status |\n';
-            body += '|----------|-------|------:|-------:|------|--:|--------|\n';
-            let rows = 0;
-            for (const suiteDir of suites) {
+            let hasResults = false;
+
+            for (const suiteDir of suiteDirs) {
+              const latestPath = path.join(resultsDir, suiteDir, 'latest.json');
+              const data = JSON.parse(fs.readFileSync(latestPath, 'utf-8'));
+              const results = (data.results || [])
+                .filter(r => !r.skipped)
+                .sort((a, b) => (b.compositeScore || 0) - (a.compositeScore || 0));
+              if (results.length === 0) continue;
+              hasResults = true;
+
+              const suite = suiteDir.replace(/^hpc_/, '').replace(/_/g, '-');
+              body += `### ${suite}\n\n`;
+              body += '| # | Provider | Score | Median | Unit | Status |\n';
+              body += '|---|----------|------:|-------:|------|--------|\n';
+              results.forEach((r, i) => {
+                const score = r.compositeScore !== undefined ? r.compositeScore.toFixed(1) : '--';
+                const value = r.metric && r.metric.value != null
+                  ? (r.metric.unit === 'mb_per_s' ? r.metric.value.toFixed(1)
+                    : r.metric.unit === 'gb_per_s' ? r.metric.value.toFixed(2)
+                    : r.metric.value.toFixed(1)) : '--';
+                const unit = (r.metric && r.metric.unit) || '';
+                const ok = (r.iterations || []).filter(it => !it.error).length;
+                const total = (r.iterations || []).length;
+                body += `| ${i + 1} | ${r.provider} | ${score} | ${value} | ${unit} | ${ok}/${total} |\n`;
+              });
+              body += '\n';
+            }
+
+            // Cross-provider leaderboard summary
+            const summary = {};
+            for (const suiteDir of suiteDirs) {
               const data = JSON.parse(fs.readFileSync(path.join(resultsDir, suiteDir, 'latest.json'), 'utf-8'));
               for (const r of (data.results || [])) {
                 if (r.skipped) continue;
-                rows++;
-                const ok = (r.iterations || []).filter(it => !it.error).length;
-                const total = (r.iterations || []).length;
-                body += `| ${r.provider} | ${r.suite} | ${(r.compositeScore || 0).toFixed(1)} | ${(r.metric && r.metric.value != null ? r.metric.value : 0).toFixed(2)} | ${(r.metric && r.metric.unit) || ''} | ${total} | ${ok}/${total} OK |\n`;
+                if (!summary[r.provider]) summary[r.provider] = { total: 0, count: 0 };
+                summary[r.provider].total += (r.compositeScore || 0);
+                summary[r.provider].count += 1;
               }
             }
-            if (rows === 0) body += '> No HPC benchmark results were generated.\n';
-            body += `\n---\n*[View full run](${runUrl})*`;
+            const summaryRows = Object.entries(summary).sort((a, b) => (b[1].total / b[1].count) - (a[1].total / a[1].count));
+            if (summaryRows.length > 0) {
+              body += `### Mean composite\n\n`;
+              body += `| # | Provider | Mean | n |\n`;
+              body += `|---|----------|-----:|--:|\n`;
+              summaryRows.forEach(([provider, agg], i) => {
+                body += `| ${i + 1} | ${provider} | ${(agg.total / agg.count).toFixed(1)} | ${agg.count} |\n`;
+              });
+              body += '\n';
+            }
 
+            if (!hasResults) {
+              body += '> No HPC benchmark results were generated.\n\n';
+            }
+            body += `---\n*[View full run](${runUrl}) · SVGs available as [build artifacts](${runUrl}#artifacts)*`;
+
+            // This push is a merge to master — post results to the PR it closed.
             const target = context.ref.replace('refs/heads/', '');
             const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
               owner: context.repo.owner,
@@ -199,7 +291,6 @@ jobs:
               issue_number: pr.number,
               per_page: 100,
             });
-
             const existing = comments.find(c => c.body.startsWith(marker));
             if (existing) {
               await github.rest.issues.updateComment({
@@ -221,7 +312,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add results/ 'hpc_*.svg'
+          git add results/ hpc_*.svg
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "chore: update HPC benchmark results [skip ci]"
 
@@ -237,47 +328,3 @@ jobs:
           done
           echo "Failed to push after multiple attempts" >&2
           exit 1
-
-  weekly-extended:
-    name: HPC Extended (R=12 ceiling tuning)
-    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:describe
-    timeout-minutes: 60
-    needs: matrix
-    if: github.event_name == 'schedule' # weekly extended run piggybacks on nightly schedule
-    strategy:
-      fail-fast: false
-      matrix:
-        provider: [e2b, daytona]
-        suite_id: [cpu-node, memory, pgbench, system, disk]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Build HPC bundles
-        run: pnpm run build:hpc-bundles
-      - name: Load ${{ matrix.provider }} secrets from Namespace vault
-        continue-on-error: true
-        run: |
-          nsc version ensure --at_least 0.0.550
-          node benchmarks/scripts/write-vault-envdef.mjs --mode sandbox --provider ${{ matrix.provider }} > /tmp/vault.envdef
-          eval "$(nsc vault export --envdef /tmp/vault.envdef --shell=bash)"
-      - name: Run HPC R=12 ceiling-tuning benchmark
-        run: |
-          pnpm run bench -- \
-            --provider ${{ matrix.provider }} \
-            --mode hpc-${{ matrix.suite_id }} \
-            --hpc-replicas 12
-        continue-on-error: true
-      - name: Upload extended results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: extended-${{ matrix.provider }}-hpc-${{ matrix.suite_id }}
-          path: results/
-          if-no-files-found: ignore
-          retention-days: 30
