@@ -38,7 +38,7 @@ const DAX_RESOURCE_OPTIONS: Record<string, Record<string, any>> = {
   opencomputer: { cpuCount: 4, memoryMB: 16384, timeout: 600_000 },
 };
 
-function getSandboxOptionsWithResources(providerName: string, baseOptions?: Record<string, any>): Record<string, any> {
+export function getSandboxOptionsWithResources(providerName: string, baseOptions?: Record<string, any>): Record<string, any> {
   const resourceOpts = DAX_RESOURCE_OPTIONS[providerName];
   if (!resourceOpts) return baseOptions ?? {};
   return { ...baseOptions, ...resourceOpts };
@@ -165,7 +165,7 @@ export async function runDaxBenchmark(config: ProviderConfig): Promise<DaxBenchm
   };
 }
 
-async function runDaxIteration(sandbox: any, providerName: string, timeout: number): Promise<DaxTimingResult> {
+export async function runDaxIteration(sandbox: any, providerName: string, timeout: number): Promise<DaxTimingResult> {
   // Load the benchmark script from the local filesystem rather than fetching
   // it over HTTP inside the sandbox. This eliminates a curl dependency
   // (several providers don't ship curl in their sandboxes).
@@ -274,7 +274,7 @@ async function runDaxIteration(sandbox: any, providerName: string, timeout: numb
   };
 }
 
-function summarize(results: DaxTimingResult[]): DaxBenchmarkResult['summary'] {
+export function summarize(results: DaxTimingResult[]): DaxBenchmarkResult['summary'] {
   const empty = { median: 0, p95: 0, p99: 0 };
   const pick = (key: keyof DaxTimingResult) => {
     const values = results.map(r => r[key]).filter((v): v is number => typeof v === 'number' && v > 0);
@@ -291,7 +291,7 @@ function summarize(results: DaxTimingResult[]): DaxBenchmarkResult['summary'] {
   };
 }
 
-function emptySummary(): DaxBenchmarkResult['summary'] {
+export function emptySummary(): DaxBenchmarkResult['summary'] {
   const empty = { median: 0, p95: 0, p99: 0 };
   return { totalMs: empty, prepareMs: empty, bunDownloadMs: empty, bunUnpackMs: empty, cloneMs: empty, installMs: empty, typecheckMs: empty };
 }
