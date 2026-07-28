@@ -21,12 +21,17 @@
  *   tsx benchmarks/ai-gateway/ai-gateway.bench.ts --provider openrouter
  */
 import '../src/env.js';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineBenchmark, runBenchmark, TaskError } from '@benchsdk/cli';
 import type { TaskContext, TaskResult } from '@benchsdk/cli';
 import type { JsonObject, TaskResultRecord, TaskStepRecord } from '@benchsdk/client';
 import { runColdProbe, runWarmProbe } from './phase-probe.js';
 import { providers } from './providers.js';
 import type { AIGatewayProviderConfig, PhaseProbeResult } from './types.js';
+import { writeAIGatewayLegacyResults } from './legacy-results.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Request parameters match run.ts's AI Gateway defaults exactly (identical
 // across every gateway is load-bearing for fairness — see AI_GATEWAYS.md).
@@ -56,6 +61,7 @@ function probeData(result: PhaseProbeResult): JsonObject {
     ...(result.outputTokens !== undefined ? { outputTokens: result.outputTokens } : {}),
     ...(result.outputTokensPerSec !== undefined ? { outputTokensPerSec: result.outputTokensPerSec } : {}),
     ...(result.receipts && Object.keys(result.receipts).length > 0 ? { receipts: result.receipts } : {}),
+    ...(result.error ? { errorMessage: result.error } : {}),
   };
 }
 
@@ -105,7 +111,11 @@ const config = defineBenchmark({
 });
 
 runBenchmark(config, providers, process.argv.slice(2))
-  .then(() => process.exit(0))
+  .then(async (outcome) => {
+    const resultsDir = path.resolve(__dirname, '../../results/ai-gateway');
+    await writeAIGatewayLegacyResults(outcome.participants, { resultsDir, providers });
+    process.exit(0);
+  })
   .catch((err) => {
     console.error('Benchmark failed:', err);
     process.exit(1);

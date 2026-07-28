@@ -10,9 +10,14 @@
  *   tsx benchmarks/sandbox/staggered.bench.ts --iterations 10 --concurrency 10 --stagger-delay-ms 200
  */
 import '../src/env.js';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineBenchmark, runBenchmark } from '@benchsdk/cli';
 import { providers } from './providers.js';
 import { ttiTask, logTti } from './tti-task.js';
+import { writeSandboxLegacyResults } from './legacy-results.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const config = defineBenchmark({
   benchmarkSlug: 'sandbox-staggered-local',
@@ -27,7 +32,11 @@ const config = defineBenchmark({
 });
 
 runBenchmark(config, providers, process.argv.slice(2))
-  .then(() => process.exit(0))
+  .then(async (outcome) => {
+    const resultsDir = path.resolve(__dirname, '../../results/staggered_tti');
+    await writeSandboxLegacyResults(outcome.participants, { resultsDir, mode: 'staggered' });
+    process.exit(0);
+  })
   .catch((err) => {
     console.error('Benchmark failed:', err);
     process.exit(1);
