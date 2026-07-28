@@ -20,14 +20,12 @@ import { ensureHpcBundleForRun } from '../scripts/ensure-hpc-bundle.js';
  *
  * Each replicate:
  *   - creates a fresh sandbox via ComputeSDK
- *   - uploads the workload script (and any upload bundle) via base64 heredoc
- *   - executes `node /tmp/hpc/<workload>.js`
- *   - parses the last WorkloadResult JSON line
+ *   - uploads the workload script (+ stdout helper + bundle) and executes
+ *     `node /tmp/hpc/<workload>.js` in a SINGLE runCommand call (matching
+ *     the dax.ts pattern — multiple runCommand calls don't reliably share
+ *     filesystem state on all providers)
+ *   - parses the last WorkloadResult JSON line from stdout
  *   - destroys the sandbox unconditionally
- *
- * Per-spec the orchestrator does NOT parallelize replicates within a cell —
- * matches the upstream benchmark convention for I/O-touching suites. The
- * full nightly matrix is what fans out across providers/suites in parallel.
  */
 export async function runHpcBenchmark(opts: {
   provider: ProviderConfig;
@@ -55,6 +53,25 @@ export async function runHpcBenchmark(opts: {
     };
   }
 
+  // Pre-read all payload files ONCE (outside the replicate loop) so
+  // repeated replicates don't re-read from disk.
+  const payload = buildPayload(suite);
+  if (!payload.ok) {
+    return {
+      provider: provider.name,
+      suite: suite.id,
+      mode: 'hpc',
+      iterations: [{
+        ok: false, suite: suite.id, reason: 'error',
+        error: payload.error, meta: {},
+      }],
+      summary: emptyStats(suite),
+      wallClockMs: 0,
+      replicateMs: [],
+      compositeScore: 0,
+    };
+  }
+
   const iterations: WorkloadResult[] = [];
   const replicateMs: number[] = [];
 
@@ -65,49 +82,33 @@ export async function runHpcBenchmark(opts: {
     const bundleCheck = ensureHpcBundleForRun(suite.bundle);
     if (!bundleCheck.ok) {
       iterations.push({
-        ok: false,
-        suite: suite.id,
-        reason: 'gap',
-        error: bundleCheck.reason,
-        meta: {},
+        ok: false, suite: suite.id, reason: 'gap',
+        error: bundleCheck.reason, meta: {},
       });
       replicateMs.push(performance.now() - rStart);
-      // Replicate gap count as wall-clock but don't try to run anything else.
       continue;
     }
 
     let sandbox: any = null;
-    let compute: any = null;
-    let fixtureUploadError: string | undefined;
     try {
-      compute = provider.createCompute();
+      const compute = provider.createCompute();
       sandbox = await withTimeout(
         compute.sandbox.create(provider.sandboxOptions),
         provider.timeout ?? 120_000,
         'Sandbox creation timed out',
       );
 
-      // Build the workload payload (script + stdout helper + bundle), then
-      // upload via separate runCommand calls so the per-call argv fits
-      // typical provider limits (~256 KiB on most ComputeSDK gateways).
-      const payload = buildWorkloadPayload({ suite, provider });
-      if (!payload.ok) {
-        iterations.push({
-          ok: false,
-          suite: suite.id,
-          reason: 'error',
-          error: payload.error,
-          meta: {},
-        });
-        continue;
+      // If the bundle is too large for a single heredoc, upload it
+      // separately first via chunked runCommand calls.
+      if (payload.bundleLarge) {
+        await uploadBundleChunked(sandbox, payload.bundleB64!);
       }
 
-      await uploadPayload(sandbox, payload.parts);
-
-      const envExports = `HPC_FIXTURE_ROOT=/tmp/hpc/fixture${payload.fixtureVersion ? ` HPC_FIXTURE_VERSION=${payload.fixtureVersion}` : ''}`;
-
+      // Build the single shell command that writes scripts via heredocs,
+      // extracts the bundle (if small enough to inline), and runs node.
+      const shellCmd = buildSingleCommand(suite, payload);
       const result = await withTimeout(
-        sandbox.runCommand(`${envExports} node /tmp/hpc/${payload.scriptName}`, { timeout: suite.timeoutMs }),
+        sandbox.runCommand(shellCmd, { timeout: suite.timeoutMs }),
         suite.timeoutMs,
         `${suite.id} workload timed out`,
       ) as { exitCode: number; stdout?: string; stderr?: string };
@@ -115,11 +116,8 @@ export async function runHpcBenchmark(opts: {
       if (result.exitCode !== 0) {
         const errTail = (result.stderr || '').slice(-500);
         iterations.push({
-          ok: false,
-          suite: suite.id,
-          reason: 'error',
-          error: `non-zero exit: ${errTail || 'no stderr'}`,
-          meta: {},
+          ok: false, suite: suite.id, reason: 'error',
+          error: `non-zero exit: ${errTail || 'no stderr'}`, meta: {},
         });
       } else {
         iterations.push(parseWorkloadResult(result.stdout || '', suite.id));
@@ -127,11 +125,8 @@ export async function runHpcBenchmark(opts: {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       iterations.push({
-        ok: false,
-        suite: suite.id,
-        reason: classifyError(message),
-        error: fixtureUploadError ? `${fixtureUploadError}: ${message}` : message,
-        meta: {},
+        ok: false, suite: suite.id, reason: classifyError(message),
+        error: message, meta: {},
       });
     } finally {
       replicateMs.push(performance.now() - rStart);
@@ -173,16 +168,9 @@ export async function runHpcBenchmark(opts: {
 
 function emptyStats(suite: HpcSuite) {
   return {
-    median: 0,
-    p95: 0,
-    p99: 0,
-    min: 0,
-    max: 0,
-    successRate: 0,
-    n: 0,
-    scoreBeforeReliability: 0,
-    compositeScore: 0,
-    meta: {},
+    median: 0, p95: 0, p99: 0, min: 0, max: 0,
+    successRate: 0, n: 0, scoreBeforeReliability: 0,
+    compositeScore: 0, meta: {},
   };
 }
 
@@ -194,8 +182,7 @@ function classifyError(message: string): FailureReason {
 
 function unitLabel(suite: HpcSuite): string {
   switch (suite.unit) {
-    case 'ms':
-    case 'rtt_ms': return 'ms';
+    case 'ms': case 'rtt_ms': return 'ms';
     case 'mb_per_s': return ' MB/s';
     case 'gb_per_s': return ' GB/s';
     case 'iops': return ' IOPS';
@@ -204,52 +191,36 @@ function unitLabel(suite: HpcSuite): string {
   }
 }
 
-// ---- Split-upload plumbing ---------------------------------------------
-//
-// We split the workload payload (script + stdout helper + bundle) into
-// B64_CHUNK byte heredocs and emit one runCommand call per chunk. This
-// stays under the typical ComputeSDK gateway argv ceiling (~256 KiB) even
-// for the largest bundle (sql.js + sql-wasm.wasm at ~700 KB total).
+// ---- Payload + single-command builder ----------------------------------
 
-interface PayloadPart {
-  /** Remote path inside /tmp/hpc where the chunk should land. */
-  targetPath: string;
-  /** base64-encoded chunk content. */
-  b64: string;
-  /** Marker used by the heredoc — deterministic per (targetPath, idx). */
-  marker: string;
-}
+const WORKLOAD_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'workload');
+const BUNDLE_INLINE_LIMIT = 180 * 1024; // 180 KiB base64 — safe under 256 KiB argv
 
-interface WorkloadPayload {
+interface Payload {
   ok: true;
-  scriptName: string;          // path inside /tmp/hpc (e.g. 'cpu-node.js')
-  parts: PayloadPart[];
+  scriptName: string;
+  scriptContent: string;
+  stdoutContent: string;
+  bundleB64: string | null;
+  bundleLarge: boolean;     // true → upload separately before the main command
   fixtureVersion?: string;
 }
-interface WorkloadPayloadErr {
-  ok: false;
-  error: string;
-}
+interface PayloadErr { ok: false; error: string }
 
-const B64_CHUNK = 60 * 1024; // 60 KiB per heredoc -> safe under 256 KiB argv
-
-function buildWorkloadPayload(opts: {
-  suite: HpcSuite;
-  provider: ProviderConfig;
-}): WorkloadPayload | WorkloadPayloadErr {
-  const workloadPath = path.join(WORKLOAD_DIR, path.basename(opts.suite.workloadPath));
+function buildPayload(suite: HpcSuite): Payload | PayloadErr {
+  const workloadPath = path.join(WORKLOAD_DIR, path.basename(suite.workloadPath));
   if (!fs.existsSync(workloadPath)) {
     return { ok: false, error: `Workload script missing on disk: ${workloadPath}` };
   }
-  const scriptB64 = Buffer.from(fs.readFileSync(workloadPath, 'utf8'), 'utf8').toString('base64');
+  const scriptContent = fs.readFileSync(workloadPath, 'utf8');
   const stdoutPath = path.join(WORKLOAD_DIR, 'stdout.js');
-  const stdoutB64 = fs.existsSync(stdoutPath)
-    ? Buffer.from(fs.readFileSync(stdoutPath, 'utf8'), 'utf8').toString('base64')
-    : null;
+  const stdoutContent = fs.existsSync(stdoutPath)
+    ? fs.readFileSync(stdoutPath, 'utf8') : '';
 
   let bundleB64: string | null = null;
-  if (opts.suite.bundle !== 'none') {
-    const bundlePath = getBundlePath(opts.suite.bundle as 'fixture-archive');
+  let bundleLarge = false;
+  if (suite.bundle !== 'none') {
+    const bundlePath = getBundlePath(suite.bundle as 'fixture-archive');
     if (!fs.existsSync(bundlePath)) {
       return {
         ok: false,
@@ -257,69 +228,93 @@ function buildWorkloadPayload(opts: {
       };
     }
     bundleB64 = fs.readFileSync(bundlePath).toString('base64');
+    bundleLarge = bundleB64.length > BUNDLE_INLINE_LIMIT;
   }
 
-  const parts: PayloadPart[] = [];
-  pushChunks(opts.suite.workloadPath, scriptB64, parts);
-  if (stdoutB64 !== null) pushChunks('stdout.js', stdoutB64, parts);
-  if (bundleB64 !== null) pushChunks('bundle.tar.gz', bundleB64, parts);
-
-  const fixtureVersion = opts.suite.bundle === 'fixture-archive' ? getFixtureVersion() : undefined;
+  const fixtureVersion = suite.bundle === 'fixture-archive' ? getFixtureVersion() : undefined;
   return {
     ok: true,
-    scriptName: path.basename(opts.suite.workloadPath),
-    parts,
+    scriptName: path.basename(suite.workloadPath),
+    scriptContent,
+    stdoutContent,
+    bundleB64,
+    bundleLarge,
     fixtureVersion,
   };
 }
 
-const WORKLOAD_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'workload');
-
-function pushChunks(targetPath: string, b64: string, out: PayloadPart[]) {
-  const cleaned = b64.replace(/\s+/g, '');
-  for (let i = 0; i < cleaned.length; i += B64_CHUNK) {
-    const idx = Math.floor(i / B64_CHUNK);
-    out.push({
-      targetPath,
-      b64: cleaned.slice(i, i + B64_CHUNK),
-      marker: `__HPC_${targetPath.replace(/[^A-Za-z0-9]/g, '_')}_${idx.toString(36)}_${Math.random().toString(36).slice(2, 8)}__`,
-    });
-  }
+function randomMarker(prefix: string): string {
+  return `__HPC_${prefix}_${Math.random().toString(36).slice(2, 10)}__`;
 }
 
-async function uploadPayload(sandbox: any, parts: PayloadPart[]): Promise<void> {
-  // Group parts by target so we send one `: > file.b64` truncate followed
-  // by `--MARKER heredoc --MARKER` chunks. We also append a `base64 -d`
-  // post-step via a final runCommand for each destination.
-  const grouped = new Map<string, PayloadPart[]>();
-  for (const p of parts) {
-    if (!grouped.has(p.targetPath)) grouped.set(p.targetPath, []);
-    grouped.get(p.targetPath)!.push(p);
+/**
+ * Build a single shell command that:
+ *   1. Creates /tmp/hpc and /tmp/hpc/fixture
+ *   2. Writes stdout.js and the workload script via raw heredocs
+ *   3. If the bundle is small enough, decodes it from an inline base64 heredoc
+ *      and extracts it to /tmp/hpc/fixture
+ *   4. Runs `node /tmp/hpc/<script>` with the appropriate env vars
+ *
+ * This matches the dax.ts pattern: one runCommand call that does everything.
+ * For large bundles (> 180 KiB base64), the bundle is uploaded separately
+ * via uploadBundleChunked() before this command runs; the command then
+ * just extracts the already-uploaded tarball.
+ */
+function buildSingleCommand(suite: HpcSuite, payload: Payload): string {
+  const lines: string[] = [];
+  lines.push('mkdir -p /tmp/hpc /tmp/hpc/fixture');
+
+  // Write stdout.js helper (raw heredoc — it's a text file)
+  if (payload.stdoutContent) {
+    const m1 = randomMarker('STDOUT');
+    lines.push(`cat > /tmp/hpc/stdout.js <<'${m1}'`);
+    lines.push(payload.stdoutContent);
+    lines.push(m1);
   }
 
-  // Create the target directory first — fresh sandboxes don't have /tmp/hpc.
+  // Write workload script (raw heredoc)
+  const m2 = randomMarker('WORKLOAD');
+  lines.push(`cat > /tmp/hpc/${payload.scriptName} <<'${m2}'`);
+  lines.push(payload.scriptContent);
+  lines.push(m2);
+
+  // Bundle handling
+  if (payload.bundleB64 && !payload.bundleLarge) {
+    // Small bundle: inline as base64 heredoc, decode, extract
+    const m3 = randomMarker('BUNDLE');
+    lines.push(`base64 -d <<'${m3}' > /tmp/hpc/bundle.tar.gz`);
+    lines.push(payload.bundleB64);
+    lines.push(m3);
+    lines.push('tar -xzf /tmp/hpc/bundle.tar.gz -C /tmp/hpc/fixture && rm -f /tmp/hpc/bundle.tar.gz');
+  } else if (payload.bundleB64 && payload.bundleLarge) {
+    // Large bundle was already uploaded via uploadBundleChunked — just extract
+    lines.push('tar -xzf /tmp/hpc/bundle.tar.gz -C /tmp/hpc/fixture && rm -f /tmp/hpc/bundle.tar.gz');
+  }
+
+  // Execute the workload
+  const env = `HPC_FIXTURE_ROOT=/tmp/hpc/fixture${payload.fixtureVersion ? ` HPC_FIXTURE_VERSION=${payload.fixtureVersion}` : ''}`;
+  lines.push(`${env} node /tmp/hpc/${payload.scriptName}`);
+
+  return lines.join('\n');
+}
+
+// ---- Chunked bundle upload (for large bundles only) --------------------
+
+const B64_CHUNK = 60 * 1024;
+
+async function uploadBundleChunked(sandbox: any, bundleB64: string): Promise<void> {
+  const cleaned = bundleB64.replace(/\s+/g, '');
   await sandbox.runCommand('mkdir -p /tmp/hpc');
+  await sandbox.runCommand(': > /tmp/hpc/bundle.tar.gz.b64');
 
-  for (const [targetPath, chunks] of grouped) {
-    // 1. Truncate the temp file. Use : > /tmp/hpc/<name>.b64 (no-op if missing).
-    await sandbox.runCommand(`: > /tmp/hpc/${targetPath}.b64`);
-    // 2. Append each chunk via heredoc.
-    for (const chunk of chunks) {
-      const cmd = `cat >> /tmp/hpc/${targetPath}.b64 <<'${chunk.marker}'\n${chunk.b64}\n${chunk.marker}`;
-      await sandbox.runCommand(cmd);
-    }
-    // 3. base64 -d to materialize the actual file.
-    await sandbox.runCommand(`base64 -d /tmp/hpc/${targetPath}.b64 > /tmp/hpc/${targetPath}`);
-    if (targetPath.endsWith('.js')) {
-      await sandbox.runCommand(`chmod +x /tmp/hpc/${targetPath} || true`);
-    }
-    // 4. Free the .b64 temp file.
-    await sandbox.runCommand(`rm /tmp/hpc/${targetPath}.b64`);
+  for (let i = 0; i < cleaned.length; i += B64_CHUNK) {
+    const idx = Math.floor(i / B64_CHUNK);
+    const chunk = cleaned.slice(i, i + B64_CHUNK);
+    const marker = `__HPC_BUNDLE_${idx.toString(36)}_${Math.random().toString(36).slice(2, 8)}__`;
+    const cmd = `cat >> /tmp/hpc/bundle.tar.gz.b64 <<'${marker}'\n${chunk}\n${marker}`;
+    await sandbox.runCommand(cmd);
   }
 
-  // 5. If a bundle was uploaded, extract it now.
-  const bundle = grouped.has('bundle.tar.gz');
-  if (bundle) {
-    await sandbox.runCommand(`mkdir -p /tmp/hpc/fixture && tar -xzf /tmp/hpc/bundle.tar.gz -C /tmp/hpc/fixture && rm /tmp/hpc/bundle.tar.gz`);
-  }
+  await sandbox.runCommand('base64 -d /tmp/hpc/bundle.tar.gz.b64 > /tmp/hpc/bundle.tar.gz');
+  await sandbox.runCommand('rm /tmp/hpc/bundle.tar.gz.b64');
 }
