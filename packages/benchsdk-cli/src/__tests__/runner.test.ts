@@ -186,7 +186,12 @@ describe('runBenchmark', () => {
       task,
     };
 
-    await runBenchmark(config, participants, []);
+    const outcome = await runBenchmark(config, participants, []);
+
+    expect(outcome.runId).toBe('run-1');
+    expect(outcome.participants.map((p) => p.participant)).toEqual(['e2b', 'modal']);
+    expect(outcome.participants[0].records).toHaveLength(3);
+    expect(outcome.participants[1].records).toHaveLength(3);
 
     expect(calls.upsertBenchmark[0][0]).toBe('sandbox-tti-local');
     expect(calls.upsertBenchmark[0][1]).toMatchObject({ name: 'Sandbox TTI', kind: 'sandbox' });
@@ -270,11 +275,17 @@ describe('runBenchmark', () => {
       return { data: { ok: true }, steps: [{ name: 'probe', status: 'success' as const, latencyMs: 5 }] };
     });
 
-    await runBenchmark(
+    const outcome = await runBenchmark(
       { benchmarkSlug: 'ai-gateway-local', benchmarkName: 'AI GW', iterations: 2, groupBy: 'round', task },
       participants,
       [],
     );
+
+    expect(outcome.participants.map((p) => p.participant)).toEqual(['e2b', 'modal']);
+    expect(outcome.participants[0].records).toHaveLength(2);
+    expect(outcome.participants[1].records).toHaveLength(2);
+    expect(outcome.participants[0].records).toEqual(recorded.e2b);
+    expect(outcome.participants[1].records).toEqual(recorded.modal);
 
     expect(reporterClaim).toHaveBeenCalledTimes(2);
     expect(order).toEqual(['e2b#0', 'modal#0', 'e2b#1', 'modal#1']);

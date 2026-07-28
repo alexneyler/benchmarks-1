@@ -51,6 +51,23 @@ export interface ResolvedRunConfig {
   providers?: string[];
 }
 
+/** One participant's collected task records from a run. */
+export interface ParticipantRecords {
+  participant: string;
+  records: TaskResultRecord[];
+}
+
+/**
+ * Result of a benchmark run. TEMPORARY BRIDGE: exposes the raw per-participant
+ * records so callers can write legacy local JSON results, until the platform
+ * read API can supply per-iteration data + `data` payloads directly.
+ */
+export interface BenchmarkRunOutcome {
+  runId: string;
+  dashboardUrl: string;
+  participants: ParticipantRecords[];
+}
+
 const DEFAULT_PLATFORM_URL = 'http://localhost:3000';
 
 function sleep(ms: number): Promise<void> {
@@ -212,7 +229,7 @@ export async function runBenchmark<T extends BaseParticipant>(
   config: BenchmarkConfig<T>,
   participants: T[],
   argv: string[] = [],
-): Promise<void> {
+): Promise<BenchmarkRunOutcome> {
   const resolved = mergeConfig(config, parseCliArgs(argv));
   const schedule = buildSchedule(config, resolved.iterations);
   const totalTasks = schedule.length;
@@ -257,13 +274,15 @@ export async function runBenchmark<T extends BaseParticipant>(
 
   const onResult = config.onResult ?? defaultOnResult;
 
+  let participantRecords: ParticipantRecords[];
   if (resolved.groupBy === 'round') {
-    await runGroupedByRound(config, schedule, available, resolved, client, run, baseUrl, onResult);
+    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, run, baseUrl, onResult);
   } else {
-    await runGroupedByParticipant(config, schedule, available, resolved, client, run, onResult);
+    participantRecords = await runGroupedByParticipant(config, schedule, available, resolved, client, run, onResult);
   }
 
   console.log(`All done. View at: ${dashboardUrl}`);
+  return { runId: run.id, dashboardUrl, participants: participantRecords };
 }
 
 /**
@@ -281,7 +300,8 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
   client: BenchmarkClient,
   run: BenchmarkRun,
   onResult: OnResult,
-): Promise<void> {
+): Promise<ParticipantRecords[]> {
+  const participantRecords: ParticipantRecords[] = [];
   for (const participant of available) {
     console.log(`${'='.repeat(70)}`);
     console.log(`  Participant: ${participant.name}`);
@@ -315,12 +335,16 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
 
     if (!result.assignment) {
       console.error(`  No pending worker to claim for run ${run.id} — it may already be fully claimed.`);
+      participantRecords.push({ participant: participant.name, records: result.records ?? [] });
       continue;
     }
 
     const ok = result.records.filter((r) => r.status === 'success').length;
     console.log(`  Done: ${ok}/${result.records.length} succeeded.\n`);
+    participantRecords.push({ participant: participant.name, records: result.records });
   }
+
+  return participantRecords;
 }
 
 /**
@@ -338,10 +362,11 @@ async function runGroupedByRound<T extends BaseParticipant>(
   run: BenchmarkRun,
   baseUrl: string,
   onResult: OnResult,
-): Promise<void> {
+): Promise<ParticipantRecords[]> {
   const reporters = new Map<string, BenchmarkReporter | null>();
   const logBuffers = new Map<string, LogBuffer>();
   const failed = new Map<string, boolean>();
+  const recordsByParticipant = new Map<string, TaskResultRecord[]>();
 
   for (const participant of available) {
     logBuffers.set(participant.name, new LogBuffer());
@@ -386,6 +411,10 @@ async function runGroupedByRound<T extends BaseParticipant>(
       if (record.status !== 'success') failed.set(participant.name, true);
       onResult(record, { iterations: schedule.length });
       reporter?.recordResult(record);
+      if (!recordsByParticipant.has(participant.name)) {
+        recordsByParticipant.set(participant.name, []);
+      }
+      recordsByParticipant.get(participant.name)!.push(record);
     }
   }
 
@@ -400,6 +429,8 @@ async function runGroupedByRound<T extends BaseParticipant>(
     await reporter?.finish(failed.get(participant.name) ?? false);
     console.log(`  ${participant.name}: done${failed.get(participant.name) ? ' (with errors)' : ''}.`);
   }
+
+  return available.map((p) => ({ participant: p.name, records: recordsByParticipant.get(p.name) ?? [] }));
 }
 
 /** Merges a task's data payload with the current phase tag (if any). */

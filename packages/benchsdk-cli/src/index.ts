@@ -4,4 +4,4 @@ export { loggedStep } from './logged-step.js';
 export { defineBenchmark, TaskError } from './bench-config.js';
 export type { BenchmarkConfig, BenchmarkTask, TaskContext, TaskResult, Phase, GroupBy } from './bench-config.js';
 export { runBenchmark, parseCliArgs, mergeConfig } from './runner.js';
-export type { CliArgs, ResolvedRunConfig } from './runner.js';
+export type { CliArgs, ResolvedRunConfig, BenchmarkRunOutcome, ParticipantRecords } from './runner.js';
