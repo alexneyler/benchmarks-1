@@ -68,7 +68,9 @@ export interface BenchmarkRunOutcome {
   participants: ParticipantRecords[];
 }
 
-const DEFAULT_PLATFORM_URL = 'http://localhost:3000';
+// Matches @benchsdk/client's DEFAULT_BASE_URL origin. `resolvePlatform()`
+// appends `/api/v1`. Override for local development via BENCHMARKS_PLATFORM_URL.
+const DEFAULT_PLATFORM_URL = 'https://platform.computesdk.com';
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
