@@ -1,42 +1,24 @@
 /**
- * Self-contained dax benchmark: config, orchestration, and the actual
- * in-sandbox probe code all live in this one file, built directly on
- * @benchsdk/client — no bench-config.ts, no run.ts dispatch, no separate
- * "report-run" file. Always reports to benchmarks-platform (no local-only
- * JSON mode).
+ * Dax benchmark: disk write/read throughput + fsync latency, CPU throughput +
+ * steal%, and a pause/resume round-trip, run once per provider. The in-sandbox
+ * probe code lives here; all platform orchestration is owned by @benchsdk/cli's
+ * runBenchmark.
  *
  * Run directly:
  *   tsx benchmarks/sandbox/dax.bench.ts
- *
- * This is the reference pattern for migrating sequential/staggered/burst off
- * the run.ts + sandbox/{benchmark,staggered,concurrent,dax-benchmark}.ts +
- * sandbox/report-run*.ts split. Once verified against real credentials, the
- * old `bench:dax`/`bench:dax:report` path (run.ts's dax handling,
- * sandbox/dax-benchmark.ts, sandbox/report-run-dax.ts, configs/example.dax.ts)
- * can be deleted in favor of this file.
+ *   tsx benchmarks/sandbox/dax.bench.ts --provider e2b,modal
  */
 import '../src/env.js';
-import { createBenchmarkClient } from '@benchsdk/client';
-import type { JsonObject, RunWorkerContext, TaskResultRecord } from '@benchsdk/client';
+import { defineBenchmark, runBenchmark } from '@benchsdk/cli';
+import type { TaskContext } from '@benchsdk/cli';
+import type { JsonObject, TaskResultRecord } from '@benchsdk/client';
 import { withTimeout } from '../src/util/timeout.js';
 import { formatError } from '../src/util/error.js';
-import { LogBuffer, uploadWorkerLog, loggedStep } from '@benchsdk/cli';
 import { providers } from './providers.js';
 import type { ProviderConfig } from './types.js';
 
-// ---------------------------------------------------------------------------
-// Config — everything about *this* benchmark run.
-// ---------------------------------------------------------------------------
-const benchmarkSlug = 'sandbox-dax-local';
-const benchmarkName = 'Dax sandbox benchmark (local)';
-const providerNames = ['e2b', 'modal', 'tensorlake'];
-const iterations = 1;
 const timeout = 120_000;
 const destroyTimeoutMs = 15_000;
-
-const baseUrl = (process.env.BENCHMARKS_PLATFORM_URL || 'http://localhost:3000').replace(/\/+$/, '') + '/api/v1';
-const orgSlug = process.env.BENCHMARKS_PLATFORM_ORG_SLUG || 'computesdk';
-const client = createBenchmarkClient({ baseUrl });
 
 // ---------------------------------------------------------------------------
 // Task — the actual code this benchmark measures inside each sandbox.
@@ -269,102 +251,54 @@ async function runPauseResumeProbe(sandbox: any): Promise<{ pauseMs?: number; re
 }
 
 // ---------------------------------------------------------------------------
-// Orchestration — loop the configured providers, each as its own participant
-// on one shared platform run.
+// Task — one dax probe pass inside a freshly created sandbox.
 // ---------------------------------------------------------------------------
 
-async function runProvider(providerConfig: ProviderConfig, runId: string): Promise<void> {
-  const missing = providerConfig.requiredEnvVars.filter((v) => !process.env[v]);
-  if (missing.length > 0) {
-    console.log(`\nSkipping ${providerConfig.name}: missing ${missing.join(', ')}`);
-    return;
+async function daxTask(ctx: TaskContext<ProviderConfig>): Promise<JsonObject> {
+  const { participant, step } = ctx;
+  const compute = participant.createCompute();
+
+  const sandbox = await step<any>('create', () =>
+    withTimeout(compute.sandbox.create(participant.sandboxOptions), participant.timeout ?? timeout, 'Sandbox creation timed out'),
+  );
+  try {
+    const disk = await step('disk-probe', () => runDiskProbe(sandbox));
+    const cpu = await step('cpu-probe', () => runCpuProbe(sandbox));
+    const pauseResume = await step('pause-resume-probe', () => runPauseResumeProbe(sandbox));
+    return { ...disk, ...cpu, ...pauseResume } as unknown as JsonObject;
+  } finally {
+    await step('destroy', () =>
+      withTimeout(sandbox.destroy(), participant.destroyTimeoutMs ?? destroyTimeoutMs, 'Destroy timeout'),
+      { reportConcurrency: false },
+    ).catch((err) => console.warn(`    [cleanup] destroy failed: ${formatError(err)}`));
   }
-
-  console.log(`\n${'='.repeat(70)}`);
-  console.log(`  Provider: ${providerConfig.name}  Iterations: ${iterations}`);
-  console.log('='.repeat(70));
-
-  const compute = providerConfig.createCompute();
-  const logBuffer = new LogBuffer();
-
-  await client.planWorkers(benchmarkSlug, runId, providerConfig.name);
-
-  const task = async (ctx: RunWorkerContext): Promise<JsonObject> => {
-    const sandbox = await loggedStep<any>(ctx, logBuffer, 'create', () =>
-      withTimeout(compute.sandbox.create(providerConfig.sandboxOptions), timeout, 'Sandbox creation timed out'),
-    );
-    try {
-      const disk = await loggedStep(ctx, logBuffer, 'disk-probe', () => runDiskProbe(sandbox));
-      const cpu = await loggedStep(ctx, logBuffer, 'cpu-probe', () => runCpuProbe(sandbox));
-      const pauseResume = await loggedStep(ctx, logBuffer, 'pause-resume-probe', () => runPauseResumeProbe(sandbox));
-      return { ...disk, ...cpu, ...pauseResume } as unknown as JsonObject;
-    } finally {
-      await loggedStep(ctx, logBuffer, 'destroy', () => withTimeout(sandbox.destroy(), destroyTimeoutMs, 'Destroy timeout'), { reportConcurrency: false })
-        .catch((err) => console.warn(`    [cleanup] destroy failed: ${formatError(err)}`));
-    }
-  };
-
-  const result = await client.runWorker({
-    benchmarkSlug,
-    runId,
-    participantSlug: providerConfig.name,
-    concurrency: 1,
-    task,
-    onResult: (record: TaskResultRecord) => {
-      const n = record.taskIndex + 1;
-      if (record.status === 'success') {
-        const d = record.data ?? {};
-        const write = typeof d.diskSeqWriteMbps === 'number' ? d.diskSeqWriteMbps.toFixed(1) : '--';
-        const read = typeof d.diskSeqReadMbps === 'number' ? d.diskSeqReadMbps.toFixed(1) : '--';
-        const cpu = typeof d.cpuOpsPerSec === 'number' ? d.cpuOpsPerSec.toFixed(0) : '--';
-        console.log(`  Iteration ${n}/${iterations}... disk ${write}/${read} Mbps write/read, CPU ${cpu} ops/s`);
-      } else {
-        console.log(`  Iteration ${n}/${iterations}... FAILED: ${record.errorCode ?? 'unknown error'}`);
-      }
-    },
-    onFinish: (ctx) => uploadWorkerLog(ctx, logBuffer, providerConfig.name),
-  });
-
-  if (!result.assignment) {
-    console.error(`  No pending worker to claim for run ${runId} — it may already be fully claimed.`);
-    return;
-  }
-
-  const ok = result.records.filter((r) => r.status === 'success').length;
-  console.log(`  Done: ${ok}/${result.records.length} succeeded.`);
 }
 
-async function main(): Promise<void> {
-  const toRun = providers.filter((p) => providerNames.includes(p.name));
-  if (toRun.length === 0) {
-    console.error(`No matching providers for: ${providerNames.join(', ')}`);
-    process.exit(1);
+function logDax(record: TaskResultRecord, meta: { iterations: number }): void {
+  const n = record.taskIndex + 1;
+  if (record.status === 'success') {
+    const d = record.data ?? {};
+    const write = typeof d.diskSeqWriteMbps === 'number' ? d.diskSeqWriteMbps.toFixed(1) : '--';
+    const read = typeof d.diskSeqReadMbps === 'number' ? d.diskSeqReadMbps.toFixed(1) : '--';
+    const cpu = typeof d.cpuOpsPerSec === 'number' ? d.cpuOpsPerSec.toFixed(0) : '--';
+    console.log(`  Task ${n}/${meta.iterations}: disk ${write}/${read} Mbps write/read, CPU ${cpu} ops/s`);
+  } else {
+    console.log(`  Task ${n}/${meta.iterations}: FAILED — ${record.errorCode ?? 'unknown error'}`);
   }
-
-  console.log('ComputeSDK Dax Benchmark (self-contained)');
-  console.log(`Date: ${new Date().toISOString()}\n`);
-
-  await client.upsertBenchmark(benchmarkSlug, { name: benchmarkName, kind: 'sandbox' });
-
-  const { run } = await client.createRun(benchmarkSlug, {
-    name: `dax — ${iterations} iterations`,
-    totalTasks: iterations,
-    workerCount: 1,
-    participants: toRun.map((p) => p.name),
-  });
-
-  const dashboardUrl = `${baseUrl.replace(/\/api\/v1\/?$/, '')}/${orgSlug}/benchmarks/${benchmarkSlug}/runs/${run.id}`;
-  console.log(`Run created: ${run.id}`);
-  console.log(`View at: ${dashboardUrl}\n`);
-
-  for (const providerConfig of toRun) {
-    await runProvider(providerConfig, run.id);
-  }
-
-  console.log(`\nAll done. View at: ${dashboardUrl}`);
 }
 
-main()
+const config = defineBenchmark({
+  benchmarkSlug: 'sandbox-dax-local',
+  benchmarkName: 'Dax sandbox benchmark (local)',
+  benchmarkKind: 'sandbox',
+  iterations: 1,
+  concurrency: 1,
+  defaultProviders: ['e2b', 'modal', 'tensorlake'],
+  task: daxTask,
+  onResult: logDax,
+});
+
+runBenchmark(config, providers, process.argv.slice(2))
   .then(() => process.exit(0))
   .catch((err) => {
     console.error('Benchmark failed:', err);

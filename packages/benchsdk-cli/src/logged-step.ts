@@ -10,7 +10,7 @@ export async function loggedStep<T>(
   ctx: RunWorkerContext,
   logBuffer: LogBuffer,
   name: string,
-  fn: () => Promise<T>,
+  fn: () => Promise<T> | T,
   options?: DefineStepOptions,
 ): Promise<T> {
   try {
