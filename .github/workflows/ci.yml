@@ -50,3 +50,21 @@ jobs:
 
       - name: Test create-bench
         run: pnpm --filter create-bench run test
+
+  actionlint:
+    name: Lint workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Validates all .github/workflows/*.yml for syntax and expression
+      # errors. The self-hosted runner label is declared in
+      # .github/actionlint.yaml. The empty-string choice-input defaults
+      # (used as "run all / none" sentinels) are accepted by GitHub Actions
+      # but flagged by actionlint's stricter parser, so that one rule is
+      # ignored here.
+      - name: actionlint
+        uses: docker://rhysd/actionlint:1.7.12
+        with:
+          args: -color -ignore "string should not be empty"
