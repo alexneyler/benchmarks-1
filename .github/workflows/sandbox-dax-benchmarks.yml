@@ -5,8 +5,9 @@ on:
     branches: [master]
     paths:
       - 'benchmarks/sandbox/dax.ts'
+      - 'benchmarks/sandbox/dax.bench.ts'
+      - 'benchmarks/sandbox/dax-legacy-results.ts'
       - 'benchmarks/sandbox/providers.ts'
-      - 'benchmarks/src/run.ts'
       - 'benchmarks/src/merge-results.ts'
       - 'benchmarks/scripts/dax-benchmark.sh'
       - 'package.json'
@@ -139,9 +140,8 @@ jobs:
           VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          pnpm run bench -- \
+          npx tsx benchmarks/sandbox/dax.bench.ts \
             --provider ${{ matrix.provider }} \
-            --mode sandbox-dax \
             --iterations ${{ github.event.inputs.iterations || '1' }}
       - name: Upload results
         if: always()

@@ -6,7 +6,6 @@ on:
     paths:
       - 'benchmarks/browser/**'
       - 'benchmarks/src/util/**'
-      - 'benchmarks/src/run.ts'
       - 'benchmarks/src/merge-results.ts'
       - 'package.json'
   schedule:
@@ -61,6 +60,7 @@ jobs:
         run: rm -rf results/browser/
       - name: Run browser benchmark
         env:
+          COMPUTESDK_API_KEY: ${{ secrets.COMPUTESDK_API_KEY }}
           BROWSERBASE_API_KEY: ${{ secrets.BROWSERBASE_API_KEY }}
           BROWSERBASE_PROJECT_ID: ${{ secrets.BROWSERBASE_PROJECT_ID }}
           BROWSER_USE_API_KEY: ${{ secrets.BROWSER_USE_API_KEY }}
@@ -72,8 +72,7 @@ jobs:
           TILION_BASE_URL: ${{ secrets.TILION_BASE_URL }}
           # ANCHORBROWSER_API_KEY: ${{ secrets.ANCHORBROWSER_API_KEY }}
         run: |
-          pnpm run bench -- \
-            --mode browser \
+          npx tsx benchmarks/browser/browser.bench.ts \
             --provider ${{ matrix.provider }} \
             --iterations ${{ github.event_name == 'push' && '10' || github.event.inputs.iterations || '100' }}
       - name: Upload results

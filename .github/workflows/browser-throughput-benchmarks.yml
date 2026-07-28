@@ -6,7 +6,6 @@ on:
     paths:
       - 'benchmarks/browser/**'
       - 'benchmarks/src/util/**'
-      - 'benchmarks/src/run.ts'
       - 'benchmarks/src/merge-results.ts'
       - 'package.json'
   schedule:
@@ -112,6 +111,7 @@ jobs:
         run: rm -rf results/browser-throughput/
       - name: Run browser throughput benchmark
         env:
+          COMPUTESDK_API_KEY: ${{ secrets.COMPUTESDK_API_KEY }}
           THROUGHPUT_URLS: ${{ needs.setup.outputs.urls }}
           BROWSERBASE_API_KEY: ${{ secrets.BROWSERBASE_API_KEY }}
           BROWSERBASE_PROJECT_ID: ${{ secrets.BROWSERBASE_PROJECT_ID }}
@@ -123,8 +123,7 @@ jobs:
           TILION_API_KEY: ${{ secrets.TILION_API_KEY }}
           TILION_BASE_URL: ${{ secrets.TILION_BASE_URL }}
         run: |
-          pnpm run bench -- \
-            --mode browser-throughput \
+          npx tsx benchmarks/browser/browser-throughput.bench.ts \
             --provider ${{ matrix.provider }} \
             --iterations ${{ github.event_name == 'push' && '3' || github.event.inputs.iterations || '100' }}
       - name: Upload results

@@ -6,7 +6,6 @@ on:
     paths:
       - 'benchmarks/storage/**'
       - 'benchmarks/src/util/**'
-      - 'benchmarks/src/run.ts'
       - 'benchmarks/src/merge-results.ts'
       - 'package.json'
   schedule:
@@ -76,6 +75,7 @@ jobs:
         run: rm -rf results/snapshot-fork/
       - name: Run snapshot/fork test
         env:
+          COMPUTESDK_API_KEY: ${{ secrets.COMPUTESDK_API_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -110,8 +110,7 @@ jobs:
           # VERCEL_SNAPSHOT_BLOB_READ_WRITE_TOKEN: ${{ secrets.VERCEL_SNAPSHOT_BLOB_READ_WRITE_TOKEN }}
           # VERCEL_SNAPSHOT_BLOB_BUCKET: ${{ secrets.VERCEL_SNAPSHOT_BLOB_BUCKET }}
         run: |
-          pnpm run bench -- \
-            --mode snapshot-fork \
+          npx tsx benchmarks/storage/snapshot-fork.bench.ts \
             --provider ${{ matrix.provider }} \
             --dataset ${{ github.event.inputs.dataset || 'small' }} \
             --iterations ${{ (github.event_name == 'schedule' && '100') || github.event.inputs.iterations || (github.event_name == 'push' && '1') || '3' }}

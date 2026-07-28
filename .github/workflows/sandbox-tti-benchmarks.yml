@@ -6,7 +6,6 @@ on:
     paths:
       - 'benchmarks/sandbox/**'
       - 'benchmarks/src/util/**'
-      - 'benchmarks/src/run.ts'
       - 'benchmarks/src/merge-results.ts'
       - 'package.json'
   schedule:
@@ -148,15 +147,18 @@ jobs:
           VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          MODE_FLAG=""
-          if [ -n "${{ github.event.inputs.mode }}" ]; then
-            MODE_FLAG="--mode ${{ github.event.inputs.mode }}"
-          fi
-          pnpm run bench -- \
-            --provider ${{ matrix.provider }} \
+          ARGS="--provider ${{ matrix.provider }} \
             --iterations ${{ github.event.inputs.iterations || (github.event_name == 'push' && '10') || '100' }} \
-            --concurrency ${{ github.event.inputs.concurrency || (github.event_name == 'push' && '10') || '100' }} \
-            $MODE_FLAG
+            --concurrency ${{ github.event.inputs.concurrency || (github.event_name == 'push' && '10') || '100' }}"
+          case "${{ github.event.inputs.mode }}" in
+            sequential) npx tsx benchmarks/sandbox/sequential.bench.ts $ARGS ;;
+            staggered)  npx tsx benchmarks/sandbox/staggered.bench.ts $ARGS ;;
+            burst)      npx tsx benchmarks/sandbox/burst.bench.ts $ARGS ;;
+            *)
+              npx tsx benchmarks/sandbox/sequential.bench.ts $ARGS && \
+              npx tsx benchmarks/sandbox/staggered.bench.ts $ARGS && \
+              npx tsx benchmarks/sandbox/burst.bench.ts $ARGS ;;
+          esac
       - name: Upload results
         if: always() && (github.event_name != 'workflow_dispatch' || github.event.inputs.provider == '' || github.event.inputs.provider == matrix.provider)
         uses: actions/upload-artifact@v4

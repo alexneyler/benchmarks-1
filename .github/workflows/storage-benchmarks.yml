@@ -6,7 +6,6 @@ on:
     paths:
       - 'benchmarks/storage/**'
       - 'benchmarks/src/util/**'
-      - 'benchmarks/src/run.ts'
       - 'benchmarks/src/merge-results.ts'
       - 'package.json'
   schedule:
@@ -75,6 +74,7 @@ jobs:
         run: rm -rf results/storage/
       - name: Run storage benchmark
         env:
+          COMPUTESDK_API_KEY: ${{ secrets.COMPUTESDK_API_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -97,11 +97,10 @@ jobs:
           AZURE_CONTAINER: ${{ secrets.AZURE_CONTAINER }}
         run: |
           FILE_SIZE="${{ matrix.file_size }}"
-          pnpm run bench -- \
-            --mode storage \
+          npx tsx benchmarks/storage/storage.bench.ts \
             --provider ${{ matrix.provider }} \
             --file-size $FILE_SIZE \
-            --storage-concurrency ${{ (github.event_name == 'schedule' && '16') || (github.event_name == 'push' && '8') || github.event.inputs.storage_concurrency || '1' }} \
+            --concurrency ${{ (github.event_name == 'schedule' && '16') || (github.event_name == 'push' && '8') || github.event.inputs.storage_concurrency || '1' }} \
             --iterations ${{ (github.event_name == 'schedule' && '110') || (github.event_name == 'push' && '10') || github.event.inputs.iterations || '100' }}
       - name: Upload results
         if: always()
