@@ -24,28 +24,74 @@ import type {
 /** How tasks are ordered across participants. */
 export type GroupBy = 'participant' | 'round';
 
+/**
+ * What a task returns: whatever it measured itself. This replaces the
+ * assumption that the framework owns all timing. A plain data payload is
+ * written explicitly as `{ data: {...} }`.
+ */
+export interface TaskResult {
+  /** Free-form domain payload attached to the record (tokens, receipts, ...). */
+  data?: JsonObject;
+  /**
+   * Pre-measured steps the task timed itself (e.g. socket phases).
+   * Only honored in `groupBy: 'round'` runs, where the runner builds records
+   * manually. In `groupBy: 'participant'` runs the platform worker
+   * (`client.runWorker`) owns steps, so `steps` and `latencyMs` are ignored.
+   */
+  steps?: TaskStepRecord[];
+  /** Task-owned overall latency; overrides framework wall-clock (round mode only). */
+  latencyMs?: number;
+}
+
+/**
+ * Throw this from a task to record a failure while preserving domain data and
+ * any pre-measured steps (a plain thrown Error loses them).
+ */
+export class TaskError extends Error {
+  readonly code?: string;
+  readonly data?: JsonObject;
+  readonly steps?: TaskStepRecord[];
+  constructor(message: string, opts?: { code?: string; data?: JsonObject; steps?: TaskStepRecord[] }) {
+    super(message);
+    this.name = 'TaskError';
+    this.code = opts?.code;
+    this.data = opts?.data;
+    this.steps = opts?.steps;
+  }
+}
+
 /** Context handed to a benchmark `task` for a single iteration. */
 export interface TaskContext<T extends BaseParticipant = BaseParticipant> {
   /** The participant this task is running for. */
   participant: T;
-  /** Zero-based index of this task within the run. */
+  /** Zero-based global task ordinal (matches the platform record's taskIndex). */
   taskIndex: number;
+  /** Current phase name, when the benchmark declares `phases`. */
+  phase?: string;
   /**
    * Runs `fn` as a named platform step and mirrors its outcome into the
    * per-worker log buffer. Mirrors `@benchsdk/client`'s `RunWorkerContext.step`.
    */
   step<R>(name: string, fn: () => Promise<R> | R, options?: DefineStepOptions): Promise<R>;
-  /**
-   * Attaches a pre-measured step (e.g. socket-phase timings that can't be
-   * timed via `step`). Only persisted in `groupBy: 'round'` runs; a no-op in
-   * `groupBy: 'participant'` runs, where the platform worker owns step timing.
-   */
-  recordStep(step: TaskStepRecord): void;
 }
 
 export type BenchmarkTask<T extends BaseParticipant = BaseParticipant> = (
   ctx: TaskContext<T>,
-) => Promise<JsonObject | void> | JsonObject | void;
+) => Promise<TaskResult | void> | TaskResult | void;
+
+/**
+ * A named run segment with its own iteration count and optional task. Phases
+ * run in order; each record is tagged with the phase name via `data.phase`,
+ * and `ctx.phase` lets a task branch on identity instead of index arithmetic.
+ */
+export interface Phase<T extends BaseParticipant = BaseParticipant> {
+  /** Phase name, tagged onto every record produced in this phase. */
+  name: string;
+  /** Iterations to run in this phase. */
+  iterations: number;
+  /** Optional per-phase task; falls back to the top-level `task`. */
+  task?: BenchmarkTask<T>;
+}
 
 export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
   /** Stable platform slug for this benchmark (e.g. 'sandbox-tti-local'). */
@@ -54,8 +100,16 @@ export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
   benchmarkName: string;
   /** Optional platform benchmark kind (e.g. 'sandbox'). */
   benchmarkKind?: string;
-  /** Total tasks to run per participant. Default: 1. */
+  /**
+   * Total tasks to run per participant. Default: 1. Mutually exclusive with
+   * `phases` — when `phases` is set, total iterations = sum of phase iterations.
+   */
   iterations?: number;
+  /**
+   * Named run segments (e.g. cold/warm). Runs in order; each record is tagged
+   * with the phase name via `data.phase`. Mutually exclusive with `iterations`.
+   */
+  phases?: Phase<T>[];
   /** Max tasks in flight at once. 1 = sequential, N = burst. Default: 1. */
   concurrency?: number;
   /** Delay each task's start by `taskIndex * staggerDelayMs`. Default: 0. */
@@ -100,6 +154,28 @@ export function defineBenchmark<T extends BaseParticipant = BaseParticipant>(
   }
   if (typeof config.task !== 'function') {
     throw new Error('task must be a function');
+  }
+  if (config.phases !== undefined) {
+    if (config.iterations !== undefined) {
+      throw new Error('phases and iterations are mutually exclusive');
+    }
+    if (!Array.isArray(config.phases) || config.phases.length === 0) {
+      throw new Error('phases must be a non-empty array');
+    }
+    const seen = new Set<string>();
+    for (const phase of config.phases) {
+      if (!phase.name || typeof phase.name !== 'string') {
+        throw new Error('each phase requires a non-empty name');
+      }
+      if (seen.has(phase.name)) {
+        throw new Error(`duplicate phase name: ${phase.name}`);
+      }
+      seen.add(phase.name);
+      assertPositiveInt(phase.iterations, `phase '${phase.name}' iterations`);
+      if (phase.task !== undefined && typeof phase.task !== 'function') {
+        throw new Error(`phase '${phase.name}' task must be a function`);
+      }
+    }
   }
   assertPositiveInt(config.iterations, 'iterations');
   assertPositiveInt(config.concurrency, 'concurrency');

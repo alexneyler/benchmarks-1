@@ -20,7 +20,9 @@ vi.mock('@benchsdk/client', () => ({
 }));
 
 import { parseCliArgs, mergeConfig, runBenchmark } from '../runner';
+import { TaskError } from '../bench-config';
 import type { BenchmarkConfig } from '../bench-config';
+import type { TaskResultRecord } from '@benchsdk/client';
 
 describe('parseCliArgs', () => {
   it('parses space-separated flags', () => {
@@ -56,6 +58,17 @@ describe('parseCliArgs', () => {
 
   it('throws on non-numeric numeric flags', () => {
     expect(() => parseCliArgs(['--iterations', 'abc'])).toThrow('--iterations');
+  });
+
+  it('throws on empty, negative, or non-integer iterations/concurrency', () => {
+    expect(() => parseCliArgs(['--iterations', ''])).toThrow('--iterations');
+    expect(() => parseCliArgs(['--iterations', '-3'])).toThrow('--iterations');
+    expect(() => parseCliArgs(['--iterations', '1.5'])).toThrow('--iterations');
+    expect(() => parseCliArgs(['--concurrency', '0'])).toThrow('--concurrency');
+  });
+
+  it('throws on negative stagger delay', () => {
+    expect(() => parseCliArgs(['--stagger-delay-ms', '-1'])).toThrow('--stagger-delay-ms');
   });
 
   it('returns empty object for no args', () => {
@@ -102,6 +115,20 @@ describe('mergeConfig', () => {
     expect(mergeConfig(withDefaults, {}).providers).toEqual(['e2b']);
     expect(mergeConfig(withDefaults, { providers: ['modal'] }).providers).toEqual(['modal']);
   });
+
+  it('derives iterations from phases (sum) and ignores --iterations with a warning', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const phased: BenchmarkConfig = {
+      benchmarkSlug: 's',
+      benchmarkName: 'n',
+      phases: [{ name: 'cold', iterations: 3 }, { name: 'warm', iterations: 2 }],
+      task: async () => ({}),
+    };
+    expect(mergeConfig(phased, {}).iterations).toBe(5);
+    expect(mergeConfig(phased, { iterations: 99 }).iterations).toBe(5);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
 });
 
 describe('runBenchmark', () => {
@@ -118,18 +145,26 @@ describe('runBenchmark', () => {
     reporterClaim.mockReset();
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
     process.env.E2B_API_KEY = 'x';
     process.env.MODAL_TOKEN = 'y';
-    calls = { upsertBenchmark: [], createRun: [], planWorkers: [], runWorker: [] };
+    calls = { upsertBenchmark: [], createRun: [], planWorkers: [], runWorker: [], taskData: [] };
     fakeClient = {
       upsertBenchmark: vi.fn(async (...a: any[]) => { calls.upsertBenchmark.push(a); return {}; }),
       createRun: vi.fn(async (...a: any[]) => { calls.createRun.push(a); return { run: { id: 'run-1' }, participants: [] }; }),
       planWorkers: vi.fn(async (...a: any[]) => { calls.planWorkers.push(a); return []; }),
       runWorker: vi.fn(async (opts: any) => {
         calls.runWorker.push(opts);
-        const record = await opts.task({ taskIndex: 0, assignment: {}, step: async (_n: string, fn: any) => fn() });
-        opts.onResult?.({ taskIndex: 0, status: 'success', data: record ?? {} });
-        return { assignment: { workerId: 'w1' }, records: [{ taskIndex: 0, status: 'success' }] };
+        const total = calls.createRun[0]?.[1]?.totalTasks ?? 1;
+        const records: any[] = [];
+        for (let ti = 0; ti < total; ti++) {
+          const data = await opts.task({ taskIndex: ti, assignment: {}, step: async (_n: string, fn: any) => fn() });
+          calls.taskData.push(data);
+          const rec = { taskIndex: ti, status: 'success', data: data ?? {} };
+          opts.onResult?.(rec);
+          records.push(rec);
+        }
+        return { assignment: { workerId: 'w1' }, records };
       }),
     };
     createBenchmarkClient.mockReturnValue(fakeClient);
@@ -141,7 +176,7 @@ describe('runBenchmark', () => {
   });
 
   it('drives upsert -> createRun -> planWorkers/runWorker per available participant', async () => {
-    const task = vi.fn(async () => ({ ttiMs: 42 }));
+    const task = vi.fn(async () => ({ data: { ttiMs: 42 } }));
     const config: BenchmarkConfig<typeof participants[number]> = {
       benchmarkSlug: 'sandbox-tti-local',
       benchmarkName: 'Sandbox TTI',
@@ -159,8 +194,10 @@ describe('runBenchmark', () => {
     expect(calls.planWorkers).toHaveLength(2);
     expect(calls.runWorker).toHaveLength(2);
     expect(calls.runWorker[0].concurrency).toBe(1);
-    // The runner's task wrapper forwards participant/taskIndex/step to config.task.
+    // The runner's task wrapper forwards participant/taskIndex/phase/step to config.task.
     expect(task).toHaveBeenCalledWith(expect.objectContaining({ participant: participants[0], taskIndex: 0 }));
+    // Uniform TaskResult: the wrapper returns the task's `data` payload to the platform worker.
+    expect(calls.taskData[0]).toEqual({ ttiMs: 42 });
   });
 
   it('applies CLI overrides over config', async () => {
@@ -179,19 +216,41 @@ describe('runBenchmark', () => {
     expect(calls.runWorker[0].concurrency).toBe(5);
   });
 
-  it('skips participants missing env and exits when none available', async () => {
+  it('throws when no participants have their required env vars set', async () => {
     delete process.env.E2B_API_KEY;
     delete process.env.MODAL_TOKEN;
-    const exit = vi.spyOn(process, 'exit').mockImplementation(((): never => undefined as never));
+
+    await expect(
+      runBenchmark({ benchmarkSlug: 's', benchmarkName: 'n', task: async () => ({}) }, participants, []),
+    ).rejects.toThrow('No participants');
+    expect(createBenchmarkClient).not.toHaveBeenCalled();
+  });
+
+  it('participant mode: tags data.phase from the schedule', async () => {
+    const seenPhases: (string | undefined)[] = [];
+    const task = vi.fn(async (ctx: any) => {
+      seenPhases.push(ctx.phase);
+      return { data: { i: ctx.taskIndex } };
+    });
 
     await runBenchmark(
-      { benchmarkSlug: 's', benchmarkName: 'n', task: async () => ({}) },
-      participants,
+      {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        phases: [{ name: 'cold', iterations: 2 }, { name: 'warm', iterations: 1 }],
+        task,
+      },
+      [participants[0]],
       [],
     );
 
-    expect(exit).toHaveBeenCalledWith(1);
-    expect(createBenchmarkClient).not.toHaveBeenCalled();
+    expect(calls.createRun[0][1].totalTasks).toBe(3);
+    expect(seenPhases).toEqual(['cold', 'cold', 'warm']);
+    expect(calls.taskData).toEqual([
+      { i: 0, phase: 'cold' },
+      { i: 1, phase: 'cold' },
+      { i: 2, phase: 'warm' },
+    ]);
   });
 
   it('groupBy round: claims one reporter per participant, interleaves rounds, finishes each', async () => {
@@ -204,12 +263,11 @@ describe('runBenchmark', () => {
       finish: async (failedFlag: boolean) => { finished[cfg.participantSlug] = failedFlag; },
     }));
 
-    // Task records a pre-measured step and returns data; records interleave e2b,modal per round.
+    // Task returns a pre-measured step + data; records interleave e2b,modal per round.
     const order: string[] = [];
     const task = vi.fn(async (ctx: any) => {
       order.push(`${ctx.participant.name}#${ctx.taskIndex}`);
-      ctx.recordStep({ name: 'probe', status: 'success', latencyMs: 5 });
-      return { ok: true };
+      return { data: { ok: true }, steps: [{ name: 'probe', status: 'success' as const, latencyMs: 5 }] };
     });
 
     await runBenchmark(
@@ -222,27 +280,59 @@ describe('runBenchmark', () => {
     expect(order).toEqual(['e2b#0', 'modal#0', 'e2b#1', 'modal#1']);
     expect(recorded.e2b).toHaveLength(2);
     expect(recorded.modal).toHaveLength(2);
-    // recordStep is persisted onto the built record in round mode.
+    // Task-owned steps are persisted onto the built record in round mode.
     expect(recorded.e2b[0].steps).toEqual([{ name: 'probe', status: 'success', latencyMs: 5 }]);
     expect(recorded.e2b[0].status).toBe('success');
     expect(finished.e2b).toBe(false);
     expect(finished.modal).toBe(false);
-    // runWorker is NOT used in round mode.
+    // runWorker is NOT used in round mode; planWorkers targets concurrency 1.
     expect(fakeClient.runWorker).not.toHaveBeenCalled();
     expect(fakeClient.planWorkers).toHaveBeenCalledTimes(2);
+    expect(calls.planWorkers[0][3]).toMatchObject({ workerCount: 1, targetConcurrency: 1 });
   });
 
-  it('groupBy round: a thrown task is recorded as an errored result and marks the reporter failed', async () => {
+  it('groupBy round with phases: tags each record with its phase in order', async () => {
+    const recorded: Record<string, TaskResultRecord[]> = { e2b: [] };
+    reporterClaim.mockImplementation(async (cfg: any) => ({
+      taskIndexStart: 0,
+      recordResult: (r: TaskResultRecord) => recorded[cfg.participantSlug].push(r),
+      uploadArtifact: async () => ({}),
+      finish: async () => {},
+    }));
+
+    const task = vi.fn(async (ctx: any) => ({ data: { phaseSeen: ctx.phase }, latencyMs: 11 }));
+
+    await runBenchmark(
+      {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        phases: [{ name: 'cold', iterations: 2 }, { name: 'warm', iterations: 1 }],
+        groupBy: 'round',
+        task,
+      },
+      [participants[0]],
+      [],
+    );
+
+    expect(calls.createRun[0][1].totalTasks).toBe(3);
+    expect(recorded.e2b.map((r) => r.data?.phase)).toEqual(['cold', 'cold', 'warm']);
+    // Task-owned latency overrides framework wall-clock.
+    expect(recorded.e2b.every((r) => r.latencyMs === 11)).toBe(true);
+  });
+
+  it('groupBy round: a TaskError is recorded with its code + data preserved and marks the reporter failed', async () => {
+    const recorded: Record<string, TaskResultRecord[]> = { e2b: [] };
     const finished: Record<string, boolean> = {};
     reporterClaim.mockImplementation(async (cfg: any) => ({
       taskIndexStart: 0,
-      recordResult: () => {},
+      recordResult: (r: TaskResultRecord) => recorded[cfg.participantSlug].push(r),
       uploadArtifact: async () => ({}),
       finish: async (failedFlag: boolean) => { finished[cfg.participantSlug] = failedFlag; },
     }));
 
-    class ProbeError extends Error { name = 'probe_failed'; }
-    const task = async () => { throw new ProbeError('boom'); };
+    const task = async () => {
+      throw new TaskError('boom', { code: 'probe_failed', data: { mode: 'cold' } });
+    };
 
     await runBenchmark(
       { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'round', task },
@@ -251,5 +341,8 @@ describe('runBenchmark', () => {
     );
 
     expect(finished.e2b).toBe(true);
+    expect(recorded.e2b[0].status).toBe('error');
+    expect(recorded.e2b[0].errorCode).toBe('probe_failed');
+    expect(recorded.e2b[0].data).toEqual({ mode: 'cold' });
   });
 });

@@ -10,7 +10,7 @@
  */
 import '../src/env.js';
 import { defineBenchmark, runBenchmark } from '@benchsdk/cli';
-import type { TaskContext } from '@benchsdk/cli';
+import type { TaskContext, TaskResult } from '@benchsdk/cli';
 import type { JsonObject, TaskResultRecord } from '@benchsdk/client';
 import { withTimeout } from '../src/util/timeout.js';
 import { formatError } from '../src/util/error.js';
@@ -254,7 +254,7 @@ async function runPauseResumeProbe(sandbox: any): Promise<{ pauseMs?: number; re
 // Task — one dax probe pass inside a freshly created sandbox.
 // ---------------------------------------------------------------------------
 
-async function daxTask(ctx: TaskContext<ProviderConfig>): Promise<JsonObject> {
+async function daxTask(ctx: TaskContext<ProviderConfig>): Promise<TaskResult> {
   const { participant, step } = ctx;
   const compute = participant.createCompute();
 
@@ -265,7 +265,7 @@ async function daxTask(ctx: TaskContext<ProviderConfig>): Promise<JsonObject> {
     const disk = await step('disk-probe', () => runDiskProbe(sandbox));
     const cpu = await step('cpu-probe', () => runCpuProbe(sandbox));
     const pauseResume = await step('pause-resume-probe', () => runPauseResumeProbe(sandbox));
-    return { ...disk, ...cpu, ...pauseResume } as unknown as JsonObject;
+    return { data: { ...disk, ...cpu, ...pauseResume } as unknown as JsonObject };
   } finally {
     await step('destroy', () =>
       withTimeout(sandbox.destroy(), participant.destroyTimeoutMs ?? destroyTimeoutMs, 'Destroy timeout'),

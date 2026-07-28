@@ -5,7 +5,7 @@
  * staggered) is owned by @benchsdk/cli's runBenchmark — this file only
  * describes what one iteration does.
  */
-import type { TaskContext } from '@benchsdk/cli';
+import type { TaskContext, TaskResult } from '@benchsdk/cli';
 import type { JsonObject } from '@benchsdk/client';
 import { withTimeout } from '../src/util/timeout.js';
 import { formatError } from '../src/util/error.js';
@@ -15,7 +15,7 @@ const CREATE_TIMEOUT_MS = 120_000;
 const COMMAND_TIMEOUT_MS = 30_000;
 const DESTROY_TIMEOUT_MS = 15_000;
 
-export async function ttiTask(ctx: TaskContext<ProviderConfig>): Promise<JsonObject> {
+export async function ttiTask(ctx: TaskContext<ProviderConfig>): Promise<TaskResult> {
   const { participant, step } = ctx;
   const compute = participant.createCompute();
 
@@ -39,7 +39,7 @@ export async function ttiTask(ctx: TaskContext<ProviderConfig>): Promise<JsonObj
         throw new Error(`Command failed with exit code ${result.exitCode}: ${result.stderr || 'Unknown error'}`);
       }
     });
-    return { ttiMs: performance.now() - start };
+    return { data: { ttiMs: performance.now() - start } };
   } finally {
     await step('destroy', () =>
       withTimeout(sandbox.destroy(), participant.destroyTimeoutMs ?? DESTROY_TIMEOUT_MS, 'Destroy timeout'),

@@ -29,7 +29,8 @@ import type {
   TaskResultRecord,
   TaskStepRecord,
 } from '@benchsdk/client';
-import type { BenchmarkConfig, GroupBy, TaskContext } from './bench-config.js';
+import { TaskError } from './bench-config.js';
+import type { BenchmarkConfig, BenchmarkTask, GroupBy, TaskContext, TaskResult } from './bench-config.js';
 import { LogBuffer, uploadWorkerLog } from './log-buffer.js';
 import { loggedStep } from './logged-step.js';
 
@@ -60,11 +61,6 @@ function getErrorCode(error: unknown): string {
   return error instanceof Error && error.name ? error.name : 'ERROR';
 }
 
-function toJsonObject(value: unknown): JsonObject | undefined {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
-  return value as JsonObject;
-}
-
 /**
  * Parses the orchestration flags this runner understands, ignoring anything
  * else. Supports both `--flag value` and `--flag=value`; `--provider` accepts
@@ -79,9 +75,17 @@ export function parseCliArgs(argv: string[]): CliArgs {
     return { value: argv[i + 1] ?? '', nextIndex: i + 1 };
   };
 
-  const numeric = (raw: string, flag: string): number => {
+  const intFlag = (raw: string, flag: string): number => {
+    if (raw.trim() === '') throw new Error(`${flag} expects a value`);
     const n = Number(raw);
-    if (!Number.isFinite(n)) throw new Error(`${flag} expects a number (got "${raw}")`);
+    if (!Number.isInteger(n) || n < 1) throw new Error(`${flag} expects an integer >= 1 (got "${raw}")`);
+    return n;
+  };
+
+  const nonNegFlag = (raw: string, flag: string): number => {
+    if (raw.trim() === '') throw new Error(`${flag} expects a value`);
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n < 0) throw new Error(`${flag} expects a number >= 0 (got "${raw}")`);
     return n;
   };
 
@@ -91,19 +95,19 @@ export function parseCliArgs(argv: string[]): CliArgs {
     switch (name) {
       case '--iterations': {
         const { value, nextIndex } = readValue(arg, i);
-        args.iterations = numeric(value, '--iterations');
+        args.iterations = intFlag(value, '--iterations');
         i = nextIndex;
         break;
       }
       case '--concurrency': {
         const { value, nextIndex } = readValue(arg, i);
-        args.concurrency = numeric(value, '--concurrency');
+        args.concurrency = intFlag(value, '--concurrency');
         i = nextIndex;
         break;
       }
       case '--stagger-delay-ms': {
         const { value, nextIndex } = readValue(arg, i);
-        args.staggerDelayMs = numeric(value, '--stagger-delay-ms');
+        args.staggerDelayMs = nonNegFlag(value, '--stagger-delay-ms');
         i = nextIndex;
         break;
       }
@@ -136,13 +140,48 @@ export function mergeConfig<T extends BaseParticipant>(
   config: BenchmarkConfig<T>,
   args: CliArgs,
 ): ResolvedRunConfig {
-  return {
-    iterations: args.iterations ?? config.iterations ?? 1,
+  const phaseTotal = config.phases?.reduce((sum, p) => sum + p.iterations, 0);
+  if (phaseTotal !== undefined && args.iterations !== undefined) {
+    console.warn('--iterations is ignored because this benchmark declares phases.');
+  }
+  const resolved: ResolvedRunConfig = {
+    iterations: phaseTotal ?? args.iterations ?? config.iterations ?? 1,
     concurrency: args.concurrency ?? config.concurrency ?? 1,
     staggerDelayMs: args.staggerDelayMs ?? config.staggerDelayMs ?? 0,
     groupBy: args.groupBy ?? config.groupBy ?? 'participant',
     providers: args.providers ?? config.defaultProviders,
   };
+  if (!Number.isInteger(resolved.iterations) || resolved.iterations < 1) {
+    throw new Error(`iterations must be an integer >= 1 (got ${resolved.iterations})`);
+  }
+  if (!Number.isInteger(resolved.concurrency) || resolved.concurrency < 1) {
+    throw new Error(`concurrency must be an integer >= 1 (got ${resolved.concurrency})`);
+  }
+  return resolved;
+}
+
+/** One scheduled task slot: which task to run and (optionally) under which phase. */
+interface Slot<T extends BaseParticipant = BaseParticipant> {
+  phase?: string;
+  task: BenchmarkTask<T>;
+}
+
+/**
+ * Flattens a config into an ordered list of task slots. With `phases`, each
+ * phase contributes `iterations` slots tagged with its name (framework owns
+ * the phase boundary — no index arithmetic in the task). Without phases, the
+ * top-level task is repeated `iterations` times.
+ */
+function buildSchedule<T extends BaseParticipant>(
+  config: BenchmarkConfig<T>,
+  iterations: number,
+): Slot<T>[] {
+  if (config.phases?.length) {
+    return config.phases.flatMap((phase) =>
+      Array.from({ length: phase.iterations }, () => ({ phase: phase.name, task: phase.task ?? config.task })),
+    );
+  }
+  return Array.from({ length: iterations }, () => ({ phase: undefined, task: config.task }));
 }
 
 type OnResult = (record: TaskResultRecord, meta: { iterations: number }) => void;
@@ -175,6 +214,8 @@ export async function runBenchmark<T extends BaseParticipant>(
   argv: string[] = [],
 ): Promise<void> {
   const resolved = mergeConfig(config, parseCliArgs(argv));
+  const schedule = buildSchedule(config, resolved.iterations);
+  const totalTasks = schedule.length;
 
   const selected = selectParticipants(participants, resolved.providers);
   const { available, skipped } = filterParticipantsByEnv(selected);
@@ -184,18 +225,17 @@ export async function runBenchmark<T extends BaseParticipant>(
   }
 
   if (available.length === 0) {
-    console.error('No participants have their required env vars set — nothing to run.');
-    process.exit(1);
-    return;
+    throw new Error('No participants have their required env vars set — nothing to run.');
   }
 
   const { baseUrl, orgSlug } = resolvePlatform();
   const client = createBenchmarkClient({ baseUrl });
 
+  const concurrencyLabel = resolved.groupBy === 'round' ? 'n/a (round mode)' : String(resolved.concurrency);
   console.log(`${config.benchmarkName} (self-contained)`);
   console.log(`Date: ${new Date().toISOString()}`);
   console.log(
-    `Knobs: iterations=${resolved.iterations}, concurrency=${resolved.concurrency}, ` +
+    `Knobs: iterations=${totalTasks}, concurrency=${concurrencyLabel}, ` +
       `staggerDelayMs=${resolved.staggerDelayMs}, groupBy=${resolved.groupBy}\n`,
   );
 
@@ -205,8 +245,8 @@ export async function runBenchmark<T extends BaseParticipant>(
   });
 
   const { run } = await client.createRun(config.benchmarkSlug, {
-    name: `${config.benchmarkSlug} — ${resolved.iterations} iterations, concurrency ${resolved.concurrency}`,
-    totalTasks: resolved.iterations,
+    name: `${config.benchmarkSlug} — ${totalTasks} iterations, concurrency ${resolved.concurrency}`,
+    totalTasks,
     workerCount: 1,
     participants: available.map((p) => p.name),
   });
@@ -218,17 +258,24 @@ export async function runBenchmark<T extends BaseParticipant>(
   const onResult = config.onResult ?? defaultOnResult;
 
   if (resolved.groupBy === 'round') {
-    await runGroupedByRound(config, available, resolved, client, run, baseUrl, onResult);
+    await runGroupedByRound(config, schedule, available, resolved, client, run, baseUrl, onResult);
   } else {
-    await runGroupedByParticipant(config, available, resolved, client, run, onResult);
+    await runGroupedByParticipant(config, schedule, available, resolved, client, run, onResult);
   }
 
   console.log(`All done. View at: ${dashboardUrl}`);
 }
 
-/** 'participant' ordering: one `client.runWorker` per participant, in turn. */
+/**
+ * 'participant' ordering: one `client.runWorker` per participant, in turn.
+ * `staggerDelayMs` here delays each task by `taskIndex * staggerDelayMs`
+ * (vs. round mode's fixed delay between rounds — intentionally different).
+ * `TaskResult.steps`/`latencyMs` are ignored in this path: the platform
+ * worker owns step timing and latency.
+ */
 async function runGroupedByParticipant<T extends BaseParticipant>(
   config: BenchmarkConfig<T>,
+  schedule: Slot<T>[],
   available: T[],
   resolved: ResolvedRunConfig,
   client: BenchmarkClient,
@@ -252,16 +299,17 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
         if (resolved.staggerDelayMs > 0 && ctx.taskIndex > 0) {
           await sleep(ctx.taskIndex * resolved.staggerDelayMs);
         }
-        return config.task({
+        const slot = schedule[ctx.taskIndex];
+        const taskResult = await slot.task({
           participant,
           taskIndex: ctx.taskIndex,
+          phase: slot.phase,
           step: (name, fn, options) => loggedStep(ctx, logBuffer, name, fn, options),
-          recordStep: () => {
-            /* platform worker owns step timing in 'participant' mode */
-          },
         });
+        const data = taskResult?.data;
+        return slot.phase ? { ...(data ?? {}), phase: slot.phase } : data;
       },
-      onResult: (record) => onResult(record, { iterations: resolved.iterations }),
+      onResult: (record) => onResult(record, { iterations: schedule.length }),
       onFinish: (ctx) => uploadWorkerLog(ctx, logBuffer, participant.name),
     });
 
@@ -283,6 +331,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
  */
 async function runGroupedByRound<T extends BaseParticipant>(
   config: BenchmarkConfig<T>,
+  schedule: Slot<T>[],
   available: T[],
   resolved: ResolvedRunConfig,
   client: BenchmarkClient,
@@ -297,37 +346,45 @@ async function runGroupedByRound<T extends BaseParticipant>(
   for (const participant of available) {
     logBuffers.set(participant.name, new LogBuffer());
     failed.set(participant.name, false);
+    // One task per participant runs at a time in round mode, so target concurrency is 1.
     await client.planWorkers(config.benchmarkSlug, run.id, participant.name, {
       workerCount: 1,
-      targetConcurrency: resolved.iterations,
+      targetConcurrency: 1,
     });
-    const reporter = await BenchmarkReporter.claim({
-      baseUrl,
-      benchmarkSlug: config.benchmarkSlug,
-      runId: run.id,
-      participantSlug: participant.name,
-      processKind: 'process',
-      processKey: process.env.HOSTNAME ?? 'local',
-    });
+    let reporter: BenchmarkReporter | null = null;
+    try {
+      reporter = await BenchmarkReporter.claim({
+        baseUrl,
+        benchmarkSlug: config.benchmarkSlug,
+        runId: run.id,
+        participantSlug: participant.name,
+        processKind: 'process',
+        processKey: process.env.HOSTNAME ?? 'local',
+      });
+    } catch (error) {
+      console.warn(`  ${participant.name}: reporter claim failed (${error instanceof Error ? error.message : String(error)}) — running without platform reporting.`);
+    }
     if (!reporter) {
       console.warn(`  ${participant.name}: could not claim a platform worker — running without platform reporting.`);
     }
     reporters.set(participant.name, reporter);
   }
 
-  console.log(`Round-robin across ${available.length} participant(s), ${resolved.iterations} round(s) each.\n`);
+  console.log(`Interleaving ${available.length} participant(s), ${schedule.length} round(s) each.\n`);
 
-  for (let round = 0; round < resolved.iterations; round++) {
-    if (resolved.staggerDelayMs > 0 && round > 0) {
+  for (let i = 0; i < schedule.length; i++) {
+    const slot = schedule[i];
+    // Round mode staggers a fixed delay between rounds (vs. participant mode's per-task stagger).
+    if (resolved.staggerDelayMs > 0 && i > 0) {
       await sleep(resolved.staggerDelayMs);
     }
     for (const participant of available) {
       const reporter = reporters.get(participant.name) ?? null;
       const logBuffer = logBuffers.get(participant.name)!;
-      const taskIndex = (reporter?.taskIndexStart ?? 0) + round;
-      const record = await runTaskRecord(config.task, participant, taskIndex, logBuffer);
+      const taskIndex = (reporter?.taskIndexStart ?? 0) + i;
+      const record = await runTaskRecord(slot.task, participant, taskIndex, slot.phase, logBuffer);
       if (record.status !== 'success') failed.set(participant.name, true);
-      onResult(record, { iterations: resolved.iterations });
+      onResult(record, { iterations: schedule.length });
       reporter?.recordResult(record);
     }
   }
@@ -345,11 +402,23 @@ async function runGroupedByRound<T extends BaseParticipant>(
   }
 }
 
-/** Runs one task for the manual 'round' path, building its `TaskResultRecord`. */
+/** Merges a task's data payload with the current phase tag (if any). */
+function mergeData(data: JsonObject | undefined, phase: string | undefined): JsonObject | undefined {
+  if (!data && !phase) return undefined;
+  return { ...(data ?? {}), ...(phase ? { phase } : {}) };
+}
+
+/**
+ * Runs one task for the manual 'round' path, building its `TaskResultRecord`.
+ * Honors the full `TaskResult` (task-owned data/steps/latency) and `TaskError`
+ * (preserves domain data + steps on failure). Framework-timed `ctx.step` calls
+ * and task-owned `result.steps` are both recorded.
+ */
 async function runTaskRecord<T extends BaseParticipant>(
-  task: BenchmarkConfig<T>['task'],
+  task: BenchmarkTask<T>,
   participant: T,
   taskIndex: number,
+  phase: string | undefined,
   logBuffer: LogBuffer,
 ): Promise<TaskResultRecord> {
   const startedAtMs = Date.now();
@@ -358,11 +427,12 @@ async function runTaskRecord<T extends BaseParticipant>(
     status: 'success',
     startedAt: new Date(startedAtMs).toISOString(),
   };
-  const steps: TaskStepRecord[] = [];
+  const frameworkSteps: TaskStepRecord[] = [];
 
   const ctx: TaskContext<T> = {
     participant,
     taskIndex,
+    phase,
     async step(name, fn) {
       const stepStartedAtMs = Date.now();
       const stepRecord: TaskStepRecord = {
@@ -384,25 +454,35 @@ async function runTaskRecord<T extends BaseParticipant>(
       } finally {
         stepRecord.completedAt = new Date().toISOString();
         stepRecord.latencyMs = Date.now() - stepStartedAtMs;
-        steps.push(stepRecord);
+        frameworkSteps.push(stepRecord);
       }
-    },
-    recordStep(step) {
-      steps.push(step);
     },
   };
 
+  let result: TaskResult | void = undefined;
   try {
-    const data = await task(ctx);
-    record.data = toJsonObject(data);
+    result = await task(ctx);
+    record.data = mergeData(result?.data, phase);
   } catch (error) {
     record.status = 'error';
-    record.errorCode = getErrorCode(error);
-    record.data = { errorMessage: error instanceof Error ? error.message : String(error) };
+    if (error instanceof TaskError) {
+      record.errorCode = error.code ?? error.name;
+      record.data = mergeData(error.data, phase);
+      if (error.steps?.length) frameworkSteps.push(...error.steps);
+    } else {
+      record.errorCode = getErrorCode(error);
+      record.data = mergeData({ errorMessage: error instanceof Error ? error.message : String(error) }, phase);
+    }
   } finally {
-    record.completedAt = new Date().toISOString();
-    record.latencyMs = Date.now() - startedAtMs;
-    record.steps = steps.length > 0 ? steps : undefined;
+    const endMs = Date.now();
+    record.completedAt = new Date(endMs).toISOString();
+    record.latencyMs =
+      record.status === 'success' && result && typeof result.latencyMs === 'number'
+        ? result.latencyMs
+        : endMs - startedAtMs;
+    const taskSteps = record.status === 'success' && result?.steps ? result.steps : [];
+    const allSteps = [...frameworkSteps, ...taskSteps];
+    record.steps = allSteps.length > 0 ? allSteps : undefined;
   }
 
   return record;
