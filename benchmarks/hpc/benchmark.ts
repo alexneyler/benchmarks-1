@@ -297,6 +297,9 @@ async function uploadPayload(sandbox: any, parts: PayloadPart[]): Promise<void> 
     grouped.get(p.targetPath)!.push(p);
   }
 
+  // Create the target directory first — fresh sandboxes don't have /tmp/hpc.
+  await sandbox.runCommand('mkdir -p /tmp/hpc');
+
   for (const [targetPath, chunks] of grouped) {
     // 1. Truncate the temp file. Use : > /tmp/hpc/<name>.b64 (no-op if missing).
     await sandbox.runCommand(`: > /tmp/hpc/${targetPath}.b64`);
