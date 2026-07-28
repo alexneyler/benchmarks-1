@@ -33,10 +33,30 @@ import { writeAIGatewayLegacyResults } from './legacy-results.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// This bench declares phases, so the CLI's generic `--iterations` is ignored
+// by the runner. Parse the per-phase iteration knobs here so they stay
+// CLI-overridable (mirrors run.ts): `--iterations N` sets both cold and warm,
+// while `--ai-gateway-iterations-cold/-warm` override each independently.
+function parseIntFlag(argv: string[], flag: string): number | undefined {
+  const idx = argv.indexOf(flag);
+  if (idx !== -1 && idx + 1 < argv.length) {
+    const n = Number(argv[idx + 1]);
+    if (Number.isInteger(n) && n >= 0) return n;
+  }
+  const eq = argv.find((a) => a.startsWith(`${flag}=`));
+  if (eq) {
+    const n = Number(eq.slice(flag.length + 1));
+    if (Number.isInteger(n) && n >= 0) return n;
+  }
+  return undefined;
+}
+
+const argv = process.argv.slice(2);
+const iterationsOverride = parseIntFlag(argv, '--iterations');
 // Request parameters match run.ts's AI Gateway defaults exactly (identical
 // across every gateway is load-bearing for fairness — see AI_GATEWAYS.md).
-const ITERATIONS_COLD = 3;
-const ITERATIONS_WARM = 3;
+const ITERATIONS_COLD = parseIntFlag(argv, '--ai-gateway-iterations-cold') ?? iterationsOverride ?? 3;
+const ITERATIONS_WARM = parseIntFlag(argv, '--ai-gateway-iterations-warm') ?? iterationsOverride ?? 3;
 const PROMPT = 'Write a two-sentence description of how distributed systems handle partial failures.';
 const MAX_TOKENS = 200;
 const TIMEOUT_MS = 45_000;
@@ -97,14 +117,20 @@ function logAiGateway(record: TaskResultRecord, meta: { iterations: number }): v
   }
 }
 
+// The CLI asserts every phase has iterations >= 1, but run.ts historically
+// allowed a phase to be dialed to 0 (e.g. `--ai-gateway-iterations-warm 0` to
+// skip the warm phase entirely). Preserve that by dropping any zeroed phase
+// before it reaches the runner.
+const phases = [
+  { name: 'cold', iterations: ITERATIONS_COLD },
+  { name: 'warm', iterations: ITERATIONS_WARM },
+].filter((p) => p.iterations > 0);
+
 const config = defineBenchmark({
   benchmarkSlug: 'ai-gateway-local',
   benchmarkName: 'AI Gateway Benchmark - Local',
   benchmarkKind: 'ai-gateway',
-  phases: [
-    { name: 'cold', iterations: ITERATIONS_COLD },
-    { name: 'warm', iterations: ITERATIONS_WARM },
-  ],
+  phases,
   groupBy: 'round',
   task: aiGatewayTask,
   onResult: logAiGateway,
