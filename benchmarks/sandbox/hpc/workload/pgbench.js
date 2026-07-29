@@ -30,10 +30,15 @@ const TX_PER_BATCH = 2_000;
 const BATCHES = 4;
 
 async function loadPglite() {
-  const pkg = require(`${PGLITE_PATH}/package.json`);
+  // pglite is an ESM-only package, so require() fails on providers with
+  // strict module resolution. Use dynamic import() with a file:// URL.
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const pkgPath = path.join(PGLITE_PATH, 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
   const entryField = pkg.main || (pkg.exports && pkg.exports['.'] && pkg.exports['.'].default) || './dist/index.js';
   const entry = entryField.replace(/^\.\//, '');
-  const mod = require(`${PGLITE_PATH}/${entry}`);
+  const mod = await import('file://' + path.join(PGLITE_PATH, entry));
   return mod.PGlite;
 }
 

@@ -262,6 +262,7 @@ function randomMarker(prefix: string): string {
  */
 function buildSingleCommand(suite: HpcSuite, payload: Payload): string {
   const lines: string[] = [];
+  lines.push('set -e');
   lines.push('mkdir -p /tmp/hpc /tmp/hpc/fixture');
 
   // Write stdout.js helper (raw heredoc — it's a text file)
@@ -285,14 +286,14 @@ function buildSingleCommand(suite: HpcSuite, payload: Payload): string {
     lines.push(`base64 -d <<'${m3}' > /tmp/hpc/bundle.tar.gz`);
     lines.push(payload.bundleB64);
     lines.push(m3);
-    lines.push('tar -xzf /tmp/hpc/bundle.tar.gz -C /tmp/hpc/fixture && rm -f /tmp/hpc/bundle.tar.gz');
+    lines.push('tar -xzf /tmp/hpc/bundle.tar.gz -C /tmp/hpc/fixture && rm -f /tmp/hpc/bundle.tar.gz || { echo "BUNDLE_EXTRACT_FAILED"; exit 1; }');
   } else if (payload.bundleB64 && payload.bundleLarge) {
     // Large bundle was already uploaded via uploadBundleChunked — just extract
-    lines.push('tar -xzf /tmp/hpc/bundle.tar.gz -C /tmp/hpc/fixture && rm -f /tmp/hpc/bundle.tar.gz');
+    lines.push('tar -xzf /tmp/hpc/bundle.tar.gz -C /tmp/hpc/fixture && rm -f /tmp/hpc/bundle.tar.gz || { echo "BUNDLE_EXTRACT_FAILED"; exit 1; }');
   }
 
   // Execute the workload
-  const env = `HPC_FIXTURE_ROOT=/tmp/hpc/fixture${payload.fixtureVersion ? ` HPC_FIXTURE_VERSION=${payload.fixtureVersion}` : ''}`;
+  const env = `HPC_FIXTURE_ROOT=/tmp/hpc/fixture${payload.fixtureVersion ? ` HPC_FIXTURE_VERSION=${payload.fixtureVersion}` : ''} HPC_SUITE=${suite.id}`;
   lines.push(`${env} node /tmp/hpc/${payload.scriptName}`);
 
   return lines.join('\n');
@@ -300,7 +301,7 @@ function buildSingleCommand(suite: HpcSuite, payload: Payload): string {
 
 // ---- Chunked bundle upload (for large bundles only) --------------------
 
-const B64_CHUNK = 60 * 1024;
+const B64_CHUNK = 256 * 1024; // 256 KiB — well under ARG_MAX, fewer round-trips
 
 async function uploadBundleChunked(sandbox: any, bundleB64: string): Promise<void> {
   const cleaned = bundleB64.replace(/\s+/g, '');

@@ -46,10 +46,10 @@ export function buildWorkloadShellCmd(opts: {
   // heredoc uses a non-default marker to avoid any collision with the script's
   // own heredocs (the script never emits `__HPC_*__` markers).
   const mk = (label: string) => `__HPC_UPLOAD_${label}_${Math.random().toString(36).slice(2, 10)}__`;
-  // Chunk size for long uploads to stay clear of ARG_MAX (~256 KiB on most
-  // Linux). 64 KiB is small enough that even the largest bundles fit in a
-  // handful of heredocs.
-  const B64_CHUNK = 64 * 1024;
+  // Chunk size for base64 heredocs. 256 KiB is well under ARG_MAX (~2 MiB
+  // on most Linux) while reducing the number of round-trips for large
+  // bundles (pglite ~9.5 MB → ~38 chunks instead of ~160 at 64 KiB).
+  const B64_CHUNK = 256 * 1024;
 
   const targetName = path.basename(opts.suite.workloadPath);
   const scriptMarker = mk('SCRIPT');
@@ -90,12 +90,12 @@ export function buildWorkloadShellCmd(opts: {
     appendB64Chunks('bundle.tar.gz', bundleB64, 'BUNDLE');
     cmd.push(
       `mkdir -p /tmp/hpc/fixture`,
-      `tar -xzf /tmp/hpc/bundle.tar.gz -C /tmp/hpc/fixture`,
+      `tar -xzf /tmp/hpc/bundle.tar.gz -C /tmp/hpc/fixture || { echo "BUNDLE_EXTRACT_FAILED"; exit 1; }`,
       `rm /tmp/hpc/bundle.tar.gz`,
     );
   }
 
-  cmd.push(`node /tmp/hpc/${targetName}`);
+  cmd.push(`HPC_FIXTURE_ROOT=/tmp/hpc/fixture${fixtureVersion ? ` HPC_FIXTURE_VERSION=${fixtureVersion}` : ''} HPC_SUITE=${opts.suite.id} node /tmp/hpc/${targetName}`);
 
   return { command: cmd.join('\n'), fixtureVersion };
 }

@@ -25,11 +25,11 @@ const { emitWorkloadResult } = require('./stdout.js');
 const BUNDLE_FIXTURE_ROOT = process.env.HPC_FIXTURE_ROOT || '/tmp/hpc/fixture';
 const SQLJS_PATH = path.join(BUNDLE_FIXTURE_ROOT, 'node_modules', 'sql.js');
 
-function loadSqlJs() {
-  // sql.js exports `init` from its wasm entry. We expose it by requiring the
-  // distribution and getting `initSqlJs`. require() reads CJS or .js entry.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const initSqlJs = require(SQLJS_PATH);
+async function loadSqlJs() {
+  // sql.js may be CJS or ESM depending on version; use dynamic import()
+  // with a file:// URL for maximum compatibility across providers.
+  const mod = await import('file://' + path.join(SQLJS_PATH, 'dist', 'sql-wasm.js'));
+  const initSqlJs = mod.default || mod.initSqlJs || mod;
   if (typeof initSqlJs !== 'function') {
     throw new Error(`sql.js init not a function at ${SQLJS_PATH}; got ${typeof initSqlJs}`);
   }
