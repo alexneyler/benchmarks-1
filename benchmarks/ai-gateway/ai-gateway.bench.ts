@@ -51,6 +51,20 @@ function parseIntFlag(argv: string[], flag: string): number | undefined {
   return undefined;
 }
 
+/** Removes `--flag value` / `--flag=value` from an argv copy. */
+function stripFlag(argv: string[], flag: string): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === flag) {
+      i++;
+      continue;
+    }
+    if (argv[i].startsWith(`${flag}=`)) continue;
+    out.push(argv[i]);
+  }
+  return out;
+}
+
 const argv = process.argv.slice(2);
 const iterationsOverride = parseIntFlag(argv, '--iterations');
 // Request parameters match run.ts's AI Gateway defaults exactly (identical
@@ -126,6 +140,11 @@ const phases = [
   { name: 'warm', iterations: ITERATIONS_WARM },
 ].filter((p) => p.iterations > 0);
 
+if (phases.length === 0) {
+  console.log('Both phases are zeroed — nothing to run.');
+  process.exit(0);
+}
+
 const config = defineBenchmark({
   benchmarkSlug: 'ai-gateway-local',
   benchmarkName: 'AI Gateway Benchmark - Local',
@@ -136,7 +155,9 @@ const config = defineBenchmark({
   onResult: logAiGateway,
 });
 
-runBenchmark(config, providers, process.argv.slice(2))
+// `--iterations` is consumed above (it sets both phase counts), so it is
+// dropped here — otherwise the runner warns that it ignored a flag we honored.
+runBenchmark(config, providers, stripFlag(argv, '--iterations'))
   .then(async (outcome) => {
     const resultsDir = path.resolve(__dirname, '../../results/ai-gateway');
     await writeAIGatewayLegacyResults(outcome.participants, { resultsDir, providers });
