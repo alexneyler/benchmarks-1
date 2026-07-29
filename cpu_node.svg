@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 756" font-family="system-ui,sans-serif">
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="20" y="28" font-size="16" font-weight="600" fill="#0f172a">CPU — node-web-tooling build</text>
+<text x="20" y="48" font-size="12" fill="#475569">unit: ms  ceiling: 45000  method: median, 2-sigma trim</text>
+<text x="20" y="76" font-size="13" fill="#1e293b">createos</text>
+<rect x="220" y="62" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="62" width="372.24" height="14" fill="#22c55e"/>
+<text x="668" y="76" font-size="13" fill="#0f172a">84.6</text>
+<text x="20" y="90" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="106" font-size="13" fill="#1e293b">tensorlake</text>
+<rect x="220" y="92" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="92" width="367.4" height="14" fill="#22c55e"/>
+<text x="668" y="106" font-size="13" fill="#0f172a">83.5</text>
+<text x="20" y="120" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="136" font-size="13" fill="#1e293b">daytona</text>
+<rect x="220" y="122" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="122" width="361.23999999999995" height="14" fill="#22c55e"/>
+<text x="668" y="136" font-size="13" fill="#0f172a">82.1</text>
+<text x="20" y="150" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="166" font-size="13" fill="#1e293b">isorun</text>
+<rect x="220" y="152" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="152" width="331.76" height="14" fill="#22c55e"/>
+<text x="668" y="166" font-size="13" fill="#0f172a">75.4</text>
+<text x="20" y="180" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="196" font-size="13" fill="#1e293b">declaw</text>
+<rect x="220" y="182" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="182" width="330.88" height="14" fill="#22c55e"/>
+<text x="668" y="196" font-size="13" fill="#0f172a">75.2</text>
+<text x="20" y="210" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="226" font-size="13" fill="#1e293b">lightning</text>
+<rect x="220" y="212" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="212" width="321.64" height="14" fill="#eab308"/>
+<text x="668" y="226" font-size="13" fill="#0f172a">73.1</text>
+<text x="20" y="240" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="256" font-size="13" fill="#1e293b">upstash</text>
+<rect x="220" y="242" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="242" width="292.6" height="14" fill="#eab308"/>
+<text x="668" y="256" font-size="13" fill="#0f172a">66.5</text>
+<text x="20" y="270" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="286" font-size="13" fill="#1e293b">superserve</text>
+<rect x="220" y="272" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="272" width="278.96" height="14" fill="#eab308"/>
+<text x="668" y="286" font-size="13" fill="#0f172a">63.4</text>
+<text x="20" y="300" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="316" font-size="13" fill="#1e293b">tenki</text>
+<rect x="220" y="302" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="302" width="271.92" height="14" fill="#eab308"/>
+<text x="668" y="316" font-size="13" fill="#0f172a">61.8</text>
+<text x="20" y="330" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="346" font-size="13" fill="#1e293b">archil</text>
+<rect x="220" y="332" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="332" width="264.44" height="14" fill="#eab308"/>
+<text x="668" y="346" font-size="13" fill="#0f172a">60.1</text>
+<text x="20" y="360" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="376" font-size="13" fill="#1e293b">blaxel</text>
+<rect x="220" y="362" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="362" width="231.88000000000002" height="14" fill="#eab308"/>
+<text x="668" y="376" font-size="13" fill="#0f172a">52.7</text>
+<text x="20" y="390" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="406" font-size="13" fill="#1e293b">codesandbox</text>
+<rect x="220" y="392" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="392" width="198.88" height="14" fill="#f97316"/>
+<text x="668" y="406" font-size="13" fill="#0f172a">45.2</text>
+<text x="20" y="420" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="436" font-size="13" fill="#1e293b">vercel</text>
+<rect x="220" y="422" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="422" width="175.55999999999997" height="14" fill="#f97316"/>
+<text x="668" y="436" font-size="13" fill="#0f172a">39.9</text>
+<text x="20" y="450" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="466" font-size="13" fill="#1e293b">opencomputer</text>
+<rect x="220" y="452" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="452" width="143.88" height="14" fill="#f97316"/>
+<text x="668" y="466" font-size="13" fill="#0f172a">32.7</text>
+<text x="20" y="480" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="496" font-size="13" fill="#1e293b">runloop</text>
+<rect x="220" y="482" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="482" width="138.16" height="14" fill="#f97316"/>
+<text x="668" y="496" font-size="13" fill="#0f172a">31.4</text>
+<text x="20" y="510" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="526" font-size="13" fill="#1e293b">modal</text>
+<rect x="220" y="512" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="512" width="63.8" height="14" fill="#f97316"/>
+<text x="668" y="526" font-size="13" fill="#0f172a">14.5</text>
+<text x="20" y="540" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="556" font-size="13" fill="#1e293b">e2b</text>
+<rect x="220" y="542" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="542" width="21.560000000000002" height="14" fill="#f97316"/>
+<text x="668" y="556" font-size="13" fill="#0f172a">4.9</text>
+<text x="20" y="570" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="586" font-size="13" fill="#1e293b">hopx</text>
+<rect x="220" y="572" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="572" width="12.319999999999999" height="14" fill="#f97316"/>
+<text x="668" y="586" font-size="13" fill="#0f172a">2.8</text>
+<text x="20" y="600" font-size="11" fill="#64748b">n=2 ms ceiling=45000</text>
+<text x="20" y="616" font-size="13" fill="#1e293b">beam</text>
+<rect x="220" y="602" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="602" width="2" height="14" fill="#9ca3af"/>
+<text x="668" y="616" font-size="13" fill="#0f172a">0.0</text>
+<text x="20" y="630" font-size="11" fill="#64748b">n=0 ms ceiling=45000</text>
+<text x="20" y="646" font-size="13" fill="#1e293b">cloudflare</text>
+<rect x="220" y="632" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="632" width="2" height="14" fill="#9ca3af"/>
+<text x="668" y="646" font-size="13" fill="#0f172a">0.0</text>
+<text x="20" y="660" font-size="11" fill="#64748b">n=3 ms ceiling=45000</text>
+<text x="20" y="676" font-size="13" fill="#1e293b">northflank</text>
+<rect x="220" y="662" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="662" width="2" height="14" fill="#9ca3af"/>
+<text x="668" y="676" font-size="13" fill="#0f172a">0.0</text>
+<text x="20" y="690" font-size="11" fill="#64748b">n=0 ms ceiling=45000</text>
+<text x="20" y="706" font-size="13" fill="#1e293b">sandbox0</text>
+<rect x="220" y="692" width="440" height="14" fill="#e2e8f0"/>
+<rect x="220" y="692" width="2" height="14" fill="#9ca3af"/>
+<text x="668" y="706" font-size="13" fill="#0f172a">0.0</text>
+<text x="20" y="720" font-size="11" fill="#64748b">n=0 ms ceiling=45000</text>
+</svg>

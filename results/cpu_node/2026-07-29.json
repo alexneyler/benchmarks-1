@@ -1,0 +1,1595 @@
+{
+  "date": "2026-07-29",
+  "results": [
+    {
+      "provider": "archil",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 17974,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 17974,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 17778,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 17778,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 18735,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 18735,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 17974,
+        "p95": 18735,
+        "p99": 18735,
+        "min": 17778,
+        "max": 18735,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 60.05777777777778,
+        "compositeScore": 60.1,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 18735,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 56040.872853,
+      "replicateMs": [
+        19031.041036000002,
+        18011.065607999997,
+        18997.947975999996
+      ],
+      "compositeScore": 60.1
+    },
+    {
+      "provider": "beam",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "cpu-node",
+          "reason": "unexpected",
+          "error": "no parseable WorkloadResult JSON line found in stdout; stdout was empty (exitCode=0) — provider may not wait for command completion",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "cpu-node",
+          "reason": "unexpected",
+          "error": "no parseable WorkloadResult JSON line found in stdout; stdout was empty (exitCode=0) — provider may not wait for command completion",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "cpu-node",
+          "reason": "unexpected",
+          "error": "no parseable WorkloadResult JSON line found in stdout; stdout was empty (exitCode=0) — provider may not wait for command completion",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 3660.849156,
+      "replicateMs": [
+        1909.5478360000002,
+        835.3611580000002,
+        842.6917560000002
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "blaxel",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 20993,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 20993,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 21276,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 21276,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 21437,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 21437,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 21276,
+        "p95": 21437,
+        "p99": 21437,
+        "min": 20993,
+        "max": 21437,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 52.72,
+        "compositeScore": 52.7,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 21437,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 65714.09675,
+      "replicateMs": [
+        21677.597378000002,
+        21858.233256000003,
+        21922.363189999996
+      ],
+      "compositeScore": 52.7
+    },
+    {
+      "provider": "cloud-run",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 0,
+      "replicateMs": [],
+      "compositeScore": 0,
+      "skipped": true,
+      "skipReason": "Missing: CLOUD_RUN_SANDBOX_URL, CLOUD_RUN_SANDBOX_SECRET"
+    },
+    {
+      "provider": "cloudflare",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 146297,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 146297,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 221499,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 221499,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 148197,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 148197,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 148197,
+        "p95": 221499,
+        "p99": 221499,
+        "min": 146297,
+        "max": 221499,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 148197,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 536130.899912,
+      "replicateMs": [
+        150068.39098,
+        226802.57057,
+        154654.62214499997
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "codesandbox",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 25185,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 25185,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 24650,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 24650,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 20254,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 20254,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 24650,
+        "p95": 25185,
+        "p99": 25185,
+        "min": 20254,
+        "max": 25185,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 45.22222222222222,
+        "compositeScore": 45.2,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 20254,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 99344.418098,
+      "replicateMs": [
+        46419.73291,
+        27183.926713000008,
+        22736.694248
+      ],
+      "compositeScore": 45.2
+    },
+    {
+      "provider": "createos",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 6919,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 6919,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 6914,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 6914,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 7064,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 7064,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 6919,
+        "p95": 7064,
+        "p99": 7064,
+        "min": 6914,
+        "max": 7064,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 84.62444444444445,
+        "compositeScore": 84.6,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 7064,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 21346.679712999998,
+      "replicateMs": [
+        7089.134961,
+        7051.024045,
+        7191.051427
+      ],
+      "compositeScore": 84.6
+    },
+    {
+      "provider": "daytona",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 8248,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 8248,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 8075,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 8075,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 6932,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 6932,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 8075,
+        "p95": 8248,
+        "p99": 8248,
+        "min": 6932,
+        "max": 8248,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 82.05555555555556,
+        "compositeScore": 82.1,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 6932,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 27998.634657,
+      "replicateMs": [
+        10391.980419,
+        9574.462026,
+        7818.907407999999
+      ],
+      "compositeScore": 82.1
+    },
+    {
+      "provider": "declaw",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 10541,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 10541,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 11141,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 11141,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 11643,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 11643,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 11141,
+        "p95": 11643,
+        "p99": 11643,
+        "min": 10541,
+        "max": 11643,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 75.24222222222222,
+        "compositeScore": 75.2,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 11643,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 34718.71099000001,
+      "replicateMs": [
+        11180.223314,
+        11519.591239,
+        11968.796753000002
+      ],
+      "compositeScore": 75.2
+    },
+    {
+      "provider": "e2b",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 44556,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 44556,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 38915,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 38915,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 42774,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 42774,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 42774,
+        "p95": 44556,
+        "p99": 44556,
+        "min": 38915,
+        "max": 44556,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 4.946666666666665,
+        "compositeScore": 4.9,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 42774,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 129014.947107,
+      "replicateMs": [
+        45512.968285,
+        39579.12009,
+        43478.977811000004
+      ],
+      "compositeScore": 4.9
+    },
+    {
+      "provider": "hopx",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "cpu-node",
+          "reason": "error",
+          "error": "non-zero exit: Request failed with status code 502",
+          "meta": {}
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 42694,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 42694,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 43591,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 43591,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 43142.5,
+        "p95": 43591,
+        "p99": 43591,
+        "min": 42694,
+        "max": 43591,
+        "successRate": 0.6666666666666666,
+        "n": 2,
+        "scoreBeforeReliability": 4.127777777777775,
+        "compositeScore": 2.8,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 43591,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 303947.76729499997,
+      "replicateMs": [
+        208657.134135,
+        44784.833767000004,
+        45535.008401
+      ],
+      "compositeScore": 2.8
+    },
+    {
+      "provider": "isorun",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 10696,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 10696,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 11076,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 11076,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 11635,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 11635,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 11076,
+        "p95": 11635,
+        "p99": 11635,
+        "min": 10696,
+        "max": 11635,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 75.38666666666667,
+        "compositeScore": 75.4,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 11635,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 33824.100230000004,
+      "replicateMs": [
+        10835.492857000001,
+        11166.584026,
+        11726.920317999997
+      ],
+      "compositeScore": 75.4
+    },
+    {
+      "provider": "lightning",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 11355,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 11355,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 12091,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 12091,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 12473,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 12473,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 12091,
+        "p95": 12473,
+        "p99": 12473,
+        "min": 11355,
+        "max": 12473,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 73.13111111111111,
+        "compositeScore": 73.1,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 12473,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 40144.411901,
+      "replicateMs": [
+        12600.755983,
+        12909.065115,
+        13334.636286000004
+      ],
+      "compositeScore": 73.1
+    },
+    {
+      "provider": "modal",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 38474,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 38474,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 34771,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 34771,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 39867,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 39867,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 38474,
+        "p95": 39867,
+        "p99": 39867,
+        "min": 34771,
+        "max": 39867,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 14.502222222222228,
+        "compositeScore": 14.5,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 39867,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 115098.740021,
+      "replicateMs": [
+        39189.075643000004,
+        35342.119367,
+        40525.82256099999
+      ],
+      "compositeScore": 14.5
+    },
+    {
+      "provider": "northflank",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "cpu-node",
+          "reason": "error",
+          "error": "fixture spawn failed: spawnSync node ENOENT",
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 3
+          }
+        },
+        {
+          "ok": false,
+          "suite": "cpu-node",
+          "reason": "error",
+          "error": "fixture spawn failed: spawnSync node ENOENT",
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 3
+          }
+        },
+        {
+          "ok": false,
+          "suite": "cpu-node",
+          "reason": "error",
+          "error": "fixture spawn failed: spawnSync node ENOENT",
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 3
+          }
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 635.9358460000001,
+      "replicateMs": [
+        224.7034689999998,
+        107.474199,
+        161.79160599999977
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "opencomputer",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 30676,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 30676,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 30271,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 30271,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 29559,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 29559,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 30271,
+        "p95": 30676,
+        "p99": 30676,
+        "min": 29559,
+        "max": 30676,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 32.73111111111111,
+        "compositeScore": 32.7,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 29559,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 100723.690163,
+      "replicateMs": [
+        33080.008967,
+        32717.053035000004,
+        32413.89439999999
+      ],
+      "compositeScore": 32.7
+    },
+    {
+      "provider": "runloop",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 27518,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 27518,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 30864,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 30864,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 32082,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 32082,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 30864,
+        "p95": 32082,
+        "p99": 32082,
+        "min": 27518,
+        "max": 32082,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 31.413333333333338,
+        "compositeScore": 31.4,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 32082,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 93556.627984,
+      "replicateMs": [
+        28681.272962,
+        31648.504226,
+        33045.753939999995
+      ],
+      "compositeScore": 31.4
+    },
+    {
+      "provider": "sandbox0",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "cpu-node",
+          "reason": "timeout",
+          "error": "Gateway Timeout",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "cpu-node",
+          "reason": "timeout",
+          "error": "Gateway Timeout",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "cpu-node",
+          "reason": "timeout",
+          "error": "Gateway Timeout",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 31950.862599999997,
+      "replicateMs": [
+        10670.925093,
+        10334.50974,
+        10406.2612
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "superserve",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 16488,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 16488,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 16427,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 16427,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 20243,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 20243,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 16488,
+        "p95": 20243,
+        "p99": 20243,
+        "min": 16427,
+        "max": 20243,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 63.35999999999999,
+        "compositeScore": 63.4,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 20243,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 55904.450469,
+      "replicateMs": [
+        17278.455365,
+        17075.572921000003,
+        20850.5037
+      ],
+      "compositeScore": 63.4
+    },
+    {
+      "provider": "tenki",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 16992,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 16992,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 18092,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 18092,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 17180,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 17180,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 17180,
+        "p95": 18092,
+        "p99": 18092,
+        "min": 16992,
+        "max": 18092,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 61.82222222222222,
+        "compositeScore": 61.8,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 17180,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 56338.612229,
+      "replicateMs": [
+        18399.487556,
+        18975.416061999997,
+        18089.178593000004
+      ],
+      "compositeScore": 61.8
+    },
+    {
+      "provider": "tensorlake",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 7861,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 7861,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 7249,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 7249,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 7437,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 7437,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 7437,
+        "p95": 7861,
+        "p99": 7861,
+        "min": 7249,
+        "max": 7861,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 83.47333333333333,
+        "compositeScore": 83.5,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 7437,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 23839.035417,
+      "replicateMs": [
+        8292.126532,
+        7622.047359999999,
+        7890.972349
+      ],
+      "compositeScore": 83.5
+    },
+    {
+      "provider": "upstash",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 15075,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 15075,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 16203,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 16203,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 14292,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 14292,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 15075,
+        "p95": 16203,
+        "p99": 16203,
+        "min": 14292,
+        "max": 16203,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 66.5,
+        "compositeScore": 66.5,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 14292,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 47462.926896000004,
+      "replicateMs": [
+        15541.54207,
+        16588.962895,
+        14661.906949999997
+      ],
+      "compositeScore": 66.5
+    },
+    {
+      "provider": "vercel",
+      "suite": "cpu-node",
+      "mode": "cpu-node",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 27772,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 27772,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 27058,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 27058,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        },
+        {
+          "ok": true,
+          "suite": "cpu-node",
+          "metric": {
+            "value": 25126,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "fixtureVersion": "1.0.0",
+            "workloadMs": 25126,
+            "iterationsReported": 64
+          },
+          "notes": "fixture artifact unreadable: ENOENT: no such file or directory, open '/tmp/bench/fixture/.hpc-fixture-artifacts/last.json'; falling back to harness wall-clock"
+        }
+      ],
+      "summary": {
+        "median": 27058,
+        "p95": 27772,
+        "p99": 27772,
+        "min": 25126,
+        "max": 27772,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 39.87111111111111,
+        "compositeScore": 39.9,
+        "meta": {
+          "fixtureVersion": "1.0.0",
+          "workloadMs": 25126,
+          "iterationsReported": 64
+        }
+      },
+      "wallClockMs": 82113.675145,
+      "replicateMs": [
+        28332.359285,
+        27660.057397,
+        25543.536907
+      ],
+      "compositeScore": 39.9
+    }
+  ]
+}
