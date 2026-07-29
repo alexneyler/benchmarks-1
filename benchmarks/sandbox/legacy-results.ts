@@ -52,7 +52,10 @@ export function recordsToSandboxResults(
   staggerDelayMs?: number,
 ): BenchmarkResult[] {
   return participants.map((participant) => {
-    const iterations = participant.records.map((r) => {
+    // Records arrive in completion order; the legacy files list iterations (and
+    // the ramp) in launch order.
+    const records = [...participant.records].sort((a, b) => a.taskIndex - b.taskIndex);
+    const iterations = records.map((r) => {
       const ttiMs = typeof r.data?.ttiMs === 'number' ? r.data.ttiMs : 0;
       return r.status === 'error'
         ? { ttiMs, error: r.errorCode ?? 'error' }
@@ -70,12 +73,12 @@ export function recordsToSandboxResults(
     // 'concurrent' and 'staggered' results carry extra load-profile fields that
     // the writer and the SVG/README consumers dereference unconditionally, so
     // only tag a result with those modes when the profile could be rebuilt.
-    const profile = mode === 'concurrent' || mode === 'staggered' ? loadProfile(participant.records) : undefined;
+    const profile = mode === 'concurrent' || mode === 'staggered' ? loadProfile(records) : undefined;
     if (mode === 'concurrent' && profile) {
       return {
         ...base,
         mode,
-        concurrency: participant.records.length,
+        concurrency: records.length,
         wallClockMs: profile.wallClockMs,
         timeToFirstReadyMs: profile.timeToFirstReadyMs,
       };
@@ -84,7 +87,7 @@ export function recordsToSandboxResults(
       return {
         ...base,
         mode,
-        concurrency: participant.records.length,
+        concurrency: records.length,
         staggerDelayMs: staggerDelayMs ?? 0,
         wallClockMs: profile.wallClockMs,
         timeToFirstReadyMs: profile.timeToFirstReadyMs,
