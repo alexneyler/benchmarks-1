@@ -20,6 +20,7 @@ import {
   filterParticipantsByEnv,
   selectParticipants,
 } from '@benchsdk/client';
+import { NoAvailableParticipantsError } from './no-available-participants.js';
 import type {
   BaseParticipant,
   BenchmarkClient,
@@ -246,7 +247,7 @@ export async function runBenchmark<T extends BaseParticipant>(
   }
 
   if (available.length === 0) {
-    throw new Error('No participants have their required env vars set — nothing to run.');
+    throw new NoAvailableParticipantsError(skipped);
   }
 
   const { baseUrl, orgSlug } = resolvePlatform();

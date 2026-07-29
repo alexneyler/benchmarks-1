@@ -17,6 +17,7 @@ import { makeStorageTask } from './storage-task.js';
 import { writeStorageLegacyResults } from './legacy-results.js';
 import { FILE_SIZE_BYTES } from './types.js';
 import type { StorageFileSize } from './types.js';
+import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -57,7 +58,4 @@ runBenchmark(config, storageProviders, process.argv.slice(2))
     });
     process.exit(0);
   })
-  .catch((err) => {
-    console.error('Benchmark failed:', err);
-    process.exit(1);
-  });
+  .catch(exitOnBenchmarkError);

@@ -18,6 +18,7 @@ import { writeSnapshotForkLegacyResults } from './snapshot-fork-legacy-results.j
 import { DATASET_PRESETS } from './snapshot-fork-types.js';
 import type { DatasetPreset } from './snapshot-fork-types.js';
 import type { StorageProviderConfig } from './types.js';
+import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -60,7 +61,4 @@ runBenchmark(config, participants, process.argv.slice(2))
     await writeSnapshotForkLegacyResults(outcome.participants, { resultsDir, dataset, spec, providers: participants });
     process.exit(0);
   })
-  .catch((err) => {
-    console.error('Benchmark failed:', err);
-    process.exit(1);
-  });
+  .catch(exitOnBenchmarkError);

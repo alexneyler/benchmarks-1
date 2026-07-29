@@ -14,6 +14,7 @@ import { defineBenchmark, runBenchmark } from '@benchsdk/cli';
 import { browserProviders } from './providers.js';
 import { makeBrowserTask } from './browser-task.js';
 import { writeBrowserLegacyResults } from './legacy-results.js';
+import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -33,7 +34,4 @@ runBenchmark(config, browserProviders, process.argv.slice(2))
     await writeBrowserLegacyResults(outcome.participants, { resultsDir, timeoutMs });
     process.exit(0);
   })
-  .catch((err) => {
-    console.error('Benchmark failed:', err);
-    process.exit(1);
-  });
+  .catch(exitOnBenchmarkError);

@@ -16,6 +16,7 @@ import { defineBenchmark, runBenchmark } from '@benchsdk/cli';
 import { providers } from './providers.js';
 import { ttiTask, logTti } from './tti-task.js';
 import { writeSandboxLegacyResults } from './legacy-results.js';
+import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -37,7 +38,4 @@ runBenchmark(config, providers, process.argv.slice(2))
     await writeSandboxLegacyResults(outcome.participants, { resultsDir, mode: 'concurrent' });
     process.exit(0);
   })
-  .catch((err) => {
-    console.error('Benchmark failed:', err);
-    process.exit(1);
-  });
+  .catch(exitOnBenchmarkError);

@@ -28,6 +28,7 @@ import type { ProviderConfig } from './types.js';
 import { getSandboxOptionsWithResources, runDaxIteration } from './dax.js';
 import type { DaxTimingResult } from './dax.js';
 import { writeDaxLegacyResults } from './dax-legacy-results.js';
+import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -110,7 +111,4 @@ runBenchmark(config, providers, process.argv.slice(2))
     await writeDaxLegacyResults(outcome.participants, { resultsDir });
     process.exit(0);
   })
-  .catch((err) => {
-    console.error('Benchmark failed:', err);
-    process.exit(1);
-  });
+  .catch(exitOnBenchmarkError);

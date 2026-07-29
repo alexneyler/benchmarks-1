@@ -21,6 +21,7 @@ vi.mock('@benchsdk/client', () => ({
 
 import { parseCliArgs, mergeConfig, runBenchmark } from '../runner';
 import { TaskError } from '../bench-config';
+import { NoAvailableParticipantsError } from '../no-available-participants';
 import type { BenchmarkConfig } from '../bench-config';
 import type { TaskResultRecord } from '@benchsdk/client';
 
@@ -227,13 +228,21 @@ describe('runBenchmark', () => {
     expect(calls.runWorker[0].concurrency).toBe(5);
   });
 
-  it('throws when no participants have their required env vars set', async () => {
+  it('throws NoAvailableParticipantsError, listing the skips, when no participant has its env vars set', async () => {
     delete process.env.E2B_API_KEY;
     delete process.env.MODAL_TOKEN;
 
-    await expect(
-      runBenchmark({ benchmarkSlug: 's', benchmarkName: 'n', task: async () => ({}) }, participants, []),
-    ).rejects.toThrow('No participants');
+    const err = await runBenchmark(
+      { benchmarkSlug: 's', benchmarkName: 'n', task: async () => ({}) },
+      participants,
+      [],
+    ).catch((e: unknown) => e);
+
+    expect(err).toBeInstanceOf(NoAvailableParticipantsError);
+    expect((err as NoAvailableParticipantsError).skipped).toEqual([
+      { name: 'e2b', missing: ['E2B_API_KEY'] },
+      { name: 'modal', missing: ['MODAL_TOKEN'] },
+    ]);
     expect(createBenchmarkClient).not.toHaveBeenCalled();
   });
 

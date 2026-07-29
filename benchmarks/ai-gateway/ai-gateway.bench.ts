@@ -30,6 +30,7 @@ import { runColdProbe, runWarmProbe } from './phase-probe.js';
 import { providers } from './providers.js';
 import type { AIGatewayProviderConfig, PhaseProbeResult } from './types.js';
 import { writeAIGatewayLegacyResults } from './legacy-results.js';
+import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -163,7 +164,4 @@ runBenchmark(config, providers, stripFlag(argv, '--iterations'))
     await writeAIGatewayLegacyResults(outcome.participants, { resultsDir, providers });
     process.exit(0);
   })
-  .catch((err) => {
-    console.error('Benchmark failed:', err);
-    process.exit(1);
-  });
+  .catch(exitOnBenchmarkError);

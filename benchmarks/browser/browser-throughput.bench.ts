@@ -15,6 +15,7 @@ import { defineBenchmark, runBenchmark } from '@benchsdk/cli';
 import { throughputProviders } from './throughput-providers.js';
 import { makeThroughputTask } from './browser-throughput-task.js';
 import { writeThroughputLegacyResults } from './browser-throughput-legacy-results.js';
+import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,7 +35,4 @@ runBenchmark(config, throughputProviders, process.argv.slice(2))
     await writeThroughputLegacyResults(outcome.participants, { resultsDir, timeoutMs });
     process.exit(0);
   })
-  .catch((err) => {
-    console.error('Benchmark failed:', err);
-    process.exit(1);
-  });
+  .catch(exitOnBenchmarkError);
