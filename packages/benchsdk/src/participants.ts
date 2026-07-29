@@ -11,8 +11,9 @@ export interface BaseParticipant {
 }
 
 /**
+/**
  * Filters `participants` down to those whose `requiredEnvVars` are all set
- * in `process.env`. Returns a tuple: `[available, skipped]` where `skipped`
+ * in `process.env`. Returns an object `{ available, skipped }` where `skipped`
  * includes the names and missing vars for logging.
  */
 export function filterParticipantsByEnv<T extends BaseParticipant>(
