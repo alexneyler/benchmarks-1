@@ -27,7 +27,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getSuiteIds } from './registry.js';
+import { getSuiteIds, getSuite } from './registry.js';
 import type { HpcBenchmarkResult } from './types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -69,6 +69,7 @@ function escapeXml(s: string): string {
  * writes the file.
  */
 export function generateSuiteSvg(suiteId: string): string {
+  const suite = getSuite(suiteId as any);
   const results = (readLatest(suiteId) ?? []).filter(function (r) { return !r.skipped; });
   const visible = results.slice().sort(function (a, b) { return b.compositeScore - a.compositeScore; });
   const expected = results.length;
@@ -100,7 +101,7 @@ export function generateSuiteSvg(suiteId: string): string {
     const y = HEADER_H + 8 + i * ROW;
     const r = visible[i];
     const w = Math.max(2, (r.compositeScore / 100) * barW);
-    const sublabel = 'n=' + r.replicates + ' ' + r.metric.unit + ' ceiling=' + r.ceiling;
+    const sublabel = 'n=' + r.summary.n + ' ' + suite.unit + ' ceiling=' + suite.ceiling;
     parts.push('<text x="' + labelX + '" y="' + (y + 4) + '" font-size="13" fill="#1e293b">' + escapeXml(r.provider) + '</text>');
     parts.push('<rect x="' + barX + '" y="' + (y - 10) + '" width="' + barW + '" height="14" fill="#e2e8f0"/>');
     parts.push('<rect x="' + barX + '" y="' + (y - 10) + '" width="' + w + '" height="14" fill="' + color(r.compositeScore) + '"/>');
