@@ -25,6 +25,7 @@
     "bench:vercel": "tsx benchmarks/sandbox/sequential.bench.ts --provider vercel && tsx benchmarks/sandbox/staggered.bench.ts --provider vercel && tsx benchmarks/sandbox/burst.bench.ts --provider vercel",
     "bench:just-bash": "tsx benchmarks/sandbox/sequential.bench.ts --provider just-bash && tsx benchmarks/sandbox/staggered.bench.ts --provider just-bash && tsx benchmarks/sandbox/burst.bench.ts --provider just-bash",
     "bench:sprites": "tsx benchmarks/sandbox/sequential.bench.ts --provider sprites && tsx benchmarks/sandbox/staggered.bench.ts --provider sprites && tsx benchmarks/sandbox/burst.bench.ts --provider sprites",
+    "bench:sandbox0": "tsx benchmarks/sandbox/sequential.bench.ts --provider sandbox0 && tsx benchmarks/sandbox/staggered.bench.ts --provider sandbox0 && tsx benchmarks/sandbox/burst.bench.ts --provider sandbox0",
     "bench:opencomputer": "tsx benchmarks/sandbox/sequential.bench.ts --provider opencomputer && tsx benchmarks/sandbox/staggered.bench.ts --provider opencomputer && tsx benchmarks/sandbox/burst.bench.ts --provider opencomputer",
     "bench:tensorlake": "tsx benchmarks/sandbox/sequential.bench.ts --provider tensorlake && tsx benchmarks/sandbox/staggered.bench.ts --provider tensorlake && tsx benchmarks/sandbox/burst.bench.ts --provider tensorlake",
     "bench:browser": "tsx benchmarks/browser/browser.bench.ts",
@@ -83,6 +84,7 @@
     "bench:ai-gateway:cloudflare": "tsx benchmarks/ai-gateway/ai-gateway.bench.ts --provider cloudflare-ai-gateway",
     "bench:ai-gateway:llmgateway": "tsx benchmarks/ai-gateway/ai-gateway.bench.ts --provider llmgateway",
     "bench:ai-gateway:pydantic": "tsx benchmarks/ai-gateway/ai-gateway.bench.ts --provider pydantic-ai-gateway",
+    "bench:ai-gateway:concentrate": "tsx benchmarks/ai-gateway/ai-gateway.bench.ts --provider concentrate-ai-gateway",
     "bench:ai-gateway:anthropic": "tsx benchmarks/ai-gateway/ai-gateway.bench.ts --provider anthropic-direct",
     "generate-ai-gateway-svg": "tsx benchmarks/ai-gateway/generate-svg.ts"
   },
@@ -124,6 +126,7 @@
     "@computesdk/quilt": "^1.0.1",
     "@computesdk/railway": "^2.0.0",
     "@computesdk/runloop": "^1.3.54",
+    "@computesdk/sandbox0": "^1.0.1",
     "@computesdk/sprites": "^0.1.13",
     "@computesdk/steel": "^0.2.4",
     "@computesdk/superserve": "^0.2.1",

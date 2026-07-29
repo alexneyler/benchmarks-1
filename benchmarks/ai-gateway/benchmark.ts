@@ -51,6 +51,7 @@ export async function writeAIGatewayResultsJson(results: AIGatewayBenchmarkResul
       ...(i.coldE2eMs !== undefined ? { coldE2eMs: round(i.coldE2eMs) } : {}),
       ...(i.outputTokens !== undefined ? { outputTokens: i.outputTokens } : {}),
       ...(i.outputTokensPerSec !== undefined ? { outputTokensPerSec: round(i.outputTokensPerSec) } : {}),
+      ...(i.resolvedProvider !== undefined ? { resolvedProvider: i.resolvedProvider } : {}),
       ...(i.receipts && Object.keys(i.receipts).length > 0 ? { receipts: i.receipts } : {}),
       ...(i.error ? { error: i.error } : {}),
     })),
