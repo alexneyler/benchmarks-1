@@ -10,64 +10,64 @@
           "ok": true,
           "suite": "disk",
           "metric": {
-            "value": 2142.884852672287,
+            "value": 2167.588639498574,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 4224,
-            "providerNotes": "seq_w=1486.8 seq_r=6793.5 rnd_w=145.6 MB/s"
+            "providerNotes": "seq_w=1297.7 seq_r=7071.3 rnd_w=150.7 MB/s"
           }
         },
         {
           "ok": true,
           "suite": "disk",
           "metric": {
-            "value": 2134.2610311026187,
+            "value": 1204.4542794938563,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 4224,
-            "providerNotes": "seq_w=1405.2 seq_r=6818.6 rnd_w=156.6 MB/s"
+            "providerNotes": "seq_w=987.6 seq_r=3509.3 rnd_w=160.5 MB/s"
           }
         },
         {
           "ok": true,
           "suite": "disk",
           "metric": {
-            "value": 2304.5988814652537,
+            "value": 2276.4895743488673,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 4224,
-            "providerNotes": "seq_w=1400.9 seq_r=7489.9 rnd_w=163.8 MB/s"
+            "providerNotes": "seq_w=1318.5 seq_r=7494.2 rnd_w=146.7 MB/s"
           }
         }
       ],
       "summary": {
-        "median": 2142.884852672287,
-        "p95": 2304.5988814652537,
-        "p99": 2304.5988814652537,
-        "min": 2134.2610311026187,
-        "max": 2304.5988814652537,
+        "median": 2167.588639498574,
+        "p95": 2276.4895743488673,
+        "p99": 2276.4895743488673,
+        "min": 1204.4542794938563,
+        "max": 2276.4895743488673,
         "successRate": 1,
         "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
+        "scoreBeforeReliability": 86.70354557994297,
+        "compositeScore": 86.7,
         "meta": {
           "iterationsReported": 4224,
-          "providerNotes": "seq_w=1400.9 seq_r=7489.9 rnd_w=163.8 MB/s"
+          "providerNotes": "seq_w=1318.5 seq_r=7494.2 rnd_w=146.7 MB/s"
         }
       },
-      "wallClockMs": 1720.217819,
+      "wallClockMs": 1370.636543,
       "replicateMs": [
-        986.1924509999999,
-        387.31737999999996,
-        346.086096
+        468.248472,
+        521.8491060000001,
+        379.75749799999994
       ],
-      "compositeScore": 100
+      "compositeScore": 86.7
     },
     {
       "provider": "beam",
@@ -78,495 +78,64 @@
           "ok": true,
           "suite": "disk",
           "metric": {
-            "value": 1277.9813362555149,
+            "value": 1124.9398522268195,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 4224,
-            "providerNotes": "seq_w=1637.8 seq_r=3176.6 rnd_w=148.7 MB/s"
+            "providerNotes": "seq_w=1550.9 seq_r=2687.6 rnd_w=130.7 MB/s"
           }
         },
         {
           "ok": true,
           "suite": "disk",
           "metric": {
-            "value": 1315.4009475610133,
+            "value": 1276.6394989034113,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 4224,
-            "providerNotes": "seq_w=1692.9 seq_r=3360.4 rnd_w=104.2 MB/s"
+            "providerNotes": "seq_w=1546.7 seq_r=3228.8 rnd_w=165.5 MB/s"
           }
         },
         {
           "ok": true,
           "suite": "disk",
           "metric": {
-            "value": 1391.4721213550745,
+            "value": 1358.1498079467065,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 4224,
-            "providerNotes": "seq_w=1738.4 seq_r=3433.9 rnd_w=196.8 MB/s"
+            "providerNotes": "seq_w=1561.6 seq_r=3636.4 rnd_w=117.3 MB/s"
           }
         }
       ],
       "summary": {
-        "median": 1315.4009475610133,
-        "p95": 1391.4721213550745,
-        "p99": 1391.4721213550745,
-        "min": 1277.9813362555149,
-        "max": 1391.4721213550745,
+        "median": 1276.6394989034113,
+        "p95": 1358.1498079467065,
+        "p99": 1358.1498079467065,
+        "min": 1124.9398522268195,
+        "max": 1358.1498079467065,
         "successRate": 1,
         "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
+        "scoreBeforeReliability": 51.06557995613645,
+        "compositeScore": 51.1,
         "meta": {
           "iterationsReported": 4224,
-          "providerNotes": "seq_w=1738.4 seq_r=3433.9 rnd_w=196.8 MB/s"
+          "providerNotes": "seq_w=1561.6 seq_r=3636.4 rnd_w=117.3 MB/s"
         }
       },
-      "wallClockMs": 1909.0138209999998,
+      "wallClockMs": 2320.7812919999997,
       "replicateMs": [
-        1153.599595,
-        383.8093130000002,
-        305.29419000000007
+        1514.2004610000001,
+        364.90474700000004,
+        368.99000799999976
       ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "blaxel",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1257.6761277445949,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=432.9 seq_r=4333.7 rnd_w=132.1 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1289.207886151342,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=466.8 seq_r=4399.9 rnd_w=145.1 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1317.9348096231308,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=477.2 seq_r=4569.3 rnd_w=112.6 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 1289.207886151342,
-        "p95": 1317.9348096231308,
-        "p99": 1317.9348096231308,
-        "min": 1257.6761277445949,
-        "max": 1317.9348096231308,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=477.2 seq_r=4569.3 rnd_w=112.6 MB/s"
-        }
-      },
-      "wallClockMs": 2722.097467,
-      "replicateMs": [
-        1034.848486,
-        698.171746,
-        752.0002659999996
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "cloud-run",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [],
-      "summary": {
-        "median": 0,
-        "p95": 0,
-        "p99": 0,
-        "min": 0,
-        "max": 0,
-        "successRate": 0,
-        "n": 0,
-        "scoreBeforeReliability": 0,
-        "compositeScore": 0,
-        "meta": {}
-      },
-      "wallClockMs": 0,
-      "replicateMs": [],
-      "compositeScore": 0,
-      "skipped": true,
-      "skipReason": "Missing: CLOUD_RUN_SANDBOX_URL, CLOUD_RUN_SANDBOX_SECRET"
-    },
-    {
-      "provider": "cloudflare",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 16.16554183827339,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=3.0 seq_r=58.4 rnd_w=1.6 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 20.872034106919298,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=7.8 seq_r=71.0 rnd_w=2.4 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 30.49466694231242,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=26.6 seq_r=91.2 rnd_w=2.1 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 20.872034106919298,
-        "p95": 30.49466694231242,
-        "p99": 30.49466694231242,
-        "min": 16.16554183827339,
-        "max": 30.49466694231242,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 10.436017053459649,
-        "compositeScore": 10.4,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=26.6 seq_r=91.2 rnd_w=2.1 MB/s"
-        }
-      },
-      "wallClockMs": 77204.868435,
-      "replicateMs": [
-        38823.037008,
-        19869.354235,
-        14460.616101000007
-      ],
-      "compositeScore": 10.4
-    },
-    {
-      "provider": "codesandbox",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1784.0789275779541,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1175.0 seq_r=5623.8 rnd_w=168.8 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1649.057436900143,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1100.4 seq_r=5226.1 rnd_w=134.9 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1946.8401693428216,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1197.0 seq_r=6056.3 rnd_w=267.0 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 1784.0789275779541,
-        "p95": 1946.8401693428216,
-        "p99": 1946.8401693428216,
-        "min": 1649.057436900143,
-        "max": 1946.8401693428216,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=1197.0 seq_r=6056.3 rnd_w=267.0 MB/s"
-        }
-      },
-      "wallClockMs": 10897.174641,
-      "replicateMs": [
-        2609.730987,
-        2465.231893,
-        2819.6141549999993
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "createos",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1554.2987944795348,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=306.8 seq_r=5722.0 rnd_w=94.2 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1565.0585176624973,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=302.2 seq_r=5768.8 rnd_w=94.6 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1528.7452970166732,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=302.5 seq_r=5624.4 rnd_w=94.0 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 1554.2987944795348,
-        "p95": 1565.0585176624973,
-        "p99": 1565.0585176624973,
-        "min": 1528.7452970166732,
-        "max": 1565.0585176624973,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=302.5 seq_r=5624.4 rnd_w=94.0 MB/s"
-        }
-      },
-      "wallClockMs": 1643.882466,
-      "replicateMs": [
-        560.613693,
-        536.480333,
-        534.9981899999998
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "daytona",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 3884.5577190328395,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=8191.5 seq_r=7007.5 rnd_w=169.6 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 4510.921227033448,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=8949.0 seq_r=8693.1 rnd_w=200.8 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 2993.1102246958803,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=6169.7 seq_r=5591.1 rnd_w=105.8 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 3884.5577190328395,
-        "p95": 4510.921227033448,
-        "p99": 4510.921227033448,
-        "min": 2993.1102246958803,
-        "max": 4510.921227033448,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=6169.7 seq_r=5591.1 rnd_w=105.8 MB/s"
-        }
-      },
-      "wallClockMs": 3709.1205979999995,
-      "replicateMs": [
-        901.5855179999999,
-        946.647164,
-        1717.8449879999998
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "declaw",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 942.5204194996604,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=332.2 seq_r=3279.4 rnd_w=79.2 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1222.9473815071688,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=314.0 seq_r=4398.3 rnd_w=89.7 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1044.2581025550367,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=333.1 seq_r=3733.4 rnd_w=55.2 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 1044.2581025550367,
-        "p95": 1222.9473815071688,
-        "p99": 1222.9473815071688,
-        "min": 942.5204194996604,
-        "max": 1222.9473815071688,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=333.1 seq_r=3733.4 rnd_w=55.2 MB/s"
-        }
-      },
-      "wallClockMs": 2438.433844,
-      "replicateMs": [
-        815.3003530000001,
-        688.858346,
-        904.1727259999998
-      ],
-      "compositeScore": 100
+      "compositeScore": 51.1
     },
     {
       "provider": "e2b",
@@ -577,948 +146,64 @@
           "ok": true,
           "suite": "disk",
           "metric": {
-            "value": 1428.0890384175123,
+            "value": 1424.416170096513,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 4224,
-            "providerNotes": "seq_w=796.8 seq_r=4802.7 rnd_w=56.4 MB/s"
+            "providerNotes": "seq_w=797.6 seq_r=4790.6 rnd_w=54.7 MB/s"
           }
         },
         {
           "ok": true,
           "suite": "disk",
           "metric": {
-            "value": 1415.3920286284836,
+            "value": 1188.8626047606106,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 4224,
-            "providerNotes": "seq_w=823.4 seq_r=4728.2 rnd_w=55.0 MB/s"
+            "providerNotes": "seq_w=760.1 seq_r=3905.5 rnd_w=44.9 MB/s"
           }
         },
         {
           "ok": true,
           "suite": "disk",
           "metric": {
-            "value": 1280.462811179313,
+            "value": 1406.9652486774135,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 4224,
-            "providerNotes": "seq_w=772.9 seq_r=4246.4 rnd_w=51.3 MB/s"
+            "providerNotes": "seq_w=764.6 seq_r=4745.9 rnd_w=58.6 MB/s"
           }
         }
       ],
       "summary": {
-        "median": 1415.3920286284836,
-        "p95": 1428.0890384175123,
-        "p99": 1428.0890384175123,
-        "min": 1280.462811179313,
-        "max": 1428.0890384175123,
+        "median": 1406.9652486774135,
+        "p95": 1424.416170096513,
+        "p99": 1424.416170096513,
+        "min": 1188.8626047606106,
+        "max": 1424.416170096513,
         "successRate": 1,
         "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
+        "scoreBeforeReliability": 56.278609947096534,
+        "compositeScore": 56.3,
         "meta": {
           "iterationsReported": 4224,
-          "providerNotes": "seq_w=772.9 seq_r=4246.4 rnd_w=51.3 MB/s"
+          "providerNotes": "seq_w=764.6 seq_r=4745.9 rnd_w=58.6 MB/s"
         }
       },
-      "wallClockMs": 4135.494504,
+      "wallClockMs": 4550.32519,
       "replicateMs": [
-        1426.2038280000002,
-        1117.082203,
-        1074.4722999999994
+        1137.6341750000001,
+        1324.7487059999999,
+        1620.0757409999997
       ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "hopx",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 187.8937304197693,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=37.4 seq_r=686.8 rnd_w=13.7 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 260.08790854699566,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=46.7 seq_r=949.6 rnd_w=22.0 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 346.204650736602,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=47.7 seq_r=1295.5 rnd_w=20.8 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 260.08790854699566,
-        "p95": 346.204650736602,
-        "p99": 346.204650736602,
-        "min": 187.8937304197693,
-        "max": 346.204650736602,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=47.7 seq_r=1295.5 rnd_w=20.8 MB/s"
-        }
-      },
-      "wallClockMs": 17058.293124,
-      "replicateMs": [
-        5083.211713000001,
-        3882.6462310000006,
-        3878.342184000001
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "isorun",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 2209.4064940205762,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1109.7 seq_r=7417.2 rnd_w=155.4 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 2193.472790790914,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1105.9 seq_r=7350.2 rnd_w=158.9 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 2181.9176207628025,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1097.8 seq_r=7321.4 rnd_w=154.2 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 2193.472790790914,
-        "p95": 2209.4064940205762,
-        "p99": 2209.4064940205762,
-        "min": 2181.9176207628025,
-        "max": 2209.4064940205762,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=1097.8 seq_r=7321.4 rnd_w=154.2 MB/s"
-        }
-      },
-      "wallClockMs": 990.2913260000003,
-      "replicateMs": [
-        435.8209639999998,
-        258.8896850000001,
-        260.2260489999999
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "lightning",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 824.4325254188614,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1780.8 seq_r=1358.2 rnd_w=79.4 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 716.6308635701079,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1905.0 seq_r=830.0 rnd_w=65.8 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 717.0246547253632,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1877.8 seq_r=838.3 rnd_w=76.0 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 717.0246547253632,
-        "p95": 824.4325254188614,
-        "p99": 824.4325254188614,
-        "min": 716.6308635701079,
-        "max": 824.4325254188614,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=1877.8 seq_r=838.3 rnd_w=76.0 MB/s"
-        }
-      },
-      "wallClockMs": 4476.154666,
-      "replicateMs": [
-        1224.478557,
-        1285.6553939999994,
-        562.848191
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "modal",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1226.2610930455269,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=3549.6 seq_r=1192.1 rnd_w=81.6 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1217.4393660982864,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=3512.0 seq_r=1229.0 rnd_w=64.4 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1209.6505749484963,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=3401.3 seq_r=1294.6 rnd_w=71.4 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 1217.4393660982864,
-        "p95": 1226.2610930455269,
-        "p99": 1226.2610930455269,
-        "min": 1209.6505749484963,
-        "max": 1226.2610930455269,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=3401.3 seq_r=1294.6 rnd_w=71.4 MB/s"
-        }
-      },
-      "wallClockMs": 2700.783518,
-      "replicateMs": [
-        886.432098,
-        896.531524,
-        878.085615
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "northflank",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 2810.8089203640075,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=2803.6 seq_r=7651.2 rnd_w=394.3 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 2893.4171273477386,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=2875.0 seq_r=8025.4 rnd_w=336.7 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 2857.0114362471986,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=2813.8 seq_r=7830.3 rnd_w=391.9 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 2857.0114362471986,
-        "p95": 2893.4171273477386,
-        "p99": 2893.4171273477386,
-        "min": 2810.8089203640075,
-        "max": 2893.4171273477386,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=2813.8 seq_r=7830.3 rnd_w=391.9 MB/s"
-        }
-      },
-      "wallClockMs": 847.762154,
-      "replicateMs": [
-        255.89276900000004,
-        201.49731100000008,
-        226.76297200000045
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "opencomputer",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 4378.974526391174,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=5160.2 seq_r=12135.2 rnd_w=110.2 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 4172.260576447995,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=4948.2 seq_r=11548.5 rnd_w=96.2 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 4457.560507925698,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=4962.2 seq_r=12693.0 rnd_w=87.5 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 4378.974526391174,
-        "p95": 4457.560507925698,
-        "p99": 4457.560507925698,
-        "min": 4172.260576447995,
-        "max": 4457.560507925698,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=4962.2 seq_r=12693.0 rnd_w=87.5 MB/s"
-        }
-      },
-      "wallClockMs": 9148.112109,
-      "replicateMs": [
-        2172.358343,
-        2267.2711369999997,
-        1749.0435720000005
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "runloop",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1198.828369057375,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=552.9 seq_r=4035.6 rnd_w=103.4 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1024.177462385391,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=661.5 seq_r=3224.2 rnd_w=105.5 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1176.8045912404525,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=636.4 seq_r=3858.2 rnd_w=106.3 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 1176.8045912404525,
-        "p95": 1198.828369057375,
-        "p99": 1198.828369057375,
-        "min": 1024.177462385391,
-        "max": 1198.828369057375,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=636.4 seq_r=3858.2 rnd_w=106.3 MB/s"
-        }
-      },
-      "wallClockMs": 3297.0933769999992,
-      "replicateMs": [
-        1153.8768769999997,
-        1031.22777,
-        1029.3890539999998
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "sandbox0",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 2776.2929871600168,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=644.6 seq_r=10422.2 rnd_w=19.2 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 2273.831432615697,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=3068.6 seq_r=5820.4 rnd_w=103.2 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 2890.719346083007,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=4375.5 seq_r=7005.4 rnd_w=91.0 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 2776.2929871600168,
-        "p95": 2890.719346083007,
-        "p99": 2890.719346083007,
-        "min": 2273.831432615697,
-        "max": 2890.719346083007,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=4375.5 seq_r=7005.4 rnd_w=91.0 MB/s"
-        }
-      },
-      "wallClockMs": 4033.319013,
-      "replicateMs": [
-        1838.4608089999997,
-        835.0189,
-        865.3115699999998
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "superserve",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 474.4160407139449,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=81.5 seq_r=1681.2 rnd_w=67.5 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 511.42924141414517,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=96.1 seq_r=1822.7 rnd_w=63.5 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 560.023820065282,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=99.0 seq_r=2007.6 rnd_w=66.8 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 511.42924141414517,
-        "p95": 560.023820065282,
-        "p99": 560.023820065282,
-        "min": 474.4160407139449,
-        "max": 560.023820065282,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=99.0 seq_r=2007.6 rnd_w=66.8 MB/s"
-        }
-      },
-      "wallClockMs": 4915.3308830000005,
-      "replicateMs": [
-        1676.277905,
-        1482.8895530000004,
-        1390.9799679999996
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "tenki",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1769.6182665080662,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=596.0 seq_r=6254.3 rnd_w=114.1 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1514.8724384481475,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=633.0 seq_r=5234.4 rnd_w=96.0 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1575.427534357795,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=550.9 seq_r=5543.4 rnd_w=103.7 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 1575.427534357795,
-        "p95": 1769.6182665080662,
-        "p99": 1769.6182665080662,
-        "min": 1514.8724384481475,
-        "max": 1769.6182665080662,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=550.9 seq_r=5543.4 rnd_w=103.7 MB/s"
-        }
-      },
-      "wallClockMs": 4681.970632,
-      "replicateMs": [
-        1617.913237,
-        1083.4563040000003,
-        1122.802729
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "tensorlake",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1741.1705254772442,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=941.2 seq_r=5536.0 rnd_w=243.8 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1736.8086595674763,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=952.7 seq_r=5475.4 rnd_w=259.6 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1785.282004866808,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1004.2 seq_r=5619.9 rnd_w=258.5 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 1741.1705254772442,
-        "p95": 1785.282004866808,
-        "p99": 1785.282004866808,
-        "min": 1736.8086595674763,
-        "max": 1785.282004866808,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=1004.2 seq_r=5619.9 rnd_w=258.5 MB/s"
-        }
-      },
-      "wallClockMs": 1771.1497809999998,
-      "replicateMs": [
-        600.1985370000002,
-        548.4926030000001,
-        603.4626640000001
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "upstash",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 6067.301986122178,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=10449.1 seq_r=13441.9 rnd_w=189.1 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 6000.307039880713,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=10332.5 seq_r=13286.9 rnd_w=190.9 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 5671.58983752964,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=9882.4 seq_r=12451.3 rnd_w=176.3 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 6000.307039880713,
-        "p95": 6067.301986122178,
-        "p99": 6067.301986122178,
-        "min": 5671.58983752964,
-        "max": 6067.301986122178,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=9882.4 seq_r=12451.3 rnd_w=176.3 MB/s"
-        }
-      },
-      "wallClockMs": 2344.276815,
-      "replicateMs": [
-        640.7240459999998,
-        592.0199349999998,
-        455.2656189999998
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "vercel",
-      "suite": "disk",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1216.9465195544608,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1036.5 seq_r=3609.9 rnd_w=110.7 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1662.2378055252739,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1373.4 seq_r=5050.6 rnd_w=112.5 MB/s"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "disk",
-          "metric": {
-            "value": 1274.2918896837289,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 4224,
-            "providerNotes": "seq_w=1220.8 seq_r=3635.1 rnd_w=120.6 MB/s"
-          }
-        }
-      ],
-      "summary": {
-        "median": 1274.2918896837289,
-        "p95": 1662.2378055252739,
-        "p99": 1662.2378055252739,
-        "min": 1216.9465195544608,
-        "max": 1662.2378055252739,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 4224,
-          "providerNotes": "seq_w=1220.8 seq_r=3635.1 rnd_w=120.6 MB/s"
-        }
-      },
-      "wallClockMs": 2506.9482500000004,
-      "replicateMs": [
-        774.3042099999998,
-        575.0910610000001,
-        584.8852489999999
-      ],
-      "compositeScore": 100
+      "compositeScore": 56.3
     }
   ]
 }

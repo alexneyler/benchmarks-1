@@ -1,115 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 756" font-family="system-ui,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 186" font-family="system-ui,sans-serif">
 <rect width="100%" height="100%" fill="#f8fafc"/>
 <text x="20" y="28" font-size="16" font-weight="600" fill="#0f172a">HPC suite: network-localhost</text>
-<text x="20" y="48" font-size="12" fill="#475569">replicates: 22  method: throughput-after-boot (median, 2-sigma trim)</text>
-<text x="20" y="76" font-size="13" fill="#1e293b">opencomputer</text>
+<text x="20" y="48" font-size="12" fill="#475569">replicates: 3  method: throughput-after-boot (median, 2-sigma trim)</text>
+<text x="20" y="76" font-size="13" fill="#1e293b">beam</text>
 <rect x="220" y="62" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="62" width="430.76000000000005" height="14" fill="#16a34a"/>
-<text x="668" y="76" font-size="13" fill="#0f172a">97.9</text>
-<text x="20" y="90" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="106" font-size="13" fill="#1e293b">beam</text>
+<rect x="220" y="62" width="440" height="14" fill="#16a34a"/>
+<text x="668" y="76" font-size="13" fill="#0f172a">100.0</text>
+<text x="20" y="90" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=3</text>
+<text x="20" y="106" font-size="13" fill="#1e293b">archil</text>
 <rect x="220" y="92" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="92" width="325.16" height="14" fill="#eab308"/>
-<text x="668" y="106" font-size="13" fill="#0f172a">73.9</text>
-<text x="20" y="120" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="136" font-size="13" fill="#1e293b">upstash</text>
+<rect x="220" y="92" width="344.96000000000004" height="14" fill="#22c55e"/>
+<text x="668" y="106" font-size="13" fill="#0f172a">78.4</text>
+<text x="20" y="120" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=3</text>
+<text x="20" y="136" font-size="13" fill="#1e293b">e2b</text>
 <rect x="220" y="122" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="122" width="268.4" height="14" fill="#eab308"/>
-<text x="668" y="136" font-size="13" fill="#0f172a">61.0</text>
-<text x="20" y="150" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="166" font-size="13" fill="#1e293b">codesandbox</text>
-<rect x="220" y="152" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="152" width="245.95999999999998" height="14" fill="#eab308"/>
-<text x="668" y="166" font-size="13" fill="#0f172a">55.9</text>
-<text x="20" y="180" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="196" font-size="13" fill="#1e293b">tensorlake</text>
-<rect x="220" y="182" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="182" width="212.95999999999998" height="14" fill="#f97316"/>
-<text x="668" y="196" font-size="13" fill="#0f172a">48.4</text>
-<text x="20" y="210" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="226" font-size="13" fill="#1e293b">isorun</text>
-<rect x="220" y="212" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="212" width="207.68" height="14" fill="#f97316"/>
-<text x="668" y="226" font-size="13" fill="#0f172a">47.2</text>
-<text x="20" y="240" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="256" font-size="13" fill="#1e293b">createos</text>
-<rect x="220" y="242" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="242" width="187.88000000000002" height="14" fill="#f97316"/>
-<text x="668" y="256" font-size="13" fill="#0f172a">42.7</text>
-<text x="20" y="270" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="286" font-size="13" fill="#1e293b">tenki</text>
-<rect x="220" y="272" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="272" width="183.04000000000002" height="14" fill="#f97316"/>
-<text x="668" y="286" font-size="13" fill="#0f172a">41.6</text>
-<text x="20" y="300" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="316" font-size="13" fill="#1e293b">e2b</text>
-<rect x="220" y="302" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="302" width="169.4" height="14" fill="#f97316"/>
-<text x="668" y="316" font-size="13" fill="#0f172a">38.5</text>
-<text x="20" y="330" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="346" font-size="13" fill="#1e293b">daytona</text>
-<rect x="220" y="332" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="332" width="158.4" height="14" fill="#f97316"/>
-<text x="668" y="346" font-size="13" fill="#0f172a">36.0</text>
-<text x="20" y="360" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="376" font-size="13" fill="#1e293b">archil</text>
-<rect x="220" y="362" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="362" width="139.92000000000002" height="14" fill="#f97316"/>
-<text x="668" y="376" font-size="13" fill="#0f172a">31.8</text>
-<text x="20" y="390" font-size="11" fill="#64748b">n=2 gb_per_s ceiling=5</text>
-<text x="20" y="406" font-size="13" fill="#1e293b">vercel</text>
-<rect x="220" y="392" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="392" width="133.32" height="14" fill="#f97316"/>
-<text x="668" y="406" font-size="13" fill="#0f172a">30.3</text>
-<text x="20" y="420" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="436" font-size="13" fill="#1e293b">modal</text>
-<rect x="220" y="422" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="422" width="120.12" height="14" fill="#f97316"/>
-<text x="668" y="436" font-size="13" fill="#0f172a">27.3</text>
-<text x="20" y="450" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="466" font-size="13" fill="#1e293b">runloop</text>
-<rect x="220" y="452" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="452" width="114.4" height="14" fill="#f97316"/>
-<text x="668" y="466" font-size="13" fill="#0f172a">26.0</text>
-<text x="20" y="480" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="496" font-size="13" fill="#1e293b">sandbox0</text>
-<rect x="220" y="482" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="482" width="90.64" height="14" fill="#f97316"/>
-<text x="668" y="496" font-size="13" fill="#0f172a">20.6</text>
-<text x="20" y="510" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="526" font-size="13" fill="#1e293b">blaxel</text>
-<rect x="220" y="512" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="512" width="89.75999999999999" height="14" fill="#f97316"/>
-<text x="668" y="526" font-size="13" fill="#0f172a">20.4</text>
-<text x="20" y="540" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="556" font-size="13" fill="#1e293b">superserve</text>
-<rect x="220" y="542" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="542" width="85.35999999999999" height="14" fill="#f97316"/>
-<text x="668" y="556" font-size="13" fill="#0f172a">19.4</text>
-<text x="20" y="570" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="586" font-size="13" fill="#1e293b">lightning</text>
-<rect x="220" y="572" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="572" width="73.92" height="14" fill="#f97316"/>
-<text x="668" y="586" font-size="13" fill="#0f172a">16.8</text>
-<text x="20" y="600" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="616" font-size="13" fill="#1e293b">declaw</text>
-<rect x="220" y="602" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="602" width="72.16" height="14" fill="#f97316"/>
-<text x="668" y="616" font-size="13" fill="#0f172a">16.4</text>
-<text x="20" y="630" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="646" font-size="13" fill="#1e293b">cloudflare</text>
-<rect x="220" y="632" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="632" width="58.080000000000005" height="14" fill="#f97316"/>
-<text x="668" y="646" font-size="13" fill="#0f172a">13.2</text>
-<text x="20" y="660" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="676" font-size="13" fill="#1e293b">hopx</text>
-<rect x="220" y="662" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="662" width="32.12" height="14" fill="#f97316"/>
-<text x="668" y="676" font-size="13" fill="#0f172a">7.3</text>
-<text x="20" y="690" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=5</text>
-<text x="20" y="706" font-size="13" fill="#1e293b">northflank</text>
-<rect x="220" y="692" width="440" height="14" fill="#e2e8f0"/>
-<rect x="220" y="692" width="2" height="14" fill="#9ca3af"/>
-<text x="668" y="706" font-size="13" fill="#0f172a">0.0</text>
-<text x="20" y="720" font-size="11" fill="#64748b">n=0 gb_per_s ceiling=5</text>
+<rect x="220" y="122" width="291.71999999999997" height="14" fill="#eab308"/>
+<text x="668" y="136" font-size="13" fill="#0f172a">66.3</text>
+<text x="20" y="150" font-size="11" fill="#64748b">n=3 gb_per_s ceiling=3</text>
 </svg>

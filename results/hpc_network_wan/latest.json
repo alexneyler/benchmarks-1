@@ -10,64 +10,64 @@
           "ok": true,
           "suite": "network-wan",
           "metric": {
-            "value": 175.80158152157546,
+            "value": 150.08483169899705,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 150.5MB/s, 175.3MB/s, 213.0MB/s (avg 175.8MB/s)"
+            "providerNotes": "cloudflare-10mb: 146.8MB/s, 165.1MB/s, 140.8MB/s (avg 150.1MB/s)"
           }
         },
         {
           "ok": true,
           "suite": "network-wan",
           "metric": {
-            "value": 121.02852167824152,
+            "value": 130.59469922471456,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 92.4MB/s, 126.6MB/s, 165.3MB/s (avg 121.0MB/s)"
+            "providerNotes": "cloudflare-10mb: 143.3MB/s, 116.1MB/s, 135.8MB/s (avg 130.6MB/s)"
           }
         },
         {
           "ok": true,
           "suite": "network-wan",
           "metric": {
-            "value": 121.19181387109145,
+            "value": 108.27270525005902,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 121.1MB/s, 106.1MB/s, 141.8MB/s (avg 121.2MB/s)"
+            "providerNotes": "cloudflare-10mb: 106.9MB/s, 106.9MB/s, 111.4MB/s (avg 108.3MB/s)"
           }
         }
       ],
       "summary": {
-        "median": 121.19181387109145,
-        "p95": 175.80158152157546,
-        "p99": 175.80158152157546,
-        "min": 121.02852167824152,
-        "max": 175.80158152157546,
+        "median": 130.59469922471456,
+        "p95": 150.08483169899705,
+        "p99": 150.08483169899705,
+        "min": 108.27270525005902,
+        "max": 150.08483169899705,
         "successRate": 1,
         "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
+        "scoreBeforeReliability": 76.82041130865562,
+        "compositeScore": 76.8,
         "meta": {
           "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 121.1MB/s, 106.1MB/s, 141.8MB/s (avg 121.2MB/s)"
+          "providerNotes": "cloudflare-10mb: 106.9MB/s, 106.9MB/s, 111.4MB/s (avg 108.3MB/s)"
         }
       },
-      "wallClockMs": 1734.4289899999999,
+      "wallClockMs": 1792.3057190000002,
       "replicateMs": [
-        543.5551230000001,
-        559.470673,
-        630.8215559999999
+        577.7078350000002,
+        573.0679580000001,
+        640.954722
       ],
-      "compositeScore": 100
+      "compositeScore": 76.8
     },
     {
       "provider": "beam",
@@ -78,495 +78,64 @@
           "ok": true,
           "suite": "network-wan",
           "metric": {
-            "value": 161.56243019493252,
+            "value": 204.35820994224355,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 175.1MB/s, 183.6MB/s, 135.0MB/s (avg 161.6MB/s)"
+            "providerNotes": "cloudflare-10mb: 177.0MB/s, 223.1MB/s, 220.1MB/s (avg 204.4MB/s)"
           }
         },
         {
           "ok": true,
           "suite": "network-wan",
           "metric": {
-            "value": 228.199703859159,
+            "value": 114.69577900417302,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 203.9MB/s, 238.9MB/s, 246.7MB/s (avg 228.2MB/s)"
+            "providerNotes": "cloudflare-10mb: 122.3MB/s, 108.1MB/s, 114.6MB/s (avg 114.7MB/s)"
           }
         },
         {
           "ok": true,
           "suite": "network-wan",
           "metric": {
-            "value": 104.31329167507853,
+            "value": 139.42472327434055,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 96.7MB/s, 110.2MB/s, 107.1MB/s (avg 104.3MB/s)"
+            "providerNotes": "cloudflare-10mb: 138.5MB/s, 150.0MB/s, 131.1MB/s (avg 139.4MB/s)"
           }
         }
       ],
       "summary": {
-        "median": 161.56243019493252,
-        "p95": 228.199703859159,
-        "p99": 228.199703859159,
-        "min": 104.31329167507853,
-        "max": 228.199703859159,
+        "median": 139.42472327434055,
+        "p95": 204.35820994224355,
+        "p99": 204.35820994224355,
+        "min": 114.69577900417302,
+        "max": 204.35820994224355,
         "successRate": 1,
         "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
+        "scoreBeforeReliability": 82.01454310255326,
+        "compositeScore": 82,
         "meta": {
           "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 96.7MB/s, 110.2MB/s, 107.1MB/s (avg 104.3MB/s)"
+          "providerNotes": "cloudflare-10mb: 138.5MB/s, 150.0MB/s, 131.1MB/s (avg 139.4MB/s)"
         }
       },
-      "wallClockMs": 2447.549546,
+      "wallClockMs": 2712.4546290000003,
       "replicateMs": [
-        1296.9087829999999,
-        438.9595919999997,
-        629.7202639999996
+        1524.3927519999997,
+        608.0244549999998,
+        532.6697340000001
       ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "blaxel",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 116.18593503185372,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 102.5MB/s, 119.0MB/s, 130.6MB/s (avg 116.2MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 133.89274316506555,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 136.9MB/s, 130.6MB/s, 134.4MB/s (avg 133.9MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 132.0901367770911,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 147.0MB/s, 116.6MB/s, 136.5MB/s (avg 132.1MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 132.0901367770911,
-        "p95": 133.89274316506555,
-        "p99": 133.89274316506555,
-        "min": 116.18593503185372,
-        "max": 133.89274316506555,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 147.0MB/s, 116.6MB/s, 136.5MB/s (avg 132.1MB/s)"
-        }
-      },
-      "wallClockMs": 2875.4997090000006,
-      "replicateMs": [
-        902.2531689999998,
-        879.3867049999999,
-        830.3096649999998
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "cloud-run",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [],
-      "summary": {
-        "median": 0,
-        "p95": 0,
-        "p99": 0,
-        "min": 0,
-        "max": 0,
-        "successRate": 0,
-        "n": 0,
-        "scoreBeforeReliability": 0,
-        "compositeScore": 0,
-        "meta": {}
-      },
-      "wallClockMs": 0,
-      "replicateMs": [],
-      "compositeScore": 0,
-      "skipped": true,
-      "skipReason": "Missing: CLOUD_RUN_SANDBOX_URL, CLOUD_RUN_SANDBOX_SECRET"
-    },
-    {
-      "provider": "cloudflare",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 11.751618837201947,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 11.8MB/s, 11.7MB/s, 11.8MB/s (avg 11.8MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 11.837006485074456,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 11.9MB/s, 11.9MB/s, 11.8MB/s (avg 11.8MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 11.571467833088315,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 11.5MB/s, 11.6MB/s, 11.6MB/s (avg 11.6MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 11.751618837201947,
-        "p95": 11.837006485074456,
-        "p99": 11.837006485074456,
-        "min": 11.571467833088315,
-        "max": 11.837006485074456,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 11.751618837201947,
-        "compositeScore": 11.8,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 11.5MB/s, 11.6MB/s, 11.6MB/s (avg 11.6MB/s)"
-        }
-      },
-      "wallClockMs": 22684.79162,
-      "replicateMs": [
-        5461.126919,
-        7917.006820999999,
-        5385.567822000001
-      ],
-      "compositeScore": 11.8
-    },
-    {
-      "provider": "codesandbox",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 93.73945138236164,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 82.1MB/s, 99.2MB/s, 102.7MB/s (avg 93.7MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 84.56757381711128,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 105.8MB/s, 60.8MB/s, 104.6MB/s (avg 84.6MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 80.85514253017851,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 95.3MB/s, 104.0MB/s, 58.8MB/s (avg 80.9MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 84.56757381711128,
-        "p95": 93.73945138236164,
-        "p99": 93.73945138236164,
-        "min": 80.85514253017851,
-        "max": 93.73945138236164,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 84.56757381711128,
-        "compositeScore": 84.6,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 95.3MB/s, 104.0MB/s, 58.8MB/s (avg 80.9MB/s)"
-        }
-      },
-      "wallClockMs": 12880.079352,
-      "replicateMs": [
-        3547.048455,
-        3107.425819,
-        3223.4224400000003
-      ],
-      "compositeScore": 84.6
-    },
-    {
-      "provider": "createos",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 42.53484292345429,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 25.3MB/s, 53.9MB/s, 80.1MB/s (avg 42.5MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 71.1776733499552,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 74.5MB/s, 70.6MB/s, 68.8MB/s (avg 71.2MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 182.34371408398658,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 156.3MB/s, 191.9MB/s, 207.0MB/s (avg 182.3MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 71.1776733499552,
-        "p95": 182.34371408398658,
-        "p99": 182.34371408398658,
-        "min": 42.53484292345429,
-        "max": 182.34371408398658,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 71.1776733499552,
-        "compositeScore": 71.2,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 156.3MB/s, 191.9MB/s, 207.0MB/s (avg 182.3MB/s)"
-        }
-      },
-      "wallClockMs": 2319.646768,
-      "replicateMs": [
-        1092.656096,
-        788.97406,
-        425.11401099999966
-      ],
-      "compositeScore": 71.2
-    },
-    {
-      "provider": "daytona",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 160.30514833075452,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 123.7MB/s, 177.6MB/s, 200.2MB/s (avg 160.3MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 143.9443096739189,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 117.5MB/s, 157.9MB/s, 166.8MB/s (avg 143.9MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 180.33756125728823,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 184.9MB/s, 164.9MB/s, 193.9MB/s (avg 180.3MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 160.30514833075452,
-        "p95": 180.33756125728823,
-        "p99": 180.33756125728823,
-        "min": 143.9443096739189,
-        "max": 180.33756125728823,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 184.9MB/s, 164.9MB/s, 193.9MB/s (avg 180.3MB/s)"
-        }
-      },
-      "wallClockMs": 4887.718102999999,
-      "replicateMs": [
-        1126.3717019999997,
-        2540.4517710000005,
-        1082.770396
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "declaw",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 1.3620169706524574,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 1.7MB/s, 1.3MB/s, 1.1MB/s (avg 1.4MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 46.277243855019485,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 42.0MB/s, 48.6MB/s, 48.9MB/s (avg 46.3MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 5.339327028348789,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 2.9MB/s, 5.3MB/s, 47.3MB/s (avg 5.3MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 5.339327028348789,
-        "p95": 46.277243855019485,
-        "p99": 46.277243855019485,
-        "min": 1.3620169706524574,
-        "max": 46.277243855019485,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 5.339327028348789,
-        "compositeScore": 5.3,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 2.9MB/s, 5.3MB/s, 47.3MB/s (avg 5.3MB/s)"
-        }
-      },
-      "wallClockMs": 33775.031279,
-      "replicateMs": [
-        24431.303473,
-        1421.992850999999,
-        7883.340783999996
-      ],
-      "compositeScore": 5.3
+      "compositeScore": 82
     },
     {
       "provider": "e2b",
@@ -577,948 +146,64 @@
           "ok": true,
           "suite": "network-wan",
           "metric": {
-            "value": 131.24490548290947,
+            "value": 119.72734157267101,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 116.3MB/s, 127.5MB/s, 156.0MB/s (avg 131.2MB/s)"
+            "providerNotes": "cloudflare-10mb: 108.7MB/s, 119.7MB/s, 133.4MB/s (avg 119.7MB/s)"
           }
         },
         {
           "ok": true,
           "suite": "network-wan",
           "metric": {
-            "value": 121.24691785282863,
+            "value": 94.77861243650138,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 135.5MB/s, 131.6MB/s, 102.5MB/s (avg 121.2MB/s)"
+            "providerNotes": "cloudflare-10mb: 80.2MB/s, 100.4MB/s, 108.6MB/s (avg 94.8MB/s)"
           }
         },
         {
           "ok": true,
           "suite": "network-wan",
           "metric": {
-            "value": 107.46661105532242,
+            "value": 62.28088740424171,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 100.0MB/s, 101.6MB/s, 124.0MB/s (avg 107.5MB/s)"
+            "providerNotes": "cloudflare-10mb: 119.5MB/s, 134.3MB/s, 30.9MB/s (avg 62.3MB/s)"
           }
         }
       ],
       "summary": {
-        "median": 121.24691785282863,
-        "p95": 131.24490548290947,
-        "p99": 131.24490548290947,
-        "min": 107.46661105532242,
-        "max": 131.24490548290947,
+        "median": 94.77861243650138,
+        "p95": 119.72734157267101,
+        "p99": 119.72734157267101,
+        "min": 62.28088740424171,
+        "max": 119.72734157267101,
         "successRate": 1,
         "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
+        "scoreBeforeReliability": 55.75212496264786,
+        "compositeScore": 55.8,
         "meta": {
           "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 100.0MB/s, 101.6MB/s, 124.0MB/s (avg 107.5MB/s)"
+          "providerNotes": "cloudflare-10mb: 119.5MB/s, 134.3MB/s, 30.9MB/s (avg 62.3MB/s)"
         }
       },
-      "wallClockMs": 5550.5414789999995,
+      "wallClockMs": 7230.553717,
       "replicateMs": [
-        1620.622654,
-        1996.1092599999997,
-        1521.4645039999996
+        1793.00228,
+        3258.9163390000003,
+        1684.094107
       ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "hopx",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 32.55222313552427,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 27.3MB/s, 32.5MB/s, 40.5MB/s (avg 32.6MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 25.805511004801886,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 18.9MB/s, 38.7MB/s, 26.7MB/s (avg 25.8MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 36.89793564610381,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 30.0MB/s, 32.6MB/s, 58.0MB/s (avg 36.9MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 32.55222313552427,
-        "p95": 36.89793564610381,
-        "p99": 36.89793564610381,
-        "min": 25.805511004801886,
-        "max": 36.89793564610381,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 32.55222313552427,
-        "compositeScore": 32.6,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 30.0MB/s, 32.6MB/s, 58.0MB/s (avg 36.9MB/s)"
-        }
-      },
-      "wallClockMs": 16867.312626,
-      "replicateMs": [
-        4380.254730000001,
-        4632.75059,
-        4176.876248999999
-      ],
-      "compositeScore": 32.6
-    },
-    {
-      "provider": "isorun",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 115.41808130120437,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 105.8MB/s, 109.2MB/s, 135.5MB/s (avg 115.4MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 131.67311790329626,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 145.3MB/s, 120.3MB/s, 131.9MB/s (avg 131.7MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 133.2509617343746,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 129.1MB/s, 112.0MB/s, 171.5MB/s (avg 133.3MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 131.67311790329626,
-        "p95": 133.2509617343746,
-        "p99": 133.2509617343746,
-        "min": 115.41808130120437,
-        "max": 133.2509617343746,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 129.1MB/s, 112.0MB/s, 171.5MB/s (avg 133.3MB/s)"
-        }
-      },
-      "wallClockMs": 1691.216902,
-      "replicateMs": [
-        715.6221499999999,
-        468.0251290000001,
-        489.96794199999977
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "lightning",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 87.8824149458389,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 80.8MB/s, 89.4MB/s, 94.5MB/s (avg 87.9MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 84.8417609246847,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 73.9MB/s, 88.0MB/s, 95.6MB/s (avg 84.8MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 100.71523562441838,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 97.6MB/s, 102.2MB/s, 102.6MB/s (avg 100.7MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 87.8824149458389,
-        "p95": 100.71523562441838,
-        "p99": 100.71523562441838,
-        "min": 84.8417609246847,
-        "max": 100.71523562441838,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 87.8824149458389,
-        "compositeScore": 87.9,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 97.6MB/s, 102.2MB/s, 102.6MB/s (avg 100.7MB/s)"
-        }
-      },
-      "wallClockMs": 6280.889122,
-      "replicateMs": [
-        1643.760826,
-        1404.5239690000003,
-        1691.5113350000001
-      ],
-      "compositeScore": 87.9
-    },
-    {
-      "provider": "modal",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 129.50570418234528,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 123.2MB/s, 135.0MB/s, 130.9MB/s (avg 129.5MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 102.59104981318683,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 98.5MB/s, 102.0MB/s, 107.8MB/s (avg 102.6MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 117.10425717069184,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 117.9MB/s, 113.4MB/s, 120.3MB/s (avg 117.1MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 117.10425717069184,
-        "p95": 129.50570418234528,
-        "p99": 129.50570418234528,
-        "min": 102.59104981318683,
-        "max": 129.50570418234528,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 117.9MB/s, 113.4MB/s, 120.3MB/s (avg 117.1MB/s)"
-        }
-      },
-      "wallClockMs": 3134.593034,
-      "replicateMs": [
-        1010.326069,
-        1076.1481049999998,
-        1004.3091769999996
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "northflank",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 94.19323302815259,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 97.5MB/s, 91.0MB/s, 94.4MB/s (avg 94.2MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 105.90600436845324,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 102.2MB/s, 98.1MB/s, 119.8MB/s (avg 105.9MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 89.44073051086333,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 69.7MB/s, 96.4MB/s, 113.3MB/s (avg 89.4MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 94.19323302815259,
-        "p95": 105.90600436845324,
-        "p99": 105.90600436845324,
-        "min": 89.44073051086333,
-        "max": 105.90600436845324,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 94.19323302815259,
-        "compositeScore": 94.2,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 69.7MB/s, 96.4MB/s, 113.3MB/s (avg 89.4MB/s)"
-        }
-      },
-      "wallClockMs": 21680.046126999998,
-      "replicateMs": [
-        7193.084123,
-        7052.514265,
-        7113.435908999998
-      ],
-      "compositeScore": 94.2
-    },
-    {
-      "provider": "opencomputer",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 66.49843744188314,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 100.9MB/s, 56.8MB/s, 56.8MB/s (avg 66.5MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 65.86507321080722,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 96.7MB/s, 56.8MB/s, 56.8MB/s (avg 65.9MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 67.14024395823911,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 105.1MB/s, 56.9MB/s, 56.9MB/s (avg 67.1MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 66.49843744188314,
-        "p95": 67.14024395823911,
-        "p99": 67.14024395823911,
-        "min": 65.86507321080722,
-        "max": 67.14024395823911,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 66.49843744188314,
-        "compositeScore": 66.5,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 105.1MB/s, 56.9MB/s, 56.9MB/s (avg 67.1MB/s)"
-        }
-      },
-      "wallClockMs": 9839.425864,
-      "replicateMs": [
-        2554.5815000000002,
-        2322.526772,
-        2635.759298
-      ],
-      "compositeScore": 66.5
-    },
-    {
-      "provider": "runloop",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 114.20446118333311,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 121.1MB/s, 93.2MB/s, 137.5MB/s (avg 114.2MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 120.62563401838455,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 119.8MB/s, 108.0MB/s, 137.8MB/s (avg 120.6MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 77.28886092429049,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 61.6MB/s, 69.5MB/s, 122.4MB/s (avg 77.3MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 114.20446118333311,
-        "p95": 120.62563401838455,
-        "p99": 120.62563401838455,
-        "min": 77.28886092429049,
-        "max": 120.62563401838455,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 61.6MB/s, 69.5MB/s, 122.4MB/s (avg 77.3MB/s)"
-        }
-      },
-      "wallClockMs": 4310.427111,
-      "replicateMs": [
-        1426.407033,
-        1302.9831179999996,
-        1492.1399099999999
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "sandbox0",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 21.990288434782624,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 92.0MB/s, 33.6MB/s, 10.4MB/s (avg 22.0MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 9.352870308011724,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 11.1MB/s, 8.0MB/s, 9.4MB/s (avg 9.4MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 10.885222659702263,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 21.6MB/s, 7.4MB/s, 10.6MB/s (avg 10.9MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 10.885222659702263,
-        "p95": 21.990288434782624,
-        "p99": 21.990288434782624,
-        "min": 9.352870308011724,
-        "max": 21.990288434782624,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 10.885222659702263,
-        "compositeScore": 10.9,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 21.6MB/s, 7.4MB/s, 10.6MB/s (avg 10.9MB/s)"
-        }
-      },
-      "wallClockMs": 10755.235562,
-      "replicateMs": [
-        2178.078146,
-        3957.8851989999994,
-        4264.4815690000005
-      ],
-      "compositeScore": 10.9
-    },
-    {
-      "provider": "superserve",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 62.37671255758142,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 96.3MB/s, 49.6MB/s, 57.1MB/s (avg 62.4MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 75.87238658101852,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 112.9MB/s, 63.0MB/s, 67.6MB/s (avg 75.9MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 91.50331872929182,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 130.4MB/s, 83.9MB/s, 75.8MB/s (avg 91.5MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 75.87238658101852,
-        "p95": 91.50331872929182,
-        "p99": 91.50331872929182,
-        "min": 62.37671255758142,
-        "max": 91.50331872929182,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 75.87238658101852,
-        "compositeScore": 75.9,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 130.4MB/s, 83.9MB/s, 75.8MB/s (avg 91.5MB/s)"
-        }
-      },
-      "wallClockMs": 4683.547100000001,
-      "replicateMs": [
-        1762.761334,
-        1347.4775219999997,
-        1195.07888
-      ],
-      "compositeScore": 75.9
-    },
-    {
-      "provider": "tenki",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 59.79679744657469,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 61.2MB/s, 56.4MB/s, 62.1MB/s (avg 59.8MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 72.51004248377892,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 71.8MB/s, 71.2MB/s, 74.7MB/s (avg 72.5MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 68.34747397384578,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 64.4MB/s, 70.2MB/s, 70.9MB/s (avg 68.3MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 68.34747397384578,
-        "p95": 72.51004248377892,
-        "p99": 72.51004248377892,
-        "min": 59.79679744657469,
-        "max": 72.51004248377892,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 68.34747397384578,
-        "compositeScore": 68.3,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 64.4MB/s, 70.2MB/s, 70.9MB/s (avg 68.3MB/s)"
-        }
-      },
-      "wallClockMs": 6829.897826,
-      "replicateMs": [
-        2381.2269960000003,
-        1800.774144,
-        1777.4890450000012
-      ],
-      "compositeScore": 68.3
-    },
-    {
-      "provider": "tensorlake",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 172.92674949704255,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 141.2MB/s, 194.3MB/s, 195.4MB/s (avg 172.9MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 129.09379332791121,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 122.1MB/s, 132.0MB/s, 133.8MB/s (avg 129.1MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 126.09955183840978,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 137.2MB/s, 119.3MB/s, 123.3MB/s (avg 126.1MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 129.09379332791121,
-        "p95": 172.92674949704255,
-        "p99": 172.92674949704255,
-        "min": 126.09955183840978,
-        "max": 172.92674949704255,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 137.2MB/s, 119.3MB/s, 123.3MB/s (avg 126.1MB/s)"
-        }
-      },
-      "wallClockMs": 2360.1626130000004,
-      "replicateMs": [
-        765.0101400000003,
-        736.1907429999997,
-        841.1645100000001
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "upstash",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 194.6986162769341,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 184.8MB/s, 195.0MB/s, 205.5MB/s (avg 194.7MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 139.8598783971504,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 136.8MB/s, 133.1MB/s, 151.0MB/s (avg 139.9MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 66.32884501515846,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 48.5MB/s, 75.7MB/s, 87.8MB/s (avg 66.3MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 139.8598783971504,
-        "p95": 194.6986162769341,
-        "p99": 194.6986162769341,
-        "min": 66.32884501515846,
-        "max": 194.6986162769341,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 48.5MB/s, 75.7MB/s, 87.8MB/s (avg 66.3MB/s)"
-        }
-      },
-      "wallClockMs": 3442.266563,
-      "replicateMs": [
-        829.954745,
-        811.8528729999998,
-        1179.2245200000002
-      ],
-      "compositeScore": 100
-    },
-    {
-      "provider": "vercel",
-      "suite": "network-wan",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 119.92221557284627,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 176.6MB/s, 77.4MB/s, 155.4MB/s (avg 119.9MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 133.07941249112378,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 158.5MB/s, 98.9MB/s, 163.5MB/s (avg 133.1MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "network-wan",
-          "metric": {
-            "value": 124.10303753974166,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-10mb: 135.1MB/s, 84.1MB/s, 205.2MB/s (avg 124.1MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 124.10303753974166,
-        "p95": 133.07941249112378,
-        "p99": 133.07941249112378,
-        "min": 119.92221557284627,
-        "max": 133.07941249112378,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 100,
-        "compositeScore": 100,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-10mb: 135.1MB/s, 84.1MB/s, 205.2MB/s (avg 124.1MB/s)"
-        }
-      },
-      "wallClockMs": 3126.890732,
-      "replicateMs": [
-        927.9111800000003,
-        857.451395,
-        890.3805960000004
-      ],
-      "compositeScore": 100
+      "compositeScore": 55.8
     }
   ]
 }

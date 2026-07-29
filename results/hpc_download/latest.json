@@ -10,64 +10,64 @@
           "ok": true,
           "suite": "download",
           "metric": {
-            "value": 27.13932834522731,
+            "value": 31.861614557367776,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 23.2MB/s, 29.5MB/s, 29.9MB/s (avg 27.1MB/s)"
+            "providerNotes": "cloudflare-1mb: 31.8MB/s, 29.0MB/s, 35.6MB/s (avg 31.9MB/s)"
           }
         },
         {
           "ok": true,
           "suite": "download",
           "metric": {
-            "value": 26.576331707204375,
+            "value": 23.268809673880416,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 24.9MB/s, 27.8MB/s, 27.3MB/s (avg 26.6MB/s)"
+            "providerNotes": "cloudflare-1mb: 27.4MB/s, 21.5MB/s, 22.0MB/s (avg 23.3MB/s)"
           }
         },
         {
           "ok": true,
           "suite": "download",
           "metric": {
-            "value": 30.611451811467866,
+            "value": 21.99330369882282,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 30.4MB/s, 32.2MB/s, 29.5MB/s (avg 30.6MB/s)"
+            "providerNotes": "cloudflare-1mb: 24.7MB/s, 19.0MB/s, 23.2MB/s (avg 22.0MB/s)"
           }
         }
       ],
       "summary": {
-        "median": 27.13932834522731,
-        "p95": 30.611451811467866,
-        "p99": 30.611451811467866,
-        "min": 26.576331707204375,
-        "max": 30.611451811467866,
+        "median": 23.268809673880416,
+        "p95": 31.861614557367776,
+        "p99": 31.861614557367776,
+        "min": 21.99330369882282,
+        "max": 31.861614557367776,
         "successRate": 1,
         "n": 3,
-        "scoreBeforeReliability": 27.13932834522731,
-        "compositeScore": 27.1,
+        "scoreBeforeReliability": 58.172024184701044,
+        "compositeScore": 58.2,
         "meta": {
           "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 30.4MB/s, 32.2MB/s, 29.5MB/s (avg 30.6MB/s)"
+          "providerNotes": "cloudflare-1mb: 24.7MB/s, 19.0MB/s, 23.2MB/s (avg 22.0MB/s)"
         }
       },
-      "wallClockMs": 2204.3167670000003,
+      "wallClockMs": 1508.8222359999997,
       "replicateMs": [
-        1374.515699,
-        430.8370930000001,
-        398.336268
+        464.6114070000001,
+        567.7988129999999,
+        475.79891499999985
       ],
-      "compositeScore": 27.1
+      "compositeScore": 58.2
     },
     {
       "provider": "beam",
@@ -78,495 +78,64 @@
           "ok": true,
           "suite": "download",
           "metric": {
-            "value": 31.561862433940366,
+            "value": 33.031734512234465,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 26.6MB/s, 32.4MB/s, 37.8MB/s (avg 31.6MB/s)"
+            "providerNotes": "cloudflare-1mb: 32.0MB/s, 31.7MB/s, 35.7MB/s (avg 33.0MB/s)"
           }
         },
         {
           "ok": true,
           "suite": "download",
           "metric": {
-            "value": 28.92751777473025,
+            "value": 30.059900965852673,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 25.5MB/s, 29.7MB/s, 32.4MB/s (avg 28.9MB/s)"
+            "providerNotes": "cloudflare-1mb: 27.4MB/s, 27.6MB/s, 36.9MB/s (avg 30.1MB/s)"
           }
         },
         {
           "ok": true,
           "suite": "download",
           "metric": {
-            "value": 13.245942550342606,
+            "value": 29.775905049799956,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 9.2MB/s, 20.2MB/s, 14.8MB/s (avg 13.2MB/s)"
+            "providerNotes": "cloudflare-1mb: 26.7MB/s, 30.3MB/s, 33.1MB/s (avg 29.8MB/s)"
           }
         }
       ],
       "summary": {
-        "median": 28.92751777473025,
-        "p95": 31.561862433940366,
-        "p99": 31.561862433940366,
-        "min": 13.245942550342606,
-        "max": 31.561862433940366,
+        "median": 30.059900965852673,
+        "p95": 33.031734512234465,
+        "p99": 33.031734512234465,
+        "min": 29.775905049799956,
+        "max": 33.031734512234465,
         "successRate": 1,
         "n": 3,
-        "scoreBeforeReliability": 28.927517774730248,
-        "compositeScore": 28.9,
+        "scoreBeforeReliability": 75.14975241463169,
+        "compositeScore": 75.1,
         "meta": {
           "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 9.2MB/s, 20.2MB/s, 14.8MB/s (avg 13.2MB/s)"
+          "providerNotes": "cloudflare-1mb: 26.7MB/s, 30.3MB/s, 33.1MB/s (avg 29.8MB/s)"
         }
       },
-      "wallClockMs": 2207.387882,
+      "wallClockMs": 2039.514848,
       "replicateMs": [
-        1232.97393,
-        370.10778600000003,
-        538.2267399999996
+        1182.418086,
+        398.47315800000024,
+        378.0132269999999
       ],
-      "compositeScore": 28.9
-    },
-    {
-      "provider": "blaxel",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 13.44099528742128,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 14.9MB/s, 15.5MB/s, 10.9MB/s (avg 13.4MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 26.443504642289458,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 22.2MB/s, 23.8MB/s, 37.8MB/s (avg 26.4MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 25.762199356743643,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 24.6MB/s, 23.3MB/s, 30.5MB/s (avg 25.8MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 25.762199356743643,
-        "p95": 26.443504642289458,
-        "p99": 26.443504642289458,
-        "min": 13.44099528742128,
-        "max": 26.443504642289458,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 25.762199356743643,
-        "compositeScore": 25.8,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 24.6MB/s, 23.3MB/s, 30.5MB/s (avg 25.8MB/s)"
-        }
-      },
-      "wallClockMs": 2343.9232300000003,
-      "replicateMs": [
-        899.3314809999997,
-        503.23867299999984,
-        656.1891850000002
-      ],
-      "compositeScore": 25.8
-    },
-    {
-      "provider": "cloud-run",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [],
-      "summary": {
-        "median": 0,
-        "p95": 0,
-        "p99": 0,
-        "min": 0,
-        "max": 0,
-        "successRate": 0,
-        "n": 0,
-        "scoreBeforeReliability": 0,
-        "compositeScore": 0,
-        "meta": {}
-      },
-      "wallClockMs": 0,
-      "replicateMs": [],
-      "compositeScore": 0,
-      "skipped": true,
-      "skipReason": "Missing: CLOUD_RUN_SANDBOX_URL, CLOUD_RUN_SANDBOX_SECRET"
-    },
-    {
-      "provider": "cloudflare",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 2.316011023786327,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 3.4MB/s, 1.7MB/s, 2.5MB/s (avg 2.3MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 11.319411465915591,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 11.4MB/s, 10.8MB/s, 11.8MB/s (avg 11.3MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 10.428719913182158,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 10.0MB/s, 10.2MB/s, 11.2MB/s (avg 10.4MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 10.428719913182158,
-        "p95": 11.319411465915591,
-        "p99": 11.319411465915591,
-        "min": 2.316011023786327,
-        "max": 11.319411465915591,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 10.428719913182158,
-        "compositeScore": 10.4,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 10.0MB/s, 10.2MB/s, 11.2MB/s (avg 10.4MB/s)"
-        }
-      },
-      "wallClockMs": 29891.607795,
-      "replicateMs": [
-        11563.826944,
-        2184.6026789999996,
-        12024.866539999999
-      ],
-      "compositeScore": 10.4
-    },
-    {
-      "provider": "codesandbox",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 20.259008451734182,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 22.0MB/s, 18.2MB/s, 20.9MB/s (avg 20.3MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 21.04374122589978,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 19.9MB/s, 21.6MB/s, 21.7MB/s (avg 21.0MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 14.282769178709637,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 13.5MB/s, 13.2MB/s, 16.5MB/s (avg 14.3MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 20.259008451734182,
-        "p95": 21.04374122589978,
-        "p99": 21.04374122589978,
-        "min": 14.282769178709637,
-        "max": 21.04374122589978,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 20.259008451734182,
-        "compositeScore": 20.3,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 13.5MB/s, 13.2MB/s, 16.5MB/s (avg 14.3MB/s)"
-        }
-      },
-      "wallClockMs": 12207.432184000001,
-      "replicateMs": [
-        3210.568459,
-        3148.062382,
-        2847.206089000001
-      ],
-      "compositeScore": 20.3
-    },
-    {
-      "provider": "createos",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 20.755986007338194,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 18.5MB/s, 20.0MB/s, 24.7MB/s (avg 20.8MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 27.304078063378533,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 27.9MB/s, 28.0MB/s, 28.0MB/s (avg 27.3MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 24.159210939554853,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 22.0MB/s, 23.0MB/s, 28.4MB/s (avg 24.2MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 24.159210939554853,
-        "p95": 27.304078063378533,
-        "p99": 27.304078063378533,
-        "min": 20.755986007338194,
-        "max": 27.304078063378533,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 24.159210939554853,
-        "compositeScore": 24.2,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 22.0MB/s, 23.0MB/s, 28.4MB/s (avg 24.2MB/s)"
-        }
-      },
-      "wallClockMs": 1335.2641709999998,
-      "replicateMs": [
-        573.523874,
-        373.96594200000027,
-        374.0181010000001
-      ],
-      "compositeScore": 24.2
-    },
-    {
-      "provider": "daytona",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 31.514726989495827,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 34.3MB/s, 28.3MB/s, 32.5MB/s (avg 31.5MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 30.813339036950865,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 30.8MB/s, 31.1MB/s, 30.5MB/s (avg 30.8MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 29.2509518625373,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 26.5MB/s, 31.3MB/s, 30.4MB/s (avg 29.3MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 30.813339036950865,
-        "p95": 31.514726989495827,
-        "p99": 31.514726989495827,
-        "min": 29.2509518625373,
-        "max": 31.514726989495827,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 30.813339036950865,
-        "compositeScore": 30.8,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 26.5MB/s, 31.3MB/s, 30.4MB/s (avg 29.3MB/s)"
-        }
-      },
-      "wallClockMs": 5004.04048,
-      "replicateMs": [
-        1026.189872,
-        1688.9313829999996,
-        2156.665468
-      ],
-      "compositeScore": 30.8
-    },
-    {
-      "provider": "declaw",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 10.278156164290243,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 10.0MB/s, 9.7MB/s, 11.4MB/s (avg 10.3MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 12.105615735014915,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 11.6MB/s, 12.8MB/s, 12.0MB/s (avg 12.1MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 18.857779872946967,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 22.5MB/s, 17.2MB/s, 17.7MB/s (avg 18.9MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 12.105615735014915,
-        "p95": 18.857779872946967,
-        "p99": 18.857779872946967,
-        "min": 10.278156164290243,
-        "max": 18.857779872946967,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 12.105615735014915,
-        "compositeScore": 12.1,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 22.5MB/s, 17.2MB/s, 17.7MB/s (avg 18.9MB/s)"
-        }
-      },
-      "wallClockMs": 2509.15427,
-      "replicateMs": [
-        843.4329840000003,
-        768.779884,
-        867.6629310000003
-      ],
-      "compositeScore": 12.1
+      "compositeScore": 75.1
     },
     {
       "provider": "e2b",
@@ -577,948 +146,64 @@
           "ok": true,
           "suite": "download",
           "metric": {
-            "value": 19.464675361169487,
+            "value": 18.0133554259532,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 18.9MB/s, 15.4MB/s, 27.6MB/s (avg 19.5MB/s)"
+            "providerNotes": "cloudflare-1mb: 15.5MB/s, 17.7MB/s, 22.1MB/s (avg 18.0MB/s)"
           }
         },
         {
           "ok": true,
           "suite": "download",
           "metric": {
-            "value": 5.140729042599277,
+            "value": 22.496911174095796,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 2.5MB/s, 10.2MB/s, 12.3MB/s (avg 5.1MB/s)"
+            "providerNotes": "cloudflare-1mb: 21.1MB/s, 22.9MB/s, 23.6MB/s (avg 22.5MB/s)"
           }
         },
         {
           "ok": true,
           "suite": "download",
           "metric": {
-            "value": 25.05759132383239,
+            "value": 20.06688359190795,
             "unit": "mb_per_s",
             "higherIsBetter": true
           },
           "meta": {
             "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 20.6MB/s, 29.2MB/s, 27.0MB/s (avg 25.1MB/s)"
+            "providerNotes": "cloudflare-1mb: 17.0MB/s, 20.0MB/s, 24.6MB/s (avg 20.1MB/s)"
           }
         }
       ],
       "summary": {
-        "median": 19.464675361169487,
-        "p95": 25.05759132383239,
-        "p99": 25.05759132383239,
-        "min": 5.140729042599277,
-        "max": 25.05759132383239,
+        "median": 20.06688359190795,
+        "p95": 22.496911174095796,
+        "p99": 22.496911174095796,
+        "min": 18.0133554259532,
+        "max": 22.496911174095796,
         "successRate": 1,
         "n": 3,
-        "scoreBeforeReliability": 19.464675361169487,
-        "compositeScore": 19.5,
+        "scoreBeforeReliability": 50.167208979769875,
+        "compositeScore": 50.2,
         "meta": {
           "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 20.6MB/s, 29.2MB/s, 27.0MB/s (avg 25.1MB/s)"
+          "providerNotes": "cloudflare-1mb: 17.0MB/s, 20.0MB/s, 24.6MB/s (avg 20.1MB/s)"
         }
       },
-      "wallClockMs": 6309.668908,
+      "wallClockMs": 4894.778286000001,
       "replicateMs": [
-        1742.030795,
-        2917.9812559999996,
-        1181.72217
+        1650.2845510000002,
+        1497.0272570000002,
+        1280.9578200000005
       ],
-      "compositeScore": 19.5
-    },
-    {
-      "provider": "hopx",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 11.87741326519953,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 14.3MB/s, 11.1MB/s, 10.9MB/s (avg 11.9MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 15.12046519986125,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 20.6MB/s, 14.1MB/s, 12.8MB/s (avg 15.1MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 8.680521270510607,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 16.8MB/s, 8.4MB/s, 6.0MB/s (avg 8.7MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 11.87741326519953,
-        "p95": 15.12046519986125,
-        "p99": 15.12046519986125,
-        "min": 8.680521270510607,
-        "max": 15.12046519986125,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 11.87741326519953,
-        "compositeScore": 11.9,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 16.8MB/s, 8.4MB/s, 6.0MB/s (avg 8.7MB/s)"
-        }
-      },
-      "wallClockMs": 12615.033357,
-      "replicateMs": [
-        2717.4834950000004,
-        2207.9285840000002,
-        3688.6026709999987
-      ],
-      "compositeScore": 11.9
-    },
-    {
-      "provider": "isorun",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 9.499774280613206,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 30.4MB/s, 4.0MB/s, 33.6MB/s (avg 9.5MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 29.656437877858853,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 29.8MB/s, 30.1MB/s, 29.1MB/s (avg 29.7MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 27.14074970241525,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 29.8MB/s, 28.5MB/s, 23.9MB/s (avg 27.1MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 27.14074970241525,
-        "p95": 29.656437877858853,
-        "p99": 29.656437877858853,
-        "min": 9.499774280613206,
-        "max": 29.656437877858853,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 27.140749702415253,
-        "compositeScore": 27.1,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 29.8MB/s, 28.5MB/s, 23.9MB/s (avg 27.1MB/s)"
-        }
-      },
-      "wallClockMs": 1092.4485359999999,
-      "replicateMs": [
-        512.1378440000001,
-        286.32239900000013,
-        280.23542000000043
-      ],
-      "compositeScore": 27.1
-    },
-    {
-      "provider": "lightning",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 21.62589380720184,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 21.1MB/s, 20.4MB/s, 23.6MB/s (avg 21.6MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 21.94322003105273,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 21.0MB/s, 21.3MB/s, 23.8MB/s (avg 21.9MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 22.56417527860382,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 19.8MB/s, 23.3MB/s, 25.4MB/s (avg 22.6MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 21.94322003105273,
-        "p95": 22.56417527860382,
-        "p99": 22.56417527860382,
-        "min": 21.62589380720184,
-        "max": 22.56417527860382,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 21.94322003105273,
-        "compositeScore": 21.9,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 19.8MB/s, 23.3MB/s, 25.4MB/s (avg 22.6MB/s)"
-        }
-      },
-      "wallClockMs": 4812.045388,
-      "replicateMs": [
-        1172.516558,
-        1161.1639130000003,
-        1007.486519
-      ],
-      "compositeScore": 21.9
-    },
-    {
-      "provider": "modal",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 24.908355517821796,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 26.1MB/s, 24.8MB/s, 23.9MB/s (avg 24.9MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 23.380825973815686,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 20.5MB/s, 26.1MB/s, 24.3MB/s (avg 23.4MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 18.82750849862751,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 16.1MB/s, 19.9MB/s, 21.3MB/s (avg 18.8MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 23.380825973815686,
-        "p95": 24.908355517821796,
-        "p99": 24.908355517821796,
-        "min": 18.82750849862751,
-        "max": 24.908355517821796,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 23.380825973815686,
-        "compositeScore": 23.4,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 16.1MB/s, 19.9MB/s, 21.3MB/s (avg 18.8MB/s)"
-        }
-      },
-      "wallClockMs": 2603.406819,
-      "replicateMs": [
-        865.651611,
-        871.0341939999998,
-        818.4757220000001
-      ],
-      "compositeScore": 23.4
-    },
-    {
-      "provider": "northflank",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 18.428544562386104,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 22.5MB/s, 14.6MB/s, 20.1MB/s (avg 18.4MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 28.841916580351622,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 29.7MB/s, 27.3MB/s, 29.6MB/s (avg 28.8MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 32.04784889123042,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 32.9MB/s, 30.6MB/s, 32.8MB/s (avg 32.0MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 28.841916580351622,
-        "p95": 32.04784889123042,
-        "p99": 32.04784889123042,
-        "min": 18.428544562386104,
-        "max": 32.04784889123042,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 28.841916580351622,
-        "compositeScore": 28.8,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 32.9MB/s, 30.6MB/s, 32.8MB/s (avg 32.0MB/s)"
-        }
-      },
-      "wallClockMs": 13987.381949,
-      "replicateMs": [
-        6947.037296,
-        3470.4129439999997,
-        3449.683290000001
-      ],
-      "compositeScore": 28.8
-    },
-    {
-      "provider": "opencomputer",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 24.545593361942096,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 19.2MB/s, 26.7MB/s, 30.7MB/s (avg 24.5MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 17.052505659655576,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 22.6MB/s, 11.6MB/s, 22.2MB/s (avg 17.1MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 19.864435819894986,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 26.5MB/s, 12.5MB/s, 30.1MB/s (avg 19.9MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 19.864435819894986,
-        "p95": 24.545593361942096,
-        "p99": 24.545593361942096,
-        "min": 17.052505659655576,
-        "max": 24.545593361942096,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 19.864435819894986,
-        "compositeScore": 19.9,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 26.5MB/s, 12.5MB/s, 30.1MB/s (avg 19.9MB/s)"
-        }
-      },
-      "wallClockMs": 9386.072708,
-      "replicateMs": [
-        2470.138546,
-        2334.6182740000004,
-        2311.844183000001
-      ],
-      "compositeScore": 19.9
-    },
-    {
-      "provider": "runloop",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 29.792168048165912,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 31.6MB/s, 26.1MB/s, 32.6MB/s (avg 29.8MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 23.514406069525954,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 24.1MB/s, 23.7MB/s, 22.8MB/s (avg 23.5MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 24.96871752610213,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 25.5MB/s, 25.2MB/s, 24.2MB/s (avg 25.0MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 24.96871752610213,
-        "p95": 29.792168048165912,
-        "p99": 29.792168048165912,
-        "min": 23.514406069525954,
-        "max": 29.792168048165912,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 24.96871752610213,
-        "compositeScore": 25,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 25.5MB/s, 25.2MB/s, 24.2MB/s (avg 25.0MB/s)"
-        }
-      },
-      "wallClockMs": 3212.017726,
-      "replicateMs": [
-        1101.327539,
-        990.672102,
-        1032.189409
-      ],
-      "compositeScore": 25
-    },
-    {
-      "provider": "sandbox0",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 4.990285145758211,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 4.3MB/s, 4.7MB/s, 6.4MB/s (avg 5.0MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 15.624417502184995,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 11.2MB/s, 24.6MB/s, 16.2MB/s (avg 15.6MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 4.249358474351127,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 4.3MB/s, 4.3MB/s, 4.2MB/s (avg 4.2MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 4.990285145758211,
-        "p95": 15.624417502184995,
-        "p99": 15.624417502184995,
-        "min": 4.249358474351127,
-        "max": 15.624417502184995,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 4.990285145758211,
-        "compositeScore": 5,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 4.3MB/s, 4.3MB/s, 4.2MB/s (avg 4.2MB/s)"
-        }
-      },
-      "wallClockMs": 6368.747476,
-      "replicateMs": [
-        2353.028166,
-        1367.9638180000006,
-        2153.0940489999994
-      ],
-      "compositeScore": 5
-    },
-    {
-      "provider": "superserve",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 17.041833059100888,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 12.5MB/s, 23.9MB/s, 18.6MB/s (avg 17.0MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 17.366286324735487,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 26.1MB/s, 13.6MB/s, 16.4MB/s (avg 17.4MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 16.570650243252175,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 13.7MB/s, 18.0MB/s, 19.1MB/s (avg 16.6MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 17.041833059100888,
-        "p95": 17.366286324735487,
-        "p99": 17.366286324735487,
-        "min": 16.570650243252175,
-        "max": 17.366286324735487,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 17.041833059100888,
-        "compositeScore": 17,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 13.7MB/s, 18.0MB/s, 19.1MB/s (avg 16.6MB/s)"
-        }
-      },
-      "wallClockMs": 3160.394594,
-      "replicateMs": [
-        1027.4912579999998,
-        822.698758,
-        912.2034939999999
-      ],
-      "compositeScore": 17
-    },
-    {
-      "provider": "tenki",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 16.83308282526507,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 19.8MB/s, 16.9MB/s, 14.6MB/s (avg 16.8MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 17.364355070083175,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 18.7MB/s, 16.3MB/s, 17.3MB/s (avg 17.4MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 17.910937611971345,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 19.7MB/s, 15.8MB/s, 18.6MB/s (avg 17.9MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 17.364355070083175,
-        "p95": 17.910937611971345,
-        "p99": 17.910937611971345,
-        "min": 16.83308282526507,
-        "max": 17.910937611971345,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 17.364355070083175,
-        "compositeScore": 17.4,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 19.7MB/s, 15.8MB/s, 18.6MB/s (avg 17.9MB/s)"
-        }
-      },
-      "wallClockMs": 10553.938103,
-      "replicateMs": [
-        6712.62319,
-        1463.6952529999999,
-        1549.132599999999
-      ],
-      "compositeScore": 17.4
-    },
-    {
-      "provider": "tensorlake",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 24.58798749445121,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 28.0MB/s, 20.6MB/s, 26.5MB/s (avg 24.6MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 13.686854067741697,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 8.7MB/s, 14.2MB/s, 29.3MB/s (avg 13.7MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 28.581570401428728,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 28.8MB/s, 26.0MB/s, 31.5MB/s (avg 28.6MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 24.58798749445121,
-        "p95": 28.581570401428728,
-        "p99": 28.581570401428728,
-        "min": 13.686854067741697,
-        "max": 28.581570401428728,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 24.58798749445121,
-        "compositeScore": 24.6,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 28.8MB/s, 26.0MB/s, 31.5MB/s (avg 28.6MB/s)"
-        }
-      },
-      "wallClockMs": 2112.1317040000004,
-      "replicateMs": [
-        634.759059,
-        801.1106589999999,
-        653.42146
-      ],
-      "compositeScore": 24.6
-    },
-    {
-      "provider": "upstash",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 27.176834799386178,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 23.6MB/s, 31.4MB/s, 27.7MB/s (avg 27.2MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 17.729366678300675,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 11.3MB/s, 23.8MB/s, 25.7MB/s (avg 17.7MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 32.78533878117837,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 27.1MB/s, 35.0MB/s, 38.6MB/s (avg 32.8MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 27.176834799386178,
-        "p95": 32.78533878117837,
-        "p99": 32.78533878117837,
-        "min": 17.729366678300675,
-        "max": 32.78533878117837,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 27.176834799386178,
-        "compositeScore": 27.2,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 27.1MB/s, 35.0MB/s, 38.6MB/s (avg 32.8MB/s)"
-        }
-      },
-      "wallClockMs": 2554.2541570000003,
-      "replicateMs": [
-        651.418171,
-        751.0387840000003,
-        546.2841870000002
-      ],
-      "compositeScore": 27.2
-    },
-    {
-      "provider": "vercel",
-      "suite": "download",
-      "mode": "hpc",
-      "iterations": [
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 29.251585889354782,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 30.5MB/s, 29.0MB/s, 28.4MB/s (avg 29.3MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 27.523830683082025,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 28.6MB/s, 22.8MB/s, 33.2MB/s (avg 27.5MB/s)"
-          }
-        },
-        {
-          "ok": true,
-          "suite": "download",
-          "metric": {
-            "value": 28.340675819879927,
-            "unit": "mb_per_s",
-            "higherIsBetter": true
-          },
-          "meta": {
-            "iterationsReported": 3,
-            "providerNotes": "cloudflare-1mb: 26.6MB/s, 28.4MB/s, 30.4MB/s (avg 28.3MB/s)"
-          }
-        }
-      ],
-      "summary": {
-        "median": 28.340675819879927,
-        "p95": 29.251585889354782,
-        "p99": 29.251585889354782,
-        "min": 27.523830683082025,
-        "max": 29.251585889354782,
-        "successRate": 1,
-        "n": 3,
-        "scoreBeforeReliability": 28.34067581987993,
-        "compositeScore": 28.3,
-        "meta": {
-          "iterationsReported": 3,
-          "providerNotes": "cloudflare-1mb: 26.6MB/s, 28.4MB/s, 30.4MB/s (avg 28.3MB/s)"
-        }
-      },
-      "wallClockMs": 2945.451039,
-      "replicateMs": [
-        792.8655970000002,
-        816.011731,
-        816.3058409999999
-      ],
-      "compositeScore": 28.3
+      "compositeScore": 50.2
     }
   ]
 }
