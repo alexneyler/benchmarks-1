@@ -198,6 +198,8 @@ jobs:
         with:
           path: artifacts/
           pattern: results-*
+      - name: Merge per-provider results into combined per-suite files
+        run: npx tsx benchmarks/src/merge-results.ts --input artifacts --mode hpc
       - name: Generate SVG leaderboard + per-suite charts
         run: pnpm run generate-hpc-svg
       - name: Upload SVGs as artifacts

@@ -40,6 +40,8 @@ import type { SnapshotForkBenchmarkResult } from '../storage/snapshot-fork-types
 import type { BrowserBenchmarkResult } from '../browser/types.js';
 import type { ThroughputBenchmarkResult } from '../browser/throughput-types.js';
 import type { AIGatewayBenchmarkResult } from '../ai-gateway/types.js';
+import type { HpcBenchmarkResult } from '../hpc/types.js';
+import { getSuite } from '../hpc/registry.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
@@ -734,6 +736,145 @@ async function mainAIGateway() {
   console.log(`Copied latest: ${latestPath}`);
 }
 
+/**
+ * Print an HPC results table to stdout.
+ */
+function printHpcResultsTable(results: HpcBenchmarkResult[], suiteDir: string): void {
+  const suiteId = suiteDir.replace(/^hpc_/, '').replace(/_/g, '-');
+  const sorted = [...results].sort((a, b) => (b.compositeScore || 0) - (a.compositeScore || 0));
+
+  let suiteLabel = suiteId;
+  let unit = '';
+  let ceiling = 0;
+  try {
+    const suite = getSuite(suiteId as any);
+    suiteLabel = suite.label;
+    unit = suite.unit;
+    ceiling = suite.ceiling;
+  } catch { /* use raw suiteId */ }
+
+  console.log(`\n${'='.repeat(95)}`);
+  console.log(`  HPC BENCHMARK RESULTS - ${suiteLabel}`);
+  console.log('='.repeat(95));
+  console.log(`  Unit: ${unit}  Ceiling: ${ceiling}  Providers: ${sorted.length}`);
+  console.log(
+    ['#', 'Provider', 'Score', 'Median', 'Unit', 'n', 'Status']
+      .map((h, i) => h.padEnd([4, 14, 8, 12, 12, 4, 10][i]))
+      .join(' | ')
+  );
+  console.log(
+    [4, 14, 8, 12, 12, 4, 10].map(w => '-'.repeat(w)).join('-+-')
+  );
+
+  for (let i = 0; i < sorted.length; i++) {
+    const r = sorted[i];
+    if (r.skipped) {
+      console.log([String(i + 1).padEnd(4), r.provider.padEnd(14), '--'.padEnd(8), '--'.padEnd(12), unit.padEnd(12), '--'.padEnd(4), 'SKIPPED'.padEnd(10)].join(' | '));
+      continue;
+    }
+    const ok = (r.iterations || []).filter(it => !(it as any).error && (it as any).ok).length;
+    const total = (r.iterations || []).length;
+    const score = r.compositeScore !== undefined ? r.compositeScore.toFixed(1) : '--';
+    const median = r.summary?.median != null ? r.summary.median.toFixed(1) : '--';
+    console.log([String(i + 1).padEnd(4), r.provider.padEnd(14), score.padEnd(8), median.padEnd(12), unit.padEnd(12), String(r.summary?.n ?? 0).padEnd(4), `${ok}/${total} OK`.padEnd(10)].join(' | '));
+  }
+  console.log('='.repeat(95));
+}
+
+/**
+ * Merge HPC benchmark results, grouped by suite.
+ *
+ * Each matrix cell produces a results/hpc_<suite>/latest.json with a single
+ * provider's result. This function walks the downloaded artifacts, groups by
+ * suite directory, deduplicates by provider (preferring single-provider files),
+ * and writes combined results/hpc_<suite>/latest.json with all providers.
+ *
+ * Composite scores are already computed per-provider in the matrix cells, so
+ * merging is just dedupe + write — no cross-provider recomputation needed.
+ */
+async function mainHpc() {
+  const jsonFiles: string[] = [];
+  function walk(dir: string) {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name === 'latest.json') jsonFiles.push(full);
+    }
+  }
+  walk(inputDir!);
+
+  if (jsonFiles.length === 0) {
+    console.error(`No latest.json files found in ${inputDir}`);
+    process.exit(1);
+  }
+
+  console.log(`Found ${jsonFiles.length} result files`);
+
+  // Group by suite directory (e.g. hpc_cpu_node, hpc_memory, ...).
+  // Only pick up files whose parent dir starts with hpc_.
+  const bySuite: Record<string, { results: { result: HpcBenchmarkResult; fromSingleProvider: boolean }[] }> = {};
+
+  for (const file of jsonFiles) {
+    const dirName = path.basename(path.dirname(file));
+    if (!dirName.startsWith('hpc_')) continue;
+
+    const raw = JSON.parse(fs.readFileSync(file, 'utf-8')) as { results?: HpcBenchmarkResult[] };
+    if (!raw.results || raw.results.length === 0) continue;
+
+    const fromSingleProvider = raw.results.length === 1;
+    if (!bySuite[dirName]) bySuite[dirName] = { results: [] };
+    for (const result of raw.results) {
+      bySuite[dirName].results.push({ result, fromSingleProvider });
+    }
+  }
+
+  const suiteDirs = Object.keys(bySuite).sort();
+  if (suiteDirs.length === 0) {
+    console.log('No HPC result files found in artifacts');
+    process.exit(0);
+  }
+
+  for (const suiteDir of suiteDirs) {
+    const { results } = bySuite[suiteDir];
+
+    // Deduplicate by provider, preferring fresh single-provider files.
+    const seen = new Map<string, { result: HpcBenchmarkResult; fromSingleProvider: boolean }>();
+    for (const entry of results) {
+      const existing = seen.get(entry.result.provider);
+      if (!existing || (entry.fromSingleProvider && !existing.fromSingleProvider)) {
+        seen.set(entry.result.provider, entry);
+      }
+    }
+    const deduped = Array.from(seen.values()).map(e => e.result);
+
+    if (deduped.length !== results.length) {
+      console.log(`\nMerging ${deduped.length} provider results for ${suiteDir} (deduplicated from ${results.length})`);
+    } else {
+      console.log(`\nMerging ${deduped.length} provider results for ${suiteDir}`);
+    }
+
+    printHpcResultsTable(deduped, suiteDir);
+
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const resultsDir = path.resolve(ROOT, `results/${suiteDir}`);
+    fs.mkdirSync(resultsDir, { recursive: true });
+
+    const output = {
+      date: timestamp,
+      results: deduped,
+    };
+
+    const outPath = path.join(resultsDir, `${timestamp}.json`);
+    fs.writeFileSync(outPath, JSON.stringify(output, null, 2));
+    console.log(`Results written to ${outPath}`);
+
+    const latestPath = path.join(resultsDir, 'latest.json');
+    fs.copyFileSync(outPath, latestPath);
+    console.log(`Copied latest: ${latestPath}`);
+  }
+}
+
 const runner = mergeMode === 'storage'
   ? mainStorage
   : mergeMode === 'snapshot-fork'
@@ -744,6 +885,8 @@ const runner = mergeMode === 'storage'
   ? mainBrowserThroughput
   : mergeMode === 'ai-gateway'
   ? mainAIGateway
+  : mergeMode === 'hpc'
+  ? mainHpc
   : main;
 runner().catch(err => {
   console.error('Merge failed:', err);
