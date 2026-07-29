@@ -66,6 +66,8 @@ export interface BenchmarkRunOutcome {
   runId: string;
   dashboardUrl: string;
   participants: ParticipantRecords[];
+  /** Knobs the run actually used, after CLI overrides. */
+  config: ResolvedRunConfig;
 }
 
 // Matches @benchsdk/client's DEFAULT_BASE_URL origin. `resolvePlatform()`
@@ -284,7 +286,7 @@ export async function runBenchmark<T extends BaseParticipant>(
   }
 
   console.log(`All done. View at: ${dashboardUrl}`);
-  return { runId: run.id, dashboardUrl, participants: participantRecords };
+  return { runId: run.id, dashboardUrl, participants: participantRecords, config: resolved };
 }
 
 /**

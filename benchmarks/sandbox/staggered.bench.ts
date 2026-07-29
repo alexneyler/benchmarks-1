@@ -34,7 +34,11 @@ const config = defineBenchmark({
 runBenchmark(config, providers, process.argv.slice(2))
   .then(async (outcome) => {
     const resultsDir = path.resolve(__dirname, '../../results/staggered_tti');
-    await writeSandboxLegacyResults(outcome.participants, { resultsDir, mode: 'staggered' });
+    await writeSandboxLegacyResults(outcome.participants, {
+      resultsDir,
+      mode: 'staggered',
+      staggerDelayMs: outcome.config.staggerDelayMs,
+    });
     process.exit(0);
   })
   .catch((err) => {

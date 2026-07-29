@@ -33,7 +33,9 @@ const config = defineBenchmark({
 runBenchmark(config, providers, process.argv.slice(2))
   .then(async (outcome) => {
     const resultsDir = path.resolve(__dirname, '../../results/burst_tti');
-    await writeSandboxLegacyResults(outcome.participants, { resultsDir, mode: 'burst' });
+    // Legacy JSON labels burst results 'concurrent' (see merge-results /
+    // generate-svg), which is also the shape that carries the wall-clock fields.
+    await writeSandboxLegacyResults(outcome.participants, { resultsDir, mode: 'concurrent' });
     process.exit(0);
   })
   .catch((err) => {
