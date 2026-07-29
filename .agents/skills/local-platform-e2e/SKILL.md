@@ -170,6 +170,37 @@ cache-served beat is recognisable because the response's `worker` object is mini
 `status`/`benchmarkId` columns). Route timing metadata (`cacheCoalesced`) is only logged
 for requests slower than 1000 ms, so don't rely on the dev-server log for this.
 
+## 6c. Probing benchmark *definition* ownership (`benchmarks.organization_id`)
+
+Definitions may be owned (`organization_id` = an org) or shared (`NULL`, the pre-org-keys
+catalogue). Expected shapes as of the definition-owner change:
+
+| caller | shared (NULL) definition | own definition | another org's definition |
+|---|---|---|---|
+| org `bp_` key | GET 200, PUT/PATCH **403** `Shared benchmark definitions require the admin API key` | GET/PUT/PATCH 200 | GET/PATCH **404** `Benchmark not found`, PUT **409** `Benchmark slug is owned by another organization`, `…/runs` (GET+POST) and `…/results` **404** |
+| admin key | 200 (writes keep `organization_id` NULL) | 200 | 200 |
+
+`GET /api/v1/benchmarks` returns shared ∪ own for an org key, everything for admin. Denied reads
+are 404 (not 403) on purpose so slugs aren't enumerable — verify that by diffing the denied body
+against a truly nonexistent slug; they should be byte-identical.
+
+Probe design traps worth avoiding:
+- **Do not run keyA "controls" carrying the attack body against the same slug** you're asserting
+  immutability on: the owner is *allowed* to rename its own definition, so your snapshot diff will
+  show "CHANGED" and look like a security bug. Create a twin slug for controls
+  (`own-a-<rand>` victim / `own-ctrl-<rand>` control), or run all controls after the final snapshot.
+- A `POST …/runs` control with the owner's key may return **400** (body validation) rather than 2xx;
+  that still proves the benchmark lookup was passed, which is all a control needs to show.
+- After the migration/backfill, a definition that has runs from *two* orgs stays NULL (shared), so a
+  slug you used for previous multi-org tests is a ready-made shared fixture — and a *new* slug is
+  needed if you want an owned one.
+- Making a definition shared does **not** share its runs: an org key still gets 403 on another org's
+  run under a shared slug (`getScopedRun`), and listings still narrow by org.
+- Dashboard pages (`lib/benchmarks/org-benchmarks.ts` `listOrgBenchmarkRuns`) resolve the slug with
+  the *unscoped* `getBenchmarkBySlug` and only filter runs by org, so a non-owning org may still see
+  a foreign definition's name with "No benchmark runs yet." That may be intentional or may be a gap —
+  check it and report rather than assuming.
+
 ## 7. Useful probes when testing lifecycle behaviour
 
 - `psql` is not installed on the host — use `docker exec pg psql -U postgres -d bench ...`.
