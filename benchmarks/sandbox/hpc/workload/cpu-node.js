@@ -18,10 +18,24 @@ const ARTIFACTS_FILE = path.join(FIXTURE_ROOT, '.hpc-fixture-artifacts', 'last.j
 
 const t0 = process.hrtime.bigint();
 
+// Check if node binary is available before spawning. Some providers (e.g.
+// beam with runtime: 'node') may not have a separate `node` binary in PATH.
+const { spawnSync } = require('node:child_process');
+const nodeCheck = spawnSync('which', ['node'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+if (nodeCheck.status !== 0 || !nodeCheck.stdout.trim()) {
+  emitWorkloadResult({
+    ok: false,
+    suite: 'cpu-node',
+    reason: 'gap',
+    error: 'node binary not found in PATH — cannot spawn fixture',
+    meta: { fixtureVersion: process.env.HPC_FIXTURE_VERSION },
+  });
+  process.exit(0);
+}
+
 // Run the fixture directly. The fixture handles its own --iterations.
 // Increased to 64 (vs the default 32) to give a wider distribution without
 // blowing past the suite's 5-minute wall-clock ceiling on slow providers.
-const { spawnSync } = require('node:child_process');
 const result = spawnSync(
   'node',
   [path.join(FIXTURE_ROOT, 'src', 'index.js'), '--iterations', '64'],

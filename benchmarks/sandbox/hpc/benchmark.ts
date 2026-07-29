@@ -120,7 +120,17 @@ export async function runHpcBenchmark(opts: {
           error: `non-zero exit: ${errTail || 'no stderr'}`, meta: {},
         });
       } else {
-        iterations.push(parseWorkloadResult(result.stdout || '', suite.id));
+        const parsed = parseWorkloadResult(result.stdout || '', suite.id);
+        if (!parsed.ok && parsed.reason === 'unexpected') {
+          // Include stderr in the error so provider-specific issues (e.g.
+          // beam returning empty stdout because runCommand didn't wait)
+          // are visible in the results instead of just "no parseable output".
+          const stderrTail = (result.stderr || '').slice(-200);
+          parsed.error = stderrTail
+            ? `${parsed.error}; stderr: ${stderrTail}`
+            : `${parsed.error}; stdout was empty (exitCode=0) — provider may not wait for command completion`;
+        }
+        iterations.push(parsed);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -301,7 +311,7 @@ function buildSingleCommand(suite: HpcSuite, payload: Payload): string {
 
 // ---- Chunked bundle upload (for large bundles only) --------------------
 
-const B64_CHUNK = 256 * 1024; // 256 KiB — well under ARG_MAX, fewer round-trips
+const B64_CHUNK = 128 * 1024; // 128 KiB — safe under most provider ARG_MAX limits
 
 async function uploadBundleChunked(sandbox: any, bundleB64: string): Promise<void> {
   const cleaned = bundleB64.replace(/\s+/g, '');

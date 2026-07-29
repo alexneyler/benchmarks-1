@@ -113,4 +113,15 @@ function run() {
   process.exit(0);
 }
 
-run();
+try {
+  run();
+} catch (err) {
+  emitWorkloadResult({
+    ok: false,
+    suite: 'memory',
+    reason: 'error',
+    error: err && err.message ? err.message : String(err),
+    meta: { note: 'Possible OOM — 192 MiB allocation may exceed sandbox memory limit' },
+  });
+  process.exit(0);
+}

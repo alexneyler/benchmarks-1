@@ -46,10 +46,10 @@ export function buildWorkloadShellCmd(opts: {
   // heredoc uses a non-default marker to avoid any collision with the script's
   // own heredocs (the script never emits `__HPC_*__` markers).
   const mk = (label: string) => `__HPC_UPLOAD_${label}_${Math.random().toString(36).slice(2, 10)}__`;
-  // Chunk size for base64 heredocs. 256 KiB is well under ARG_MAX (~2 MiB
-  // on most Linux) while reducing the number of round-trips for large
-  // bundles (pglite ~9.5 MB → ~38 chunks instead of ~160 at 64 KiB).
-  const B64_CHUNK = 256 * 1024;
+  // Chunk size for base64 heredocs. 128 KiB balances speed (fewer round-trips
+  // than the original 64 KiB) with safety (stays under provider shell limits
+  // that truncated 256 KiB chunks, corrupting bundle data).
+  const B64_CHUNK = 128 * 1024;
 
   const targetName = path.basename(opts.suite.workloadPath);
   const scriptMarker = mk('SCRIPT');
