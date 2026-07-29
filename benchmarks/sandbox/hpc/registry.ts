@@ -2,7 +2,7 @@ import type { HpcSuite, HpcSuiteId, HpcBundleKind } from './types.js';
 
 /**
  * Static registry of every HPC suite. To add a suite:
- *   1. Drop a workload script at benchmarks/hpc/workload/<id>.ts exporting {@link HpcWorkloadRun}.
+ *   1. Drop a workload script at benchmarks/sandbox/hpc/workload/<id>.ts exporting {@link HpcWorkloadRun}.
  *   2. Append an entry below.
  *   3. Add an SCript in package.json's bench:hpc:<id>.
  *   4. Update README / METHODOLOGY.

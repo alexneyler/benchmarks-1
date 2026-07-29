@@ -40,8 +40,8 @@ import type { SnapshotForkBenchmarkResult } from '../storage/snapshot-fork-types
 import type { BrowserBenchmarkResult } from '../browser/types.js';
 import type { ThroughputBenchmarkResult } from '../browser/throughput-types.js';
 import type { AIGatewayBenchmarkResult } from '../ai-gateway/types.js';
-import type { HpcBenchmarkResult } from '../hpc/types.js';
-import { getSuite } from '../hpc/registry.js';
+import type { HpcBenchmarkResult } from '../sandbox/hpc/types.js';
+import { getSuite } from '../sandbox/hpc/registry.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');

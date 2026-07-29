@@ -1,5 +1,5 @@
-import { providers as sandboxProviders } from '../sandbox/providers.js';
-import type { ProviderConfig } from '../sandbox/types.js';
+import { providers as sandboxProviders } from '../providers.js';
+import type { ProviderConfig } from '../types.js';
 
 /**
  * Provider pool for HPC mode.

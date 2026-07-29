@@ -239,7 +239,7 @@ The CI `collect` job regenerates these SVGs after every run and commits them bac
 ## File layout
 
 ```
-benchmarks/hpc/
+benchmarks/sandbox/hpc/
   benchmark.ts          orchestrator: sandbox lifecycle + upload + parse
   generate-svg.ts       per-suite bar charts + leaderboard grid
   providers.ts          pass-through to sandbox/providers.ts

@@ -11,7 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 
-import type { HpcBundleKind } from '../hpc/types.js';
+import type { HpcBundleKind } from '../sandbox/hpc/types.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 

@@ -47,7 +47,7 @@ export const HPC_SUITE_IDS: readonly HpcSuiteId[] = [
  * Bundle uploaded alongside the in-sandbox script.
  *
  * - `none`: no bundle (default for scripts that only need Node)
- * - `fixture-archive`: tarball of benchmarks/hpc/fixtures/node-tooling
+ * - `fixture-archive`: tarball of benchmarks/sandbox/hpc/fixtures/node-tooling
  *   (used by both cpu-node and realworld — realworld adds cold clone + extract)
  * - `sql-wasm`: WASM SQLite (system suite)
  * - `pglite`: packed pglite (pgbench suite)
@@ -63,7 +63,7 @@ export interface HpcSuite {
   ceiling: number;
   /** Replicas for dev (`--hpc-replicas`, default 3). Tier shift for nightly sets this higher. */
   defaultReplicas: number;
-  /** Relative path under benchmarks/hpc/workload/ that implements the suite. */
+  /** Relative path under benchmarks/sandbox/hpc/workload/ that implements the suite. */
   workloadPath: string;
   /** Hard wall-clock timeout per replicate. */
   timeoutMs: number;
@@ -75,7 +75,7 @@ export interface HpcSuite {
 export interface WorkloadMeta {
   cpuCount?: number;
   memoryMb?: number;
-  /** `benchmarks/hpc/fixtures/node-tooling/BENCH_VERSION.txt` when a fixture is involved. */
+  /** `benchmarks/sandbox/hpc/fixtures/node-tooling/BENCH_VERSION.txt` when a fixture is involved. */
   fixtureVersion?: string;
   /** Wall-clock inside the sandbox as observed by the workload. */
   workloadMs?: number;

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import type { HpcSuite, HpcBundleKind } from '../types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, '..', '..', '..');
+const ROOT = path.resolve(__dirname, '..', '..', '..', '..');
 const BUNDLES_DIR = path.join(ROOT, 'dist', 'hpc-bundles');
 const MANIFEST_PATH = path.join(BUNDLES_DIR, 'manifest.json');
 

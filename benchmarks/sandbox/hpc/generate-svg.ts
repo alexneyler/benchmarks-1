@@ -31,7 +31,7 @@ import { getSuiteIds, getSuite } from './registry.js';
 import type { HpcBenchmarkResult } from './types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, '..', '..');
+const ROOT = path.resolve(__dirname, '..', '..', '..');
 const RESULTS_DIR = path.join(ROOT, 'results');
 const OUT_DIR = ROOT; // SVGs check in at repo root, mirroring existing *_tti.svg
 

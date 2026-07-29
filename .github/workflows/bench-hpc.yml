@@ -4,7 +4,7 @@ on:
   push:
     branches: [master]
     paths:
-      - 'benchmarks/hpc/**'
+      - 'benchmarks/sandbox/hpc/**'
       - 'benchmarks/scripts/hpc-smoke.ts'
       - 'benchmarks/scripts/build-hpc-bundles.ts'
       - 'benchmarks/scripts/ensure-hpc-bundle.ts'

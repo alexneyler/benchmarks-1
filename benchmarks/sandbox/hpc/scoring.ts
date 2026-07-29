@@ -1,5 +1,5 @@
 import type { HpcStats, HpcSuite, WorkloadResult } from './types.js';
-import { percentile } from '../src/util/stats.js';
+import { percentile } from '../../src/util/stats.js';
 
 /**
  * Compute median/min/max/p95/p99/score for a single suite+provider cell.

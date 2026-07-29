@@ -1,4 +1,4 @@
-import type { ProviderConfig } from '../sandbox/types.js';
+import type { ProviderConfig } from '../types.js';
 import type { HpcSuite, HpcBenchmarkResult, WorkloadResult } from './types.js';
 type FailureReason = Extract<WorkloadResult, { ok: false }>['reason'];
 import fs from 'node:fs';
@@ -6,14 +6,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getSuite } from './registry.js';
 import { computeHpcStats } from './scoring.js';
-import { withTimeout } from '../src/util/timeout.js';
-import { formatError } from '../src/util/error.js';
+import { withTimeout } from '../../src/util/timeout.js';
+import { formatError } from '../../src/util/error.js';
 import { parseWorkloadResult } from './util/parse-stdout.js';
 import {
   getBundlePath,
   getFixtureVersion,
 } from './util/upload-bundle.js';
-import { ensureHpcBundleForRun } from '../scripts/ensure-hpc-bundle.js';
+import { ensureHpcBundleForRun } from '../../scripts/ensure-hpc-bundle.js';
 
 /**
  * Run one (suite, provider) cell at the given replicate count.

@@ -19,12 +19,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 
-import { parseWorkloadResult } from '../hpc/util/parse-stdout.js';
-import { scoreMetric } from '../hpc/scoring.js';
-import { getSuite, getSuiteIds } from '../hpc/registry.js';
-import { getBundlePath } from '../hpc/util/upload-bundle.js';
+import { parseWorkloadResult } from '../sandbox/hpc/util/parse-stdout.js';
+import { scoreMetric } from '../sandbox/hpc/scoring.js';
+import { getSuite, getSuiteIds } from '../sandbox/hpc/registry.js';
+import { getBundlePath } from '../sandbox/hpc/util/upload-bundle.js';
 import { ensureHpcBundle } from './ensure-hpc-bundle.js';
-import type { HpcSuite } from '../hpc/types.js';
+import type { HpcSuite } from '../sandbox/hpc/types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -60,10 +60,10 @@ function runOne(suiteId: string): boolean {
   console.log(`\n[hpc-smoke] \u25b6 ${suite.id}  (${suite.label})`);
   if (suite.bundle === 'fixture-archive') {
     const v = fs.readFileSync(
-      path.join(ROOT, 'benchmarks', 'hpc', 'fixtures', 'node-tooling', 'BENCH_VERSION.txt'),
+      path.join(ROOT, 'benchmarks', 'sandbox', 'hpc', 'fixtures', 'node-tooling', 'BENCH_VERSION.txt'),
       'utf8',
     ).trim();
-    console.log(`    fixture: benchmarks/hpc/fixtures/node-tooling v${v}`);
+    console.log(`    fixture: benchmarks/sandbox/hpc/fixtures/node-tooling v${v}`);
   }
   console.log(`    ceiling: ${suite.ceiling} ${suite.unit} (${suite.higherIsBetter ? '\u2191 better' : '\u2193 better'})`);
 
@@ -106,7 +106,7 @@ function runSmokeLocally(
   workdir: string,
   bundlePath: string | null,
 ): { status: number | null; stdout: string; stderr: string; error?: Error } {
-  const WORKLOAD_DIR = path.resolve(__dirname, '..', 'hpc', 'workload');
+  const WORKLOAD_DIR = path.resolve(__dirname, '..', 'sandbox', 'hpc', 'workload');
   const workloadPath = path.join(WORKLOAD_DIR, path.basename(suite.workloadPath));
   const stdoutPath = path.join(WORKLOAD_DIR, 'stdout.js');
 

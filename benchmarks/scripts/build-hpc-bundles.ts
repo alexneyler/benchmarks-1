@@ -4,7 +4,7 @@
  * Each bundle kind corresponds to a tile of files the workload scripts
  * pull into a fresh sandbox:
  *
- *   fixture-archive  → benchmarks/hpc/fixtures/node-tooling/*
+ *   fixture-archive  → benchmarks/sandbox/hpc/fixtures/node-tooling/*
  *                       (used by cpu-node + realworld)
  *   sql-wasm         → vendored sql.js + sql-wasm.wasm from node_modules
  *                       (used by system — SQLite Speedtest)
@@ -29,7 +29,7 @@ import { spawnSync } from 'node:child_process';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const OUT_DIR = path.join(ROOT, 'dist', 'hpc-bundles');
-const FIXTURE_ROOT = path.join(ROOT, 'benchmarks', 'hpc', 'fixtures', 'node-tooling');
+const FIXTURE_ROOT = path.join(ROOT, 'benchmarks', 'sandbox', 'hpc', 'fixtures', 'node-tooling');
 const NODE_MODULES = path.join(ROOT, 'node_modules');
 
 interface BundleEntry {
@@ -165,7 +165,7 @@ function main(): void {
       path: basename,
       bytes: buffer.byteLength,
       version,
-      sourceDir: 'benchmarks/hpc/fixtures/node-tooling',
+      sourceDir: 'benchmarks/sandbox/hpc/fixtures/node-tooling',
     };
   }
 
