@@ -1,9 +1,10 @@
 /**
  * Staggered TTI benchmark: `iterations` sandboxes launched with all pool
- * slots available (concurrency == iterations) but each task's start delayed
- * by `taskIndex * staggerDelayMs`, producing a ramp. Config lives here; the
- * stagger and all other orchestration are owned by @benchsdk/cli's
- * runBenchmark. Sanity-check the resulting ramp on the dashboard.
+ * slots available (concurrency == iterations), task N starting at
+ * `N * staggerDelayMs` after the worker begins, producing a ramp. Config
+ * lives here; the stagger and all other orchestration are owned by
+ * @benchsdk/cli's runBenchmark. Sanity-check the resulting ramp on the
+ * dashboard.
  *
  * Run directly:
  *   tsx benchmarks/sandbox/staggered.bench.ts
@@ -26,7 +27,6 @@ const config = defineBenchmark({
   iterations: 3,
   concurrency: 3,
   staggerDelayMs: 200,
-  defaultProviders: ['e2b'],
   task: ttiTask,
   onResult: logTti,
 });

@@ -363,6 +363,29 @@ describe('runBenchmark', () => {
     ]);
   });
 
+  it('participant mode: the ramp is anchored to the worker start, not accumulated per task', async () => {
+    // The fake worker runs tasks one at a time, so every task is already past
+    // its scheduled launch time — none of them should sleep.
+    const starts: number[] = [];
+    const t0 = Date.now();
+    const task = vi.fn(async () => {
+      starts.push(Date.now() - t0);
+      await new Promise((r) => setTimeout(r, 40));
+      return {};
+    });
+
+    await runBenchmark(
+      { benchmarkSlug: 's', benchmarkName: 'n', iterations: 3, staggerDelayMs: 50, task },
+      [participants[0]],
+      [],
+    );
+
+    expect(starts).toHaveLength(3);
+    // Accumulating index * 50ms on top of the 40ms of work would push the last
+    // start past 140ms; anchored to the worker start it lands around 80ms.
+    expect(starts[2]).toBeLessThan(130);
+  });
+
   it('groupBy round: schedule index stays 0-based while records use the reporter offset', async () => {
     const recorded: TaskResultRecord[] = [];
     reporterClaim.mockImplementation(async () => ({

@@ -25,7 +25,6 @@ const config = defineBenchmark({
   benchmarkKind: 'sandbox',
   iterations: 3,
   concurrency: 3,
-  defaultProviders: ['e2b'],
   task: ttiTask,
   onResult: logTti,
 });

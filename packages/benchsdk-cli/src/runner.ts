@@ -291,7 +291,7 @@ export async function runBenchmark<T extends BaseParticipant>(
 
 /**
  * 'participant' ordering: one `client.runWorker` per participant, in turn.
- * `staggerDelayMs` here delays each task by `taskIndex * staggerDelayMs`
+ * `staggerDelayMs` here launches task N at `workerStart + N * staggerDelayMs`
  * (vs. round mode's fixed delay between rounds — intentionally different).
  * `TaskResult.steps`/`latencyMs` are ignored in this path: the platform
  * worker owns step timing and latency.
@@ -312,6 +312,10 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
     console.log('='.repeat(70));
 
     const logBuffer = new LogBuffer();
+    // Anchors the ramp to the worker's start, so a pool narrower than the task
+    // count can't inflate launch offsets: a task whose slot frees after its
+    // scheduled launch time starts immediately instead of sleeping index*delay.
+    let rampStartMs: number | undefined;
     await client.planWorkers(config.benchmarkSlug, run.id, participant.name);
 
     const result = await client.runWorker({
@@ -323,8 +327,10 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
         // `ctx.taskIndex` is the platform's global index; the schedule is
         // indexed from the worker's own task range start.
         const scheduleIndex = ctx.taskIndex - ctx.assignment.taskRange.start;
-        if (resolved.staggerDelayMs > 0 && scheduleIndex > 0) {
-          await sleep(scheduleIndex * resolved.staggerDelayMs);
+        if (resolved.staggerDelayMs > 0) {
+          rampStartMs ??= Date.now();
+          const waitMs = rampStartMs + scheduleIndex * resolved.staggerDelayMs - Date.now();
+          if (waitMs > 0) await sleep(waitMs);
         }
         const slot = schedule[scheduleIndex];
         const taskResult = await slot.task({
