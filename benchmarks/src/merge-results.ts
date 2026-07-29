@@ -40,8 +40,24 @@ import type { SnapshotForkBenchmarkResult } from '../storage/snapshot-fork-types
 import type { BrowserBenchmarkResult } from '../browser/types.js';
 import type { ThroughputBenchmarkResult } from '../browser/throughput-types.js';
 import type { AIGatewayBenchmarkResult } from '../ai-gateway/types.js';
-import type { HpcBenchmarkResult } from '../sandbox/hpc/types.js';
-import { getSuite } from '../sandbox/hpc/registry.js';
+// Generic result type for benchmark merge (all benchmarks share the same shape)
+type BenchmarkResult = {
+  provider: string;
+  suite: string;
+  compositeScore: number;
+  skipped?: boolean;
+  skipReason?: string;
+  iterations: any[];
+  summary: { median: number; n: number };
+};
+
+// Benchmark suite IDs for the standalone benchmarks
+const BENCHMARK_SUITE_IDS = [
+  'cpu-node', 'memory', 'system', 'disk',
+  'network-localhost', 'network-wan', 'pgbench',
+  'realworld', 'latency', 'dns', 'download',
+];
+const BENCHMARK_DIR_NAMES = new Set(BENCHMARK_SUITE_IDS.map(id => id.replace(/-/g, '_')));
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
@@ -737,24 +753,18 @@ async function mainAIGateway() {
 }
 
 /**
- * Print an HPC results table to stdout.
+ * Print a benchmark results table to stdout.
  */
-function printHpcResultsTable(results: HpcBenchmarkResult[], suiteDir: string): void {
-  const suiteId = suiteDir.replace(/^hpc_/, '').replace(/_/g, '-');
+function printHpcResultsTable(results: BenchmarkResult[], suiteDir: string): void {
+  const suiteId = suiteDir.replace(/_/g, '-');
   const sorted = [...results].sort((a, b) => (b.compositeScore || 0) - (a.compositeScore || 0));
 
-  let suiteLabel = suiteId;
-  let unit = '';
-  let ceiling = 0;
-  try {
-    const suite = getSuite(suiteId as any);
-    suiteLabel = suite.label;
-    unit = suite.unit;
-    ceiling = suite.ceiling;
-  } catch { /* use raw suiteId */ }
+  const suiteLabel = suiteId;
+  const unit = '';
+  const ceiling = 0;
 
   console.log(`\n${'='.repeat(95)}`);
-  console.log(`  HPC BENCHMARK RESULTS - ${suiteLabel}`);
+  console.log(`  BENCHMARK RESULTS - ${suiteLabel}`);
   console.log('='.repeat(95));
   console.log(`  Unit: ${unit}  Ceiling: ${ceiling}  Providers: ${sorted.length}`);
   console.log(
@@ -813,13 +823,13 @@ async function mainHpc() {
 
   // Group by suite directory (e.g. hpc_cpu_node, hpc_memory, ...).
   // Only pick up files whose parent dir starts with hpc_.
-  const bySuite: Record<string, { results: { result: HpcBenchmarkResult; fromSingleProvider: boolean }[] }> = {};
+  const bySuite: Record<string, { results: { result: BenchmarkResult; fromSingleProvider: boolean }[] }> = {};
 
   for (const file of jsonFiles) {
     const dirName = path.basename(path.dirname(file));
-    if (!dirName.startsWith('hpc_')) continue;
+    if (!dirName.startsWith('hpc_') && !BENCHMARK_DIR_NAMES.has(dirName)) continue;
 
-    const raw = JSON.parse(fs.readFileSync(file, 'utf-8')) as { results?: HpcBenchmarkResult[] };
+    const raw = JSON.parse(fs.readFileSync(file, 'utf-8')) as { results?: BenchmarkResult[] };
     if (!raw.results || raw.results.length === 0) continue;
 
     const fromSingleProvider = raw.results.length === 1;
@@ -839,7 +849,7 @@ async function mainHpc() {
     const { results } = bySuite[suiteDir];
 
     // Deduplicate by provider, preferring fresh single-provider files.
-    const seen = new Map<string, { result: HpcBenchmarkResult; fromSingleProvider: boolean }>();
+    const seen = new Map<string, { result: BenchmarkResult; fromSingleProvider: boolean }>();
     for (const entry of results) {
       const existing = seen.get(entry.result.provider);
       if (!existing || (entry.fromSingleProvider && !existing.fromSingleProvider)) {
@@ -885,7 +895,7 @@ const runner = mergeMode === 'storage'
   ? mainBrowserThroughput
   : mergeMode === 'ai-gateway'
   ? mainAIGateway
-  : mergeMode === 'hpc'
+  : (mergeMode === 'hpc' || mergeMode === 'benchmark')
   ? mainHpc
   : main;
 runner().catch(err => {
