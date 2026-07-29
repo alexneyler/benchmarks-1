@@ -2,6 +2,7 @@ import { mkdirSync, copyFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParticipantRecords } from '@benchsdk/cli';
 import type { JsonObject, TaskResultRecord, TaskStepRecord } from '@benchsdk/client';
+import { byTaskIndex } from '../src/util/records.js';
 import { computeStats } from '../src/util/stats.js';
 import { writeAIGatewayResultsJson } from './benchmark.js';
 import { computeAIGatewayCompositeScores } from './scoring.js';
@@ -75,7 +76,7 @@ export function recordsToAIGatewayResults(
 ): AIGatewayBenchmarkResult[] {
   return participants.map((participant) => {
     const model = opts.providers.find((p) => p.name === participant.participant)?.model ?? '';
-    const iterations = participant.records.map(recordToProbe);
+    const iterations = byTaskIndex(participant.records).map(recordToProbe);
     return {
       provider: participant.participant,
       mode: 'ai-gateway' as const,

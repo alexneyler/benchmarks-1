@@ -2,6 +2,7 @@ import { mkdirSync, copyFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParticipantRecords } from '@benchsdk/cli';
 import type { JsonObject } from '@benchsdk/client';
+import { byTaskIndex } from '../src/util/records.js';
 import { summarizeIterations, writeThroughputResultsJson } from './throughput-benchmark.js';
 import { computeThroughputCompositeScores } from './throughput-scoring.js';
 import type {
@@ -23,7 +24,7 @@ function num(x: unknown): number {
  */
 export function recordsToThroughputResults(participants: ParticipantRecords[]): ThroughputBenchmarkResult[] {
   return participants.map((participant) => {
-    const iterations: ThroughputTimingResult[] = participant.records.map((r) => {
+    const iterations: ThroughputTimingResult[] = byTaskIndex(participant.records).map((r) => {
       const d = (r.data ?? {}) as JsonObject;
       const rawActions = Array.isArray(d.actions) ? (d.actions as unknown as any[]) : [];
       const actions: ActionResult[] = rawActions.map((a) => ({

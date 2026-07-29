@@ -2,6 +2,7 @@ import { mkdirSync, copyFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParticipantRecords } from '@benchsdk/cli';
 import type { TaskResultRecord } from '@benchsdk/client';
+import { byTaskIndex } from '../src/util/records.js';
 import { computeStats } from '../src/util/stats.js';
 import { computeCompositeScores } from './scoring.js';
 import { writeResultsJson } from './table.js';
@@ -52,9 +53,7 @@ export function recordsToSandboxResults(
   staggerDelayMs?: number,
 ): BenchmarkResult[] {
   return participants.map((participant) => {
-    // Records arrive in completion order; the legacy files list iterations (and
-    // the ramp) in launch order.
-    const records = [...participant.records].sort((a, b) => a.taskIndex - b.taskIndex);
+    const records = byTaskIndex(participant.records);
     const iterations = records.map((r) => {
       const ttiMs = typeof r.data?.ttiMs === 'number' ? r.data.ttiMs : 0;
       return r.status === 'error'

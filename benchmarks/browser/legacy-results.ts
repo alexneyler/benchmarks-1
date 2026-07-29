@@ -2,6 +2,7 @@ import { mkdirSync, copyFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParticipantRecords } from '@benchsdk/cli';
 import type { JsonObject } from '@benchsdk/client';
+import { byTaskIndex } from '../src/util/records.js';
 import { computeStats } from '../src/util/stats.js';
 import { computeBrowserCompositeScores } from './scoring.js';
 import { writeBrowserResultsJson } from './benchmark.js';
@@ -14,7 +15,7 @@ function num(x: unknown): number {
 /** Map CLI participant records to legacy browser BenchmarkResult[]. */
 export function recordsToBrowserResults(participants: ParticipantRecords[]): BrowserBenchmarkResult[] {
   return participants.map((participant) => {
-    const iterations: BrowserTimingResult[] = participant.records.map((r) => {
+    const iterations: BrowserTimingResult[] = byTaskIndex(participant.records).map((r) => {
       const d = (r.data ?? {}) as JsonObject;
       const base = {
         createMs: num(d.createMs),

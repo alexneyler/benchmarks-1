@@ -2,6 +2,7 @@ import { mkdirSync, copyFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParticipantRecords } from '@benchsdk/cli';
 import type { JsonObject } from '@benchsdk/client';
+import { byTaskIndex } from '../src/util/records.js';
 import { computeStats } from './stats.js';
 import { computeSnapshotForkCompositeScores, writeSnapshotForkResultsJson } from './snapshot-fork-benchmark.js';
 import type { StorageProviderConfig } from './types.js';
@@ -26,7 +27,7 @@ export function recordsToSnapshotForkResults(
   return participants.map((participant) => {
     const bucket = opts.providers.find((p) => p.name === participant.participant)?.bucket ?? '';
 
-    const iterations: SnapshotForkTimingResult[] = participant.records.map((r) => {
+    const iterations: SnapshotForkTimingResult[] = byTaskIndex(participant.records).map((r) => {
       const d = (r.data ?? {}) as JsonObject;
       const base = {
         seedMs: num(d.seedMs),

@@ -2,6 +2,7 @@ import { mkdirSync, copyFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParticipantRecords } from '@benchsdk/cli';
 import type { JsonObject } from '@benchsdk/client';
+import { byTaskIndex } from '../src/util/records.js';
 import { computeStats } from './stats.js';
 import { computeStorageCompositeScores } from './scoring.js';
 import { writeStorageResultsJson } from './benchmark.js';
@@ -20,7 +21,7 @@ export function recordsToStorageResults(
     const provider = participant.participant;
     const bucket = opts.providers.find((p) => p.name === participant.participant)?.bucket ?? '';
 
-    const iterations: StorageTimingResult[] = participant.records.map((r) => {
+    const iterations: StorageTimingResult[] = byTaskIndex(participant.records).map((r) => {
       const d = (r.data ?? {}) as JsonObject;
       const base = {
         uploadMs: num(d.uploadMs),

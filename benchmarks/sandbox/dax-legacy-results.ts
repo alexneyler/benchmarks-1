@@ -2,6 +2,7 @@ import { mkdirSync, copyFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParticipantRecords } from '@benchsdk/cli';
 import type { JsonObject, TaskResultRecord } from '@benchsdk/client';
+import { byTaskIndex } from '../src/util/records.js';
 import { summarize, emptySummary, writeDaxResultsJson } from './dax.js';
 import type { DaxBenchmarkResult, DaxTimingResult } from './dax.js';
 
@@ -67,7 +68,7 @@ function recordToDaxTiming(r: TaskResultRecord): DaxTimingResult {
 /** Map CLI participant records to legacy dax `DaxBenchmarkResult[]`. */
 export function recordsToDaxResults(participants: ParticipantRecords[]): DaxBenchmarkResult[] {
   return participants.map((participant) => {
-    const iterations = participant.records.map(recordToDaxTiming);
+    const iterations = byTaskIndex(participant.records).map(recordToDaxTiming);
     const successful = iterations.filter((r) => !r.error);
     const withTiming = iterations.filter((r) => r.totalMs > 0 && (r.phasesCompleted ?? 0) > 0);
     return {
