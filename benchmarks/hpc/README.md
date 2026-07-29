@@ -1,5 +1,7 @@
 # HPC Benchmarks
 
+> Inspired by and modeled after the [HPC Sandbox Benchmarks](https://github.com/starslingdev/hpc-sandbox-benchmarks) by [starsling.dev](https://starsling.dev). The suite structure, scoring approach, and workload dimensions follow their design. This implementation is built from scratch in pure Node.js with no upstream code dependency.
+
 Throughput-after-boot benchmarks that measure raw hardware performance inside ComputeSDK sandboxes. Each suite runs a self-contained Node.js workload script inside a fresh sandbox, captures one numeric metric, and scores it against a calibration ceiling on a 0-100 scale.
 
 ## What these benchmarks test
