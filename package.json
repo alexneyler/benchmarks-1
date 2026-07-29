@@ -86,7 +86,11 @@
     "bench:ai-gateway:pydantic": "tsx benchmarks/src/run.ts --mode ai-gateway --provider pydantic-ai-gateway",
     "bench:ai-gateway:concentrate": "tsx benchmarks/src/run.ts --mode ai-gateway --provider concentrate-ai-gateway",
     "bench:ai-gateway:anthropic": "tsx benchmarks/src/run.ts --mode ai-gateway --provider anthropic-direct",
-    "generate-ai-gateway-svg": "tsx benchmarks/ai-gateway/generate-svg.ts"
+    "generate-ai-gateway-svg": "tsx benchmarks/ai-gateway/generate-svg.ts",
+    "bench:cpu-node": "tsx benchmarks/src/run.ts --mode cpu-node",
+    "generate-cpu-node-svg": "tsx benchmarks/sandbox/generate-cpu-node-svg.ts",
+    "smoke:cpu-node": "tsx benchmarks/scripts/smoke.ts --suite=cpu-node",
+    "test:benchmarks": "node --import tsx --test 'benchmarks/sandbox/__tests__/*.test.ts'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1076.0",
@@ -140,7 +144,9 @@
     "@storagesdk/core": "^0.4.2",
     "@tigrisdata/storage": "^3.16.0",
     "@vercel/blob": "^2.5.0",
+    "@electric-sql/pglite": "^0.2.14",
     "computesdk": "^4.1.4",
+    "sql.js": "^1.13.0",
     "dotenv": "^17.4.2",
     "e2b": "^2.35.0",
     "p-limit": "^7.3.0",

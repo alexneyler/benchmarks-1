@@ -8,6 +8,7 @@ import { runBenchmark } from '../sandbox/benchmark.js';
 import { runConcurrentBenchmark } from '../sandbox/concurrent.js';
 import { runStaggeredBenchmark } from '../sandbox/staggered.js';
 import { runDaxBenchmark, writeDaxResultsJson } from '../sandbox/dax.js';
+import { runCpuNodeBenchmark, writeCpuNodeResultsJson, SUITE_CONFIG as CPU_NODE_CONFIG } from '../sandbox/cpu-node.js';
 import { runStorageBenchmark, writeStorageResultsJson } from '../storage/benchmark.js';
 import {
   runSnapshotForkBenchmark,
@@ -44,6 +45,9 @@ import { ACTIONS_PER_SESSION } from '../browser/throughput-types.js';
 import type { ThroughputBenchmarkResult, ThroughputTimingResult } from '../browser/throughput-types.js';
 import type { AIGatewayBenchmarkResult } from '../ai-gateway/types.js';
 
+// Per-benchmark suite IDs dispatched via direct imports (like dax)
+const BENCHMARK_SUITE_IDS = ['cpu-node'];
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Parse CLI args
@@ -70,6 +74,9 @@ const aiGatewayIterationsWarm = parseInt(getArgValue(args, '--ai-gateway-iterati
 const AI_GATEWAY_PROMPT = 'Write a two-sentence description of how distributed systems handle partial failures.';
 const AI_GATEWAY_MAX_TOKENS = 200;
 const AI_GATEWAY_TIMEOUT_MS = 45_000;
+// Per-benchmark: --replicas overrides the suite's defaultReplicas.
+const replicasArg = getArgValue(args, '--replicas') || getArgValue(args, '--hpc-replicas');
+const explicitReplicas = replicasArg && replicasArg !== 'all' ? parseInt(replicasArg, 10) : undefined;
 
 function getArgValue(args: string[], flag: string): string | undefined {
   const idx = args.indexOf(flag);
@@ -77,7 +84,7 @@ function getArgValue(args: string[], flag: string): string | undefined {
 }
 
 /** Resolve which modes to run */
-function getModesToRun(): BenchmarkMode[] | ['storage'] | ['snapshot-fork'] | ['browser'] | ['browser-throughput'] | ['sandbox-dax'] | ['ai-gateway'] {
+function getModesToRun(): BenchmarkMode[] | ['storage'] | ['snapshot-fork'] | ['browser'] | ['browser-throughput'] | ['sandbox-dax'] | ['ai-gateway'] | string[] {
   if (!rawMode) return ['sequential', 'staggered', 'burst'];
   if (rawMode === 'storage') return ['storage'];
   if (rawMode === 'snapshot-fork') return ['snapshot-fork'];
@@ -85,6 +92,8 @@ function getModesToRun(): BenchmarkMode[] | ['storage'] | ['snapshot-fork'] | ['
   if (rawMode === 'browser-throughput') return ['browser-throughput'];
   if (rawMode === 'sandbox-dax') return ['sandbox-dax'];
   if (rawMode === 'ai-gateway') return ['ai-gateway'];
+  if (BENCHMARK_SUITE_IDS.includes(rawMode)) return [rawMode];
+  if (rawMode === 'all-benchmarks') return BENCHMARK_SUITE_IDS;
   const m = rawMode === 'concurrent' ? 'burst' : rawMode as BenchmarkMode;
   return [m];
 }
@@ -103,6 +112,11 @@ function modeToDir(m: BenchmarkMode | 'storage' | 'snapshot-fork' | 'browser-thr
     case 'ai-gateway': return 'ai-gateway';
     default: return `${m}_tti`;
   }
+}
+
+/** Map suite id to results subdirectory name. */
+function perfModeToDir(suiteId: string): string {
+  return suiteId.replace(/-/g, '_');
 }
 
 async function runMode(mode: BenchmarkMode, toRun: typeof providers): Promise<void> {
@@ -454,6 +468,53 @@ async function runBrowserThroughput(toRun: typeof throughputProviders): Promise<
   console.log(`Copied latest: ${latestPath}`);
 }
 
+/**
+ * Per-benchmark runner for cpu-node. Mirrors runSandboxDax: direct import,
+ * iterate across providers, write results JSON + latest copy.
+ */
+async function runCpuNodeBenchmarkSuite(toRun: typeof providers): Promise<void> {
+  const suite = CPU_NODE_CONFIG;
+  const replicas = explicitReplicas ?? suite.defaultReplicas;
+
+  console.log('\n' + '='.repeat(70));
+  console.log(`  BENCHMARK: ${suite.id} (${suite.label})`);
+  console.log(`    Unit: ${suite.unit} (${suite.higherIsBetter ? 'higher is better' : 'lower is better'}), ceiling: ${suite.ceiling}, replicates: ${replicas}`);
+  console.log('='.repeat(70));
+
+  const results = [];
+  for (const providerConfig of toRun) {
+    const result = await runCpuNodeBenchmark({ ...providerConfig, replicas });
+    results.push(result);
+  }
+
+  console.log('\n--- Cpu-node Benchmark Results ---');
+  for (const r of results) {
+    if (r.skipped) {
+      console.log(`${r.provider}: SKIPPED (${r.skipReason})`);
+      continue;
+    }
+    console.log(`${r.provider}: median ${r.summary.median.toFixed(1)}ms · score ${r.compositeScore} (${r.summary.n}/${r.iterations.length} OK)`);
+  }
+
+  const timestamp = new Date().toISOString().slice(0, 10);
+  const resultsDir = path.resolve(__dirname, `../../results/${perfModeToDir(suite.id)}`);
+  fs.mkdirSync(resultsDir, { recursive: true });
+  const outPath = path.join(resultsDir, `${timestamp}.json`);
+  await writeCpuNodeResultsJson(results, outPath);
+  const latestPath = path.join(resultsDir, 'latest.json');
+  fs.copyFileSync(outPath, latestPath);
+  console.log(`Copied latest: ${latestPath}`);
+
+  // Generate SVG after the run
+  try {
+    const { spawnSync } = await import('node:child_process');
+    const scriptPath = path.resolve(__dirname, '../sandbox/generate-cpu-node-svg.ts');
+    spawnSync('npx', ['tsx', scriptPath], { stdio: 'inherit' });
+  } catch (err) {
+    console.warn(`    [generate-svg] skipped: ${err instanceof Error ? err.message : String(err)}`);
+  }
+}
+
 async function runSandboxDax(toRun: typeof providers): Promise<void> {
   console.log('\n' + '='.repeat(70));
   console.log('  MODE: SANDBOX DAX');
@@ -647,6 +708,36 @@ async function main() {
 
     await runSnapshotFork(toRun, datasetArg);
     console.log('\nAll snapshot/fork tests complete.');
+    return;
+  }
+
+  if (typeof modes[0] === 'string' && BENCHMARK_SUITE_IDS.includes(modes[0])) {
+    console.log('ComputeSDK Benchmarks');
+    console.log(`Date: ${new Date().toISOString()}\n`);
+
+    const toRun = providerFilter
+      ? providers.filter(p => p.name === providerFilter)
+      : providers;
+
+    if (toRun.length === 0) {
+      if (providerFilter) {
+        console.error(`Unknown provider: ${providerFilter}`);
+        console.error(`Available: ${providers.map(p => p.name).join(', ')}`);
+      } else {
+        console.error('No providers configured. Add entries to benchmarks/sandbox/providers.ts.');
+      }
+      process.exit(1);
+    }
+
+    for (const suiteId of modes) {
+      if (suiteId === 'cpu-node') {
+        await runCpuNodeBenchmarkSuite(toRun);
+      } else {
+        console.error(`Unknown benchmark: ${suiteId}`);
+        process.exit(1);
+      }
+    }
+    console.log('\nAll benchmark tests complete.');
     return;
   }
 

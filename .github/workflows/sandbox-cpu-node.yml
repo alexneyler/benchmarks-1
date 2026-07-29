@@ -1,13 +1,14 @@
-name: Cpu-node Benchmark
+name: Sandbox Cpu-node Benchmark
 
 on:
   push:
     branches: [master]
     paths:
-      - 'benchmarks/sandbox/cpu-node/**'
+      - 'benchmarks/sandbox/cpu-node.ts'
+      - 'benchmarks/sandbox/generate-cpu-node-svg.ts'
+      - 'benchmarks/scripts/cpu-node-workload.js'
+      - 'benchmarks/scripts/cpu-node-stdout.js'
       - 'benchmarks/scripts/smoke.ts'
-      - 'benchmarks/scripts/build-bundles.ts'
-      - 'benchmarks/scripts/ensure-bundle.ts'
       - 'benchmarks/src/run.ts'
       - 'benchmarks/scripts/load-vault-secrets.sh'
       - 'package.json'
@@ -87,11 +88,6 @@ jobs:
           else
             pnpm install --frozen-lockfile
           fi
-      - name: Build bundles
-        if: |
-          github.event_name != 'workflow_dispatch' ||
-          (github.event.inputs.provider == '' || contains(format(',{0},', github.event.inputs.provider), format(',{0},', matrix.provider)))
-        run: pnpm run build:bundles
       - name: Clear stale results
         if: |
           github.event_name != 'workflow_dispatch' ||
