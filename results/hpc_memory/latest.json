@@ -1,0 +1,1491 @@
+{
+  "date": "2026-07-29",
+  "results": [
+    {
+      "provider": "archil",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 25102.825074743134,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=57349699150 scale=14120122723 add=17243780834 triad=16575276915"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 25374.332263850036,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=58071702157 scale=14295298600 add=17465533702 triad=16595128853"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 24694.559500041403,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=54886120209 scale=13987857427 add=17438118411 triad=17264393642"
+          }
+        }
+      ],
+      "summary": {
+        "median": 25102.825074743134,
+        "p95": 25374.332263850036,
+        "p99": 25374.332263850036,
+        "min": 24694.559500041403,
+        "max": 25374.332263850036,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 50.20565014948627,
+        "compositeScore": 50.2,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=54886120209 scale=13987857427 add=17438118411 triad=17264393642"
+        }
+      },
+      "wallClockMs": 7345.787958,
+      "replicateMs": [
+        2507.196065,
+        2421.4999770000004,
+        2416.4803679999995
+      ],
+      "compositeScore": 50.2
+    },
+    {
+      "provider": "beam",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "memory",
+          "reason": "unexpected",
+          "error": "no parseable WorkloadResult JSON line found in stdout",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "memory",
+          "reason": "unexpected",
+          "error": "no parseable WorkloadResult JSON line found in stdout",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "memory",
+          "reason": "unexpected",
+          "error": "no parseable WorkloadResult JSON line found in stdout",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 3522.939893,
+      "replicateMs": [
+        1795.335887,
+        822.0837629999996,
+        847.5050359999996
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "blaxel",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 26625.754601010427,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=44633961566 scale=21603634700 add=21495745784 triad=23943166976"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 23935.362139251483,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=34961655533 scale=21338980919 add=21046126252 triad=23045422458"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 23419.899713192797,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=33714950848 scale=21317372835 add=19983702282 triad=23214153082"
+          }
+        }
+      ],
+      "summary": {
+        "median": 23935.362139251483,
+        "p95": 26625.754601010427,
+        "p99": 26625.754601010427,
+        "min": 23419.899713192797,
+        "max": 26625.754601010427,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 47.87072427850297,
+        "compositeScore": 47.9,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=33714950848 scale=21317372835 add=19983702282 triad=23214153082"
+        }
+      },
+      "wallClockMs": 8497.797384000001,
+      "replicateMs": [
+        2941.9373860000005,
+        2645.977621,
+        2659.0472170000003
+      ],
+      "compositeScore": 47.9
+    },
+    {
+      "provider": "cloud-run",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 0,
+      "replicateMs": [],
+      "compositeScore": 0,
+      "skipped": true,
+      "skipReason": "Missing: CLOUD_RUN_SANDBOX_URL, CLOUD_RUN_SANDBOX_SECRET"
+    },
+    {
+      "provider": "cloudflare",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 960.2043755049122,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=1221581283 scale=914323896 add=901448763 triad=990035111"
+          }
+        },
+        {
+          "ok": false,
+          "suite": "memory",
+          "reason": "timeout",
+          "error": "memory workload timed out",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "memory",
+          "reason": "timeout",
+          "error": "memory workload timed out",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 960.2043755049122,
+        "p95": 960.2043755049122,
+        "p99": 960.2043755049122,
+        "min": 960.2043755049122,
+        "max": 960.2043755049122,
+        "successRate": 0.3333333333333333,
+        "n": 1,
+        "scoreBeforeReliability": 1.9204087510098242,
+        "compositeScore": 0.6,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=1221581283 scale=914323896 add=901448763 triad=990035111"
+        }
+      },
+      "wallClockMs": 181506.69615099998,
+      "replicateMs": [
+        57486.847888000004,
+        60009.89952,
+        60013.395288
+      ],
+      "compositeScore": 0.6
+    },
+    {
+      "provider": "codesandbox",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 18121.90436838439,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=46360601687 scale=11080987844 add=9638343626 triad=8928842823"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 17111.008290509682,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=45248489275 scale=10625623112 add=8267514190 triad=7627143939"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 18152.557189454492,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=45192591648 scale=10740925854 add=10415868995 triad=9787956734"
+          }
+        }
+      ],
+      "summary": {
+        "median": 18121.90436838439,
+        "p95": 18152.557189454492,
+        "p99": 18152.557189454492,
+        "min": 17111.008290509682,
+        "max": 18152.557189454492,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 36.24380873676878,
+        "compositeScore": 36.2,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=45192591648 scale=10740925854 add=10415868995 triad=9787956734"
+        }
+      },
+      "wallClockMs": 22543.693406,
+      "replicateMs": [
+        6099.293078,
+        7323.425943,
+        6118.430797999998
+      ],
+      "compositeScore": 36.2
+    },
+    {
+      "provider": "createos",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 36392.80898229017,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=40253274218 scale=36526904758 add=37631770343 triad=38230554967"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 39898.81803783908,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=65391360993 scale=36339321983 add=30136298970 triad=35480790145"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 43120.90864071763,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=65129391822 scale=37589696578 add=39740332186 triad=38402779010"
+          }
+        }
+      ],
+      "summary": {
+        "median": 39898.81803783908,
+        "p95": 43120.90864071763,
+        "p99": 43120.90864071763,
+        "min": 36392.80898229017,
+        "max": 43120.90864071763,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 79.79763607567817,
+        "compositeScore": 79.8,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=65129391822 scale=37589696578 add=39740332186 triad=38402779010"
+        }
+      },
+      "wallClockMs": 5067.630109000001,
+      "replicateMs": [
+        1771.114087,
+        1730.1382919999996,
+        1552.144155
+      ],
+      "compositeScore": 79.8
+    },
+    {
+      "provider": "daytona",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 20006.718233210686,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=17482934464 scale=18365473220 add=21912057164 triad=26153793465"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 26721.149267437468,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=36643842613 scale=22872803570 add=25204669226 triad=27355307848"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 23277.194162721396,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=33149702312 scale=18892272325 add=22947580716 triad=22642073233"
+          }
+        }
+      ],
+      "summary": {
+        "median": 23277.194162721396,
+        "p95": 26721.149267437468,
+        "p99": 26721.149267437468,
+        "min": 20006.718233210686,
+        "max": 26721.149267437468,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 46.554388325442794,
+        "compositeScore": 46.6,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=33149702312 scale=18892272325 add=22947580716 triad=22642073233"
+        }
+      },
+      "wallClockMs": 9102.570881,
+      "replicateMs": [
+        2884.5761569999995,
+        2441.6068370000003,
+        3639.082384999999
+      ],
+      "compositeScore": 46.6
+    },
+    {
+      "provider": "declaw",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 10943.0552189349,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=19368905860 scale=8916229207 add=9179250629 triad=8434114582"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 7495.839735476994,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=15722319443 scale=3945260360 add=5939084283 triad=5833166499"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 15213.804597665645,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=25798968747 scale=11751627161 add=13127112274 triad=13133613298"
+          }
+        }
+      ],
+      "summary": {
+        "median": 10943.0552189349,
+        "p95": 15213.804597665645,
+        "p99": 15213.804597665645,
+        "min": 7495.839735476994,
+        "max": 15213.804597665645,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 21.8861104378698,
+        "compositeScore": 21.9,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=25798968747 scale=11751627161 add=13127112274 triad=13133613298"
+        }
+      },
+      "wallClockMs": 17080.074099999998,
+      "replicateMs": [
+        5306.35169,
+        7973.804899000001,
+        3771.4167849999994
+      ],
+      "compositeScore": 21.9
+    },
+    {
+      "provider": "e2b",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 13582.136166182898,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=21586679658 scale=10306133777 add=12701612512 triad=12373182104"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 13714.97258541082,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=21292614737 scale=10219553201 add=12955508650 triad=13057087787"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 14510.162172402815,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=22295610929 scale=10589681007 add=14701283276 triad=13273456028"
+          }
+        }
+      ],
+      "summary": {
+        "median": 13714.97258541082,
+        "p95": 14510.162172402815,
+        "p99": 14510.162172402815,
+        "min": 13582.136166182898,
+        "max": 14510.162172402815,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 27.42994517082164,
+        "compositeScore": 27.4,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=22295610929 scale=10589681007 add=14701283276 triad=13273456028"
+        }
+      },
+      "wallClockMs": 12871.465776,
+      "replicateMs": [
+        4512.849590999999,
+        3965.237588,
+        3851.9970630000007
+      ],
+      "compositeScore": 27.4
+    },
+    {
+      "provider": "hopx",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 8460.829968488608,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=13203585140 scale=7322705006 add=7520475938 triad=7440526897"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 9464.364896406516,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=15527951478 scale=7198804204 add=9084405806 triad=7885262055"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 9099.225155134776,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=13625946526 scale=6451607065 add=9259887637 triad=8827475237"
+          }
+        }
+      ],
+      "summary": {
+        "median": 9099.225155134776,
+        "p95": 9464.364896406516,
+        "p99": 9464.364896406516,
+        "min": 8460.829968488608,
+        "max": 9464.364896406516,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 18.198450310269553,
+        "compositeScore": 18.2,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=13625946526 scale=6451607065 add=9259887637 triad=8827475237"
+        }
+      },
+      "wallClockMs": 34630.719826,
+      "replicateMs": [
+        10770.05575,
+        10012.557900000002,
+        9689.181953
+      ],
+      "compositeScore": 18.2
+    },
+    {
+      "provider": "isorun",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 21625.32621988457,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=42284282529 scale=14198785130 add=17447369461 triad=16772755146"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 19670.84613875672,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=40795301172 scale=13910576790 add=14682462972 triad=13117167710"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 21833.57529299756,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=42530487485 scale=14215794986 add=18239251996 triad=16591117719"
+          }
+        }
+      ],
+      "summary": {
+        "median": 21625.32621988457,
+        "p95": 21833.57529299756,
+        "p99": 21833.57529299756,
+        "min": 19670.84613875672,
+        "max": 21833.57529299756,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 43.25065243976914,
+        "compositeScore": 43.3,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=42530487485 scale=14215794986 add=18239251996 triad=16591117719"
+        }
+      },
+      "wallClockMs": 7780.110076,
+      "replicateMs": [
+        2466.929548,
+        2846.3157250000004,
+        2454.344773
+      ],
+      "compositeScore": 43.3
+    },
+    {
+      "provider": "lightning",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 15216.799386454066,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=25068639777 scale=12611236798 add=13132373546 triad=13011632412"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 16663.191303340485,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=33780168539 scale=12010299610 add=11963011996 triad=12137009790"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 16101.152665700327,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=32423986464 scale=11275720000 add=11864603564 triad=11968819001"
+          }
+        }
+      ],
+      "summary": {
+        "median": 16101.152665700327,
+        "p95": 16663.191303340485,
+        "p99": 16663.191303340485,
+        "min": 15216.799386454066,
+        "max": 16663.191303340485,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 32.20230533140065,
+        "compositeScore": 32.2,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=32423986464 scale=11275720000 add=11864603564 triad=11968819001"
+        }
+      },
+      "wallClockMs": 13251.671147000001,
+      "replicateMs": [
+        3810.007993,
+        4002.3933689999994,
+        4036.0129149999993
+      ],
+      "compositeScore": 32.2
+    },
+    {
+      "provider": "modal",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 12479.879441868961,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=24497753124 scale=9014316659 add=9117835364 triad=9714503116"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 14709.68190082893,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=32213742222 scale=9578702816 add=9935474892 triad=9968957706"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 14602.13125969445,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=32328538404 scale=9320888080 add=9810191532 triad=9786159535"
+          }
+        }
+      ],
+      "summary": {
+        "median": 14602.13125969445,
+        "p95": 14709.68190082893,
+        "p99": 14709.68190082893,
+        "min": 12479.879441868961,
+        "max": 14709.68190082893,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 29.2042625193889,
+        "compositeScore": 29.2,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=32328538404 scale=9320888080 add=9810191532 triad=9786159535"
+        }
+      },
+      "wallClockMs": 13295.628906,
+      "replicateMs": [
+        4724.019566000001,
+        4261.813701,
+        4258.521565000001
+      ],
+      "compositeScore": 29.2
+    },
+    {
+      "provider": "northflank",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 16323.200215645362,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=29885423244 scale=12608290440 add=13574303356 triad=12396446918"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 17028.97025815003,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=30182709001 scale=13513402724 add=14505655110 triad=13222911234"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 16929.987118394583,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=30105285722 scale=13703226241 add=14171048072 triad=13029952655"
+          }
+        }
+      ],
+      "summary": {
+        "median": 16929.987118394583,
+        "p95": 17028.97025815003,
+        "p99": 17028.97025815003,
+        "min": 16323.200215645362,
+        "max": 17028.97025815003,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 33.859974236789164,
+        "compositeScore": 33.9,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=30105285722 scale=13703226241 add=14171048072 triad=13029952655"
+        }
+      },
+      "wallClockMs": 9247.631596000001,
+      "replicateMs": [
+        3109.720351,
+        2879.418482,
+        2918.177245
+      ],
+      "compositeScore": 33.9
+    },
+    {
+      "provider": "opencomputer",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 34626.87178407555,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=43093238947 scale=33888072214 add=34150658481 triad=34103657189"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 34080.94345824274,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=44007695892 scale=32548383438 add=32614806668 triad=33774951473"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 33952.02791469899,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=43979481487 scale=34062776935 add=32902023981 triad=31460844088"
+          }
+        }
+      ],
+      "summary": {
+        "median": 34080.94345824274,
+        "p95": 34626.87178407555,
+        "p99": 34626.87178407555,
+        "min": 33952.02791469899,
+        "max": 34626.87178407555,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 68.16188691648549,
+        "compositeScore": 68.2,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=43979481487 scale=34062776935 add=32902023981 triad=31460844088"
+        }
+      },
+      "wallClockMs": 11974.583649,
+      "replicateMs": [
+        3116.641998,
+        3122.021739999999,
+        3008.308959
+      ],
+      "compositeScore": 68.2
+    },
+    {
+      "provider": "runloop",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 8817.024855412634,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=10036165253 scale=7178629072 add=10311258456 triad=9455229838"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 8924.40904772804,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=10020182002 scale=7739679298 add=10232303029 triad=9439520237"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 9170.001001330484,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=10536562392 scale=7680633788 add=10355549678 triad=9889026022"
+          }
+        }
+      ],
+      "summary": {
+        "median": 8924.40904772804,
+        "p95": 9170.001001330484,
+        "p99": 9170.001001330484,
+        "min": 8817.024855412634,
+        "max": 9170.001001330484,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 17.848818095456082,
+        "compositeScore": 17.8,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=10536562392 scale=7680633788 add=10355549678 triad=9889026022"
+        }
+      },
+      "wallClockMs": 16526.402549,
+      "replicateMs": [
+        5549.311955,
+        5464.475801,
+        5426.590696999998
+      ],
+      "compositeScore": 17.8
+    },
+    {
+      "provider": "sandbox0",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 32521.058102709798,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=47244782570 scale=28979468851 add=30210743498 triad=29968209165"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 29205.013151377843,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=43384228365 scale=23570288421 add=28976076526 triad=26564110169"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 29254.499003896413,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=43540586762 scale=27544819442 add=26945956041 triad=24670899945"
+          }
+        }
+      ],
+      "summary": {
+        "median": 29254.499003896413,
+        "p95": 32521.058102709798,
+        "p99": 32521.058102709798,
+        "min": 29205.013151377843,
+        "max": 32521.058102709798,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 58.508998007792826,
+        "compositeScore": 58.5,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=43540586762 scale=27544819442 add=26945956041 triad=24670899945"
+        }
+      },
+      "wallClockMs": 7111.632755999999,
+      "replicateMs": [
+        1882.7122490000002,
+        2062.030989,
+        2718.3557520000004
+      ],
+      "compositeScore": 58.5
+    },
+    {
+      "provider": "superserve",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 17432.807637076203,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=28826103946 scale=14024063263 add=14492073174 triad=15776254420"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 19689.20391070298,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=29901224261 scale=17760286642 add=19240930576 triad=15680065240"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 18464.481845719223,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=25606122069 scale=18200915252 add=18535210714 triad=15103402028"
+          }
+        }
+      ],
+      "summary": {
+        "median": 18464.481845719223,
+        "p95": 19689.20391070298,
+        "p99": 19689.20391070298,
+        "min": 17432.807637076203,
+        "max": 19689.20391070298,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 36.92896369143845,
+        "compositeScore": 36.9,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=25606122069 scale=18200915252 add=18535210714 triad=15103402028"
+        }
+      },
+      "wallClockMs": 15489.254937999998,
+      "replicateMs": [
+        5699.241457,
+        4695.412103000001,
+        4627.921086999999
+      ],
+      "compositeScore": 36.9
+    },
+    {
+      "provider": "tenki",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 17657.48025126385,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=30766631145 scale=15694238780 add=13907201921 triad=13692768201"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 22896.673786898013,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=35047606354 scale=17524032280 add=21801185381 triad=21662786435"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 19776.172370744487,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=34279382085 scale=17318561694 add=15862424640 triad=15486910461"
+          }
+        }
+      ],
+      "summary": {
+        "median": 19776.172370744487,
+        "p95": 22896.673786898013,
+        "p99": 22896.673786898013,
+        "min": 17657.48025126385,
+        "max": 22896.673786898013,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 39.55234474148897,
+        "compositeScore": 39.6,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=34279382085 scale=17318561694 add=15862424640 triad=15486910461"
+        }
+      },
+      "wallClockMs": 11229.38519,
+      "replicateMs": [
+        4091.57677,
+        2887.628624,
+        3388.481568000001
+      ],
+      "compositeScore": 39.6
+    },
+    {
+      "provider": "tensorlake",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 24567.96216764721,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=30952705202 scale=19966533746 add=25478522437 triad=26647740608"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 25968.931531319042,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=33866758016 scale=20519122300 add=28424374783 triad=26111338298"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 26529.77444041485,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=34033274788 scale=19217483160 add=29216875085 triad=28806306022"
+          }
+        }
+      ],
+      "summary": {
+        "median": 25968.931531319042,
+        "p95": 26529.77444041485,
+        "p99": 26529.77444041485,
+        "min": 24567.96216764721,
+        "max": 26529.77444041485,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 51.93786306263808,
+        "compositeScore": 51.9,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=34033274788 scale=19217483160 add=29216875085 triad=28806306022"
+        }
+      },
+      "wallClockMs": 6468.0791340000005,
+      "replicateMs": [
+        2333.2911050000002,
+        2069.2259530000006,
+        2042.1285530000005
+      ],
+      "compositeScore": 51.9
+    },
+    {
+      "provider": "upstash",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 28069.17396742847,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=57928149263 scale=17285023190 add=21257496136 triad=21259980060"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 27845.288774709636,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=57337948205 scale=17189998870 add=21126676661 triad=21136982353"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 27948.55062972814,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=57426823167 scale=17391758271 add=21288916981 triad=21117219281"
+          }
+        }
+      ],
+      "summary": {
+        "median": 27948.55062972814,
+        "p95": 28069.17396742847,
+        "p99": 28069.17396742847,
+        "min": 27845.288774709636,
+        "max": 28069.17396742847,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 55.897101259456285,
+        "compositeScore": 55.9,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=57426823167 scale=17391758271 add=21288916981 triad=21117219281"
+        }
+      },
+      "wallClockMs": 7302.461901999999,
+      "replicateMs": [
+        2310.674516,
+        2204.063891,
+        2176.5727960000004
+      ],
+      "compositeScore": 55.9
+    },
+    {
+      "provider": "vercel",
+      "suite": "memory",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 13703.811934348254,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=18994135522 scale=11463725562 add=13753823318 triad=13266268810"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 13982.751974714614,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=20420128977 scale=11193008426 add=13473452833 triad=13561322302"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "memory",
+          "metric": {
+            "value": 13958.352224564984,
+            "unit": "mb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 30,
+            "providerNotes": "phases (bytes/s): copy=21904576347 scale=11058726957 add=12806864628 triad=12775404638"
+          }
+        }
+      ],
+      "summary": {
+        "median": 13958.352224564984,
+        "p95": 13982.751974714614,
+        "p99": 13982.751974714614,
+        "min": 13703.811934348254,
+        "max": 13982.751974714614,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 27.91670444912997,
+        "compositeScore": 27.9,
+        "meta": {
+          "iterationsReported": 30,
+          "providerNotes": "phases (bytes/s): copy=21904576347 scale=11058726957 add=12806864628 triad=12775404638"
+        }
+      },
+      "wallClockMs": 11137.995262,
+      "replicateMs": [
+        3582.640209,
+        3485.2353269999994,
+        3538.2160170000006
+      ],
+      "compositeScore": 27.9
+    }
+  ]
+}

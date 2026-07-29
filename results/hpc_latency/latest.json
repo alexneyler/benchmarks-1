@@ -1,0 +1,1524 @@
+{
+  "date": "2026-07-29",
+  "results": [
+    {
+      "provider": "archil",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 10.542935,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=27.6ms cloudflare-1111=15.6ms cloudflare-1111=14.2ms google-front=10.5ms google-front=10.0ms google-front=10.7ms github-raw=7.3ms github-raw=8.1ms github-raw=8.1ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 10.347196,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=27.3ms cloudflare-1111=14.9ms cloudflare-1111=13.7ms google-front=10.3ms google-front=13.1ms google-front=8.7ms github-raw=9.1ms github-raw=9.7ms github-raw=9.2ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 9.302485,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=26.3ms cloudflare-1111=14.4ms cloudflare-1111=12.2ms google-front=9.7ms google-front=8.6ms google-front=8.8ms github-raw=9.0ms github-raw=7.5ms github-raw=9.3ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 10.347196,
+        "p95": 10.542935,
+        "p99": 10.542935,
+        "min": 9.302485,
+        "max": 10.542935,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 97.9305608,
+        "compositeScore": 97.9,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=26.3ms cloudflare-1111=14.4ms cloudflare-1111=12.2ms google-front=9.7ms google-front=8.6ms google-front=8.8ms github-raw=9.0ms github-raw=7.5ms github-raw=9.3ms"
+        }
+      },
+      "wallClockMs": 1006.4048359999997,
+      "replicateMs": [
+        384.57832899999994,
+        296.8422099999998,
+        324.455649
+      ],
+      "compositeScore": 97.9
+    },
+    {
+      "provider": "beam",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 9.89649,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=41.4ms cloudflare-1111=10.6ms cloudflare-1111=9.9ms google-front=9.9ms google-front=9.7ms google-front=11.1ms github-raw=9.9ms github-raw=10.7ms github-raw=9.9ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 10.841933,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=37.5ms cloudflare-1111=11.7ms cloudflare-1111=10.8ms google-front=11.0ms google-front=10.1ms google-front=10.4ms github-raw=10.7ms github-raw=12.5ms github-raw=10.0ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 10.005437,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=37.0ms cloudflare-1111=9.7ms cloudflare-1111=11.1ms google-front=12.3ms google-front=10.7ms google-front=9.4ms github-raw=9.4ms github-raw=9.6ms github-raw=10.0ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 10.005437,
+        "p95": 10.841933,
+        "p99": 10.841933,
+        "min": 9.89649,
+        "max": 10.841933,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 97.9989126,
+        "compositeScore": 98,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=37.0ms cloudflare-1111=9.7ms cloudflare-1111=11.1ms google-front=12.3ms google-front=10.7ms google-front=9.4ms github-raw=9.4ms github-raw=9.6ms github-raw=10.0ms"
+        }
+      },
+      "wallClockMs": 2097.9673270000003,
+      "replicateMs": [
+        1441.6366409999998,
+        294.18991800000003,
+        287.20693800000026
+      ],
+      "compositeScore": 98
+    },
+    {
+      "provider": "blaxel",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 18.76534,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=36.2ms cloudflare-1111=7.7ms cloudflare-1111=8.2ms google-front=18.8ms google-front=18.3ms google-front=17.1ms github-raw=33.2ms github-raw=33.0ms github-raw=33.1ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 17.388425,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=36.9ms cloudflare-1111=9.8ms cloudflare-1111=7.3ms google-front=16.5ms google-front=17.4ms google-front=16.7ms github-raw=33.2ms github-raw=34.6ms github-raw=39.1ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 20.722908,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=37.4ms cloudflare-1111=7.6ms cloudflare-1111=7.8ms google-front=20.7ms google-front=19.8ms google-front=16.9ms github-raw=38.3ms github-raw=27.5ms github-raw=33.2ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 18.76534,
+        "p95": 20.722908,
+        "p99": 20.722908,
+        "min": 17.388425,
+        "max": 20.722908,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 96.246932,
+        "compositeScore": 96.2,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=37.4ms cloudflare-1111=7.6ms cloudflare-1111=7.8ms google-front=20.7ms google-front=19.8ms google-front=16.9ms github-raw=38.3ms github-raw=27.5ms github-raw=33.2ms"
+        }
+      },
+      "wallClockMs": 2117.9518610000005,
+      "replicateMs": [
+        640.4397939999999,
+        617.144209,
+        612.5133249999999
+      ],
+      "compositeScore": 96.2
+    },
+    {
+      "provider": "cloud-run",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 0,
+      "replicateMs": [],
+      "compositeScore": 0,
+      "skipped": true,
+      "skipReason": "Missing: CLOUD_RUN_SANDBOX_URL, CLOUD_RUN_SANDBOX_SECRET"
+    },
+    {
+      "provider": "cloudflare",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 107.633122,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=796.3ms cloudflare-1111=199.4ms cloudflare-1111=107.6ms google-front=192.4ms google-front=104.1ms google-front=95.5ms github-raw=100.2ms github-raw=99.7ms github-raw=203.7ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 15.26717,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=57.7ms cloudflare-1111=13.4ms cloudflare-1111=12.7ms google-front=25.9ms google-front=25.0ms google-front=22.3ms github-raw=15.3ms github-raw=14.8ms github-raw=14.1ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 11.12167,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=54.9ms cloudflare-1111=13.7ms cloudflare-1111=10.2ms google-front=11.6ms google-front=11.1ms google-front=10.6ms github-raw=10.3ms github-raw=10.3ms github-raw=11.6ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 15.26717,
+        "p95": 107.633122,
+        "p99": 107.633122,
+        "min": 11.12167,
+        "max": 107.633122,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 96.946566,
+        "compositeScore": 96.9,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=54.9ms cloudflare-1111=13.7ms cloudflare-1111=10.2ms google-front=11.6ms google-front=11.1ms google-front=10.6ms github-raw=10.3ms github-raw=10.3ms github-raw=11.6ms"
+        }
+      },
+      "wallClockMs": 16426.555223000003,
+      "replicateMs": [
+        7676.465834999999,
+        1365.6061710000013,
+        3603.024649000001
+      ],
+      "compositeScore": 96.9
+    },
+    {
+      "provider": "codesandbox",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 12.070064,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=48.5ms cloudflare-1111=9.6ms cloudflare-1111=9.2ms google-front=12.1ms google-front=12.4ms google-front=14.4ms github-raw=11.7ms github-raw=15.6ms github-raw=6.9ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 10.647859,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=48.0ms cloudflare-1111=10.6ms cloudflare-1111=9.1ms google-front=14.3ms google-front=12.9ms google-front=25.7ms github-raw=7.3ms github-raw=6.4ms github-raw=6.2ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 10.72707,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=51.9ms cloudflare-1111=10.7ms cloudflare-1111=9.6ms google-front=12.6ms google-front=14.5ms google-front=12.0ms github-raw=6.5ms github-raw=7.4ms github-raw=7.0ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 10.72707,
+        "p95": 12.070064,
+        "p99": 12.070064,
+        "min": 10.647859,
+        "max": 12.070064,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 97.854586,
+        "compositeScore": 97.9,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=51.9ms cloudflare-1111=10.7ms cloudflare-1111=9.6ms google-front=12.6ms google-front=14.5ms google-front=12.0ms github-raw=6.5ms github-raw=7.4ms github-raw=7.0ms"
+        }
+      },
+      "wallClockMs": 10995.507076,
+      "replicateMs": [
+        2684.728412,
+        2546.802855,
+        2760.748941
+      ],
+      "compositeScore": 97.9
+    },
+    {
+      "provider": "createos",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 11.546988,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=34.4ms cloudflare-1111=12.1ms cloudflare-1111=11.6ms google-front=12.5ms google-front=11.5ms google-front=11.5ms github-raw=10.3ms github-raw=10.7ms github-raw=10.8ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 10.56714,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=35.6ms cloudflare-1111=12.6ms cloudflare-1111=13.4ms google-front=11.8ms google-front=10.6ms google-front=10.0ms github-raw=10.4ms github-raw=10.1ms github-raw=9.8ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 12.300399,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=34.9ms cloudflare-1111=14.1ms cloudflare-1111=11.4ms google-front=15.4ms google-front=12.2ms google-front=13.7ms github-raw=10.3ms github-raw=12.3ms github-raw=10.7ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 11.546988,
+        "p95": 12.300399,
+        "p99": 12.300399,
+        "min": 10.56714,
+        "max": 12.300399,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 97.6906024,
+        "compositeScore": 97.7,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=34.9ms cloudflare-1111=14.1ms cloudflare-1111=11.4ms google-front=15.4ms google-front=12.2ms google-front=13.7ms github-raw=10.3ms github-raw=12.3ms github-raw=10.7ms"
+        }
+      },
+      "wallClockMs": 926.4381920000001,
+      "replicateMs": [
+        350.023606,
+        271.5959789999997,
+        286.03307399999994
+      ],
+      "compositeScore": 97.7
+    },
+    {
+      "provider": "daytona",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 17.814048,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=15.5ms cloudflare-1111=8.7ms cloudflare-1111=7.7ms google-front=17.8ms google-front=16.6ms google-front=17.8ms github-raw=32.7ms github-raw=27.2ms github-raw=33.1ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 17.724517,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=15.7ms cloudflare-1111=7.2ms cloudflare-1111=8.3ms google-front=17.7ms google-front=17.7ms google-front=17.5ms github-raw=33.1ms github-raw=38.9ms github-raw=33.2ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 12.533224,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=25.8ms cloudflare-1111=12.2ms cloudflare-1111=11.4ms google-front=29.9ms google-front=15.7ms google-front=15.0ms github-raw=12.5ms github-raw=10.4ms github-raw=10.1ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 17.724517,
+        "p95": 17.814048,
+        "p99": 17.814048,
+        "min": 12.533224,
+        "max": 17.814048,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 96.4550966,
+        "compositeScore": 96.5,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=25.8ms cloudflare-1111=12.2ms cloudflare-1111=11.4ms google-front=29.9ms google-front=15.7ms google-front=15.0ms github-raw=12.5ms github-raw=10.4ms github-raw=10.1ms"
+        }
+      },
+      "wallClockMs": 3866.73779,
+      "replicateMs": [
+        1351.132765,
+        1186.555844,
+        1186.4801159999997
+      ],
+      "compositeScore": 96.5
+    },
+    {
+      "provider": "declaw",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 53.09571,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=195.3ms cloudflare-1111=54.1ms cloudflare-1111=52.3ms google-front=50.7ms google-front=50.4ms google-front=140.7ms github-raw=53.1ms github-raw=464.5ms github-raw=43.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 64.137823,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=179.3ms cloudflare-1111=267.2ms cloudflare-1111=61.5ms google-front=66.2ms google-front=64.1ms google-front=58.3ms github-raw=50.9ms github-raw=53.5ms github-raw=149.8ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 25.350242,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=90.5ms cloudflare-1111=24.6ms cloudflare-1111=25.0ms google-front=26.2ms google-front=27.7ms google-front=25.4ms github-raw=25.1ms github-raw=2532.0ms github-raw=23.9ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 53.09571,
+        "p95": 64.137823,
+        "p99": 64.137823,
+        "min": 25.350242,
+        "max": 64.137823,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 89.38085799999999,
+        "compositeScore": 89.4,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=90.5ms cloudflare-1111=24.6ms cloudflare-1111=25.0ms google-front=26.2ms google-front=27.7ms google-front=25.4ms github-raw=25.1ms github-raw=2532.0ms github-raw=23.9ms"
+        }
+      },
+      "wallClockMs": 6014.583156,
+      "replicateMs": [
+        1465.12796,
+        1459.5151010000004,
+        3062.715032
+      ],
+      "compositeScore": 89.4
+    },
+    {
+      "provider": "e2b",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 21.112841,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=85.6ms cloudflare-1111=31.6ms cloudflare-1111=29.6ms google-front=7.6ms google-front=7.3ms google-front=6.4ms github-raw=18.8ms github-raw=21.1ms github-raw=21.7ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 21.188774,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=80.5ms cloudflare-1111=21.6ms cloudflare-1111=46.2ms google-front=7.7ms google-front=7.4ms google-front=6.6ms github-raw=20.7ms github-raw=23.2ms github-raw=21.2ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 21.800722,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=69.4ms cloudflare-1111=44.1ms cloudflare-1111=33.8ms google-front=8.6ms google-front=7.7ms google-front=7.8ms github-raw=23.3ms github-raw=21.7ms github-raw=21.8ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 21.188774,
+        "p95": 21.800722,
+        "p99": 21.800722,
+        "min": 21.112841,
+        "max": 21.800722,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 95.7622452,
+        "compositeScore": 95.8,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=69.4ms cloudflare-1111=44.1ms cloudflare-1111=33.8ms google-front=8.6ms google-front=7.7ms google-front=7.8ms github-raw=23.3ms github-raw=21.7ms github-raw=21.8ms"
+        }
+      },
+      "wallClockMs": 3515.053703,
+      "replicateMs": [
+        1011.5568599999999,
+        1154.9819739999998,
+        919.242573
+      ],
+      "compositeScore": 95.8
+    },
+    {
+      "provider": "hopx",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 48.782854,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=401.8ms cloudflare-1111=33.4ms cloudflare-1111=48.9ms google-front=42.5ms google-front=35.1ms google-front=37.2ms github-raw=55.5ms github-raw=48.8ms github-raw=52.2ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 37.636575,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=201.1ms cloudflare-1111=32.4ms cloudflare-1111=32.3ms google-front=37.6ms google-front=36.7ms google-front=36.8ms github-raw=47.2ms github-raw=47.1ms github-raw=46.5ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 47.937706,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=431.1ms cloudflare-1111=39.3ms cloudflare-1111=51.4ms google-front=37.7ms google-front=34.5ms google-front=40.9ms github-raw=54.1ms github-raw=47.9ms github-raw=47.9ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 47.937706,
+        "p95": 48.782854,
+        "p99": 48.782854,
+        "min": 37.636575,
+        "max": 48.782854,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 90.4124588,
+        "compositeScore": 90.4,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=431.1ms cloudflare-1111=39.3ms cloudflare-1111=51.4ms google-front=37.7ms google-front=34.5ms google-front=40.9ms github-raw=54.1ms github-raw=47.9ms github-raw=47.9ms"
+        }
+      },
+      "wallClockMs": 11440.88785,
+      "replicateMs": [
+        2661.938472,
+        1945.3524679999991,
+        2857.860461
+      ],
+      "compositeScore": 90.4
+    },
+    {
+      "provider": "isorun",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 18.317578,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=20.6ms cloudflare-1111=8.7ms cloudflare-1111=6.8ms google-front=17.5ms google-front=16.2ms google-front=18.3ms github-raw=32.3ms github-raw=32.6ms github-raw=33.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 18.952968,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=23.6ms cloudflare-1111=8.9ms cloudflare-1111=9.3ms google-front=17.1ms google-front=17.5ms google-front=19.0ms github-raw=34.6ms github-raw=33.9ms github-raw=34.1ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 18.700728,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=23.4ms cloudflare-1111=9.3ms cloudflare-1111=7.9ms google-front=18.7ms google-front=17.6ms google-front=18.7ms github-raw=38.5ms github-raw=33.3ms github-raw=28.9ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 18.700728,
+        "p95": 18.952968,
+        "p99": 18.952968,
+        "min": 18.317578,
+        "max": 18.952968,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 96.2598544,
+        "compositeScore": 96.3,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=23.4ms cloudflare-1111=9.3ms cloudflare-1111=7.9ms google-front=18.7ms google-front=17.6ms google-front=18.7ms github-raw=38.5ms github-raw=33.3ms github-raw=28.9ms"
+        }
+      },
+      "wallClockMs": 883.0739510000001,
+      "replicateMs": [
+        314.910292,
+        278.0345390000002,
+        278.4688619999997
+      ],
+      "compositeScore": 96.3
+    },
+    {
+      "provider": "lightning",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 39.327767,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 7,
+            "providerNotes": "cloudflare-1111=71.0ms cloudflare-1111=40.5ms cloudflare-1111=41.7ms google-front=16.6ms google-front=15.8ms google-front=15.8ms github-raw=39.3ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 38.671204,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=79.9ms cloudflare-1111=38.7ms cloudflare-1111=39.2ms google-front=17.1ms google-front=17.8ms google-front=16.6ms github-raw=37.2ms github-raw=38.7ms github-raw=40.1ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 39.59677,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=60.9ms cloudflare-1111=43.9ms cloudflare-1111=40.8ms google-front=17.2ms google-front=19.8ms google-front=18.1ms github-raw=40.1ms github-raw=39.6ms github-raw=38.5ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 39.327767,
+        "p95": 39.59677,
+        "p99": 39.59677,
+        "min": 38.671204,
+        "max": 39.59677,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 92.1344466,
+        "compositeScore": 92.1,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=60.9ms cloudflare-1111=43.9ms cloudflare-1111=40.8ms google-front=17.2ms google-front=19.8ms google-front=18.1ms github-raw=40.1ms github-raw=39.6ms github-raw=38.5ms"
+        }
+      },
+      "wallClockMs": 8512.969825,
+      "replicateMs": [
+        6014.975476,
+        537.6809220000005,
+        547.1675319999995
+      ],
+      "compositeScore": 92.1
+    },
+    {
+      "provider": "modal",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 8.9895,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=49.1ms cloudflare-1111=9.6ms cloudflare-1111=9.0ms google-front=10.2ms google-front=9.0ms google-front=8.4ms github-raw=7.6ms github-raw=7.8ms github-raw=9.1ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 8.419955,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=50.6ms cloudflare-1111=10.9ms cloudflare-1111=9.2ms google-front=8.3ms google-front=8.3ms google-front=8.4ms github-raw=9.2ms github-raw=7.6ms github-raw=7.0ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 9.414543,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=47.3ms cloudflare-1111=9.4ms cloudflare-1111=9.0ms google-front=9.4ms google-front=9.2ms google-front=10.0ms github-raw=8.9ms github-raw=10.2ms github-raw=7.5ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 8.9895,
+        "p95": 9.414543,
+        "p99": 9.414543,
+        "min": 8.419955,
+        "max": 9.414543,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 98.2021,
+        "compositeScore": 98.2,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=47.3ms cloudflare-1111=9.4ms cloudflare-1111=9.0ms google-front=9.4ms google-front=9.2ms google-front=10.0ms github-raw=8.9ms github-raw=10.2ms github-raw=7.5ms"
+        }
+      },
+      "wallClockMs": 2154.19454,
+      "replicateMs": [
+        717.1366139999998,
+        698.3598699999998,
+        692.532698
+      ],
+      "compositeScore": 98.2
+    },
+    {
+      "provider": "northflank",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 3119.375285,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 6,
+            "providerNotes": "cloudflare-1111=3141.9ms cloudflare-1111=3139.7ms cloudflare-1111=3119.4ms google-front=6.9ms google-front=6.4ms google-front=6.3ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 3130.126068,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 6,
+            "providerNotes": "cloudflare-1111=3152.5ms cloudflare-1111=3156.8ms cloudflare-1111=3130.1ms google-front=6.7ms google-front=6.3ms google-front=6.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 3151.456581,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 6,
+            "providerNotes": "cloudflare-1111=3179.7ms cloudflare-1111=3173.1ms cloudflare-1111=3151.5ms google-front=6.0ms google-front=6.5ms google-front=6.0ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 3130.126068,
+        "p95": 3151.456581,
+        "p99": 3151.456581,
+        "min": 3119.375285,
+        "max": 3151.456581,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {
+          "iterationsReported": 6,
+          "providerNotes": "cloudflare-1111=3179.7ms cloudflare-1111=3173.1ms cloudflare-1111=3151.5ms google-front=6.0ms google-front=6.5ms google-front=6.0ms"
+        }
+      },
+      "wallClockMs": 44288.707011,
+      "replicateMs": [
+        14662.157512,
+        14626.749080000001,
+        14686.257404999997
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "opencomputer",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 28.342016,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=46.5ms cloudflare-1111=29.4ms cloudflare-1111=28.6ms google-front=23.6ms google-front=27.9ms google-front=28.3ms github-raw=27.7ms github-raw=30.5ms github-raw=21.3ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 28.211287,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=43.7ms cloudflare-1111=37.7ms cloudflare-1111=36.6ms google-front=23.9ms google-front=33.3ms google-front=22.7ms github-raw=28.2ms github-raw=23.2ms github-raw=22.5ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 23.919337,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=49.5ms cloudflare-1111=27.1ms cloudflare-1111=30.2ms google-front=22.3ms google-front=21.5ms google-front=26.9ms github-raw=23.9ms github-raw=19.7ms github-raw=22.1ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 28.211287,
+        "p95": 28.342016,
+        "p99": 28.342016,
+        "min": 23.919337,
+        "max": 28.342016,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 94.35774260000001,
+        "compositeScore": 94.4,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=49.5ms cloudflare-1111=27.1ms cloudflare-1111=30.2ms google-front=22.3ms google-front=21.5ms google-front=26.9ms github-raw=23.9ms github-raw=19.7ms github-raw=22.1ms"
+        }
+      },
+      "wallClockMs": 9492.896116,
+      "replicateMs": [
+        2402.715322,
+        2355.8078380000006,
+        2339.971579
+      ],
+      "compositeScore": 94.4
+    },
+    {
+      "provider": "runloop",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 14.288383,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=68.2ms cloudflare-1111=14.3ms cloudflare-1111=11.6ms google-front=35.8ms google-front=32.6ms google-front=36.0ms github-raw=11.8ms github-raw=8.4ms github-raw=10.7ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 11.153248,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=73.5ms cloudflare-1111=10.2ms cloudflare-1111=9.7ms google-front=34.6ms google-front=36.8ms google-front=35.3ms github-raw=11.2ms github-raw=9.6ms github-raw=9.5ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 10.239269,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=63.8ms cloudflare-1111=9.2ms cloudflare-1111=10.2ms google-front=52.7ms google-front=31.5ms google-front=32.9ms github-raw=9.6ms github-raw=9.0ms github-raw=9.0ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 11.153248,
+        "p95": 14.288383,
+        "p99": 14.288383,
+        "min": 10.239269,
+        "max": 14.288383,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 97.7693504,
+        "compositeScore": 97.8,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=63.8ms cloudflare-1111=9.2ms cloudflare-1111=10.2ms google-front=52.7ms google-front=31.5ms google-front=32.9ms github-raw=9.6ms github-raw=9.0ms github-raw=9.0ms"
+        }
+      },
+      "wallClockMs": 2948.6341259999995,
+      "replicateMs": [
+        1029.703171,
+        939.3806699999996,
+        894.9989759999999
+      ],
+      "compositeScore": 97.8
+    },
+    {
+      "provider": "sandbox0",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 17.892998,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=45.0ms cloudflare-1111=15.5ms cloudflare-1111=16.1ms google-front=17.9ms google-front=15.4ms google-front=14.5ms github-raw=23.1ms github-raw=19.5ms github-raw=18.9ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 19.422576,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=53.8ms cloudflare-1111=23.2ms cloudflare-1111=17.6ms google-front=17.7ms google-front=19.4ms google-front=27.5ms github-raw=17.3ms github-raw=17.5ms github-raw=23.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 59.910829,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=331.0ms cloudflare-1111=97.7ms cloudflare-1111=59.9ms google-front=29.4ms google-front=71.4ms google-front=69.9ms github-raw=40.3ms github-raw=30.1ms github-raw=30.6ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 19.422576,
+        "p95": 59.910829,
+        "p99": 59.910829,
+        "min": 17.892998,
+        "max": 59.910829,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 96.11548479999999,
+        "compositeScore": 96.1,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=331.0ms cloudflare-1111=97.7ms cloudflare-1111=59.9ms google-front=29.4ms google-front=71.4ms google-front=69.9ms github-raw=40.3ms github-raw=30.1ms github-raw=30.6ms"
+        }
+      },
+      "wallClockMs": 3258.23978,
+      "replicateMs": [
+        696.0560959999998,
+        589.9744420000002,
+        1448.6545589999996
+      ],
+      "compositeScore": 96.1
+    },
+    {
+      "provider": "superserve",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 12.154819,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=71.3ms cloudflare-1111=10.5ms cloudflare-1111=10.7ms google-front=17.0ms google-front=10.9ms google-front=8.7ms github-raw=21.1ms github-raw=12.7ms github-raw=12.2ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 9.572089,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=66.5ms cloudflare-1111=8.6ms cloudflare-1111=9.6ms google-front=5.7ms google-front=5.1ms google-front=6.8ms github-raw=10.8ms github-raw=10.0ms github-raw=13.3ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 9.109721,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=54.1ms cloudflare-1111=9.1ms cloudflare-1111=8.7ms google-front=8.4ms google-front=5.4ms google-front=5.9ms github-raw=10.8ms github-raw=9.2ms github-raw=17.4ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 9.572089,
+        "p95": 12.154819,
+        "p99": 12.154819,
+        "min": 9.109721,
+        "max": 12.154819,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 98.0855822,
+        "compositeScore": 98.1,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=54.1ms cloudflare-1111=9.1ms cloudflare-1111=8.7ms google-front=8.4ms google-front=5.4ms google-front=5.9ms github-raw=10.8ms github-raw=9.2ms github-raw=17.4ms"
+        }
+      },
+      "wallClockMs": 2397.2436159999997,
+      "replicateMs": [
+        798.402963,
+        627.4519499999997,
+        579.570522
+      ],
+      "compositeScore": 98.1
+    },
+    {
+      "provider": "tenki",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 14.117949,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=31.2ms cloudflare-1111=14.1ms cloudflare-1111=13.8ms google-front=11.0ms google-front=9.6ms google-front=9.6ms github-raw=22.4ms github-raw=21.1ms github-raw=21.0ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 18.401221,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=31.4ms cloudflare-1111=17.8ms cloudflare-1111=13.3ms google-front=18.4ms google-front=10.5ms google-front=17.7ms github-raw=20.8ms github-raw=20.0ms github-raw=20.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 12.336598,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=45.5ms cloudflare-1111=12.3ms cloudflare-1111=10.9ms google-front=8.7ms google-front=9.1ms google-front=9.5ms github-raw=19.6ms github-raw=19.3ms github-raw=20.9ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 14.117949,
+        "p95": 18.401221,
+        "p99": 18.401221,
+        "min": 12.336598,
+        "max": 18.401221,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 97.17641019999999,
+        "compositeScore": 97.2,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=45.5ms cloudflare-1111=12.3ms cloudflare-1111=10.9ms google-front=8.7ms google-front=9.1ms google-front=9.5ms github-raw=19.6ms github-raw=19.3ms github-raw=20.9ms"
+        }
+      },
+      "wallClockMs": 4451.593234999999,
+      "replicateMs": [
+        1598.8054710000001,
+        970.6429080000003,
+        1010.1988070000007
+      ],
+      "compositeScore": 97.2
+    },
+    {
+      "provider": "tensorlake",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 13.619637,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=29.4ms cloudflare-1111=13.3ms cloudflare-1111=13.3ms google-front=16.3ms google-front=13.6ms google-front=14.7ms github-raw=13.0ms github-raw=15.0ms github-raw=13.5ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 13.923659,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=25.8ms cloudflare-1111=14.2ms cloudflare-1111=15.2ms google-front=13.4ms google-front=13.4ms google-front=13.9ms github-raw=14.8ms github-raw=11.9ms github-raw=13.2ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 13.99034,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=27.6ms cloudflare-1111=13.0ms cloudflare-1111=14.0ms google-front=15.1ms google-front=13.2ms google-front=14.1ms github-raw=13.8ms github-raw=15.7ms github-raw=12.2ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 13.923659,
+        "p95": 13.99034,
+        "p99": 13.99034,
+        "min": 13.619637,
+        "max": 13.99034,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 97.21526820000001,
+        "compositeScore": 97.2,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=27.6ms cloudflare-1111=13.0ms cloudflare-1111=14.0ms google-front=15.1ms google-front=13.2ms google-front=14.1ms github-raw=13.8ms github-raw=15.7ms github-raw=12.2ms"
+        }
+      },
+      "wallClockMs": 1511.6610730000002,
+      "replicateMs": [
+        578.1614599999998,
+        456.1726409999999,
+        460.78216900000007
+      ],
+      "compositeScore": 97.2
+    },
+    {
+      "provider": "upstash",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 8.604199,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=42.7ms cloudflare-1111=9.0ms cloudflare-1111=7.4ms google-front=9.5ms google-front=8.6ms google-front=8.6ms github-raw=7.5ms github-raw=6.4ms github-raw=6.3ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 8.638108,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=41.1ms cloudflare-1111=9.0ms cloudflare-1111=9.3ms google-front=7.5ms google-front=8.6ms google-front=11.4ms github-raw=5.9ms github-raw=6.8ms github-raw=6.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 8.866154,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=42.1ms cloudflare-1111=11.5ms cloudflare-1111=8.3ms google-front=14.0ms google-front=9.1ms google-front=8.9ms github-raw=5.7ms github-raw=5.4ms github-raw=5.6ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 8.638108,
+        "p95": 8.866154,
+        "p99": 8.866154,
+        "min": 8.604199,
+        "max": 8.866154,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 98.27237840000001,
+        "compositeScore": 98.3,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=42.1ms cloudflare-1111=11.5ms cloudflare-1111=8.3ms google-front=14.0ms google-front=9.1ms google-front=8.9ms github-raw=5.7ms github-raw=5.4ms github-raw=5.6ms"
+        }
+      },
+      "wallClockMs": 2281.2323589999996,
+      "replicateMs": [
+        675.5057380000001,
+        442.26559199999974,
+        455.383327
+      ],
+      "compositeScore": 98.3
+    },
+    {
+      "provider": "vercel",
+      "suite": "latency",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 7.654185,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=101.1ms cloudflare-1111=9.0ms cloudflare-1111=7.6ms google-front=7.6ms google-front=7.7ms google-front=11.1ms github-raw=9.7ms github-raw=5.9ms github-raw=6.2ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 8.597079,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=55.9ms cloudflare-1111=10.9ms cloudflare-1111=8.2ms google-front=9.7ms google-front=7.5ms google-front=7.8ms github-raw=12.8ms github-raw=8.6ms github-raw=7.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "latency",
+          "metric": {
+            "value": 9.575238,
+            "unit": "rtt_ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 9,
+            "providerNotes": "cloudflare-1111=116.2ms cloudflare-1111=9.8ms cloudflare-1111=8.1ms google-front=9.7ms google-front=9.6ms google-front=7.9ms github-raw=11.0ms github-raw=7.0ms github-raw=9.0ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 8.597079,
+        "p95": 9.575238,
+        "p99": 9.575238,
+        "min": 7.654185,
+        "max": 9.575238,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 98.28058419999999,
+        "compositeScore": 98.3,
+        "meta": {
+          "iterationsReported": 9,
+          "providerNotes": "cloudflare-1111=116.2ms cloudflare-1111=9.8ms cloudflare-1111=8.1ms google-front=9.7ms google-front=9.6ms google-front=7.9ms github-raw=11.0ms github-raw=7.0ms github-raw=9.0ms"
+        }
+      },
+      "wallClockMs": 5118.498449,
+      "replicateMs": [
+        734.41786,
+        3165.126327,
+        682.5656650000001
+      ],
+      "compositeScore": 98.3
+    }
+  ]
+}

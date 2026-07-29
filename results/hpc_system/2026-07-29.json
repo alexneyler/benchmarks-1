@@ -1,0 +1,1393 @@
+{
+  "date": "2026-07-29",
+  "results": [
+    {
+      "provider": "archil",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "system",
+          "reason": "error",
+          "error": "Cannot find module '/tmp/hpc/fixture/node_modules/sql.js'\nRequire stack:\n- /tmp/hpc/system.js",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "system",
+          "reason": "error",
+          "error": "Cannot find module '/tmp/hpc/fixture/node_modules/sql.js'\nRequire stack:\n- /tmp/hpc/system.js",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "system",
+          "reason": "error",
+          "error": "Cannot find module '/tmp/hpc/fixture/node_modules/sql.js'\nRequire stack:\n- /tmp/hpc/system.js",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 12914.898401,
+      "replicateMs": [
+        4336.256171999999,
+        4263.1292570000005,
+        4314.695193
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "beam",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "system",
+          "reason": "unexpected",
+          "error": "no parseable WorkloadResult JSON line found in stdout",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "system",
+          "reason": "unexpected",
+          "error": "no parseable WorkloadResult JSON line found in stdout",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "system",
+          "reason": "unexpected",
+          "error": "no parseable WorkloadResult JSON line found in stdout",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 5214.734705999999,
+      "replicateMs": [
+        2596.9489509999994,
+        1291.4670129999995,
+        1259.9294610000006
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "blaxel",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 19766.54569010302,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=10.1ms p2=1234.1ms p3=9.3ms p4=6.3ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 19527.201455579205,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=8.5ms p2=1274.8ms p3=9.5ms p4=4.9ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 19429.555585893653,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=8.8ms p2=1267.0ms p3=9.1ms p4=4.8ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 19527.201455579205,
+        "p95": 19766.54569010302,
+        "p99": 19766.54569010302,
+        "min": 19429.555585893653,
+        "max": 19766.54569010302,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 19.527201455579206,
+        "compositeScore": 19.5,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=8.8ms p2=1267.0ms p3=9.1ms p4=4.8ms"
+        }
+      },
+      "wallClockMs": 44231.860832000006,
+      "replicateMs": [
+        14676.765726000001,
+        14704.702041,
+        14626.526371000004
+      ],
+      "compositeScore": 19.5
+    },
+    {
+      "provider": "cloud-run",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 0,
+      "replicateMs": [],
+      "compositeScore": 0,
+      "skipped": true,
+      "skipReason": "Missing: CLOUD_RUN_SANDBOX_URL, CLOUD_RUN_SANDBOX_SECRET"
+    },
+    {
+      "provider": "cloudflare",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "system",
+          "reason": "timeout",
+          "error": "system workload timed out",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "system",
+          "reason": "timeout",
+          "error": "system workload timed out",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "system",
+          "reason": "timeout",
+          "error": "system workload timed out",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 403031.857516,
+      "replicateMs": [
+        135319.163547,
+        131266.14719800002,
+        132303.916174
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "createos",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 29603.88108025646,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=7.1ms p2=826.2ms p3=5.9ms p4=3.6ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 30148.01458689778,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.6ms p2=787.4ms p3=5.4ms p4=2.9ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 29116.349594892872,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=10.0ms p2=828.2ms p3=5.4ms p4=2.7ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 29603.88108025646,
+        "p95": 30148.01458689778,
+        "p99": 30148.01458689778,
+        "min": 29116.349594892872,
+        "max": 30148.01458689778,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 29.60388108025646,
+        "compositeScore": 29.6,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=10.0ms p2=828.2ms p3=5.4ms p4=2.7ms"
+        }
+      },
+      "wallClockMs": 8813.203861,
+      "replicateMs": [
+        3111.8930210000003,
+        2797.127493,
+        2890.8255740000004
+      ],
+      "compositeScore": 29.6
+    },
+    {
+      "provider": "daytona",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 17544.624153555294,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=7.6ms p2=1434.4ms p3=8.1ms p4=3.3ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 17077.607391364265,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=15.3ms p2=1443.9ms p3=9.0ms p4=3.8ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 18636.793644938847,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=7.6ms p2=1296.8ms p3=8.2ms p4=3.6ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 17544.624153555294,
+        "p95": 18636.793644938847,
+        "p99": 18636.793644938847,
+        "min": 17077.607391364265,
+        "max": 18636.793644938847,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 17.544624153555294,
+        "compositeScore": 17.5,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=7.6ms p2=1296.8ms p3=8.2ms p4=3.6ms"
+        }
+      },
+      "wallClockMs": 22672.960072,
+      "replicateMs": [
+        8870.159425,
+        7589.369208000002,
+        6057.792731000001
+      ],
+      "compositeScore": 17.5
+    },
+    {
+      "provider": "declaw",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 14640.627861686096,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.7ms p2=1601.0ms p3=12.3ms p4=5.7ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 22698.115072561348,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=12.6ms p2=1104.7ms p3=17.8ms p4=6.8ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 26226.98243799074,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=8.6ms p2=931.2ms p3=10.9ms p4=7.2ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 22698.115072561348,
+        "p95": 26226.98243799074,
+        "p99": 26226.98243799074,
+        "min": 14640.627861686096,
+        "max": 26226.98243799074,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 22.698115072561347,
+        "compositeScore": 22.7,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=8.6ms p2=931.2ms p3=10.9ms p4=7.2ms"
+        }
+      },
+      "wallClockMs": 14294.647477999999,
+      "replicateMs": [
+        6218.971437,
+        4216.114515,
+        3832.013959
+      ],
+      "compositeScore": 22.7
+    },
+    {
+      "provider": "e2b",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 14593.35261036085,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.5ms p2=1618.3ms p3=10.5ms p4=5.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 14991.773934935089,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.4ms p2=1651.4ms p3=11.1ms p4=4.6ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 14988.145467322931,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.3ms p2=1694.4ms p3=10.3ms p4=5.1ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 14988.145467322931,
+        "p95": 14991.773934935089,
+        "p99": 14991.773934935089,
+        "min": 14593.35261036085,
+        "max": 14991.773934935089,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 14.98814546732293,
+        "compositeScore": 15,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=9.3ms p2=1694.4ms p3=10.3ms p4=5.1ms"
+        }
+      },
+      "wallClockMs": 22932.57185,
+      "replicateMs": [
+        8510.518786999999,
+        6769.565334999999,
+        6936.007081
+      ],
+      "compositeScore": 15
+    },
+    {
+      "provider": "hopx",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 9699.031058100498,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=11.5ms p2=1926.0ms p3=24.1ms p4=5.7ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 8585.045360932949,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=21.0ms p2=2693.3ms p3=22.0ms p4=6.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 9391.491920582615,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=20.2ms p2=2663.5ms p3=24.0ms p4=5.8ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 9391.491920582615,
+        "p95": 9699.031058100498,
+        "p99": 9699.031058100498,
+        "min": 8585.045360932949,
+        "max": 9699.031058100498,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 9.391491920582615,
+        "compositeScore": 9.4,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=20.2ms p2=2663.5ms p3=24.0ms p4=5.8ms"
+        }
+      },
+      "wallClockMs": 59108.62569,
+      "replicateMs": [
+        19182.094234,
+        18259.270357999998,
+        17705.741588000004
+      ],
+      "compositeScore": 9.4
+    },
+    {
+      "provider": "isorun",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 13482.366292795532,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=11.3ms p2=1807.3ms p3=13.1ms p4=6.7ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 13309.957238816434,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=11.2ms p2=1797.5ms p3=12.9ms p4=5.9ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 13653.605881540867,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=11.0ms p2=1783.3ms p3=12.8ms p4=7.1ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 13482.366292795532,
+        "p95": 13653.605881540867,
+        "p99": 13653.605881540867,
+        "min": 13309.957238816434,
+        "max": 13653.605881540867,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 13.48236629279553,
+        "compositeScore": 13.5,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=11.0ms p2=1783.3ms p3=12.8ms p4=7.1ms"
+        }
+      },
+      "wallClockMs": 17194.855768,
+      "replicateMs": [
+        5809.726856,
+        5774.676321,
+        5586.752818999999
+      ],
+      "compositeScore": 13.5
+    },
+    {
+      "provider": "lightning",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 26856.08253322122,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.6ms p2=882.3ms p3=7.8ms p4=6.6ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 27360.831937395847,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=6.5ms p2=871.7ms p3=8.2ms p4=3.2ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 27278.715372331648,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=7.1ms p2=869.5ms p3=7.7ms p4=3.3ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 27278.715372331648,
+        "p95": 27360.831937395847,
+        "p99": 27360.831937395847,
+        "min": 26856.08253322122,
+        "max": 27360.831937395847,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 27.278715372331646,
+        "compositeScore": 27.3,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=7.1ms p2=869.5ms p3=7.7ms p4=3.3ms"
+        }
+      },
+      "wallClockMs": 15825.118869,
+      "replicateMs": [
+        4652.96921,
+        4536.3695960000005,
+        4942.0141440000025
+      ],
+      "compositeScore": 27.3
+    },
+    {
+      "provider": "modal",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 17012.65335232314,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.6ms p2=1420.4ms p3=9.4ms p4=4.3ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 16437.85096842577,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.9ms p2=1487.1ms p3=10.8ms p4=4.2ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 17018.828646056525,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.4ms p2=1440.8ms p3=10.4ms p4=4.1ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 17012.65335232314,
+        "p95": 17018.828646056525,
+        "p99": 17018.828646056525,
+        "min": 16437.85096842577,
+        "max": 17018.828646056525,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 17.01265335232314,
+        "compositeScore": 17,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=9.4ms p2=1440.8ms p3=10.4ms p4=4.1ms"
+        }
+      },
+      "wallClockMs": 16127.301349,
+      "replicateMs": [
+        5231.486854,
+        5558.063394000001,
+        5291.498235000001
+      ],
+      "compositeScore": 17
+    },
+    {
+      "provider": "northflank",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 28819.309421476784,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=5.6ms p2=841.0ms p3=13.8ms p4=3.3ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 28708.807652996427,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=5.7ms p2=830.0ms p3=14.2ms p4=3.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 29510.510026003474,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=5.5ms p2=802.6ms p3=14.1ms p4=3.5ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 28819.309421476784,
+        "p95": 29510.510026003474,
+        "p99": 29510.510026003474,
+        "min": 28708.807652996427,
+        "max": 29510.510026003474,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 28.819309421476785,
+        "compositeScore": 28.8,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=5.5ms p2=802.6ms p3=14.1ms p4=3.5ms"
+        }
+      },
+      "wallClockMs": 11635.141028999999,
+      "replicateMs": [
+        3978.2236489999996,
+        3672.0767339999993,
+        3877.9050000000007
+      ],
+      "compositeScore": 28.8
+    },
+    {
+      "provider": "opencomputer",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 25216.596601113193,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=5.7ms p2=964.8ms p3=6.2ms p4=2.3ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 25320.68843923512,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=5.5ms p2=993.0ms p3=6.4ms p4=2.6ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 25933.39000219916,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=5.7ms p2=923.2ms p3=6.2ms p4=2.6ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 25320.68843923512,
+        "p95": 25933.39000219916,
+        "p99": 25933.39000219916,
+        "min": 25216.596601113193,
+        "max": 25933.39000219916,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 25.320688439235123,
+        "compositeScore": 25.3,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=5.7ms p2=923.2ms p3=6.2ms p4=2.6ms"
+        }
+      },
+      "wallClockMs": 60708.798474999996,
+      "replicateMs": [
+        19394.277008999998,
+        19367.500289,
+        19597.233440999997
+      ],
+      "compositeScore": 25.3
+    },
+    {
+      "provider": "runloop",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 12969.842210103707,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=11.9ms p2=1801.6ms p3=13.1ms p4=6.1ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 12680.195671818938,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=12.6ms p2=1859.3ms p3=14.1ms p4=8.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 11805.915567249158,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=14.6ms p2=1974.7ms p3=14.3ms p4=8.7ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 12680.195671818938,
+        "p95": 12969.842210103707,
+        "p99": 12969.842210103707,
+        "min": 11805.915567249158,
+        "max": 12969.842210103707,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 12.680195671818936,
+        "compositeScore": 12.7,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=14.6ms p2=1974.7ms p3=14.3ms p4=8.7ms"
+        }
+      },
+      "wallClockMs": 22719.30775,
+      "replicateMs": [
+        7175.160473,
+        7531.0823169999985,
+        7913.747651999998
+      ],
+      "compositeScore": 12.7
+    },
+    {
+      "provider": "sandbox0",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 19417.72906982118,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=7.4ms p2=1217.4ms p3=9.2ms p4=5.9ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 20556.566664738242,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=6.7ms p2=1171.3ms p3=7.6ms p4=3.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 21338.736308953867,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=7.6ms p2=1122.8ms p3=7.6ms p4=3.5ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 20556.566664738242,
+        "p95": 21338.736308953867,
+        "p99": 21338.736308953867,
+        "min": 19417.72906982118,
+        "max": 21338.736308953867,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 20.556566664738245,
+        "compositeScore": 20.6,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=7.6ms p2=1122.8ms p3=7.6ms p4=3.5ms"
+        }
+      },
+      "wallClockMs": 19437.014367,
+      "replicateMs": [
+        7240.7178,
+        6389.075996,
+        5378.8388589999995
+      ],
+      "compositeScore": 20.6
+    },
+    {
+      "provider": "superserve",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 29257.710126357964,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=8.3ms p2=794.0ms p3=7.5ms p4=6.1ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 29020.1857093871,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=6.4ms p2=812.3ms p3=10.8ms p4=7.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 29614.028579144637,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=7.1ms p2=797.4ms p3=7.5ms p4=4.8ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 29257.710126357964,
+        "p95": 29614.028579144637,
+        "p99": 29614.028579144637,
+        "min": 29020.1857093871,
+        "max": 29614.028579144637,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 29.257710126357967,
+        "compositeScore": 29.3,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=7.1ms p2=797.4ms p3=7.5ms p4=4.8ms"
+        }
+      },
+      "wallClockMs": 11921.423818,
+      "replicateMs": [
+        3919.447462,
+        3866.4406769999996,
+        3736.747122999999
+      ],
+      "compositeScore": 29.3
+    },
+    {
+      "provider": "tenki",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 17927.87694346859,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=8.7ms p2=1378.9ms p3=8.9ms p4=3.5ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 16616.905027426947,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=7.7ms p2=1507.9ms p3=8.7ms p4=3.8ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 17693.688838747385,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.5ms p2=1396.7ms p3=9.3ms p4=3.7ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 17693.688838747385,
+        "p95": 17927.87694346859,
+        "p99": 17927.87694346859,
+        "min": 16616.905027426947,
+        "max": 17927.87694346859,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 17.693688838747384,
+        "compositeScore": 17.7,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=9.5ms p2=1396.7ms p3=9.3ms p4=3.7ms"
+        }
+      },
+      "wallClockMs": 22244.178318000002,
+      "replicateMs": [
+        7356.561113,
+        7147.609284,
+        6860.8041809999995
+      ],
+      "compositeScore": 17.7
+    },
+    {
+      "provider": "tensorlake",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 28154.40826483691,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.3ms p2=823.5ms p3=8.5ms p4=3.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 28158.346856645352,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=8.2ms p2=846.4ms p3=7.7ms p4=2.9ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 28435.496849280127,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.8ms p2=830.8ms p3=9.1ms p4=4.0ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 28158.346856645352,
+        "p95": 28435.496849280127,
+        "p99": 28435.496849280127,
+        "min": 28154.40826483691,
+        "max": 28435.496849280127,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 28.15834685664535,
+        "compositeScore": 28.2,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=9.8ms p2=830.8ms p3=9.1ms p4=4.0ms"
+        }
+      },
+      "wallClockMs": 10712.718987999999,
+      "replicateMs": [
+        3650.123172,
+        3508.7681709999997,
+        3527.6270460000014
+      ],
+      "compositeScore": 28.2
+    },
+    {
+      "provider": "upstash",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 16823.94294662449,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=7.1ms p2=1460.4ms p3=8.1ms p4=3.4ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 17236.239042862155,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=7.1ms p2=1411.2ms p3=7.9ms p4=3.1ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 16796.72438007633,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=7.0ms p2=1438.5ms p3=8.0ms p4=3.5ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 16823.94294662449,
+        "p95": 17236.239042862155,
+        "p99": 17236.239042862155,
+        "min": 16796.72438007633,
+        "max": 17236.239042862155,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 16.82394294662449,
+        "compositeScore": 16.8,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=7.0ms p2=1438.5ms p3=8.0ms p4=3.5ms"
+        }
+      },
+      "wallClockMs": 16678.785725,
+      "replicateMs": [
+        5502.928294,
+        5228.552335000001,
+        5327.407538000001
+      ],
+      "compositeScore": 16.8
+    },
+    {
+      "provider": "vercel",
+      "suite": "system",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 13238.883826394876,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=11.1ms p2=1823.0ms p3=12.9ms p4=6.2ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 17426.64572679367,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=9.2ms p2=1394.5ms p3=9.6ms p4=4.2ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "system",
+          "metric": {
+            "value": 17148.31850013691,
+            "unit": "ops_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 20000,
+            "providerNotes": "p1=10.2ms p2=1419.5ms p3=9.6ms p4=4.8ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 17148.31850013691,
+        "p95": 17426.64572679367,
+        "p99": 17426.64572679367,
+        "min": 13238.883826394876,
+        "max": 17426.64572679367,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 17.14831850013691,
+        "compositeScore": 17.1,
+        "meta": {
+          "iterationsReported": 20000,
+          "providerNotes": "p1=10.2ms p2=1419.5ms p3=9.6ms p4=4.8ms"
+        }
+      },
+      "wallClockMs": 22936.784299000003,
+      "replicateMs": [
+        8215.082736,
+        7375.884636999999,
+        6869.171181999998
+      ],
+      "compositeScore": 17.1
+    }
+  ]
+}

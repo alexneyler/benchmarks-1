@@ -1,0 +1,1524 @@
+{
+  "date": "2026-07-29",
+  "results": [
+    {
+      "provider": "archil",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 94.70556,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=92ms total=95ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 98.664037,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=96ms total=99ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 101.530174,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=4ms build2x=98ms total=102ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 98.664037,
+        "p95": 101.530174,
+        "p99": 101.530174,
+        "min": 94.70556,
+        "max": 101.530174,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.94518664611111,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=4ms build2x=98ms total=102ms"
+        }
+      },
+      "wallClockMs": 1120.1371490000001,
+      "replicateMs": [
+        348.67933300000004,
+        420.1973009999999,
+        350.59797000000026
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "beam",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 89.184555,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=4ms build2x=85ms total=89ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 92.114656,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=4ms build2x=88ms total=92ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 88.336119,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=85ms total=88ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 89.184555,
+        "p95": 92.114656,
+        "p99": 92.114656,
+        "min": 88.336119,
+        "max": 92.114656,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.950453025,
+        "compositeScore": 100,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=3ms build2x=85ms total=88ms"
+        }
+      },
+      "wallClockMs": 1838.9093020000003,
+      "replicateMs": [
+        1198.214566,
+        298.468832,
+        266.7559120000001
+      ],
+      "compositeScore": 100
+    },
+    {
+      "provider": "blaxel",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 114.206717,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=111ms total=114ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 113.363812,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=110ms total=113ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 114.691174,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=111ms total=115ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 114.206717,
+        "p95": 114.691174,
+        "p99": 114.691174,
+        "min": 113.363812,
+        "max": 114.691174,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.93655182388889,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=3ms build2x=111ms total=115ms"
+        }
+      },
+      "wallClockMs": 2046.2589719999999,
+      "replicateMs": [
+        615.6214890000001,
+        580.338068,
+        611.3391379999998
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "cloud-run",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 0,
+      "replicateMs": [],
+      "compositeScore": 0,
+      "skipped": true,
+      "skipReason": "Missing: CLOUD_RUN_SANDBOX_URL, CLOUD_RUN_SANDBOX_SECRET"
+    },
+    {
+      "provider": "cloudflare",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 2899.31958,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=197ms build2x=2702ms total=2899ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 159.722366,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=10ms build2x=150ms total=160ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 157.26086,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=9ms build2x=149ms total=157ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 159.722366,
+        "p95": 2899.31958,
+        "p99": 2899.31958,
+        "min": 157.26086,
+        "max": 2899.31958,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.91126535222222,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=9ms build2x=149ms total=157ms"
+        }
+      },
+      "wallClockMs": 19769.177316,
+      "replicateMs": [
+        8954.76868,
+        4989.434737000001,
+        1643.449133000002
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "codesandbox",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 97.411099,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=8ms build2x=89ms total=97ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 96.245615,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=7ms build2x=89ms total=96ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 101.995156,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=7ms build2x=95ms total=102ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 97.411099,
+        "p95": 101.995156,
+        "p99": 101.995156,
+        "min": 96.245615,
+        "max": 101.995156,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.94588272277778,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=7ms build2x=95ms total=102ms"
+        }
+      },
+      "wallClockMs": 11829.976588000001,
+      "replicateMs": [
+        3073.409007,
+        2823.940017,
+        2930.499474
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "createos",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 209.842893,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=5ms build2x=205ms total=210ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 203.805276,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=5ms build2x=199ms total=204ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 193.245228,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=5ms build2x=188ms total=193ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 203.805276,
+        "p95": 209.842893,
+        "p99": 209.842893,
+        "min": 193.245228,
+        "max": 209.842893,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.88677484666667,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=5ms build2x=188ms total=193ms"
+        }
+      },
+      "wallClockMs": 1149.5721590000003,
+      "replicateMs": [
+        415.1049619999999,
+        369.30877999999984,
+        351.4622010000003
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "daytona",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 81.03093,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=4ms build2x=77ms total=81ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 84.343779,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=5ms build2x=79ms total=84ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 84.480248,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=81ms total=84ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 84.343779,
+        "p95": 84.480248,
+        "p99": 84.480248,
+        "min": 81.03093,
+        "max": 84.480248,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.953142345,
+        "compositeScore": 100,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=3ms build2x=81ms total=84ms"
+        }
+      },
+      "wallClockMs": 4072.5667369999996,
+      "replicateMs": [
+        992.91869,
+        1991.7080539999997,
+        952.0904760000003
+      ],
+      "compositeScore": 100
+    },
+    {
+      "provider": "declaw",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 131.77539,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=9ms build2x=123ms total=132ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 130.032419,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=10ms build2x=120ms total=130ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 132.229613,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=9ms build2x=123ms total=132ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 131.77539,
+        "p95": 132.229613,
+        "p99": 132.229613,
+        "min": 130.032419,
+        "max": 132.229613,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.92679145,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=9ms build2x=123ms total=132ms"
+        }
+      },
+      "wallClockMs": 1675.5665249999997,
+      "replicateMs": [
+        675.5021349999997,
+        493.57265099999995,
+        467.7473829999999
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "e2b",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 148.220711,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=5ms build2x=143ms total=148ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 150.390129,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=5ms build2x=145ms total=150ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 181.053035,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=21ms build2x=160ms total=181ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 150.390129,
+        "p95": 181.053035,
+        "p99": 181.053035,
+        "min": 148.220711,
+        "max": 181.053035,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.91644992833332,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=21ms build2x=160ms total=181ms"
+        }
+      },
+      "wallClockMs": 4174.1968449999995,
+      "replicateMs": [
+        968.7162289999999,
+        1306.0816400000003,
+        1459.488714
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "hopx",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 627.709328,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=17ms build2x=611ms total=628ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 585.578207,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=21ms build2x=564ms total=586ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 412.676322,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=11ms build2x=402ms total=413ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 585.578207,
+        "p95": 627.709328,
+        "p99": 627.709328,
+        "min": 412.676322,
+        "max": 627.709328,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.67467877388889,
+        "compositeScore": 99.7,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=11ms build2x=402ms total=413ms"
+        }
+      },
+      "wallClockMs": 11905.445104999999,
+      "replicateMs": [
+        3262.0122270000006,
+        2903.518447999999,
+        2262.890765
+      ],
+      "compositeScore": 99.7
+    },
+    {
+      "provider": "isorun",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 92.8632,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=90ms total=93ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 93.16733,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=90ms total=93ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 93.23515,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=90ms total=93ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 93.16733,
+        "p95": 93.23515,
+        "p99": 93.23515,
+        "min": 92.8632,
+        "max": 93.23515,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.94824037222222,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=3ms build2x=90ms total=93ms"
+        }
+      },
+      "wallClockMs": 562.6637989999997,
+      "replicateMs": [
+        191.18437600000016,
+        180.6604199999997,
+        177.53996800000004
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "lightning",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 117.447859,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=10ms build2x=108ms total=117ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 137.317497,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=10ms build2x=127ms total=137ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 159.331248,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=7ms build2x=152ms total=159ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 137.317497,
+        "p95": 159.331248,
+        "p99": 159.331248,
+        "min": 117.447859,
+        "max": 159.331248,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.92371250166666,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=7ms build2x=152ms total=159ms"
+        }
+      },
+      "wallClockMs": 2754.7051199999996,
+      "replicateMs": [
+        429.9171160000001,
+        371.40508,
+        395.524801
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "modal",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 126.081056,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=7ms build2x=119ms total=126ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 120.175742,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=6ms build2x=114ms total=120ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 119.065041,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=7ms build2x=113ms total=119ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 120.175742,
+        "p95": 126.081056,
+        "p99": 126.081056,
+        "min": 119.065041,
+        "max": 126.081056,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.9332356988889,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=7ms build2x=113ms total=119ms"
+        }
+      },
+      "wallClockMs": 2187.4428049999997,
+      "replicateMs": [
+        711.335707,
+        700.5996360000004,
+        728.2308269999999
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "northflank",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 77.028799,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=2ms build2x=75ms total=77ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 81.244833,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=2ms build2x=80ms total=81ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 80.174217,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=2ms build2x=79ms total=80ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 80.174217,
+        "p95": 81.244833,
+        "p99": 81.244833,
+        "min": 77.028799,
+        "max": 81.244833,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.95545876833334,
+        "compositeScore": 100,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=2ms build2x=79ms total=80ms"
+        }
+      },
+      "wallClockMs": 1157.133896,
+      "replicateMs": [
+        316.93379400000003,
+        254.3421740000001,
+        268.450249
+      ],
+      "compositeScore": 100
+    },
+    {
+      "provider": "opencomputer",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 68.453705,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=66ms total=68ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 69.175161,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=66ms total=69ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 68.750297,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=66ms total=69ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 68.750297,
+        "p95": 69.175161,
+        "p99": 69.175161,
+        "min": 68.453705,
+        "max": 69.175161,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.96180539055555,
+        "compositeScore": 100,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=3ms build2x=66ms total=69ms"
+        }
+      },
+      "wallClockMs": 8055.354737000001,
+      "replicateMs": [
+        1759.0961200000002,
+        1783.1291689999998,
+        2137.791266
+      ],
+      "compositeScore": 100
+    },
+    {
+      "provider": "runloop",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 395.324248,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=6ms build2x=389ms total=395ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 373.851025,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=5ms build2x=369ms total=374ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 394.898532,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=6ms build2x=389ms total=395ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 394.898532,
+        "p95": 395.324248,
+        "p99": 395.324248,
+        "min": 373.851025,
+        "max": 395.324248,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.78061192666667,
+        "compositeScore": 99.8,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=6ms build2x=389ms total=395ms"
+        }
+      },
+      "wallClockMs": 3833.809625,
+      "replicateMs": [
+        1461.4828280000002,
+        1095.2820549999997,
+        1186.492354
+      ],
+      "compositeScore": 99.8
+    },
+    {
+      "provider": "sandbox0",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 689.479252,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=99ms build2x=590ms total=689ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 531.339462,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=106ms build2x=426ms total=531ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 147.393489,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=63ms build2x=84ms total=147ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 531.339462,
+        "p95": 689.479252,
+        "p99": 689.479252,
+        "min": 147.393489,
+        "max": 689.479252,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.70481141,
+        "compositeScore": 99.7,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=63ms build2x=84ms total=147ms"
+        }
+      },
+      "wallClockMs": 4887.497484,
+      "replicateMs": [
+        1706.2667880000001,
+        1633.3153080000002,
+        1171.2680110000001
+      ],
+      "compositeScore": 99.7
+    },
+    {
+      "provider": "superserve",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 238.295099,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=10ms build2x=228ms total=238ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 244.604243,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=10ms build2x=234ms total=245ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 266.452556,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=10ms build2x=256ms total=266ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 244.604243,
+        "p95": 266.452556,
+        "p99": 266.452556,
+        "min": 238.295099,
+        "max": 266.452556,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.86410875388889,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=10ms build2x=256ms total=266ms"
+        }
+      },
+      "wallClockMs": 2854.938405,
+      "replicateMs": [
+        819.2697389999998,
+        847.7928280000001,
+        808.7705810000002
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "tenki",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 97.367344,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=7ms build2x=90ms total=97ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 93.677495,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=6ms build2x=87ms total=94ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 93.168283,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=6ms build2x=87ms total=93ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 93.677495,
+        "p95": 97.367344,
+        "p99": 97.367344,
+        "min": 93.168283,
+        "max": 97.367344,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.94795694722222,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=6ms build2x=87ms total=93ms"
+        }
+      },
+      "wallClockMs": 4088.102027,
+      "replicateMs": [
+        1350.5059119999999,
+        959.613621,
+        940.6581320000005
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "tensorlake",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 96.16767,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=4ms build2x=92ms total=96ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 94.507154,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=4ms build2x=90ms total=95ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 94.315527,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=91ms total=94ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 94.507154,
+        "p95": 96.16767,
+        "p99": 96.16767,
+        "min": 94.315527,
+        "max": 96.16767,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.94749602555557,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=3ms build2x=91ms total=94ms"
+        }
+      },
+      "wallClockMs": 1542.3613,
+      "replicateMs": [
+        408.1509980000001,
+        639.2273249999998,
+        478.0289120000002
+      ],
+      "compositeScore": 99.9
+    },
+    {
+      "provider": "upstash",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 82.983784,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=80ms total=83ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 82.779702,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=80ms total=83ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 82.978981,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=3ms build2x=80ms total=83ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 82.978981,
+        "p95": 82.983784,
+        "p99": 82.983784,
+        "min": 82.779702,
+        "max": 82.983784,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.95390056611112,
+        "compositeScore": 100,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=3ms build2x=80ms total=83ms"
+        }
+      },
+      "wallClockMs": 2171.9424579999995,
+      "replicateMs": [
+        623.7323649999998,
+        443.20805999999993,
+        478.8288910000001
+      ],
+      "compositeScore": 100
+    },
+    {
+      "provider": "vercel",
+      "suite": "realworld",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 123.875653,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=5ms build2x=119ms total=124ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 121.54786,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=5ms build2x=116ms total=122ms"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "realworld",
+          "metric": {
+            "value": 122.207114,
+            "unit": "ms",
+            "higherIsBetter": false
+          },
+          "meta": {
+            "iterationsReported": 2,
+            "providerNotes": "extract=5ms build2x=117ms total=122ms"
+          }
+        }
+      ],
+      "summary": {
+        "median": 122.207114,
+        "p95": 123.875653,
+        "p99": 123.875653,
+        "min": 121.54786,
+        "max": 123.875653,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 99.9321071588889,
+        "compositeScore": 99.9,
+        "meta": {
+          "iterationsReported": 2,
+          "providerNotes": "extract=5ms build2x=117ms total=122ms"
+        }
+      },
+      "wallClockMs": 2492.986196,
+      "replicateMs": [
+        858.8858560000001,
+        632.8578110000003,
+        508.50769500000024
+      ],
+      "compositeScore": 99.9
+    }
+  ]
+}

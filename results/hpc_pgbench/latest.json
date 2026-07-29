@@ -1,0 +1,1312 @@
+{
+  "date": "2026-07-29",
+  "results": [
+    {
+      "provider": "archil",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "Cannot find module '/tmp/hpc/fixture/node_modules/@electric-sql/pglite/package.json'\nRequire stack:\n- /tmp/hpc/pgbench.js",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "Cannot find module '/tmp/hpc/fixture/node_modules/@electric-sql/pglite/package.json'\nRequire stack:\n- /tmp/hpc/pgbench.js",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "Cannot find module '/tmp/hpc/fixture/node_modules/@electric-sql/pglite/package.json'\nRequire stack:\n- /tmp/hpc/pgbench.js",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 310480.071852,
+      "replicateMs": [
+        103889.296503,
+        103338.925586,
+        103245.95595700003
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "beam",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "unexpected",
+          "error": "no parseable WorkloadResult JSON line found in stdout",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "unexpected",
+          "error": "no parseable WorkloadResult JSON line found in stdout",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "unexpected",
+          "error": "no parseable WorkloadResult JSON line found in stdout",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 26837.245462,
+      "replicateMs": [
+        10018.800265,
+        8309.524198000001,
+        8468.379241999999
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "blaxel",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 915.1382553063748,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 8.7 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 900.7356229130555,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 8.9 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 917.9131286326627,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 8.7 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 915.1382553063748,
+        "p95": 917.9131286326627,
+        "p99": 917.9131286326627,
+        "min": 900.7356229130555,
+        "max": 917.9131286326627,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 18.3027651061275,
+        "compositeScore": 18.3,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 8.7 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 919418.153764,
+      "replicateMs": [
+        308654.33371000004,
+        305904.29383200005,
+        304151.21568599995
+      ],
+      "compositeScore": 18.3
+    },
+    {
+      "provider": "cloud-run",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 0,
+      "replicateMs": [],
+      "compositeScore": 0,
+      "skipped": true,
+      "skipReason": "Missing: CLOUD_RUN_SANDBOX_URL, CLOUD_RUN_SANDBOX_SECRET"
+    },
+    {
+      "provider": "cloudflare",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "timeout",
+          "error": "pgbench workload timed out",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "timeout",
+          "error": "pgbench workload timed out",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "non-zero exit: Killed\n",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 1330318.3141039999,
+      "replicateMs": [
+        472646.257467,
+        519373.39032899996,
+        333253.61263800005
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "createos",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "non-zero exit: Killed\n",
+          "meta": {}
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 1419.0874867242214,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 5.6 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 1484.878120107876,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 5.4 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 1451.9828034160487,
+        "p95": 1484.878120107876,
+        "p99": 1484.878120107876,
+        "min": 1419.0874867242214,
+        "max": 1484.878120107876,
+        "successRate": 0.6666666666666666,
+        "n": 2,
+        "scoreBeforeReliability": 29.039656068320973,
+        "compositeScore": 19.4,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 5.4 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 41440.652621,
+      "replicateMs": [
+        6323.7628,
+        17649.265923000003,
+        17448.747786999997
+      ],
+      "compositeScore": 19.4
+    },
+    {
+      "provider": "daytona",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 911.8723481352963,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 8.8 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 829.2203634476024,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 9.6 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 785.9988851381988,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 10.2 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 829.2203634476024,
+        "p95": 911.8723481352963,
+        "p99": 911.8723481352963,
+        "min": 785.9988851381988,
+        "max": 911.8723481352963,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 16.58440726895205,
+        "compositeScore": 16.6,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 10.2 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 130254.338035,
+      "replicateMs": [
+        38730.845396,
+        45256.334648,
+        46045.57638700001
+      ],
+      "compositeScore": 16.6
+    },
+    {
+      "provider": "declaw",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 543.4686216117752,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 14.7 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 800.9707385691328,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 10.0 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 446.15722134523753,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 17.9 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 543.4686216117752,
+        "p95": 800.9707385691328,
+        "p99": 800.9707385691328,
+        "min": 446.15722134523753,
+        "max": 800.9707385691328,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 10.869372432235505,
+        "compositeScore": 10.9,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 17.9 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 135931.39961899997,
+      "replicateMs": [
+        51712.60987,
+        32021.128321999997,
+        52156.053262999994
+      ],
+      "compositeScore": 10.9
+    },
+    {
+      "provider": "e2b",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "require() of ES Module /tmp/hpc/fixture/node_modules/@electric-sql/pglite/dist/index.js from /tmp/hpc/pgbench.js not supported.\nInstead change the require of index.js in /tmp/hpc/pgbench.js to a dynamic import() which is available in all CommonJS modules.",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "require() of ES Module /tmp/hpc/fixture/node_modules/@electric-sql/pglite/dist/index.js from /tmp/hpc/pgbench.js not supported.\nInstead change the require of index.js in /tmp/hpc/pgbench.js to a dynamic import() which is available in all CommonJS modules.",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "require() of ES Module /tmp/hpc/fixture/node_modules/@electric-sql/pglite/dist/index.js from /tmp/hpc/pgbench.js not supported.\nInstead change the require of index.js in /tmp/hpc/pgbench.js to a dynamic import() which is available in all CommonJS modules.",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 81326.194602,
+      "replicateMs": [
+        27751.912207999998,
+        26326.625679000004,
+        26647.102378000003
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "hopx",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "non-zero exit: Request failed with status code 502",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "Cannot find module '/tmp/hpc/fixture/node_modules/@electric-sql/pglite/package.json'\nRequire stack:\n- /tmp/hpc/pgbench.js",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "non-zero exit: Request failed with status code 502",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 1784105.196396,
+      "replicateMs": [
+        831134.957152,
+        113277.24461199995,
+        833884.713629
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "isorun",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 638.4574935908255,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 12.5 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 642.5410906633832,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 12.5 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 643.0461473597127,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 12.4 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 642.5410906633832,
+        "p95": 643.0461473597127,
+        "p99": 643.0461473597127,
+        "min": 638.4574935908255,
+        "max": 643.0461473597127,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 12.850821813267665,
+        "compositeScore": 12.9,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 12.4 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 91391.765931,
+      "replicateMs": [
+        30625.817483000003,
+        30175.777824,
+        30305.550755999997
+      ],
+      "compositeScore": 12.9
+    },
+    {
+      "provider": "lightning",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 955.7772170607723,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 8.4 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 935.6986348387918,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 8.5 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 932.7372093857822,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 8.6 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 935.6986348387918,
+        "p95": 955.7772170607723,
+        "p99": 955.7772170607723,
+        "min": 932.7372093857822,
+        "max": 955.7772170607723,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 18.713972696775834,
+        "compositeScore": 18.7,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 8.6 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 123132.55986200001,
+      "replicateMs": [
+        39975.116555,
+        40981.085136,
+        40740.91992799999
+      ],
+      "compositeScore": 18.7
+    },
+    {
+      "provider": "modal",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 720.4949675132741,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 11.1 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 719.4295801565105,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 11.1 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 723.8551424773297,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 11.1 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 720.4949675132741,
+        "p95": 723.8551424773297,
+        "p99": 723.8551424773297,
+        "min": 719.4295801565105,
+        "max": 723.8551424773297,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 14.409899350265482,
+        "compositeScore": 14.4,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 11.1 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 134515.30306099998,
+      "replicateMs": [
+        32194.978109999996,
+        70646.679894,
+        31626.086473999996
+      ],
+      "compositeScore": 14.4
+    },
+    {
+      "provider": "northflank",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 1161.9733394492714,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 6.9 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 1138.9063197868406,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 7.0 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 1162.3349326318112,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 6.9 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 1161.9733394492714,
+        "p95": 1162.3349326318112,
+        "p99": 1162.3349326318112,
+        "min": 1138.9063197868406,
+        "max": 1162.3349326318112,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 23.23946678898543,
+        "compositeScore": 23.2,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 6.9 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 119065.132973,
+      "replicateMs": [
+        39645.988531999996,
+        40366.382013999995,
+        38637.786353
+      ],
+      "compositeScore": 23.2
+    },
+    {
+      "provider": "opencomputer",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 1356.869040510116,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 5.9 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "OpenComputer command execution failed: Failed to fetch exec result: 404 {\"error\":\"exec 611eb301 not found\"}\n",
+          "meta": {}
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 1343.375897026535,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 6.0 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 1350.1224687683257,
+        "p95": 1356.869040510116,
+        "p99": 1356.869040510116,
+        "min": 1343.375897026535,
+        "max": 1356.869040510116,
+        "successRate": 0.6666666666666666,
+        "n": 2,
+        "scoreBeforeReliability": 27.002449375366517,
+        "compositeScore": 18,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 6.0 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 1322934.477947,
+      "replicateMs": [
+        301731.41807200003,
+        680846.472245,
+        337729.53284600016
+      ],
+      "compositeScore": 18
+    },
+    {
+      "provider": "runloop",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 454.28970474814696,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 17.6 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 456.9569993619604,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 17.5 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 443.5791042901907,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 18.0 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 454.28970474814696,
+        "p95": 456.9569993619604,
+        "p99": 456.9569993619604,
+        "min": 443.5791042901907,
+        "max": 456.9569993619604,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 9.085794094962939,
+        "compositeScore": 9.1,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 18.0 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 152184.147621,
+      "replicateMs": [
+        49608.977632,
+        50408.78320600001,
+        52075.587084
+      ],
+      "compositeScore": 9.1
+    },
+    {
+      "provider": "sandbox0",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "timeout",
+          "error": "Gateway Timeout",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "timeout",
+          "error": "Gateway Timeout",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "Bad Gateway",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 118561.545251,
+      "replicateMs": [
+        43162.877752,
+        44883.849050000004,
+        29902.474965999994
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "superserve",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 1097.9405378713966,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 7.3 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 1113.4262761510038,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 7.2 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 1111.825208337956,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 7.2 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 1111.825208337956,
+        "p95": 1113.4262761510038,
+        "p99": 1113.4262761510038,
+        "min": 1097.9405378713966,
+        "max": 1113.4262761510038,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 22.23650416675912,
+        "compositeScore": 22.2,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 7.2 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 73956.829638,
+      "replicateMs": [
+        24364.703238,
+        23502.007383,
+        25621.356861
+      ],
+      "compositeScore": 22.2
+    },
+    {
+      "provider": "tenki",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 795.1825813889424,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 10.1 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 783.2022577505412,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 10.2 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 794.7227634921675,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 10.1 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 794.7227634921675,
+        "p95": 795.1825813889424,
+        "p99": 795.1825813889424,
+        "min": 783.2022577505412,
+        "max": 795.1825813889424,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 15.89445526984335,
+        "compositeScore": 15.9,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 10.1 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 187576.405768,
+      "replicateMs": [
+        59967.482218,
+        63438.264954,
+        63288.171253999986
+      ],
+      "compositeScore": 15.9
+    },
+    {
+      "provider": "tensorlake",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 950.8331892848785,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 8.4 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": false,
+          "suite": "pgbench",
+          "reason": "error",
+          "error": "non-zero exit: Killed",
+          "meta": {}
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 419.12489180862633,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 19.1 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 684.9790405467525,
+        "p95": 950.8331892848785,
+        "p99": 950.8331892848785,
+        "min": 419.12489180862633,
+        "max": 950.8331892848785,
+        "successRate": 0.6666666666666666,
+        "n": 2,
+        "scoreBeforeReliability": 13.69958081093505,
+        "compositeScore": 9.1,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 19.1 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 95347.73971,
+      "replicateMs": [
+        29590.039825,
+        13215.603668,
+        52504.819976000006
+      ],
+      "compositeScore": 9.1
+    },
+    {
+      "provider": "upstash",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 953.5510222607086,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 8.4 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 959.0126926352417,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 8.3 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 943.2352330678561,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 8.5 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 953.5510222607086,
+        "p95": 959.0126926352417,
+        "p99": 959.0126926352417,
+        "min": 943.2352330678561,
+        "max": 959.0126926352417,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 19.07102044521417,
+        "compositeScore": 19.1,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 8.5 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 98047.832663,
+      "replicateMs": [
+        32855.368619,
+        32096.558184999994,
+        32073.699091000002
+      ],
+      "compositeScore": 19.1
+    },
+    {
+      "provider": "vercel",
+      "suite": "pgbench",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 524.2138431225834,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 15.3 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 488.65158559761284,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 16.4 s (scale=1, accounts=10000)"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "pgbench",
+          "metric": {
+            "value": 517.0608550458473,
+            "unit": "tps",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 8000,
+            "providerNotes": "4 batches × 2000 tx in 15.5 s (scale=1, accounts=10000)"
+          }
+        }
+      ],
+      "summary": {
+        "median": 517.0608550458473,
+        "p95": 524.2138431225834,
+        "p99": 524.2138431225834,
+        "min": 488.65158559761284,
+        "max": 524.2138431225834,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 10.341217100916946,
+        "compositeScore": 10.3,
+        "meta": {
+          "iterationsReported": 8000,
+          "providerNotes": "4 batches × 2000 tx in 15.5 s (scale=1, accounts=10000)"
+        }
+      },
+      "wallClockMs": 223944.787004,
+      "replicateMs": [
+        72397.636803,
+        75452.660152,
+        75552.838143
+      ],
+      "compositeScore": 10.3
+    }
+  ]
+}

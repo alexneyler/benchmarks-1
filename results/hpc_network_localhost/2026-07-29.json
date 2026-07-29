@@ -1,0 +1,1497 @@
+{
+  "date": "2026-07-29",
+  "results": [
+    {
+      "provider": "archil",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.3098173752131554,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.22 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.462553330532458,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.20 s"
+          }
+        },
+        {
+          "ok": false,
+          "suite": "network-localhost",
+          "reason": "timeout",
+          "error": "network-localhost workload timed out",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 2.3861853528728068,
+        "p95": 2.462553330532458,
+        "p99": 2.462553330532458,
+        "min": 2.3098173752131554,
+        "max": 2.462553330532458,
+        "successRate": 0.6666666666666666,
+        "n": 2,
+        "scoreBeforeReliability": 47.72370705745613,
+        "compositeScore": 31.8,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.20 s"
+        }
+      },
+      "wallClockMs": 30924.746433,
+      "replicateMs": [
+        495.654223,
+        421.69104400000015,
+        30006.866434
+      ],
+      "compositeScore": 31.8
+    },
+    {
+      "provider": "beam",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 3.606437002459107,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.14 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 3.6933405185057118,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.14 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 3.874479390078835,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.13 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 3.6933405185057118,
+        "p95": 3.874479390078835,
+        "p99": 3.874479390078835,
+        "min": 3.606437002459107,
+        "max": 3.874479390078835,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 73.86681037011424,
+        "compositeScore": 73.9,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.13 s"
+        }
+      },
+      "wallClockMs": 1907.123468,
+      "replicateMs": [
+        1196.8720180000003,
+        315.93959600000017,
+        311.62374899999986
+      ],
+      "compositeScore": 73.9
+    },
+    {
+      "provider": "blaxel",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.0790776596652942,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.46 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.0178768613858182,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.49 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.9573537779628033,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.52 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 1.0178768613858182,
+        "p95": 1.0790776596652942,
+        "p99": 1.0790776596652942,
+        "min": 0.9573537779628033,
+        "max": 1.0790776596652942,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 20.357537227716367,
+        "compositeScore": 20.4,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.52 s"
+        }
+      },
+      "wallClockMs": 3805.380416,
+      "replicateMs": [
+        1312.5498920000002,
+        1096.9577329999997,
+        1128.3463790000005
+      ],
+      "compositeScore": 20.4
+    },
+    {
+      "provider": "cloud-run",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 0,
+      "replicateMs": [],
+      "compositeScore": 0,
+      "skipped": true,
+      "skipReason": "Missing: CLOUD_RUN_SANDBOX_URL, CLOUD_RUN_SANDBOX_SECRET"
+    },
+    {
+      "provider": "cloudflare",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.03597996086897316,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 13.90 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.8044716097488013,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.62 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.6623966546955252,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.75 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 0.6623966546955252,
+        "p95": 0.8044716097488013,
+        "p99": 0.8044716097488013,
+        "min": 0.03597996086897316,
+        "max": 0.8044716097488013,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 13.247933093910506,
+        "compositeScore": 13.2,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.75 s"
+        }
+      },
+      "wallClockMs": 29956.7295,
+      "replicateMs": [
+        21330.781422,
+        2433.450272000002,
+        2145.7089369999994
+      ],
+      "compositeScore": 13.2
+    },
+    {
+      "provider": "codesandbox",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.4406650529152047,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.20 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.7931598175157184,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.18 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.8826749895566453,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.17 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 2.7931598175157184,
+        "p95": 2.8826749895566453,
+        "p99": 2.8826749895566453,
+        "min": 2.4406650529152047,
+        "max": 2.8826749895566453,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 55.86319635031437,
+        "compositeScore": 55.9,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.17 s"
+        }
+      },
+      "wallClockMs": 11041.883223,
+      "replicateMs": [
+        2705.010745,
+        2510.2072200000002,
+        2824.179929
+      ],
+      "compositeScore": 55.9
+    },
+    {
+      "provider": "createos",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.133343655303275,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.23 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.501674520857281,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.20 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.7125705738773642,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.29 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 2.133343655303275,
+        "p95": 2.501674520857281,
+        "p99": 2.501674520857281,
+        "min": 1.7125705738773642,
+        "max": 2.501674520857281,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 42.66687310606551,
+        "compositeScore": 42.7,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.29 s"
+        }
+      },
+      "wallClockMs": 1328.452826,
+      "replicateMs": [
+        456.6655719999999,
+        347.1834080000003,
+        511.6190310000002
+      ],
+      "compositeScore": 42.7
+    },
+    {
+      "provider": "daytona",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.6214020241900666,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.31 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.8012008627766543,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.28 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.9517236395550381,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.26 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 1.8012008627766543,
+        "p95": 1.9517236395550381,
+        "p99": 1.9517236395550381,
+        "min": 1.6214020241900666,
+        "max": 1.9517236395550381,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 36.02401725553309,
+        "compositeScore": 36,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.26 s"
+        }
+      },
+      "wallClockMs": 4707.974958,
+      "replicateMs": [
+        1488.321209,
+        1081.9718789999997,
+        1965.6478040000002
+      ],
+      "compositeScore": 36
+    },
+    {
+      "provider": "declaw",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.8672438694964487,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.58 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.45468868230708803,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 1.10 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.8214449993310892,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.61 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 0.8214449993310892,
+        "p95": 0.8672438694964487,
+        "p99": 0.8672438694964487,
+        "min": 0.45468868230708803,
+        "max": 0.8672438694964487,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 16.428899986621783,
+        "compositeScore": 16.4,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.61 s"
+        }
+      },
+      "wallClockMs": 3784.6782589999993,
+      "replicateMs": [
+        1021.0009059999998,
+        1730.1945139999998,
+        1008.1182019999997
+      ],
+      "compositeScore": 16.4
+    },
+    {
+      "provider": "e2b",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.9257472530987123,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.26 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.8532163819376368,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.27 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.428873240360276,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.21 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 1.9257472530987123,
+        "p95": 2.428873240360276,
+        "p99": 2.428873240360276,
+        "min": 1.8532163819376368,
+        "max": 2.428873240360276,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 38.514945061974245,
+        "compositeScore": 38.5,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.21 s"
+        }
+      },
+      "wallClockMs": 4426.364975,
+      "replicateMs": [
+        1511.805418,
+        1054.9291040000003,
+        1299.602629
+      ],
+      "compositeScore": 38.5
+    },
+    {
+      "provider": "hopx",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.3723609990316916,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 1.34 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.2940853435137523,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 1.70 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.3641479531094255,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 1.37 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 0.3641479531094255,
+        "p95": 0.3723609990316916,
+        "p99": 0.3723609990316916,
+        "min": 0.2940853435137523,
+        "max": 0.3723609990316916,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 7.28295906218851,
+        "compositeScore": 7.3,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 1.37 s"
+        }
+      },
+      "wallClockMs": 16872.394091000002,
+      "replicateMs": [
+        4068.0159310000004,
+        4316.681817000001,
+        4545.695748
+      ],
+      "compositeScore": 7.3
+    },
+    {
+      "provider": "isorun",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.352858776588163,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.21 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.3608986603987137,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.21 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.3942226449887363,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.21 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 2.3608986603987137,
+        "p95": 2.3942226449887363,
+        "p99": 2.3942226449887363,
+        "min": 2.352858776588163,
+        "max": 2.3942226449887363,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 47.217973207974275,
+        "compositeScore": 47.2,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.21 s"
+        }
+      },
+      "wallClockMs": 1013.5287189999999,
+      "replicateMs": [
+        344.049534,
+        329.98410100000024,
+        327.75875799999994
+      ],
+      "compositeScore": 47.2
+    },
+    {
+      "provider": "lightning",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.2426400480311195,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.40 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.7225828356967968,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.69 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.8415729397486105,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.59 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 0.8415729397486105,
+        "p95": 1.2426400480311195,
+        "p99": 1.2426400480311195,
+        "min": 0.7225828356967968,
+        "max": 1.2426400480311195,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 16.83145879497221,
+        "compositeScore": 16.8,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.59 s"
+        }
+      },
+      "wallClockMs": 5598.162074,
+      "replicateMs": [
+        1247.612334,
+        1444.3362900000006,
+        1513.812946
+      ],
+      "compositeScore": 16.8
+    },
+    {
+      "provider": "modal",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.3656621993580023,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.37 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.3220059247493445,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.38 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.3697705973404655,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.37 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 1.3656621993580023,
+        "p95": 1.3697705973404655,
+        "p99": 1.3697705973404655,
+        "min": 1.3220059247493445,
+        "max": 1.3697705973404655,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 27.313243987160046,
+        "compositeScore": 27.3,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.37 s"
+        }
+      },
+      "wallClockMs": 3073.75857,
+      "replicateMs": [
+        1027.3860190000003,
+        1009.7202130000001,
+        982.6377959999995
+      ],
+      "compositeScore": 27.3
+    },
+    {
+      "provider": "northflank",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": false,
+          "suite": "network-localhost",
+          "reason": "error",
+          "error": "listen EADDRNOTAVAIL: address not available 127.0.0.1",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "network-localhost",
+          "reason": "error",
+          "error": "listen EADDRNOTAVAIL: address not available 127.0.0.1",
+          "meta": {}
+        },
+        {
+          "ok": false,
+          "suite": "network-localhost",
+          "reason": "error",
+          "error": "listen EADDRNOTAVAIL: address not available 127.0.0.1",
+          "meta": {}
+        }
+      ],
+      "summary": {
+        "median": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "successRate": 0,
+        "n": 0,
+        "scoreBeforeReliability": 0,
+        "compositeScore": 0,
+        "meta": {}
+      },
+      "wallClockMs": 936.6890369999999,
+      "replicateMs": [
+        229.1933889999998,
+        195.99929800000018,
+        173.90675999999985
+      ],
+      "compositeScore": 0
+    },
+    {
+      "provider": "opencomputer",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 4.566560857624971,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.11 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 5.157031931743505,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.10 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 4.89730440807741,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.10 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 4.89730440807741,
+        "p95": 5.157031931743505,
+        "p99": 5.157031931743505,
+        "min": 4.566560857624971,
+        "max": 5.157031931743505,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 97.9460881615482,
+        "compositeScore": 97.9,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.10 s"
+        }
+      },
+      "wallClockMs": 7507.585292999999,
+      "replicateMs": [
+        1838.222408,
+        1751.115886,
+        1679.6396919999997
+      ],
+      "compositeScore": 97.9
+    },
+    {
+      "provider": "runloop",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.1876316712388506,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.42 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.3005378845216153,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.38 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.327987267385567,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.38 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 1.3005378845216153,
+        "p95": 1.327987267385567,
+        "p99": 1.327987267385567,
+        "min": 1.1876316712388506,
+        "max": 1.327987267385567,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 26.010757690432307,
+        "compositeScore": 26,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.38 s"
+        }
+      },
+      "wallClockMs": 3705.761903,
+      "replicateMs": [
+        1279.2687970000002,
+        1165.36665,
+        1167.1862259999998
+      ],
+      "compositeScore": 26
+    },
+    {
+      "provider": "sandbox0",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.4670738813858737,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.34 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.8223753192666583,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.61 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.0286811551099369,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.49 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 1.0286811551099369,
+        "p95": 1.4670738813858737,
+        "p99": 1.4670738813858737,
+        "min": 0.8223753192666583,
+        "max": 1.4670738813858737,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 20.573623102198738,
+        "compositeScore": 20.6,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.49 s"
+        }
+      },
+      "wallClockMs": 3813.950821,
+      "replicateMs": [
+        1124.724056,
+        1409.213604,
+        894.9881740000001
+      ],
+      "compositeScore": 20.6
+    },
+    {
+      "provider": "superserve",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.0226449507384154,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.49 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.9023457564362851,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.55 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 0.9716380618137829,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.51 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 0.9716380618137829,
+        "p95": 1.0226449507384154,
+        "p99": 1.0226449507384154,
+        "min": 0.9023457564362851,
+        "max": 1.0226449507384154,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 19.43276123627566,
+        "compositeScore": 19.4,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.51 s"
+        }
+      },
+      "wallClockMs": 3941.5635730000004,
+      "replicateMs": [
+        1226.024034,
+        1122.991865,
+        1186.4322419999999
+      ],
+      "compositeScore": 19.4
+    },
+    {
+      "provider": "tenki",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.0780571548756757,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.24 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.4230703161097313,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.21 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.820044703428393,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.27 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 2.0780571548756757,
+        "p95": 2.4230703161097313,
+        "p99": 2.4230703161097313,
+        "min": 1.820044703428393,
+        "max": 2.4230703161097313,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 41.561143097513515,
+        "compositeScore": 41.6,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.27 s"
+        }
+      },
+      "wallClockMs": 4704.340712,
+      "replicateMs": [
+        1537.858367,
+        1137.1949730000001,
+        1198.6282890000002
+      ],
+      "compositeScore": 41.6
+    },
+    {
+      "provider": "tensorlake",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.378370014743801,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.21 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.422237621840127,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.21 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 2.5025386878592055,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.20 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 2.422237621840127,
+        "p95": 2.5025386878592055,
+        "p99": 2.5025386878592055,
+        "min": 2.378370014743801,
+        "max": 2.5025386878592055,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 48.44475243680254,
+        "compositeScore": 48.4,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.20 s"
+        }
+      },
+      "wallClockMs": 2011.8500449999997,
+      "replicateMs": [
+        658.2617009999999,
+        734.5137159999999,
+        600.4268059999999
+      ],
+      "compositeScore": 48.4
+    },
+    {
+      "provider": "upstash",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 3.0573430804447317,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.16 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 3.0253967718617094,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.17 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 3.051643208247923,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.16 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 3.051643208247923,
+        "p95": 3.0573430804447317,
+        "p99": 3.0573430804447317,
+        "min": 3.0253967718617094,
+        "max": 3.0573430804447317,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 61.032864164958454,
+        "compositeScore": 61,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.16 s"
+        }
+      },
+      "wallClockMs": 2492.405433,
+      "replicateMs": [
+        739.2443330000001,
+        544.0187489999998,
+        573.6647250000001
+      ],
+      "compositeScore": 61
+    },
+    {
+      "provider": "vercel",
+      "suite": "network-localhost",
+      "mode": "hpc",
+      "iterations": [
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.5141478737042475,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.33 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.661097345025257,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.30 s"
+          }
+        },
+        {
+          "ok": true,
+          "suite": "network-localhost",
+          "metric": {
+            "value": 1.3700256488803844,
+            "unit": "gb_per_s",
+            "higherIsBetter": true
+          },
+          "meta": {
+            "iterationsReported": 64,
+            "providerNotes": "64 × 4096 KiB loopback requests in 0.36 s"
+          }
+        }
+      ],
+      "summary": {
+        "median": 1.5141478737042475,
+        "p95": 1.661097345025257,
+        "p99": 1.661097345025257,
+        "min": 1.3700256488803844,
+        "max": 1.661097345025257,
+        "successRate": 1,
+        "n": 3,
+        "scoreBeforeReliability": 30.28295747408495,
+        "compositeScore": 30.3,
+        "meta": {
+          "iterationsReported": 64,
+          "providerNotes": "64 × 4096 KiB loopback requests in 0.36 s"
+        }
+      },
+      "wallClockMs": 4110.810751999999,
+      "replicateMs": [
+        784.9897460000002,
+        773.6782470000003,
+        2037.6751709999994
+      ],
+      "compositeScore": 30.3
+    }
+  ]
+}
