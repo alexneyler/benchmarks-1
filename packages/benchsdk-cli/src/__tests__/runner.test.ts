@@ -139,8 +139,10 @@ describe('runBenchmark', () => {
 
   let calls: Record<string, any[]>;
   let fakeClient: any;
+  let taskRangeStart: number;
 
   beforeEach(() => {
+    taskRangeStart = 0;
     vi.restoreAllMocks();
     reporterClaim.mockReset();
     vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -156,15 +158,19 @@ describe('runBenchmark', () => {
       runWorker: vi.fn(async (opts: any) => {
         calls.runWorker.push(opts);
         const total = calls.createRun[0]?.[1]?.totalTasks ?? 1;
+        // The platform hands out globally-indexed task ranges; `taskRangeStart`
+        // lets a test exercise a worker whose range doesn't start at 0.
+        const start = taskRangeStart;
+        const assignment = { workerId: 'w1', taskRange: { start, end: start + total - 1, count: total } };
         const records: any[] = [];
-        for (let ti = 0; ti < total; ti++) {
-          const data = await opts.task({ taskIndex: ti, assignment: {}, step: async (_n: string, fn: any) => fn() });
+        for (let ti = start; ti < start + total; ti++) {
+          const data = await opts.task({ taskIndex: ti, assignment, step: async (_n: string, fn: any) => fn() });
           calls.taskData.push(data);
           const rec = { taskIndex: ti, status: 'success', data: data ?? {} };
           opts.onResult?.(rec);
           records.push(rec);
         }
-        return { assignment: { workerId: 'w1' }, records };
+        return { assignment, records };
       }),
     };
     createBenchmarkClient.mockReturnValue(fakeClient);
@@ -329,6 +335,68 @@ describe('runBenchmark', () => {
     expect(recorded.e2b.map((r) => r.data?.phase)).toEqual(['cold', 'cold', 'warm']);
     // Task-owned latency overrides framework wall-clock.
     expect(recorded.e2b.every((r) => r.latencyMs === 11)).toBe(true);
+  });
+
+  it('participant mode: schedule + ctx.taskIndex are relative to the worker task range start', async () => {
+    taskRangeStart = 10;
+    const seen: { phase?: string; taskIndex: number }[] = [];
+    const task = vi.fn(async (ctx: any) => {
+      seen.push({ phase: ctx.phase, taskIndex: ctx.taskIndex });
+      return {};
+    });
+
+    await runBenchmark(
+      {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        phases: [{ name: 'cold', iterations: 2 }, { name: 'warm', iterations: 1 }],
+        task,
+      },
+      [participants[0]],
+      [],
+    );
+
+    expect(seen).toEqual([
+      { phase: 'cold', taskIndex: 0 },
+      { phase: 'cold', taskIndex: 1 },
+      { phase: 'warm', taskIndex: 2 },
+    ]);
+  });
+
+  it('groupBy round: schedule index stays 0-based while records use the reporter offset', async () => {
+    const recorded: TaskResultRecord[] = [];
+    reporterClaim.mockImplementation(async () => ({
+      taskIndexStart: 10,
+      recordResult: (r: TaskResultRecord) => recorded.push(r),
+      uploadArtifact: async () => ({}),
+      finish: async () => {},
+    }));
+
+    const seen: { phase?: string; taskIndex: number }[] = [];
+    const task = vi.fn(async (ctx: any) => {
+      seen.push({ phase: ctx.phase, taskIndex: ctx.taskIndex });
+      return {};
+    });
+
+    await runBenchmark(
+      {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        phases: [{ name: 'cold', iterations: 2 }, { name: 'warm', iterations: 1 }],
+        groupBy: 'round',
+        task,
+      },
+      [participants[0]],
+      [],
+    );
+
+    expect(seen).toEqual([
+      { phase: 'cold', taskIndex: 0 },
+      { phase: 'cold', taskIndex: 1 },
+      { phase: 'warm', taskIndex: 2 },
+    ]);
+    expect(recorded.map((r) => r.taskIndex)).toEqual([10, 11, 12]);
+    expect(recorded.map((r) => r.data?.phase)).toEqual(['cold', 'cold', 'warm']);
   });
 
   it('groupBy round: a TaskError is recorded with its code + data preserved and marks the reporter failed', async () => {

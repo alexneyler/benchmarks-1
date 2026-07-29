@@ -55,8 +55,8 @@ const argv = process.argv.slice(2);
 const iterationsOverride = parseIntFlag(argv, '--iterations');
 // Request parameters match run.ts's AI Gateway defaults exactly (identical
 // across every gateway is load-bearing for fairness — see AI_GATEWAYS.md).
-const ITERATIONS_COLD = parseIntFlag(argv, '--ai-gateway-iterations-cold') ?? iterationsOverride ?? 3;
-const ITERATIONS_WARM = parseIntFlag(argv, '--ai-gateway-iterations-warm') ?? iterationsOverride ?? 3;
+const ITERATIONS_COLD = parseIntFlag(argv, '--ai-gateway-iterations-cold') ?? iterationsOverride ?? 10;
+const ITERATIONS_WARM = parseIntFlag(argv, '--ai-gateway-iterations-warm') ?? iterationsOverride ?? 10;
 const PROMPT = 'Write a two-sentence description of how distributed systems handle partial failures.';
 const MAX_TOKENS = 200;
 const TIMEOUT_MS = 45_000;

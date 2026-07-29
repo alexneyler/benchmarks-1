@@ -318,13 +318,16 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
       participantSlug: participant.name,
       concurrency: resolved.concurrency,
       task: async (ctx: RunWorkerContext) => {
-        if (resolved.staggerDelayMs > 0 && ctx.taskIndex > 0) {
-          await sleep(ctx.taskIndex * resolved.staggerDelayMs);
+        // `ctx.taskIndex` is the platform's global index; the schedule is
+        // indexed from the worker's own task range start.
+        const scheduleIndex = ctx.taskIndex - ctx.assignment.taskRange.start;
+        if (resolved.staggerDelayMs > 0 && scheduleIndex > 0) {
+          await sleep(scheduleIndex * resolved.staggerDelayMs);
         }
-        const slot = schedule[ctx.taskIndex];
+        const slot = schedule[scheduleIndex];
         const taskResult = await slot.task({
           participant,
-          taskIndex: ctx.taskIndex,
+          taskIndex: scheduleIndex,
           phase: slot.phase,
           step: (name, fn, options) => loggedStep(ctx, logBuffer, name, fn, options),
         });
@@ -408,8 +411,14 @@ async function runGroupedByRound<T extends BaseParticipant>(
     for (const participant of available) {
       const reporter = reporters.get(participant.name) ?? null;
       const logBuffer = logBuffers.get(participant.name)!;
-      const taskIndex = (reporter?.taskIndexStart ?? 0) + i;
-      const record = await runTaskRecord(slot.task, participant, taskIndex, slot.phase, logBuffer);
+      const record = await runTaskRecord(
+        slot.task,
+        participant,
+        i,
+        (reporter?.taskIndexStart ?? 0) + i,
+        slot.phase,
+        logBuffer,
+      );
       if (record.status !== 'success') failed.set(participant.name, true);
       onResult(record, { iterations: schedule.length });
       reporter?.recordResult(record);
@@ -450,6 +459,7 @@ function mergeData(data: JsonObject | undefined, phase: string | undefined): Jso
 async function runTaskRecord<T extends BaseParticipant>(
   task: BenchmarkTask<T>,
   participant: T,
+  scheduleIndex: number,
   taskIndex: number,
   phase: string | undefined,
   logBuffer: LogBuffer,
@@ -464,7 +474,7 @@ async function runTaskRecord<T extends BaseParticipant>(
 
   const ctx: TaskContext<T> = {
     participant,
-    taskIndex,
+    taskIndex: scheduleIndex,
     phase,
     async step(name, fn) {
       const stepStartedAtMs = Date.now();
