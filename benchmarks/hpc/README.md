@@ -146,7 +146,7 @@ run.ts (CLI dispatch)
 
 ### Single-command upload pattern
 
-The orchestrator writes the workload script, the `stdout.js` helper, and any bundle (fixture archive, sql.js WASM, pglite) into the sandbox via a **single `runCommand` call** that uses shell heredocs. This matches the proven `dax.ts` pattern — multiple `runCommand` calls don't reliably share filesystem state across all ComputeSDK providers.
+The orchestrator writes the workload script, the `stdout.js` helper, and any bundle (fixture archive, sql.js WASM, pglite) into the sandbox via a **single `runCommand` call** that uses shell heredocs.
 
 For large bundles (sql.js at 333 KB, pglite at 9.5 MB), the bundle is uploaded separately via chunked base64 heredocs (60 KB per chunk) before the main command runs. The main command then just does `tar -xzf` on the pre-uploaded bundle.
 
