@@ -268,10 +268,14 @@ function resolveParticipants<T extends BaseParticipant>(config: BenchmarkConfig<
 }
 
 /**
- * Creates a platform run up front without executing anything, so several
- * `runBenchmark` processes can report into it via `--run-id` — one run holding
- * every participant is what makes them rankable against each other, and the
- * processes stay independent (a provider per CI job).
+ * Creates an empty platform run up front without executing anything, so
+ * several `runBenchmark` processes can report into it via `--run-id` — one run
+ * holding every provider is what makes them rankable against each other, while
+ * the processes stay independent (a provider per CI job).
+ *
+ * Deliberately registers no participants: each joining process upserts its own,
+ * so the run lists exactly the providers that are actually being benchmarked
+ * rather than everything the bench file could reach.
  */
 export async function createRunOnly<T extends BaseParticipant>(
   fileConfig: BenchmarkConfig<T>,
@@ -280,7 +284,6 @@ export async function createRunOnly<T extends BaseParticipant>(
   const args = parseCliArgs(argv);
   const config = applyIdentityOverrides(fileConfig, args);
   const resolved = mergeConfig(config, args);
-  const available = resolveParticipants(config, resolved);
 
   const { baseUrl, apiKey } = resolvePlatform();
   const client = createBenchmarkClient({ baseUrl, apiKey });
@@ -292,7 +295,6 @@ export async function createRunOnly<T extends BaseParticipant>(
     name: `${config.benchmarkSlug} — ${resolved.iterations} iterations, concurrency ${resolved.concurrency}`,
     totalTasks: resolved.iterations,
     workerCount: 1,
-    participants: available.map((p) => p.name),
   });
 
   return { runId: run.id, dashboardUrl: dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id) };
@@ -334,6 +336,11 @@ export async function runBenchmark<T extends BaseParticipant>(
   let dashboardUrl: string | undefined;
   if (args.runId) {
     runId = args.runId;
+    // The run was opened empty by `create-run`; register the participants this
+    // process is responsible for before planning their workers.
+    for (const participant of available) {
+      await client.upsertParticipant(config.benchmarkSlug, runId, participant.name, { totalTasks });
+    }
     console.log(`Joining run: ${runId}\n`);
   } else {
     await client.upsertBenchmark(config.benchmarkSlug, {

@@ -170,11 +170,12 @@ describe('runBenchmark', () => {
     process.env.E2B_API_KEY = 'x';
     process.env.MODAL_TOKEN = 'y';
     process.env.BENCHMARKS_PLATFORM_API_KEY = 'test-key';
-    calls = { upsertBenchmark: [], createRun: [], planWorkers: [], runWorker: [], taskData: [] };
+    calls = { upsertBenchmark: [], createRun: [], planWorkers: [], upsertParticipant: [], runWorker: [], taskData: [] };
     fakeClient = {
       upsertBenchmark: vi.fn(async (...a: any[]) => { calls.upsertBenchmark.push(a); return {}; }),
       createRun: vi.fn(async (...a: any[]) => { calls.createRun.push(a); return { run: { id: 'run-1' }, participants: [] }; }),
       planWorkers: vi.fn(async (...a: any[]) => { calls.planWorkers.push(a); return []; }),
+      upsertParticipant: vi.fn(async (...a: any[]) => { calls.upsertParticipant.push(a); return {}; }),
       runWorker: vi.fn(async (opts: any) => {
         calls.runWorker.push(opts);
         const total = calls.createRun[0]?.[1]?.totalTasks ?? 1;
@@ -312,7 +313,8 @@ describe('runBenchmark', () => {
 
     expect(calls.upsertBenchmark).toHaveLength(0);
     expect(calls.createRun).toHaveLength(0);
-    // The participant still plans and claims its own worker, just inside the shared run.
+    // The participant registers itself in the shared run, then plans and claims its own worker.
+    expect(calls.upsertParticipant[0].slice(0, 3)).toEqual(['sandbox-tti-local', 'run-shared', 'e2b']);
     expect(calls.planWorkers[0].slice(0, 3)).toEqual(['sandbox-tti-local', 'run-shared', 'e2b']);
     expect(calls.runWorker[0]).toMatchObject({ runId: 'run-shared' });
     expect(outcome.runId).toBe('run-shared');
