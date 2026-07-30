@@ -2,10 +2,10 @@
  * Shared time-to-interactive workload for the sequential / burst / staggered
  * benchmarks. TTI = sandbox create through the first command (`node -v`)
  * succeeding, excluding destroy. Orchestration (how many, how parallel, how
- * staggered) is owned by @benchsdk/cli's runBenchmark — this file only
+ * staggered) is owned by @benchsdk/runner's runBenchmark — this file only
  * describes what one iteration does.
  */
-import type { TaskContext, TaskResult } from '@benchsdk/cli';
+import type { TaskContext, TaskResult } from '@benchsdk/runner';
 import type { JsonObject } from '@benchsdk/client';
 import { withTimeout } from '../src/util/timeout.js';
 import { formatError } from '../src/util/error.js';

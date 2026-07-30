@@ -49,35 +49,43 @@ function scaffold(targetDir: string, projectName: string): void {
     `${JSON.stringify(tsconfigJson, null, 2)}\n`,
   );
 
-  const benchTs = `import { defineStep, defineTask, defineWorker } from '@benchsdk/client';
+  const benchTs = `import { createBenchmarkClient } from '@benchsdk/client';
 
-const worker = defineWorker({
+const client = createBenchmarkClient({
+  baseUrl: process.env.BENCHMARK_API_URL,
+  apiKey: process.env.COMPUTESDK_ADMIN_API_KEY,
+});
+
+// A worker claims a slice of the run and executes one task per assigned index.
+// Declare named steps with \`step(...)\`; values flow between them via closures.
+const result = await client.runWorker({
   benchmarkSlug: process.env.BENCHMARK_SLUG ?? 'scale',
   runId: process.env.BENCHMARK_RUN_ID!,
   participantSlug: process.env.BENCHMARK_PARTICIPANT_SLUG ?? 'local',
   processKind: 'container',
   processKey: process.env.HOSTNAME ?? 'local',
   concurrency: 1,
-  task: defineTask('example.lifecycle', [
-    defineStep('start', async ({ assignment }) => {
-      console.log(\`Worker \${assignment.workerId} starting task \${assignment.taskRange.start}\`);
-    }),
-    defineStep('work', async () => {
+  task: async ({ assignment, taskIndex, step }) => {
+    await step('start', () => {
+      console.log(\`Worker \${assignment.workerId} starting task \${taskIndex}\`);
+    });
+    await step('work', async () => {
       // Replace with your benchmark logic
       await new Promise((resolve) => setTimeout(resolve, 100));
-    }),
-    defineStep('done', async () => {
+    });
+    await step('done', () => {
       console.log('Task complete');
-    }),
-  ]),
+    });
+  },
 });
 
-await worker.run();
+console.log(\`Ran \${result.records.length} task(s)\`);
 `;
 
   fs.writeFileSync(path.join(targetDir, 'bench.ts'), benchTs);
 
   const envExample = `# Copy to .env and fill in your values
+BENCHMARK_API_URL=
 COMPUTESDK_ADMIN_API_KEY=
 BENCHMARK_SLUG=scale
 BENCHMARK_RUN_ID=

@@ -1,4 +1,4 @@
-import { NoAvailableParticipantsError } from '@benchsdk/cli';
+import { NoAvailableParticipantsError } from '@benchsdk/runner';
 
 /**
  * Terminal handler for a bench script's `runBenchmark` promise. A run where

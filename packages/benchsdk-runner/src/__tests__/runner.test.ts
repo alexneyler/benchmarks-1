@@ -20,7 +20,7 @@ vi.mock('@benchsdk/client', () => ({
 }));
 
 import { parseCliArgs, mergeConfig, runBenchmark } from '../runner';
-import { TaskError } from '../bench-config';
+import { TaskError, defineTask } from '../bench-config';
 import { NoAvailableParticipantsError } from '../no-available-participants';
 import type { BenchmarkConfig } from '../bench-config';
 import type { TaskResultRecord } from '@benchsdk/client';
@@ -84,7 +84,6 @@ describe('mergeConfig', () => {
     iterations: 100,
     concurrency: 1,
     staggerDelayMs: 0,
-    task: async () => ({}),
   };
 
   it('uses config defaults when no CLI args', () => {
@@ -102,17 +101,17 @@ describe('mergeConfig', () => {
   });
 
   it('falls back to knob defaults of 1/1/0/participant when neither config nor CLI set them', () => {
-    const bare: BenchmarkConfig = { benchmarkSlug: 's', benchmarkName: 'n', task: async () => ({}) };
+    const bare: BenchmarkConfig = { benchmarkSlug: 's', benchmarkName: 'n' };
     expect(mergeConfig(bare, {})).toEqual({ iterations: 1, concurrency: 1, staggerDelayMs: 0, groupBy: 'participant', providers: undefined });
   });
 
   it('uses config.groupBy when CLI does not set it', () => {
-    const rr: BenchmarkConfig = { benchmarkSlug: 's', benchmarkName: 'n', groupBy: 'round', task: async () => ({}) };
+    const rr: BenchmarkConfig = { benchmarkSlug: 's', benchmarkName: 'n', groupBy: 'round' };
     expect(mergeConfig(rr, {}).groupBy).toBe('round');
   });
 
   it('falls back to config.defaultProviders when --provider is not passed', () => {
-    const withDefaults: BenchmarkConfig = { benchmarkSlug: 's', benchmarkName: 'n', defaultProviders: ['e2b'], task: async () => ({}) };
+    const withDefaults: BenchmarkConfig = { benchmarkSlug: 's', benchmarkName: 'n', defaultProviders: ['e2b'] };
     expect(mergeConfig(withDefaults, {}).providers).toEqual(['e2b']);
     expect(mergeConfig(withDefaults, { providers: ['modal'] }).providers).toEqual(['modal']);
   });
@@ -123,7 +122,6 @@ describe('mergeConfig', () => {
       benchmarkSlug: 's',
       benchmarkName: 'n',
       phases: [{ name: 'cold', iterations: 3 }, { name: 'warm', iterations: 2 }],
-      task: async () => ({}),
     };
     expect(mergeConfig(phased, {}).iterations).toBe(5);
     expect(mergeConfig(phased, { iterations: 99 }).iterations).toBe(5);
@@ -190,10 +188,9 @@ describe('runBenchmark', () => {
       benchmarkKind: 'sandbox',
       iterations: 3,
       concurrency: 1,
-      task,
     };
 
-    const outcome = await runBenchmark(config, participants, []);
+    const outcome = await runBenchmark(config, defineTask(task), participants, []);
 
     expect(outcome.runId).toBe('run-1');
     expect(outcome.participants.map((p) => p.participant)).toEqual(['e2b', 'modal']);
@@ -218,10 +215,9 @@ describe('runBenchmark', () => {
       benchmarkName: 'n',
       iterations: 100,
       concurrency: 1,
-      task: async () => ({}),
     };
 
-    await runBenchmark(config, participants, ['--iterations', '5', '--concurrency', '5', '--provider', 'e2b']);
+    await runBenchmark(config, defineTask(async () => ({})), participants, ['--iterations', '5', '--concurrency', '5', '--provider', 'e2b']);
 
     expect(calls.createRun[0][1]).toMatchObject({ totalTasks: 5, participants: ['e2b'] });
     expect(calls.runWorker).toHaveLength(1);
@@ -233,7 +229,8 @@ describe('runBenchmark', () => {
     delete process.env.MODAL_TOKEN;
 
     const err = await runBenchmark(
-      { benchmarkSlug: 's', benchmarkName: 'n', task: async () => ({}) },
+      { benchmarkSlug: 's', benchmarkName: 'n' },
+      defineTask(async () => ({})),
       participants,
       [],
     ).catch((e: unknown) => e);
@@ -258,8 +255,8 @@ describe('runBenchmark', () => {
         benchmarkSlug: 's',
         benchmarkName: 'n',
         phases: [{ name: 'cold', iterations: 2 }, { name: 'warm', iterations: 1 }],
-        task,
       },
+      defineTask(task),
       [participants[0]],
       [],
     );
@@ -293,7 +290,8 @@ describe('runBenchmark', () => {
     });
 
     const outcome = await runBenchmark(
-      { benchmarkSlug: 'ai-gateway-local', benchmarkName: 'AI GW', iterations: 2, groupBy: 'round', task },
+      { benchmarkSlug: 'ai-gateway-local', benchmarkName: 'AI GW', iterations: 2, groupBy: 'round' },
+      defineTask(task),
       participants,
       [],
     );
@@ -339,8 +337,8 @@ describe('runBenchmark', () => {
         benchmarkName: 'n',
         phases: [{ name: 'cold', iterations: 2 }, { name: 'warm', iterations: 1 }],
         groupBy: 'round',
-        task,
       },
+      defineTask(task),
       [participants[0]],
       [],
     );
@@ -371,7 +369,8 @@ describe('runBenchmark', () => {
     });
 
     await runBenchmark(
-      { benchmarkSlug: 's', benchmarkName: 'n', iterations: 3, groupBy: 'round', task },
+      { benchmarkSlug: 's', benchmarkName: 'n', iterations: 3, groupBy: 'round' },
+      defineTask(task),
       [participants[0]],
       [],
     );
@@ -397,8 +396,8 @@ describe('runBenchmark', () => {
         benchmarkSlug: 's',
         benchmarkName: 'n',
         phases: [{ name: 'cold', iterations: 2 }, { name: 'warm', iterations: 1 }],
-        task,
       },
+      defineTask(task),
       [participants[0]],
       [],
     );
@@ -422,7 +421,8 @@ describe('runBenchmark', () => {
     });
 
     await runBenchmark(
-      { benchmarkSlug: 's', benchmarkName: 'n', iterations: 3, staggerDelayMs: 50, task },
+      { benchmarkSlug: 's', benchmarkName: 'n', iterations: 3, staggerDelayMs: 50 },
+      defineTask(task),
       [participants[0]],
       [],
     );
@@ -456,8 +456,8 @@ describe('runBenchmark', () => {
         benchmarkName: 'n',
         phases: [{ name: 'cold', iterations: 2 }, { name: 'warm', iterations: 1 }],
         groupBy: 'round',
-        task,
       },
+      defineTask(task),
       [participants[0]],
       [],
     );
@@ -488,7 +488,8 @@ describe('runBenchmark', () => {
     };
 
     await runBenchmark(
-      { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'round', task },
+      { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'round' },
+      defineTask(task),
       [participants[0]],
       [],
     );

@@ -1,9 +1,9 @@
 ---
 name: local-platform-e2e
-description: Stand up benchmarks-platform locally (Postgres + MinIO + ClickHouse in docker) and run a real @benchsdk/cli benchmark against it, with no cloud or provider credentials. Use when testing @benchsdk/client / @benchsdk/cli against the platform end to end, or when debugging benchmark reporting, worker planning, artifacts, or dashboard results locally.
+description: Stand up benchmarks-platform locally (Postgres + MinIO + ClickHouse in docker) and run a real @benchsdk/runner benchmark against it, with no cloud or provider credentials. Use when testing @benchsdk/client / @benchsdk/runner against the platform end to end, or when debugging benchmark reporting, worker planning, artifacts, or dashboard results locally.
 ---
 
-# Local end-to-end: @benchsdk/cli ↔ benchmarks-platform
+# Local end-to-end: @benchsdk/runner ↔ benchmarks-platform
 
 Goal: exercise upsert benchmark → create run → planWorkers → claim → heartbeat →
 task_results → artifact upload → complete → dashboard, with zero external
@@ -130,15 +130,17 @@ Check `imported`/`failed`/`failureSamples` in the response.
 Build first (`packages/*/dist` is not committed): `pnpm install && pnpm -r --filter "./packages/**" build`.
 
 Write a throwaway bench inside the repo (untracked, e.g. `e2e-local/local.bench.ts`)
-so pnpm workspace resolution finds `@benchsdk/cli`, with a fake participant:
+so pnpm workspace resolution finds `@benchsdk/runner`, with a fake participant:
 
 ```ts
-import { defineBenchmark, runBenchmark } from '@benchsdk/cli';
-const config = defineBenchmark({
+import { defineBenchmarkConfig, defineTask, runBenchmark } from '@benchsdk/runner';
+const config = defineBenchmarkConfig({
   benchmarkSlug: 'e2e-local', benchmarkName: 'E2E', iterations: 4, concurrency: 1,
-  task: async (ctx) => { await ctx.step('create', () => new Promise(r => setTimeout(r, 50))); },
 });
-runBenchmark(config, [{ name: 'local', requiredEnvVars: [] } as any], process.argv.slice(2));
+const task = defineTask(async (ctx) => {
+  await ctx.step('create', () => new Promise(r => setTimeout(r, 50)));
+});
+runBenchmark(config, task, [{ name: 'local', requiredEnvVars: [] } as any], process.argv.slice(2));
 ```
 
 Run it:

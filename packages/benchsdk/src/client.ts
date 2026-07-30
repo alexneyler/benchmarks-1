@@ -1,10 +1,8 @@
 import type {
   BenchmarkAssignment,
   BenchmarkArtifact,
-  BenchDefinition,
   BenchmarkClient,
   BenchmarkClientConfig,
-  BenchmarkWorker,
   BenchmarkParticipant,
   BenchmarkResource,
   BenchmarkRun,
@@ -22,15 +20,9 @@ import type {
   CreateWorkerArtifactResponse,
   ClaimWorkerInput,
   CreateRunInput,
-  DefineBenchOptions,
   DefineStepOptions,
-  DefineTaskOptions,
-  DefinedStep,
-  DefinedTask,
-  DefineWorkerOptions,
   JsonObject,
   RunWorkerOptions,
-  RunWorkerContext,
   RunWorkerResult,
   SendTaskResultsInput,
   PlanWorkersInput,
@@ -153,59 +145,8 @@ function bodySizeBytes(body: UploadWorkerArtifactInput['body']): number | undefi
   return undefined;
 }
 
-function isDefinedTask(task: RunWorkerOptions['task']): task is DefinedTask {
-  return typeof task === 'object' && task !== null && Array.isArray(task.steps);
-}
-
-function mergeJsonObjects(target: JsonObject, source: JsonObject | void): void {
-  if (!source) return;
-  Object.assign(target, source);
-}
-
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function runWorkerTask(task: RunWorkerOptions['task'], context: RunWorkerContext): Promise<JsonObject | void> {
-  if (!isDefinedTask(task)) {
-    return task(context);
-  }
-
-  const state: Record<string, unknown> = {};
-  const data: JsonObject = { taskName: task.name };
-  try {
-    for (const definedStep of task.steps) {
-      const stepData = await context.step(
-        definedStep.name,
-        () => definedStep.fn({
-          assignment: context.assignment,
-          taskIndex: context.taskIndex,
-          state,
-        }),
-        definedStep.options,
-      );
-      mergeJsonObjects(data, stepData);
-    }
-  } catch (error) {
-    try {
-      await task.options?.cleanup?.({
-        assignment: context.assignment,
-        taskIndex: context.taskIndex,
-        state,
-      });
-    } catch {
-      // Preserve the task failure as the primary benchmark error.
-    }
-    throw error;
-  }
-
-  await task.options?.cleanup?.({
-    assignment: context.assignment,
-    taskIndex: context.taskIndex,
-    state,
-  });
-
-  return data;
 }
 
 async function mapPool<T>(items: T[], concurrency: number, fn: (item: T) => Promise<void>): Promise<void> {
@@ -738,7 +679,7 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
           }
 
           try {
-            const data = await runWorkerTask(options.task, { assignment: claimed, taskIndex, step });
+            const data = await options.task({ assignment: claimed, taskIndex, step });
             record.data = toJsonObject(data);
           } catch (error) {
             record.status = 'error';
@@ -790,98 +731,3 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
   return client;
 }
 
-export async function runBenchmarkWorker(
-  config: BenchmarkClientConfig,
-  options: RunWorkerOptions,
-): Promise<RunWorkerResult> {
-  return createBenchmarkClient(config).runWorker(options);
-}
-
-export function defineStep<TState extends Record<string, unknown> = Record<string, unknown>>(
-  name: string,
-  optionsOrFn: DefineStepOptions | DefinedStep<TState>['fn'],
-  maybeFn?: DefinedStep<TState>['fn'],
-): DefinedStep<TState> {
-  if (name.trim() === '') {
-    throw new Error('Benchmark step name must be non-empty.');
-  }
-  const hasOptions = typeof optionsOrFn !== 'function';
-  const fn = hasOptions ? maybeFn : optionsOrFn;
-  if (!fn) {
-    throw new Error('Benchmark step function is required.');
-  }
-  return { name, options: hasOptions ? optionsOrFn : undefined, fn };
-}
-
-export function defineTask<TState extends Record<string, unknown> = Record<string, unknown>>(
-  name: string,
-  steps: DefinedStep<TState>[],
-  options?: DefineTaskOptions<TState>,
-): DefinedTask<TState> {
-  if (name.trim() === '') {
-    throw new Error('Benchmark task name must be non-empty.');
-  }
-  if (steps.length === 0) {
-    throw new Error('Benchmark task must define at least one step.');
-  }
-  const names = new Set<string>();
-  for (const step of steps) {
-    if (names.has(step.name)) {
-      throw new Error(`Benchmark task step names must be unique. Duplicate step: "${step.name}".`);
-    }
-    names.add(step.name);
-  }
-  return { name, steps, options };
-}
-
-export function defineWorker(options: DefineWorkerOptions): BenchmarkWorker {
-  const client = options.client ?? createBenchmarkClient();
-
-  return {
-    run(overrides = {}) {
-      return client.runWorker({
-        benchmarkSlug: options.benchmarkSlug,
-        runId: options.runId,
-        participantSlug: options.participantSlug,
-        processKind: options.processKind,
-        processKey: options.processKey,
-        concurrency: overrides.concurrency ?? options.concurrency,
-        batchSize: overrides.batchSize ?? options.batchSize,
-        flushIntervalMs: overrides.flushIntervalMs ?? options.flushIntervalMs,
-        heartbeatIntervalMs: overrides.heartbeatIntervalMs ?? options.heartbeatIntervalMs,
-        readyPollIntervalMs: overrides.readyPollIntervalMs ?? options.readyPollIntervalMs,
-        onFinish: options.onFinish,
-        task: options.task,
-      });
-    },
-  };
-}
-
-export function defineBench(options: DefineBenchOptions): BenchDefinition {
-  return {
-    slug: options.slug,
-    task: options.task,
-    defineWorker(workerOptions) {
-      const participantSlug = workerOptions.participantSlug ?? options.participantSlug;
-      if (!participantSlug) {
-        throw new Error('Benchmark worker participantSlug is required.');
-      }
-
-      return defineWorker({
-        benchmarkSlug: options.slug,
-        runId: workerOptions.runId,
-        participantSlug,
-        processKind: workerOptions.processKind,
-        processKey: workerOptions.processKey,
-        concurrency: workerOptions.concurrency ?? options.concurrency,
-        batchSize: workerOptions.batchSize ?? options.batchSize,
-        flushIntervalMs: workerOptions.flushIntervalMs ?? options.flushIntervalMs,
-        heartbeatIntervalMs: workerOptions.heartbeatIntervalMs ?? options.heartbeatIntervalMs,
-        readyPollIntervalMs: workerOptions.readyPollIntervalMs ?? options.readyPollIntervalMs,
-        onFinish: workerOptions.onFinish,
-        client: workerOptions.client ?? options.client,
-        task: workerOptions.task ?? options.task,
-      });
-    },
-  };
-}

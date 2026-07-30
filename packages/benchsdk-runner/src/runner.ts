@@ -31,7 +31,7 @@ import type {
   TaskStepRecord,
 } from '@benchsdk/client';
 import { TaskError } from './bench-config.js';
-import type { BenchmarkConfig, BenchmarkTask, GroupBy, TaskContext, TaskResult } from './bench-config.js';
+import type { BenchmarkConfig, BenchmarkTask, DefinedTask, GroupBy, TaskContext, TaskResult } from './bench-config.js';
 import { LogBuffer, uploadWorkerLog } from './log-buffer.js';
 import { loggedStep } from './logged-step.js';
 
@@ -192,18 +192,19 @@ interface Slot<T extends BaseParticipant = BaseParticipant> {
  * Flattens a config into an ordered list of task slots. With `phases`, each
  * phase contributes `iterations` slots tagged with its name (framework owns
  * the phase boundary — no index arithmetic in the task). Without phases, the
- * top-level task is repeated `iterations` times.
+ * task is repeated `iterations` times.
  */
 function buildSchedule<T extends BaseParticipant>(
   config: BenchmarkConfig<T>,
   iterations: number,
+  task: BenchmarkTask<T>,
 ): Slot<T>[] {
   if (config.phases?.length) {
     return config.phases.flatMap((phase) =>
-      Array.from({ length: phase.iterations }, () => ({ phase: phase.name, task: phase.task ?? config.task })),
+      Array.from({ length: phase.iterations }, () => ({ phase: phase.name, task })),
     );
   }
-  return Array.from({ length: iterations }, () => ({ phase: undefined, task: config.task }));
+  return Array.from({ length: iterations }, () => ({ phase: undefined, task }));
 }
 
 type OnResult = (record: TaskResultRecord, meta: { iterations: number }) => void;
@@ -227,16 +228,18 @@ function resolvePlatform(): { baseUrl: string; orgSlug: string } {
 }
 
 /**
- * Runs `config` against `participants`. Selects participants by `--provider`
- * (if given), env-gates them, then drives them per the resolved `groupBy`.
+ * Runs `config`'s `task` against `participants`. Selects participants by
+ * `--provider` (if given), env-gates them, then drives them per the resolved
+ * `groupBy`.
  */
 export async function runBenchmark<T extends BaseParticipant>(
   config: BenchmarkConfig<T>,
+  task: DefinedTask<T>,
   participants: T[],
   argv: string[] = [],
 ): Promise<BenchmarkRunOutcome> {
   const resolved = mergeConfig(config, parseCliArgs(argv));
-  const schedule = buildSchedule(config, resolved.iterations);
+  const schedule = buildSchedule(config, resolved.iterations, task.run);
   const totalTasks = schedule.length;
 
   const selected = selectParticipants(participants, resolved.providers);

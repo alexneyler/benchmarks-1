@@ -1,5 +1,5 @@
 /**
- * AI Gateway benchmark, built on @benchsdk/cli's runBenchmark with
+ * AI Gateway benchmark, built on @benchsdk/runner's runBenchmark with
  * `groupBy: 'round'`. Fairness is the whole point (see AI_GATEWAYS.md): every
  * gateway's Nth iteration must run at roughly the same point in time as every
  * other gateway's Nth iteration, so no gateway is favored by running during a
@@ -23,8 +23,8 @@
 import '../src/env.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineBenchmark, runBenchmark, TaskError } from '@benchsdk/cli';
-import type { TaskContext, TaskResult } from '@benchsdk/cli';
+import { defineBenchmarkConfig, defineTask, runBenchmark, TaskError } from '@benchsdk/runner';
+import type { TaskContext, TaskResult } from '@benchsdk/runner';
 import type { JsonObject, TaskResultRecord, TaskStepRecord } from '@benchsdk/client';
 import { runColdProbe, runWarmProbe } from './phase-probe.js';
 import { providers } from './providers.js';
@@ -146,19 +146,21 @@ if (phases.length === 0) {
   process.exit(0);
 }
 
-const config = defineBenchmark({
+export const config = defineBenchmarkConfig({
   benchmarkSlug: 'ai-gateway-local',
   benchmarkName: 'AI Gateway Benchmark - Local',
   benchmarkKind: 'ai-gateway',
   phases,
   groupBy: 'round',
-  task: aiGatewayTask,
   onResult: logAiGateway,
 });
 
+export const task = defineTask(aiGatewayTask);
+export default task;
+
 // `--iterations` is consumed above (it sets both phase counts), so it is
 // dropped here — otherwise the runner warns that it ignored a flag we honored.
-runBenchmark(config, providers, stripFlag(argv, '--iterations'))
+runBenchmark(config, task, providers, stripFlag(argv, '--iterations'))
   .then(async (outcome) => {
     const resultsDir = path.resolve(__dirname, '../../results/ai-gateway');
     await writeAIGatewayLegacyResults(outcome.participants, { resultsDir, providers });

@@ -1,7 +1,7 @@
 /**
  * Storage upload/download benchmark: `iterations` upload→download→delete cycles
  * per provider (concurrency 1 = sequential). Config lives here; all
- * orchestration is owned by @benchsdk/cli's runBenchmark.
+ * orchestration is owned by @benchsdk/runner's runBenchmark.
  *
  * Run directly:
  *   tsx benchmarks/storage/storage.bench.ts
@@ -11,7 +11,7 @@ import '../src/env.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import crypto from 'node:crypto';
-import { defineBenchmark, runBenchmark } from '@benchsdk/cli';
+import { defineBenchmarkConfig, defineTask, runBenchmark } from '@benchsdk/runner';
 import { storageProviders } from './providers.js';
 import { makeStorageTask } from './storage-task.js';
 import { writeStorageLegacyResults } from './legacy-results.js';
@@ -21,7 +21,7 @@ import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// --file-size is unknown to @benchsdk/cli and passes through untouched, so we
+// --file-size is unknown to @benchsdk/runner and passes through untouched, so we
 // parse it ourselves from process.argv (default '10MB', matching run.ts).
 const args = process.argv.slice(2);
 function getArgValue(argv: string[], flag: string): string | undefined {
@@ -39,16 +39,18 @@ const fileSizeBytes = FILE_SIZE_BYTES[fileSizeLabel];
 
 const testData = crypto.randomBytes(fileSizeBytes);
 
-const config = defineBenchmark({
+export const config = defineBenchmarkConfig({
   benchmarkSlug: 'storage-local',
   benchmarkName: 'Storage (local)',
   benchmarkKind: 'storage',
   iterations: 2,
   concurrency: 1,
-  task: makeStorageTask(testData, fileSizeBytes),
 });
 
-runBenchmark(config, storageProviders, process.argv.slice(2))
+export const task = defineTask(makeStorageTask(testData, fileSizeBytes));
+export default task;
+
+runBenchmark(config, task, storageProviders, process.argv.slice(2))
   .then(async (outcome) => {
     const resultsDir = path.resolve(__dirname, `../../results/storage/${fileSizeLabel.toLowerCase()}`);
     await writeStorageLegacyResults(outcome.participants, {

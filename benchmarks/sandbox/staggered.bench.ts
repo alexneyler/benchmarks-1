@@ -3,7 +3,7 @@
  * slots available (concurrency == iterations), task N starting at
  * `N * staggerDelayMs` after the worker begins, producing a ramp. Config
  * lives here; the stagger and all other orchestration are owned by
- * @benchsdk/cli's runBenchmark. Sanity-check the resulting ramp on the
+ * @benchsdk/runner's runBenchmark. Sanity-check the resulting ramp on the
  * dashboard.
  *
  * Run directly:
@@ -13,7 +13,7 @@
 import '../src/env.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineBenchmark, runBenchmark } from '@benchsdk/cli';
+import { defineBenchmarkConfig, defineTask, runBenchmark } from '@benchsdk/runner';
 import { providers } from './providers.js';
 import { ttiTask, logTti } from './tti-task.js';
 import { writeSandboxLegacyResults } from './legacy-results.js';
@@ -21,18 +21,20 @@ import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const config = defineBenchmark({
+export const config = defineBenchmarkConfig({
   benchmarkSlug: 'sandbox-staggered-local',
   benchmarkName: 'Sandbox staggered TTI (local)',
   benchmarkKind: 'sandbox',
   iterations: 3,
   concurrency: 3,
   staggerDelayMs: 200,
-  task: ttiTask,
   onResult: logTti,
 });
 
-runBenchmark(config, providers, process.argv.slice(2))
+export const task = defineTask(ttiTask);
+export default task;
+
+runBenchmark(config, task, providers, process.argv.slice(2))
   .then(async (outcome) => {
     const resultsDir = path.resolve(__dirname, '../../results/staggered_tti');
     await writeSandboxLegacyResults(outcome.participants, {

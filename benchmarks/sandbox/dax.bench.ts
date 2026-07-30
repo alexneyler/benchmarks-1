@@ -2,7 +2,7 @@
  * Dax benchmark: runs the OpenCode build (scripts/dax-benchmark.sh) inside a
  * freshly created sandbox once per iteration and measures its build phases
  * (prepare / bun-download / bun-unpack / clone / install / typecheck). Config
- * lives here; platform orchestration is owned by @benchsdk/cli's runBenchmark.
+ * lives here; platform orchestration is owned by @benchsdk/runner's runBenchmark.
  * The phase-parsing + resource-sizing logic is reused from ./dax.ts so the
  * legacy `results/sandbox-dax/` JSON shape is preserved verbatim via the
  * legacy-results adapter (TEMPORARY local-JSON bridge — see legacy-results).
@@ -18,8 +18,8 @@
 import '../src/env.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineBenchmark, runBenchmark, TaskError } from '@benchsdk/cli';
-import type { TaskContext, TaskResult } from '@benchsdk/cli';
+import { defineBenchmarkConfig, defineTask, runBenchmark, TaskError } from '@benchsdk/runner';
+import type { TaskContext, TaskResult } from '@benchsdk/runner';
 import type { JsonObject, TaskResultRecord, TaskStepRecord } from '@benchsdk/client';
 import { withTimeout } from '../src/util/timeout.js';
 import { formatError } from '../src/util/error.js';
@@ -93,7 +93,7 @@ function logDax(record: TaskResultRecord, meta: { iterations: number }): void {
   }
 }
 
-const config = defineBenchmark({
+export const config = defineBenchmarkConfig({
   benchmarkSlug: 'sandbox-dax-local',
   benchmarkName: 'Dax sandbox benchmark (local)',
   benchmarkKind: 'sandbox',
@@ -101,11 +101,13 @@ const config = defineBenchmark({
   concurrency: 1,
   groupBy: 'round',
   defaultProviders: ['e2b', 'modal', 'tensorlake'],
-  task: daxTask,
   onResult: logDax,
 });
 
-runBenchmark(config, providers, process.argv.slice(2))
+export const task = defineTask(daxTask);
+export default task;
+
+runBenchmark(config, task, providers, process.argv.slice(2))
   .then(async (outcome) => {
     const resultsDir = path.resolve(__dirname, '../../results/sandbox-dax');
     await writeDaxLegacyResults(outcome.participants, { resultsDir });

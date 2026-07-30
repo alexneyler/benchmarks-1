@@ -1,7 +1,7 @@
 /**
  * Storage snapshot/fork benchmark: per-iteration seed -> snapshot -> fork ->
  * verify, per provider (concurrency 1 = sequential; each iteration creates real
- * snapshots/forks). Config lives here; orchestration is owned by @benchsdk/cli's
+ * snapshots/forks). Config lives here; orchestration is owned by @benchsdk/runner's
  * runBenchmark.
  *
  * Run directly:
@@ -11,7 +11,7 @@
 import '../src/env.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineBenchmark, runBenchmark } from '@benchsdk/cli';
+import { defineBenchmarkConfig, defineTask, runBenchmark } from '@benchsdk/runner';
 import { storageProviders } from './providers.js';
 import { makeSnapshotForkTask } from './snapshot-fork-task.js';
 import { writeSnapshotForkLegacyResults } from './snapshot-fork-legacy-results.js';
@@ -22,7 +22,7 @@ import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// --dataset is unknown to @benchsdk/cli and passes through untouched, so we
+// --dataset is unknown to @benchsdk/runner and passes through untouched, so we
 // parse it ourselves from process.argv (default 'small', matching run.ts).
 const args = process.argv.slice(2);
 function getArgValue(argv: string[], flag: string): string | undefined {
@@ -46,16 +46,18 @@ const participants: StorageProviderConfig[] = storageProviders.map((p) => {
   return snapshotFork ? { ...base, ...snapshotFork } : base;
 });
 
-const config = defineBenchmark({
+export const config = defineBenchmarkConfig({
   benchmarkSlug: 'snapshot-fork-local',
   benchmarkName: 'Snapshot/Fork (local)',
   benchmarkKind: 'storage',
   iterations: 2,
   concurrency: 1,
-  task: makeSnapshotForkTask(dataset, spec),
 });
 
-runBenchmark(config, participants, process.argv.slice(2))
+export const task = defineTask(makeSnapshotForkTask(dataset, spec));
+export default task;
+
+runBenchmark(config, task, participants, process.argv.slice(2))
   .then(async (outcome) => {
     const resultsDir = path.resolve(__dirname, `../../results/snapshot-fork/${dataset}`);
     await writeSnapshotForkLegacyResults(outcome.participants, { resultsDir, dataset, spec, providers: participants });
