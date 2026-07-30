@@ -2,6 +2,8 @@
 "@benchsdk/runner": minor
 ---
 
-Add `--slug` and `--name` CLI overrides for `benchmarkSlug`/`benchmarkName`, so one `*.bench.ts` can report under several platform benchmarks (e.g. the sandbox TTI entrypoint reporting sequential/staggered/burst runs of the same workload).
+Verb-first CLI: `bench create benchmark <slug> [--name] [--kind]` and `bench create run [file] [--benchmark slug] [--iterations N]`, which prints a run id, alongside the existing `bench run <file>`.
 
-Add `bench create-run <file>`, which opens a platform run and prints its id, plus a `--run-id <id>` flag for `bench run` that joins that run instead of creating one. Sibling processes — one per provider, in parallel — then land in a single run (each still claiming its own worker), so their participants are directly comparable.
+`bench run` gains `--run-id <id>` to report into an already-open run instead of creating one — so sibling processes (one per provider, in parallel, each claiming its own worker) land in a single run whose participants are directly comparable. A joined run owns its own size, so `--iterations` is rejected alongside `--run-id`.
+
+`--slug` is now `--benchmark` (naming the resource, not the identifier); the old spelling still works.

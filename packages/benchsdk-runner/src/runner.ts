@@ -43,8 +43,10 @@ import type {
 import { LogBuffer } from './log-buffer.js';
 
 export interface CliArgs {
-  slug?: string;
+  /** Which platform benchmark to report as (`--benchmark`, aka the benchmark slug). */
+  benchmark?: string;
   name?: string;
+  kind?: string;
   /** Join this existing platform run instead of creating one (`--run-id`). */
   runId?: string;
   iterations?: number;
@@ -99,12 +101,14 @@ export function parseCliArgs(argv: string[]): CliArgs {
     const arg = argv[i];
     const name = arg.includes('=') ? arg.slice(0, arg.indexOf('=')) : arg;
     switch (name) {
-      case '--slug': {
+      // `--slug` is the pre-`--benchmark` spelling, kept working for existing scripts.
+      case '--slug':
+      case '--benchmark': {
         const { value, nextIndex } = readValue(arg, i);
         if (!/^[a-z0-9][a-z0-9-]*$/.test(value)) {
-          throw new Error(`--slug expects a lowercase slug (got "${value}")`);
+          throw new Error(`${name} expects a lowercase benchmark slug (got "${value}")`);
         }
-        args.slug = value;
+        args.benchmark = value;
         i = nextIndex;
         break;
       }
@@ -112,6 +116,13 @@ export function parseCliArgs(argv: string[]): CliArgs {
         const { value, nextIndex } = readValue(arg, i);
         if (value.trim() === '') throw new Error('--name expects a value');
         args.name = value;
+        i = nextIndex;
+        break;
+      }
+      case '--kind': {
+        const { value, nextIndex } = readValue(arg, i);
+        if (value.trim() === '') throw new Error('--kind expects a value');
+        args.kind = value;
         i = nextIndex;
         break;
       }
@@ -241,14 +252,14 @@ function resolvePlatform(): { baseUrl: string; apiKey: string } {
   };
 }
 
-/** Applies the `--slug`/`--name` overrides, so one entrypoint can report under several benchmarks. */
+/** Applies the `--benchmark`/`--name` overrides, so one entrypoint can report under several benchmarks. */
 function applyIdentityOverrides<T extends BaseParticipant>(
   fileConfig: BenchmarkConfig<T>,
   args: CliArgs,
 ): BenchmarkConfig<T> {
   return {
     ...fileConfig,
-    ...(args.slug ? { benchmarkSlug: args.slug } : {}),
+    ...(args.benchmark ? { benchmarkSlug: args.benchmark } : {}),
     ...(args.name ? { benchmarkName: args.name } : {}),
   };
 }
@@ -267,37 +278,38 @@ function resolveParticipants<T extends BaseParticipant>(config: BenchmarkConfig<
   return available;
 }
 
-/**
- * Creates an empty platform run up front without executing anything, so
- * several `runBenchmark` processes can report into it via `--run-id` — one run
- * holding every provider is what makes them rankable against each other, while
- * the processes stay independent (a provider per CI job).
- *
- * Deliberately registers no participants: each joining process upserts its own,
- * so the run lists exactly the providers that are actually being benchmarked
- * rather than everything the bench file could reach.
- */
-export async function createRunOnly<T extends BaseParticipant>(
-  fileConfig: BenchmarkConfig<T>,
-  argv: string[] = [],
-): Promise<{ runId: string; dashboardUrl: string }> {
-  const args = parseCliArgs(argv);
-  const config = applyIdentityOverrides(fileConfig, args);
-  const resolved = mergeConfig(config, args);
-
+/** `bench create benchmark <slug>`: the only object with a user-chosen identity, so it's created explicitly. */
+export async function createBenchmark(slug: string, options: { name?: string; kind?: string } = {}): Promise<void> {
   const { baseUrl, apiKey } = resolvePlatform();
   const client = createBenchmarkClient({ baseUrl, apiKey });
-  await client.upsertBenchmark(config.benchmarkSlug, {
-    name: config.benchmarkName,
-    ...(config.benchmarkKind ? { kind: config.benchmarkKind } : {}),
+  await client.upsertBenchmark(slug, {
+    name: options.name ?? slug,
+    ...(options.kind ? { kind: options.kind } : {}),
   });
-  const { run, organizationSlug } = await client.createRun(config.benchmarkSlug, {
-    name: `${config.benchmarkSlug} — ${resolved.iterations} iterations, concurrency ${resolved.concurrency}`,
-    totalTasks: resolved.iterations,
+}
+
+/**
+ * `bench create run --benchmark <slug>`: opens an empty run and returns its id,
+ * so several `bench run --run-id` processes report into one comparable run
+ * while staying independent (a provider per CI job). A pure platform call — no
+ * bench file, no provider credentials.
+ *
+ * Registers no participants: each joining process upserts its own, so the run
+ * lists exactly the providers being benchmarked rather than everything the
+ * bench file could reach.
+ */
+export async function createRun(options: {
+  benchmarkSlug: string;
+  iterations: number;
+}): Promise<{ runId: string; dashboardUrl: string }> {
+  const { baseUrl, apiKey } = resolvePlatform();
+  const client = createBenchmarkClient({ baseUrl, apiKey });
+  const { run, organizationSlug } = await client.createRun(options.benchmarkSlug, {
+    name: `${options.benchmarkSlug} — ${options.iterations} iterations`,
+    totalTasks: options.iterations,
     workerCount: 1,
   });
-
-  return { runId: run.id, dashboardUrl: dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id) };
+  return { runId: run.id, dashboardUrl: dashboardUrlFor(baseUrl, organizationSlug, options.benchmarkSlug, run.id) };
 }
 
 /**
@@ -314,15 +326,30 @@ export async function runBenchmark<T extends BaseParticipant>(
   argv: string[] = [],
 ): Promise<BenchmarkRunOutcome> {
   const args = parseCliArgs(argv);
+  if (args.runId && args.iterations !== undefined) {
+    throw new Error('--iterations cannot be combined with --run-id: the run already owns its size.');
+  }
   const config = applyIdentityOverrides(fileConfig, args);
-  const resolved = mergeConfig(config, args);
-  const schedule = buildSchedule(config, resolved.iterations, task);
-  const totalTasks = schedule.length;
-
+  let resolved = mergeConfig(config, args);
   const available = resolveParticipants(config, resolved);
 
   const { baseUrl, apiKey } = resolvePlatform();
   const client = createBenchmarkClient({ baseUrl, apiKey });
+
+  // A joined run is the single source of truth for how many tasks there are, so
+  // sibling processes can't disagree about the size of the run they share.
+  if (args.runId) {
+    const run = await client.getRun(config.benchmarkSlug, args.runId);
+    if (config.phases?.length && run.totalTasks !== resolved.iterations) {
+      throw new Error(
+        `Run ${args.runId} has ${run.totalTasks} tasks but this benchmark's phases total ${resolved.iterations}.`,
+      );
+    }
+    resolved = { ...resolved, iterations: run.totalTasks };
+  }
+
+  const schedule = buildSchedule(config, resolved.iterations, task);
+  const totalTasks = schedule.length;
 
   const concurrencyLabel = resolved.groupBy === 'round' ? 'n/a (round mode)' : String(resolved.concurrency);
   console.log(`${config.benchmarkName} (self-contained)`);

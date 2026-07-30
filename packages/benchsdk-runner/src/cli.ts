@@ -1,28 +1,36 @@
 /**
- * `bench run <file> [--flags]` — the author-facing entrypoint. Imports a
- * benchmark module, reads its `config` and `task` exports, and drives the run
- * via the internal `runBenchmark`. CLI flags override the config's knobs, and
- * `config.onComplete` (if any) fires once the run finishes.
+ * The author-facing entrypoint. Verb first, then the noun it acts on:
  *
- * `bench create-run <file> [--flags]` opens a platform run for the same file
- * without executing it and prints its id, so several `bench run --run-id <id>`
- * processes — one per provider, in parallel — report into one comparable run
- * while each still claims its own worker.
+ *   bench run <file.bench.ts> [--flags]     execute a benchmark
+ *   bench create benchmark <slug>           declare a benchmark on the platform
+ *   bench create run --benchmark <slug>     open a run, printing its id
+ *
+ * `run` imports a benchmark module, reads its `config` and `task` exports and
+ * drives `runBenchmark`; CLI flags override the config's knobs and
+ * `config.onComplete` (if any) fires once the run finishes. With `--run-id` it
+ * reports into a run opened by `create run` instead of opening its own, so one
+ * process per provider — in parallel, each claiming its own worker — still ends
+ * up in a single run the platform can rank them in.
+ *
+ * `create` only talks to the platform: no bench file to load (it's just a
+ * source of defaults) and no provider credentials.
  *
  * The executable wrapper lives in `bin.ts`; this module has no side effects so
  * it can be unit-tested by calling `runBenchmarkFile` directly.
  */
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { createRunOnly, runBenchmark } from './runner.js';
+import { createBenchmark, createRun, mergeConfig, parseCliArgs, runBenchmark } from './runner.js';
 import { NoAvailableParticipantsError } from './no-available-participants.js';
 import type { BaseParticipant } from '@benchsdk/client';
 import type { BenchmarkConfig, BenchmarkTask } from './bench-config.js';
 
 const USAGE =
-  'Usage: bench <run|create-run> <file.bench.ts> [--iterations N] [--concurrency N] ' +
-  '[--stagger-delay-ms N] [--group-by participant|round] [--provider a,b] ' +
-  "[--slug my-benchmark] [--name 'My benchmark'] [--run-id <id>] (run only)";
+  'Usage:\n' +
+  '  bench run <file.bench.ts> [--benchmark slug] [--provider a,b] [--run-id id]\n' +
+  '      [--iterations N] [--concurrency N] [--stagger-delay-ms N] [--group-by participant|round]\n' +
+  "  bench create benchmark <slug> [--name 'My benchmark'] [--kind sandbox]\n" +
+  '  bench create run [file.bench.ts] [--benchmark slug] [--iterations N]';
 
 /** A benchmark module is expected to export `config` and `task`. */
 interface BenchmarkModule {
@@ -37,40 +45,71 @@ function isBenchmarkConfig(value: unknown): value is BenchmarkConfig {
   return typeof candidate.benchmarkSlug === 'string' && Array.isArray(candidate.participants);
 }
 
-/**
- * Loads a benchmark file and runs it. Throws on bad usage / invalid exports and
- * lets `NoAvailableParticipantsError` propagate so the caller can map it to a
- * clean exit. Does not call `process.exit`.
- */
-export async function runBenchmarkFile(argv: string[]): Promise<void> {
-  const [command, file, ...rest] = argv;
-  if ((command !== 'run' && command !== 'create-run') || !file) {
-    throw new Error(USAGE);
+async function loadConfig(file: string): Promise<BenchmarkConfig> {
+  const mod = (await import(pathToFileURL(resolve(process.cwd(), file)).href)) as BenchmarkModule;
+  if (!isBenchmarkConfig(mod.config)) {
+    throw new Error(`${file} must export a \`config\` created with defineBenchmarkConfig (with participants).`);
+  }
+  return mod.config;
+}
+
+/** `bench create <benchmark|run> ...`. Prints created run ids on stdout, alone, so callers can capture them. */
+async function create(argv: string[]): Promise<void> {
+  const [noun, ...rest] = argv;
+
+  if (noun === 'benchmark') {
+    const [slug] = rest;
+    if (!slug || slug.startsWith('-')) throw new Error(USAGE);
+    const args = parseCliArgs(rest);
+    await createBenchmark(slug, { name: args.name, kind: args.kind });
+    console.error(`Benchmark ready: ${slug}`);
+    return;
   }
 
-  const moduleUrl = pathToFileURL(resolve(process.cwd(), file)).href;
-  const mod = (await import(moduleUrl)) as BenchmarkModule;
+  if (noun === 'run') {
+    // The file, when given, only supplies defaults for the flags below.
+    const file = rest[0] && !rest[0].startsWith('-') ? rest[0] : undefined;
+    const args = parseCliArgs(file ? rest.slice(1) : rest);
+    const fileConfig = file ? await loadConfig(file) : undefined;
+    const benchmarkSlug = args.benchmark ?? fileConfig?.benchmarkSlug;
+    if (!benchmarkSlug) throw new Error('bench create run needs --benchmark <slug> (or a file to read it from).');
+    const iterations = fileConfig ? mergeConfig(fileConfig, args).iterations : args.iterations;
+    if (!iterations) throw new Error('bench create run needs --iterations N (or a file to read it from).');
 
+    const { runId, dashboardUrl } = await createRun({ benchmarkSlug, iterations });
+    console.error(`Run created: ${runId}\nView at: ${dashboardUrl}`);
+    console.log(runId);
+    return;
+  }
+
+  throw new Error(USAGE);
+}
+
+/**
+ * Dispatches one CLI invocation. Throws on bad usage / invalid exports and lets
+ * `NoAvailableParticipantsError` propagate so the caller can map it to a clean
+ * exit. Does not call `process.exit`.
+ */
+export async function runBenchmarkFile(argv: string[]): Promise<void> {
+  const [command, ...rest] = argv;
+
+  if (command === 'create') return create(rest);
+
+  const [file, ...flags] = rest;
+  if (command !== 'run' || !file) throw new Error(USAGE);
+
+  const mod = (await import(pathToFileURL(resolve(process.cwd(), file)).href)) as BenchmarkModule;
   const config = mod.config;
   const task = mod.task ?? mod.default;
 
   if (!isBenchmarkConfig(config)) {
     throw new Error(`${file} must export a \`config\` created with defineBenchmarkConfig (with participants).`);
   }
-
-  if (command === 'create-run') {
-    const { runId, dashboardUrl } = await createRunOnly(config as BenchmarkConfig<BaseParticipant>, rest);
-    console.error(`Run created: ${runId}\nView at: ${dashboardUrl}`);
-    // stdout carries the id alone so callers can capture it: RUN_ID=$(bench create-run ...)
-    console.log(runId);
-    return;
-  }
-
   if (typeof task !== 'function') {
     throw new Error(`${file} must export a \`task\` created with defineTask.`);
   }
 
-  await runBenchmark(config as BenchmarkConfig<BaseParticipant>, task as BenchmarkTask<BaseParticipant>, rest);
+  await runBenchmark(config as BenchmarkConfig<BaseParticipant>, task as BenchmarkTask<BaseParticipant>, flags);
 }
 
 /** Executable entry: runs the file and maps outcomes to process exit codes. */

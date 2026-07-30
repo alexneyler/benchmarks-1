@@ -49,10 +49,12 @@ describe('parseCliArgs', () => {
     expect(parseCliArgs(['--group-by=participant'])).toEqual({ groupBy: 'participant' });
   });
 
-  it('parses --slug and --name', () => {
-    expect(parseCliArgs(['--slug', 'sandbox-burst-local'])).toEqual({ slug: 'sandbox-burst-local' });
-    expect(parseCliArgs(['--slug=sandbox-tti-local'])).toEqual({ slug: 'sandbox-tti-local' });
+  it('parses --benchmark (and its --slug alias), --name and --kind', () => {
+    expect(parseCliArgs(['--benchmark', 'sandbox-burst-local'])).toEqual({ benchmark: 'sandbox-burst-local' });
+    expect(parseCliArgs(['--benchmark=sandbox-tti-local'])).toEqual({ benchmark: 'sandbox-tti-local' });
+    expect(parseCliArgs(['--slug', 'sandbox-burst-local'])).toEqual({ benchmark: 'sandbox-burst-local' });
     expect(parseCliArgs(['--name', 'Sandbox burst TTI'])).toEqual({ name: 'Sandbox burst TTI' });
+    expect(parseCliArgs(['--kind', 'sandbox'])).toEqual({ kind: 'sandbox' });
     expect(() => parseCliArgs(['--name', ' '])).toThrow('--name');
   });
 
@@ -62,8 +64,8 @@ describe('parseCliArgs', () => {
     expect(() => parseCliArgs(['--run-id', ''])).toThrow('--run-id');
   });
 
-  it('throws on a non-slug --slug', () => {
-    expect(() => parseCliArgs(['--slug', 'Sandbox TTI'])).toThrow('--slug');
+  it('throws on a non-slug --benchmark', () => {
+    expect(() => parseCliArgs(['--benchmark', 'Sandbox TTI'])).toThrow('--benchmark');
     expect(() => parseCliArgs(['--slug', ''])).toThrow('--slug');
   });
 
@@ -170,15 +172,16 @@ describe('runBenchmark', () => {
     process.env.E2B_API_KEY = 'x';
     process.env.MODAL_TOKEN = 'y';
     process.env.BENCHMARKS_PLATFORM_API_KEY = 'test-key';
-    calls = { upsertBenchmark: [], createRun: [], planWorkers: [], upsertParticipant: [], runWorker: [], taskData: [] };
+    calls = { upsertBenchmark: [], createRun: [], planWorkers: [], upsertParticipant: [], getRun: [], runWorker: [], taskData: [] };
     fakeClient = {
       upsertBenchmark: vi.fn(async (...a: any[]) => { calls.upsertBenchmark.push(a); return {}; }),
       createRun: vi.fn(async (...a: any[]) => { calls.createRun.push(a); return { run: { id: 'run-1' }, participants: [] }; }),
       planWorkers: vi.fn(async (...a: any[]) => { calls.planWorkers.push(a); return []; }),
       upsertParticipant: vi.fn(async (...a: any[]) => { calls.upsertParticipant.push(a); return {}; }),
+      getRun: vi.fn(async (slug: string, runId: string) => { calls.getRun.push([slug, runId]); return { id: runId, totalTasks: 3 }; }),
       runWorker: vi.fn(async (opts: any) => {
         calls.runWorker.push(opts);
-        const total = calls.createRun[0]?.[1]?.totalTasks ?? 1;
+        const total = calls.createRun[0]?.[1]?.totalTasks ?? calls.upsertParticipant[0]?.[3]?.totalTasks ?? 1;
         // The platform hands out globally-indexed task ranges; `taskRangeStart`
         // lets a test exercise a worker whose range doesn't start at 0.
         const start = taskRangeStart;
@@ -319,6 +322,23 @@ describe('runBenchmark', () => {
     expect(calls.runWorker[0]).toMatchObject({ runId: 'run-shared' });
     expect(outcome.runId).toBe('run-shared');
     expect(outcome.dashboardUrl).toBeUndefined();
+  });
+
+  it('takes its iteration count from the joined run, and rejects --iterations alongside --run-id', async () => {
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 'sandbox-tti-local',
+      benchmarkName: 'Sandbox TTI',
+      iterations: 1,
+      participants: [participants[0]],
+    };
+
+    const outcome = await runBenchmark(config, defineTask(async () => ({})), ['--run-id', 'run-shared']);
+    expect(outcome.config.iterations).toBe(3);
+    expect(outcome.participants[0].records).toHaveLength(3);
+
+    await expect(
+      runBenchmark(config, defineTask(async () => ({})), ['--run-id', 'run-shared', '--iterations', '5']),
+    ).rejects.toThrow('--iterations cannot be combined with --run-id');
   });
 
   it('throws NoAvailableParticipantsError, listing the skips, when no participant has its env vars set', async () => {
