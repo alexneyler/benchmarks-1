@@ -344,6 +344,26 @@ describe('runBenchmark', () => {
     ).rejects.toThrow('disagrees with run run-shared');
   });
 
+  it('does not rename a benchmark it was merely retargeted at', async () => {
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 'sandbox-tti-local',
+      benchmarkName: 'Sandbox TTI',
+      iterations: 1,
+      participants: [participants[0]],
+    };
+
+    await runBenchmark(config, defineTask(async () => ({})), ['--benchmark', 'sandbox-burst-local']);
+    expect(calls.upsertBenchmark).toEqual([]);
+
+    await runBenchmark(config, defineTask(async () => ({})), [
+      '--benchmark',
+      'sandbox-burst-local',
+      '--name',
+      'Sandbox burst TTI',
+    ]);
+    expect(calls.upsertBenchmark[0]).toEqual(['sandbox-burst-local', { name: 'Sandbox burst TTI' }]);
+  });
+
   it('brings its own iteration count to a participant-sized run', async () => {
     const config: BenchmarkConfig<typeof participants[number]> = {
       benchmarkSlug: 'sandbox-tti-local',

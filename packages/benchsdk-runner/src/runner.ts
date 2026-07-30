@@ -378,10 +378,15 @@ export async function runBenchmark<T extends BaseParticipant>(
     }
     console.log(`Joining run: ${runId}\n`);
   } else {
-    await client.upsertBenchmark(config.benchmarkSlug, {
-      name: config.benchmarkName,
-      ...(config.benchmarkKind ? { kind: config.benchmarkKind } : {}),
-    });
+    // Retargeted at a benchmark this file doesn't name, so its identity isn't
+    // ours to write: upserting would rename it to the file's own name. It has
+    // to exist already (`bench create benchmark`), and run creation says so.
+    if (!args.benchmark || args.benchmark === fileConfig.benchmarkSlug || args.name) {
+      await client.upsertBenchmark(config.benchmarkSlug, {
+        name: config.benchmarkName,
+        ...(config.benchmarkKind ? { kind: config.benchmarkKind } : {}),
+      });
+    }
     const { run, organizationSlug } = await client.createRun(config.benchmarkSlug, {
       name: `${config.benchmarkSlug} — ${totalTasks} iterations, concurrency ${resolved.concurrency}`,
       totalTasks,
