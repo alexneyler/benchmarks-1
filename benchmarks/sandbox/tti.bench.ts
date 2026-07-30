@@ -81,10 +81,12 @@ const MODES: Record<'sequential' | 'staggered' | 'burst', TtiModePreset> = {
 
 type TtiMode = keyof typeof MODES;
 
+/** Accepts both `--mode burst` and `--mode=burst`, as the runner's own flags do. */
 function parseMode(argv: string[]): TtiMode {
+  const inline = argv.find((a) => a.startsWith('--mode='));
   const idx = argv.indexOf('--mode');
-  const value = idx !== -1 && idx + 1 < argv.length ? argv[idx + 1] : 'sequential';
-  if (!(value in MODES)) {
+  const value = inline !== undefined ? inline.slice('--mode='.length) : idx !== -1 ? argv[idx + 1] : 'sequential';
+  if (value === undefined || !Object.hasOwn(MODES, value)) {
     console.error(`Invalid --mode "${value}". Valid modes: ${Object.keys(MODES).join(', ')}`);
     process.exit(1);
   }
