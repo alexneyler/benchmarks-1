@@ -9,11 +9,17 @@
  *   burst       --concurrency N: all slots open at once, so this launches that
  *               many real sandboxes simultaneously — raise N deliberately
  *   staggered   --concurrency N --stagger-delay-ms D: task i starts at i * D
- * Each shape reports under its own platform benchmark via `--slug`/`--name`.
+ * Each shape reports under its own platform benchmark via `--benchmark`.
  *
  *   bench run benchmarks/sandbox/tti.bench.ts --iterations 5 --provider e2b,modal
- *   bench run benchmarks/sandbox/tti.bench.ts --slug sandbox-burst-local --name 'Sandbox burst TTI (local)' --iterations 10 --concurrency 10
- *   bench run benchmarks/sandbox/tti.bench.ts --slug sandbox-staggered-local --name 'Sandbox staggered TTI (local)' --iterations 10 --concurrency 10 --stagger-delay-ms 200
+ *   bench run benchmarks/sandbox/tti.bench.ts --benchmark sandbox-burst-local --iterations 10 --concurrency 10
+ *   bench run benchmarks/sandbox/tti.bench.ts --benchmark sandbox-staggered-local --iterations 10 --concurrency 10 --stagger-delay-ms 200
+ *
+ * To rank providers against each other, open one run and have every provider
+ * join it (each still claims its own worker):
+ *
+ *   ID=$(bench create run --benchmark sandbox-burst-local --iterations 100)
+ *   bench run benchmarks/sandbox/tti.bench.ts --benchmark sandbox-burst-local --provider e2b --run-id "$ID"
  */
 import '../src/env.js';
 import path from 'node:path';
