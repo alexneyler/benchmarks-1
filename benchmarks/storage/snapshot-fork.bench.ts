@@ -1,8 +1,8 @@
 /**
  * Storage snapshot/fork benchmark: per-iteration seed -> snapshot -> fork ->
  * verify, per provider (concurrency 1 = sequential; each iteration creates real
- * snapshots/forks). Config lives here; orchestration is owned by @benchsdk/runner's
- * runBenchmark.
+ * snapshots/forks). Declarative — exports `config` + `task`; `bench run` owns
+ * the entrypoint and orchestration.
  *
  *   bench run benchmarks/storage/snapshot-fork.bench.ts
  *   bench run benchmarks/storage/snapshot-fork.bench.ts --dataset wide --iterations 5 --provider tigris

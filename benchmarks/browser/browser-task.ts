@@ -2,8 +2,7 @@
  * Shared browser-lifecycle workload for the browser benchmark. One iteration =
  * create a session, connect over CDP, navigate to example.com, then release
  * (always, even on failure). Orchestration (how many, how parallel) is owned by
- * @benchsdk/runner's runBenchmark — this file only describes what one iteration
- * does.
+ * @benchsdk/runner — this file only describes what one iteration does.
  */
 import { chromium } from 'playwright-core';
 import type { BenchmarkTask, TaskContext, TaskResult } from '@benchsdk/runner';

@@ -2,8 +2,7 @@
  * Shared storage upload/download workload for the storage benchmark. One
  * iteration = upload a buffer, download it, compute throughput, then delete
  * (best-effort cleanup). Orchestration (how many, how parallel) is owned by
- * @benchsdk/runner's runBenchmark — this file only describes what one iteration
- * does.
+ * @benchsdk/runner — this file only describes what one iteration does.
  */
 import type { BenchmarkTask, TaskContext, TaskResult } from '@benchsdk/runner';
 import { TaskError } from '@benchsdk/runner';

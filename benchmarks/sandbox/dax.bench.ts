@@ -1,11 +1,12 @@
 /**
  * Dax benchmark: runs the OpenCode build (scripts/dax-benchmark.sh) inside a
  * freshly created sandbox once per iteration and measures its build phases
- * (prepare / bun-download / bun-unpack / clone / install / typecheck). Config
- * lives here; platform orchestration is owned by @benchsdk/runner's runBenchmark.
- * The phase-parsing + resource-sizing logic is reused from ./dax.ts so the
- * legacy `results/sandbox-dax/` JSON shape is preserved verbatim via the
- * legacy-results adapter (TEMPORARY local-JSON bridge — see legacy-results).
+ * (prepare / bun-download / bun-unpack / clone / install / typecheck).
+ * Declarative — exports `config` + `task`; `bench run` owns the entrypoint and
+ * platform orchestration. The phase-parsing + resource-sizing logic is reused
+ * from ./dax.ts so the legacy `results/sandbox-dax/` JSON shape is preserved
+ * verbatim via the legacy-results adapter (TEMPORARY local-JSON bridge — see
+ * legacy-results).
  *
  * `groupBy: 'round'` is used so the task owns its own measured `latencyMs`
  * (the build's totalMs) and can attach pre-measured phase steps; the local
