@@ -45,6 +45,7 @@ import { LogBuffer } from './log-buffer.js';
 
 export interface CliArgs {
   slug?: string;
+  name?: string;
   iterations?: number;
   concurrency?: number;
   staggerDelayMs?: number;
@@ -103,6 +104,13 @@ export function parseCliArgs(argv: string[]): CliArgs {
           throw new Error(`--slug expects a lowercase slug (got "${value}")`);
         }
         args.slug = value;
+        i = nextIndex;
+        break;
+      }
+      case '--name': {
+        const { value, nextIndex } = readValue(arg, i);
+        if (value.trim() === '') throw new Error('--name expects a value');
+        args.name = value;
         i = nextIndex;
         break;
       }
@@ -228,7 +236,7 @@ function resolvePlatform(): { baseUrl: string; apiKey: string } {
 /**
  * Runs `config`'s `task` against `participants`. Selects participants by
  * `--provider` (if given), env-gates them, then drives them per the resolved
- * `groupBy`. `--slug` retargets the whole run at a different platform
+ * `groupBy`. `--slug`/`--name` retarget the whole run at a different platform
  * benchmark, so one entrypoint can report under several slugs.
  */
 export async function runBenchmark<T extends BaseParticipant>(
@@ -237,7 +245,11 @@ export async function runBenchmark<T extends BaseParticipant>(
   argv: string[] = [],
 ): Promise<BenchmarkRunOutcome> {
   const args = parseCliArgs(argv);
-  const config = args.slug ? { ...fileConfig, benchmarkSlug: args.slug } : fileConfig;
+  const config = {
+    ...fileConfig,
+    ...(args.slug ? { benchmarkSlug: args.slug } : {}),
+    ...(args.name ? { benchmarkName: args.name } : {}),
+  };
   const resolved = mergeConfig(config, args);
   const schedule = buildSchedule(config, resolved.iterations, task);
   const totalTasks = schedule.length;

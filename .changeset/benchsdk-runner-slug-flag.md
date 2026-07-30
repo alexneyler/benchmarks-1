@@ -2,4 +2,4 @@
 "@benchsdk/runner": minor
 ---
 
-Add a `--slug` CLI override for `benchmarkSlug`, so one `*.bench.ts` can report under several platform benchmarks (e.g. the sandbox TTI entrypoint running as sequential/staggered/burst).
+Add `--slug` and `--name` CLI overrides for `benchmarkSlug`/`benchmarkName`, so one `*.bench.ts` can report under several platform benchmarks (e.g. the sandbox TTI entrypoint reporting sequential/staggered/burst runs of the same workload).

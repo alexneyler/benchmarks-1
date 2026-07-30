@@ -150,7 +150,7 @@ export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
    * several benchmarks.
    */
   benchmarkSlug: string;
-  /** Human-readable name shown on the platform. */
+  /** Human-readable name shown on the platform. Overridable with `--name`. */
   benchmarkName: string;
   /** Optional platform benchmark kind (e.g. 'sandbox'). */
   benchmarkKind?: string;
