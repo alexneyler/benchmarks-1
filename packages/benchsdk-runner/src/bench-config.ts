@@ -144,7 +144,11 @@ export interface BenchmarkRunOutcome {
  * exports from the module and drives the run.
  */
 export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
-  /** Stable platform slug for this benchmark (e.g. 'sandbox-tti-local'). */
+  /**
+   * Stable platform slug for this benchmark (e.g. 'sandbox-tti-local').
+   * Overridable per run with `--slug`, so one entrypoint can report under
+   * several benchmarks.
+   */
   benchmarkSlug: string;
   /** Human-readable name shown on the platform. */
   benchmarkName: string;
