@@ -80,9 +80,6 @@ jobs:
           # needed — and prints the run id alone on stdout (diagnostics go to stderr).
           CREATE=(npx tsx packages/benchsdk-runner/dist/bin.js create-run benchmarks/sandbox/tti.bench.ts)
           COMMON=(--iterations ${{ github.event.inputs.iterations || (github.event_name == 'push' && '10') || '100' }})
-          if [ -n "${{ github.event.inputs.provider }}" ]; then
-            COMMON+=(--provider "${{ github.event.inputs.provider }}")
-          fi
           CONCURRENCY=${{ github.event.inputs.concurrency || (github.event_name == 'push' && '10') || '100' }}
           MODE="${{ github.event.inputs.mode }}"
 
