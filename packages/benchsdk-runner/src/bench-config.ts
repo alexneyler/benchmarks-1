@@ -1,12 +1,14 @@
 /**
  * A `*.bench.ts` file is the composition of a **config** and a **task**:
  *
- *   export const config = defineBenchmarkConfig({ benchmarkSlug, iterations, ... });
- *   export default defineTask(async (ctx) => { await ctx.step('work', () => ...); });
+ *   export const config = defineBenchmarkConfig({ benchmarkSlug, participants, ... });
+ *   export const task = defineTask(async (ctx) => { await ctx.step('work', () => ...); });
  *
- * `defineBenchmarkConfig` holds the orchestration knobs; `defineTask` holds the
- * workload. The runner (see runner.ts) turns that pair into platform runs.
- * There is no "mode": all orchestration shapes emerge from the knobs.
+ * `defineBenchmarkConfig` holds the orchestration knobs (including the
+ * participants and an optional `onComplete` hook); `defineTask` holds the
+ * workload. The `bench run <file>` binary imports the module, reads those two
+ * exports, and drives the run. There is no "mode": all orchestration shapes
+ * emerge from the knobs.
  *
  *   iterations       total tasks to run (default 1)
  *   concurrency      max tasks in flight at once — 1 = sequential, N = burst (default 1)
@@ -17,11 +19,12 @@
  *   burst       { iterations: N, concurrency: N }
  *   staggered   { iterations: N, concurrency: N, staggerDelayMs: 200 }
  *
- * A task is comprised of steps. The primary way to declare steps is `ctx.step`
- * inside a task function — it supports closures, conditionals and try/finally,
- * so values (a created sandbox, say) flow naturally between steps. For simple
- * benchmarks whose steps are independent, `defineTask` also accepts a
- * `defineStep[]` array (see defineTask below).
+ * A task is comprised of steps, declared via `ctx.step` inside a task function
+ * — it supports closures, conditionals and try/finally, so values (a created
+ * sandbox, say) flow naturally between steps. A task that declares no steps is
+ * recorded as a single implicit `task` step. Measurements reach the platform
+ * via `ctx.measure(...)`; step return values are control flow and never
+ * recorded.
  */
 import type {
   BaseParticipant,
@@ -79,10 +82,17 @@ export interface TaskContext<T extends BaseParticipant = BaseParticipant> {
   /** Current phase name, when the benchmark declares `phases`. */
   phase?: string;
   /**
-   * Runs `fn` as a named platform step and mirrors its outcome into the
-   * per-worker log buffer. Mirrors `@benchsdk/client`'s `RunWorkerContext.step`.
+   * Runs `fn` as a named platform step. Mirrors `@benchsdk/client`'s
+   * `RunWorkerContext.step`; supports closures and try/finally.
    */
   step<R>(name: string, fn: () => Promise<R> | R, options?: DefineStepOptions): Promise<R>;
+  /**
+   * Attaches a JSON measurement to the platform. Inside a `step` it lands on
+   * that step's data; at task top-level it lands on the task record's data.
+   */
+  measure(data: JsonObject): void;
+  /** Appends a line to the worker log, uploaded as an artifact when the worker finishes. */
+  log(message: string, meta?: JsonObject): void;
 }
 
 export type BenchmarkTask<T extends BaseParticipant = BaseParticipant> = (
@@ -101,10 +111,37 @@ export interface Phase {
   iterations: number;
 }
 
+/** One participant's collected task records from a run. */
+export interface ParticipantRecords {
+  participant: string;
+  records: TaskResultRecord[];
+}
+
+/** The orchestration knobs a run actually used, after CLI overrides. */
+export interface ResolvedRunConfig {
+  iterations: number;
+  concurrency: number;
+  staggerDelayMs: number;
+  groupBy: GroupBy;
+  providers?: string[];
+}
+
 /**
- * Orchestration config for a benchmark. Holds identity + the knobs only — the
- * workload lives in a separate `defineTask` (passed to `runBenchmark`), so the
- * same config shape works for both local runs and `bench deploy`.
+ * Result of a benchmark run, passed to `config.onComplete`. Exposes the raw
+ * per-participant records so completion hooks can write legacy local results.
+ */
+export interface BenchmarkRunOutcome {
+  runId: string;
+  dashboardUrl: string;
+  participants: ParticipantRecords[];
+  config: ResolvedRunConfig;
+}
+
+/**
+ * Orchestration config for a benchmark. Holds identity, the knobs, the
+ * participants, and the optional completion hook — the workload lives in a
+ * separate `defineTask`. `bench run <file>` reads the `config` and `task`
+ * exports from the module and drives the run.
  */
 export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
   /** Stable platform slug for this benchmark (e.g. 'sandbox-tti-local'). */
@@ -139,11 +176,14 @@ export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
    * run all env-available participants. `--provider` always overrides this.
    */
   defaultProviders?: string[];
+  /** The participants this benchmark can run against. `--provider` selects a subset by name. */
+  participants: T[];
   /**
-   * Optional per-record logger, called as each task result finalizes. When
-   * omitted the runner prints a generic success/failure line.
+   * Run-level completion hook, called once with the full outcome after every
+   * participant finishes. Use it for aggregate output (legacy JSON/SVG
+   * writers). This is the run-level counterpart to per-step `ctx.measure`.
    */
-  onResult?: (record: TaskResultRecord, meta: { iterations: number }) => void;
+  onComplete?: (outcome: BenchmarkRunOutcome) => void | Promise<void>;
 }
 
 function assertPositiveInt(value: number | undefined, field: string): void {
@@ -193,110 +233,22 @@ export function defineBenchmarkConfig<T extends BaseParticipant = BaseParticipan
   return config;
 }
 
-/** Shared mutable state threaded across the steps of a single task run. */
-export type StepState = Record<string, unknown>;
-
-/** Context handed to each step of an array-form `defineTask`. */
-export interface StepContext<T extends BaseParticipant = BaseParticipant, S extends StepState = StepState> {
-  /** The participant this task is running for. */
-  participant: T;
-  /** Zero-based task ordinal within the schedule. */
-  taskIndex: number;
-  /** Current phase name, when the benchmark declares `phases`. */
-  phase?: string;
-  /** Per-run mutable bag for passing values between steps of the same task. */
-  state: S;
-}
-
-/** One named step of an array-form task. Build with {@link defineStep}. */
-export interface DefinedStep<T extends BaseParticipant = BaseParticipant, S extends StepState = StepState> {
-  name: string;
-  options?: DefineStepOptions;
-  fn: (ctx: StepContext<T, S>) => Promise<JsonObject | void> | JsonObject | void;
-}
-
 /**
- * A benchmark task, normalized to a single function the runner invokes once per
- * iteration. Produced by {@link defineTask} from either a task function or a
- * `defineStep[]` array.
- */
-export interface DefinedTask<T extends BaseParticipant = BaseParticipant> {
-  run: BenchmarkTask<T>;
-}
-
-/**
- * Declares one named step for the array form of {@link defineTask}. `fn` may
- * return a `JsonObject` to merge into the task's `data`, or nothing.
+ * Declares the workload for a benchmark: a function invoked once per iteration.
+ * Steps are named via `ctx.step`, which supports closures and try/finally so
+ * values flow naturally between steps.
  *
- *   defineStep('upload', () => { ... })
- *   defineStep('upload', { reportConcurrency: false }, () => { ... })
- */
-export function defineStep<T extends BaseParticipant = BaseParticipant, S extends StepState = StepState>(
-  name: string,
-  optionsOrFn: DefineStepOptions | DefinedStep<T, S>['fn'],
-  maybeFn?: DefinedStep<T, S>['fn'],
-): DefinedStep<T, S> {
-  if (name.trim() === '') {
-    throw new Error('Benchmark step name must be non-empty.');
-  }
-  const hasOptions = typeof optionsOrFn !== 'function';
-  const fn = hasOptions ? maybeFn : optionsOrFn;
-  if (!fn) {
-    throw new Error('Benchmark step function is required.');
-  }
-  return { name, options: hasOptions ? optionsOrFn : undefined, fn };
-}
-
-/**
- * Declares the workload for a benchmark. Two forms:
- *
- *   // function form (primary) — steps via `ctx.step`, closures/try-finally OK
- *   export default defineTask(async (ctx) => {
+ *   export const task = defineTask(async (ctx) => {
  *     const sandbox = await ctx.step('create', () => provider.create());
  *     try { await ctx.step('exec', () => sandbox.run('node -v')); }
  *     finally { await ctx.step('destroy', () => sandbox.destroy()); }
  *   });
- *
- *   // array form (sugar) — independent steps, values shared via `ctx.state`
- *   export default defineTask([
- *     defineStep('upload', () => s3.upload(file)),
- *   ]);
- *
- * The array form can't pass values between steps with closures — thread them
- * through the shared `state` bag. Anything with real data flow between steps
- * should use the function form.
  */
-export function defineTask<T extends BaseParticipant = BaseParticipant, S extends StepState = StepState>(
-  taskOrSteps: BenchmarkTask<T> | DefinedStep<T, S>[],
-): DefinedTask<T> {
-  if (typeof taskOrSteps === 'function') {
-    return { run: taskOrSteps };
+export function defineTask<T extends BaseParticipant = BaseParticipant>(
+  task: BenchmarkTask<T>,
+): BenchmarkTask<T> {
+  if (typeof task !== 'function') {
+    throw new Error('defineTask requires a task function.');
   }
-  const steps = taskOrSteps;
-  if (!Array.isArray(steps) || steps.length === 0) {
-    throw new Error('defineTask requires a task function or a non-empty step array.');
-  }
-  const names = new Set<string>();
-  for (const step of steps) {
-    if (names.has(step.name)) {
-      throw new Error(`Benchmark task step names must be unique. Duplicate step: "${step.name}".`);
-    }
-    names.add(step.name);
-  }
-  const run: BenchmarkTask<T> = async (ctx) => {
-    const state = {} as S;
-    let data: JsonObject | undefined;
-    for (const step of steps) {
-      const stepData = await ctx.step(
-        step.name,
-        () => step.fn({ participant: ctx.participant, taskIndex: ctx.taskIndex, phase: ctx.phase, state }),
-        step.options,
-      );
-      if (stepData && typeof stepData === 'object') {
-        data = { ...(data ?? {}), ...stepData };
-      }
-    }
-    return data ? { data } : undefined;
-  };
-  return { run };
+  return task;
 }

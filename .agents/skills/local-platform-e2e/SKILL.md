@@ -133,20 +133,21 @@ Write a throwaway bench inside the repo (untracked, e.g. `e2e-local/local.bench.
 so pnpm workspace resolution finds `@benchsdk/runner`, with a fake participant:
 
 ```ts
-import { defineBenchmarkConfig, defineTask, runBenchmark } from '@benchsdk/runner';
-const config = defineBenchmarkConfig({
+import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';
+export const config = defineBenchmarkConfig({
   benchmarkSlug: 'e2e-local', benchmarkName: 'E2E', iterations: 4, concurrency: 1,
+  participants: [{ name: 'local', requiredEnvVars: [] }],
 });
-const task = defineTask(async (ctx) => {
-  await ctx.step('create', () => new Promise(r => setTimeout(r, 50)));
+export const task = defineTask(async (ctx) => {
+  await ctx.step('create', () => new Promise((r) => setTimeout(r, 50)));
+  ctx.measure({ ok: true });
 });
-runBenchmark(config, task, [{ name: 'local', requiredEnvVars: [] } as any], process.argv.slice(2));
 ```
 
-Run it:
+Run it via the `bench run` CLI (under tsx so the `.bench.ts` module loads without a build):
 ```bash
 BENCHMARKS_PLATFORM_URL=http://localhost:3000 BENCHMARKS_PLATFORM_API_KEY=<org bp_ key> \
-  npx tsx e2e-local/local.bench.ts --iterations 4 --concurrency 2
+  npx tsx packages/benchsdk-runner/dist/bin.js run e2e-local/local.bench.ts --iterations 4 --concurrency 2
 ```
 `BENCHMARKS_PLATFORM_URL` is the **root** URL (the runner appends `/api/v1`).
 

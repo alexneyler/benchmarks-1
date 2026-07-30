@@ -1,23 +1,22 @@
 /**
  * Storage upload/download benchmark: `iterations` upload→download→delete cycles
- * per provider (concurrency 1 = sequential). Config lives here; all
- * orchestration is owned by @benchsdk/runner's runBenchmark.
+ * per provider (concurrency 1 = sequential). Declarative — exports `config` +
+ * `task`; `bench run` owns the entrypoint. The custom `--file-size` flag is
+ * scanned from argv here (the runner ignores flags it doesn't know).
  *
- * Run directly:
- *   tsx benchmarks/storage/storage.bench.ts
- *   tsx benchmarks/storage/storage.bench.ts --file-size 10MB --iterations 5 --provider aws-s3
+ *   bench run benchmarks/storage/storage.bench.ts
+ *   bench run benchmarks/storage/storage.bench.ts --file-size 10MB --iterations 5 --provider aws-s3
  */
 import '../src/env.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import crypto from 'node:crypto';
-import { defineBenchmarkConfig, defineTask, runBenchmark } from '@benchsdk/runner';
+import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';
 import { storageProviders } from './providers.js';
 import { makeStorageTask } from './storage-task.js';
 import { writeStorageLegacyResults } from './legacy-results.js';
 import { FILE_SIZE_BYTES } from './types.js';
 import type { StorageFileSize } from './types.js';
-import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -45,19 +44,13 @@ export const config = defineBenchmarkConfig({
   benchmarkKind: 'storage',
   iterations: 2,
   concurrency: 1,
+  participants: storageProviders,
+  onComplete: (outcome) =>
+    writeStorageLegacyResults(outcome.participants, {
+      resultsDir: path.resolve(__dirname, `../../results/storage/${fileSizeLabel.toLowerCase()}`),
+      fileSizeBytes,
+      providers: storageProviders,
+    }),
 });
 
 export const task = defineTask(makeStorageTask(testData, fileSizeBytes));
-export default task;
-
-runBenchmark(config, task, storageProviders, process.argv.slice(2))
-  .then(async (outcome) => {
-    const resultsDir = path.resolve(__dirname, `../../results/storage/${fileSizeLabel.toLowerCase()}`);
-    await writeStorageLegacyResults(outcome.participants, {
-      resultsDir,
-      fileSizeBytes,
-      providers: storageProviders,
-    });
-    process.exit(0);
-  })
-  .catch(exitOnBenchmarkError);

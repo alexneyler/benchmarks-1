@@ -10,8 +10,8 @@ This package talks to the platform-owned benchmark/run/participant/worker API. I
 npm install @benchsdk/client
 ```
 
-> Higher-level benchmark authoring (`defineBenchmarkConfig` / `defineTask` /
-> `defineStep` and the local orchestrator) lives in
+> Higher-level benchmark authoring (`defineBenchmarkConfig` / `defineTask` and
+> the local orchestrator) lives in
 > [`@benchsdk/runner`](../benchsdk-runner). This package is REST transport plus
 > the worker engine only.
 

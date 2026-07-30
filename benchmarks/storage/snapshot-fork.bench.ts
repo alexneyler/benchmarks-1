@@ -4,21 +4,19 @@
  * snapshots/forks). Config lives here; orchestration is owned by @benchsdk/runner's
  * runBenchmark.
  *
- * Run directly:
- *   tsx benchmarks/storage/snapshot-fork.bench.ts
- *   tsx benchmarks/storage/snapshot-fork.bench.ts --dataset wide --iterations 5 --provider tigris
+ *   bench run benchmarks/storage/snapshot-fork.bench.ts
+ *   bench run benchmarks/storage/snapshot-fork.bench.ts --dataset wide --iterations 5 --provider tigris
  */
 import '../src/env.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineBenchmarkConfig, defineTask, runBenchmark } from '@benchsdk/runner';
+import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';
 import { storageProviders } from './providers.js';
 import { makeSnapshotForkTask } from './snapshot-fork-task.js';
 import { writeSnapshotForkLegacyResults } from './snapshot-fork-legacy-results.js';
 import { DATASET_PRESETS } from './snapshot-fork-types.js';
 import type { DatasetPreset } from './snapshot-fork-types.js';
 import type { StorageProviderConfig } from './types.js';
-import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -52,15 +50,14 @@ export const config = defineBenchmarkConfig({
   benchmarkKind: 'storage',
   iterations: 2,
   concurrency: 1,
+  participants,
+  onComplete: (outcome) =>
+    writeSnapshotForkLegacyResults(outcome.participants, {
+      resultsDir: path.resolve(__dirname, `../../results/snapshot-fork/${dataset}`),
+      dataset,
+      spec,
+      providers: participants,
+    }),
 });
 
 export const task = defineTask(makeSnapshotForkTask(dataset, spec));
-export default task;
-
-runBenchmark(config, task, participants, process.argv.slice(2))
-  .then(async (outcome) => {
-    const resultsDir = path.resolve(__dirname, `../../results/snapshot-fork/${dataset}`);
-    await writeSnapshotForkLegacyResults(outcome.participants, { resultsDir, dataset, spec, providers: participants });
-    process.exit(0);
-  })
-  .catch(exitOnBenchmarkError);

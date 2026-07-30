@@ -522,6 +522,15 @@ export interface RunWorkerContext {
   assignment: BenchmarkAssignment;
   taskIndex: number;
   step<T>(name: string, fn: () => Promise<T> | T, options?: DefineStepOptions): Promise<T>;
+  /**
+   * Attaches a JSON measurement to the platform. Called inside a `step`, it
+   * lands on that step's `data`; called at task top-level, on the task record's
+   * `data`. Repeated calls merge (shallow). Use this for anything you want on
+   * the platform — step return values are control flow and are never recorded.
+   */
+  measure(data: JsonObject): void;
+  /** Appends a line to the worker log, uploaded as an artifact when the worker finishes. */
+  log(message: string, meta?: JsonObject): void;
 }
 
 export interface WorkerFinishContext {
@@ -548,7 +557,7 @@ export interface DefineStepOptions {
 /**
  * The unit of work a worker runs, once per task index. Steps are declared
  * imperatively via `context.step(...)`; this is the sole task shape the worker
- * engine accepts. Higher-level authoring (defineTask/defineStep) lives in
+ * engine accepts. Higher-level authoring (`defineTask`) lives in
  * `@benchsdk/runner`, which compiles down to a function of this shape.
  */
 export type TaskFunction = (context: RunWorkerContext) => Promise<JsonObject | void> | JsonObject | void;

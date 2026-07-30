@@ -1,20 +1,21 @@
 /**
  * Sequential TTI benchmark: `iterations` sandboxes created one at a time
- * (concurrency 1) per provider, each measuring time-to-interactive. Config
- * lives here; all orchestration is owned by @benchsdk/runner's runBenchmark.
+ * (concurrency 1) per provider, each measuring time-to-interactive. This file
+ * is declarative — it exports a `config` and a `task`; the CLI (`bench run`)
+ * owns the entrypoint and CLI flags override the config knobs.
  *
- * Run directly:
- *   tsx benchmarks/sandbox/sequential.bench.ts
- *   tsx benchmarks/sandbox/sequential.bench.ts --iterations 5 --provider e2b,modal
+ *   bench run benchmarks/sandbox/sequential.bench.ts
+ *   bench run benchmarks/sandbox/sequential.bench.ts --iterations 5 --provider e2b,modal
  */
 import '../src/env.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineBenchmarkConfig, defineTask, runBenchmark } from '@benchsdk/runner';
+import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';
 import { providers } from './providers.js';
-import { ttiTask, logTti } from './tti-task.js';
+import { ttiTask } from './tti-task.js';
 import { writeSandboxLegacyResults } from './legacy-results.js';
-import { exitOnBenchmarkError } from '../src/util/bench-exit.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'sandbox-tti-local',
@@ -22,18 +23,11 @@ export const config = defineBenchmarkConfig({
   benchmarkKind: 'sandbox',
   iterations: 2,
   concurrency: 1,
-  onResult: logTti,
+  participants: providers,
+  onComplete: (outcome) =>
+    writeSandboxLegacyResults(outcome.participants, {
+      resultsDir: path.resolve(__dirname, '../../results/sequential_tti'),
+    }),
 });
 
 export const task = defineTask(ttiTask);
-export default task;
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-runBenchmark(config, task, providers, process.argv.slice(2))
-  .then(async (outcome) => {
-    const resultsDir = path.resolve(__dirname, '../../results/sequential_tti');
-    await writeSandboxLegacyResults(outcome.participants, { resultsDir });
-    process.exit(0);
-  })
-  .catch(exitOnBenchmarkError);

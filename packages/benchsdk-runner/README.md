@@ -1,13 +1,12 @@
 # @benchsdk/runner
 
-Benchmark runner framework for building self-contained benchmark scripts that report to the benchmarks platform via [`@benchsdk/client`](../benchsdk).
+Benchmark framework for authoring `*.bench.ts` files that report to the benchmarks platform via [`@benchsdk/client`](../benchsdk).
 
 ## What it provides
 
-- **`LogBuffer`** — Accumulates one text log per worker across a sandbox lifecycle's steps (create → exec → destroy) and uploads it once via `runWorker`'s `onFinish` hook as a `coordinator.log` artifact.
-- **`uploadWorkerLog`** — Uploads a `LogBuffer` as a `coordinator.log` artifact; never throws.
-- **`loggedStep`** — Runs a function through both the platform step reporter and the local log buffer, so failures show up in both places without duplicating try/catch at every call site.
-- **`defineBenchmarkConfig`** / **`defineTask`** / **`defineStep`** / **`runBenchmark`** — A `*.bench.ts` file composes a **config** (`defineBenchmarkConfig`, the orchestration knobs) and a **task** (`defineTask`, the workload), which `runBenchmark` turns into platform runs. There is no "mode": the orchestration shape (sequential / staggered / burst) emerges from the `iterations`, `concurrency`, and `staggerDelayMs` knobs, and `groupBy` (`'participant'` | `'round'`) selects the ordering across participants.
+- **`defineBenchmarkConfig`** / **`defineTask`** — A `*.bench.ts` file exports exactly two things: a **config** (`defineBenchmarkConfig`, the orchestration knobs + `participants` + an optional `onComplete` hook) and a **task** (`defineTask`, the workload for one iteration). There is no "mode": the orchestration shape (sequential / staggered / burst) emerges from the `iterations`, `concurrency`, and `staggerDelayMs` knobs, and `groupBy` (`'participant'` | `'round'`) selects the ordering across participants.
+- **`bench run <file>`** — The CLI entrypoint. It imports the module, reads its `config` and `task`, applies CLI overrides, and drives the run. Benchmark files declare; they never call the runner themselves.
+- **`TaskError`** / **`NoAvailableParticipantsError`** — Structured errors: throw `TaskError` from a task to attach a code / data / pre-measured steps; `bench run` treats `NoAvailableParticipantsError` (every participant env-gated out) as a clean no-op exit.
 
 ## Install
 
@@ -17,58 +16,59 @@ pnpm add @benchsdk/runner @benchsdk/client
 
 ## Usage
 
-A benchmark file exports a `config` and a `task`, and hands both to `runBenchmark`:
+A benchmark file exports a `config` and a `task` — nothing else:
 
 ```ts
-import { defineBenchmarkConfig, defineTask, runBenchmark } from '@benchsdk/runner';
+import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';
+import { providers } from './providers.js';
+import { writeLegacyResults } from './legacy-results.js';
 
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'sandbox-tti-local',
   benchmarkName: 'Sandbox TTI (local)',
   benchmarkKind: 'sandbox',
-  iterations: 100,   // total tasks per participant
-  concurrency: 1,    // 1 = sequential, N = burst
+  iterations: 100,       // total tasks per participant
+  concurrency: 1,        // 1 = sequential, N = burst, N + staggerDelayMs = staggered
+  participants: providers,
+  // Aggregate post-run work (the one thing a single task can't see) lives here.
+  onComplete: (outcome) => writeLegacyResults(outcome.participants),
 });
 
-// Primary form: named steps via `ctx.step`, so values flow between steps with
-// closures and cleanup runs in a `finally`.
-export const task = defineTask(async ({ participant, step }) => {
+export const task = defineTask(async ({ participant, step, measure, log }) => {
+  log(`creating sandbox on ${participant.name}`);
+  // Named steps via `ctx.step`: values flow between steps with closures and
+  // cleanup runs in a `finally`. Each step is a first-class platform record
+  // with its own timing/status.
   const sandbox = await step('create', () => participant.createCompute().sandbox.create());
   try {
-    await step('exec.task', () => sandbox.runCommand('node -v'));
+    const t0 = performance.now();
+    await step('exec', () => sandbox.runCommand('node -v'));
+    measure({ ttiMs: performance.now() - t0 });   // metrics → the platform
   } finally {
     await step('destroy', () => sandbox.destroy());
   }
-  return { data: { ttiMs } };
 });
-
-// CLI flags (--iterations, --concurrency, --stagger-delay-ms, --group-by,
-// --provider a,b) override the config defaults.
-runBenchmark(config, task, participants, process.argv.slice(2));
 ```
 
-For simple benchmarks whose steps are independent, `defineTask` also accepts a
-`defineStep[]` array (values shared through `ctx.state`):
+Run it with the CLI (flags override the config knobs):
 
-```ts
-import { defineStep, defineTask } from '@benchsdk/runner';
-
-export const task = defineTask([
-  defineStep('upload', ({ state }) => { state.key = uploadFile(); }),
-  defineStep('download', ({ state }) => downloadFile(String(state.key))),
-]);
+```sh
+bench run benchmarks/sandbox/sandbox-tti.bench.ts --iterations 100 --concurrency 20 --provider e2b,modal
 ```
 
-`LogBuffer` / `loggedStep` / `uploadWorkerLog` accumulate one text log per worker and
-upload it once as a `coordinator.log` artifact:
+To load a TypeScript benchmark without a build step, run the CLI under a TS loader:
 
-```ts
-import { LogBuffer, loggedStep, uploadWorkerLog } from '@benchsdk/runner';
-
-const logBuffer = new LogBuffer();
-await loggedStep(ctx, logBuffer, 'create sandbox', async () => sandbox.create());
-await uploadWorkerLog(ctx, logBuffer, 'my-provider');
+```sh
+tsx node_modules/@benchsdk/runner/dist/bin.js run sandbox-tti.bench.ts
 ```
+
+### Context channels
+
+Inside a task the context exposes three separate channels:
+
+- **`step(name, fn, options?)`** — returns `fn`'s value to your code (thread live objects between steps); records the step's timing/status on the platform. Return values are never auto-recorded as data.
+- **`measure(data)`** — explicit metric channel. Called inside a `step()` it merges into that step's data; called at task top-level it merges into the task record. A task with no explicit steps is recorded as one implicit `'task'` step carrying its measurements.
+- **`log(message, meta?)`** — human-readable narration to the run timeline.
 
 ## License
 

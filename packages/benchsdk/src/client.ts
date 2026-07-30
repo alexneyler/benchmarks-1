@@ -92,6 +92,25 @@ function toJsonObject(value: unknown): JsonObject | undefined {
   return value as JsonObject;
 }
 
+/** Merges task-level measurements with a returned data payload; undefined when empty. */
+function mergeMeasures(measures: JsonObject, returned: JsonObject | undefined): JsonObject | undefined {
+  const merged = { ...measures, ...(returned ?? {}) };
+  return Object.keys(merged).length > 0 ? merged : undefined;
+}
+
+/** Synthesizes the single step that represents a task that declared no steps. */
+function implicitTaskStep(record: TaskResultRecord, measures: JsonObject): TaskStepRecord {
+  return {
+    name: 'task',
+    status: record.status === 'success' ? 'success' : 'error',
+    startedAt: record.startedAt,
+    completedAt: record.completedAt,
+    latencyMs: record.latencyMs,
+    errorCode: record.errorCode ?? null,
+    data: Object.keys(measures).length > 0 ? { ...measures } : undefined,
+  };
+}
+
 function validateTaskResults(input: SendTaskResultsInput): void {
   if (input.records.length > MAX_TASK_RESULT_RECORDS) {
     throw new Error(`Benchmark task result batches are limited to ${MAX_TASK_RESULT_RECORDS} records.`);
@@ -604,6 +623,10 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
       }, options.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS);
       resultFlush.unref?.();
 
+      // Accumulated across the worker's tasks via `ctx.log`, uploaded once as a
+      // worker log artifact when the worker finishes.
+      const workerLogLines: string[] = [];
+
       async function runFinishHook(status: 'success' | 'error'): Promise<void> {
         await options.onFinish?.({
           assignment: claimed,
@@ -619,6 +642,21 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
         });
       }
 
+      async function uploadWorkerLogArtifact(): Promise<void> {
+        if (workerLogLines.length === 0) return;
+        try {
+          await client.uploadWorkerArtifact(options.benchmarkSlug, options.runId, claimed.workerId, {
+            attemptId: claimed.attemptId,
+            kind: 'coordinator.log',
+            contentType: 'text/plain',
+            name: 'worker.log',
+            body: workerLogLines.join('\n') + '\n',
+          });
+        } catch {
+          // Log upload is best-effort; never fail the run over it.
+        }
+      }
+
       try {
         await sendHeartbeat().catch(() => {});
 
@@ -632,6 +670,23 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
             startedAt: startedAtDate.toISOString(),
           };
           const steps: TaskStepRecord[] = [];
+          const taskMeasures: JsonObject = {};
+          // The step a `measure(...)` call currently attributes to. Set while a
+          // step's fn runs; null at task top-level (measures go on the record).
+          let activeStep: TaskStepRecord | null = null;
+
+          function measure(data: JsonObject): void {
+            if (activeStep) {
+              activeStep.data = { ...(activeStep.data ?? {}), ...data };
+            } else {
+              Object.assign(taskMeasures, data);
+            }
+          }
+
+          function log(message: string, meta?: JsonObject): void {
+            const suffix = meta && Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : '';
+            workerLogLines.push(`${new Date().toISOString()} [task ${taskIndex}] ${message}${suffix}`);
+          }
 
           async function step<T>(name: string, fn: () => Promise<T> | T, stepOptions: DefineStepOptions = {}): Promise<T> {
             const stepStartedAtMs = Date.now();
@@ -652,6 +707,8 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
               requestHeartbeat();
             }
 
+            const previousStep = activeStep;
+            activeStep = stepRecord;
             try {
               if (stepOptions.readiness === 'poll') {
                 await waitForStepReady(name, stepOptions);
@@ -662,6 +719,7 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
               stepRecord.errorCode = getErrorCode(error);
               throw error;
             } finally {
+              activeStep = previousStep;
               stepRecord.completedAt = new Date().toISOString();
               stepRecord.latencyMs = Date.now() - stepStartedAtMs;
               steps.push(stepRecord);
@@ -679,16 +737,21 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
           }
 
           try {
-            const data = await options.task({ assignment: claimed, taskIndex, step });
-            record.data = toJsonObject(data);
+            const data = await options.task({ assignment: claimed, taskIndex, step, measure, log });
+            record.data = mergeMeasures(taskMeasures, toJsonObject(data));
           } catch (error) {
             record.status = 'error';
             record.errorCode = getErrorCode(error);
-            record.data = { errorMessage: error instanceof Error ? error.message : String(error) };
+            record.data = mergeMeasures(taskMeasures, { errorMessage: error instanceof Error ? error.message : String(error) });
           } finally {
             record.completedAt = new Date().toISOString();
             record.latencyMs = Date.now() - startedAtMs;
-            record.steps = steps.length > 0 ? steps : undefined;
+            // A task with no explicit steps is recorded as a single implicit
+            // 'task' step, so every task contributes at least one step row.
+            if (steps.length === 0) {
+              steps.push(implicitTaskStep(record, taskMeasures));
+            }
+            record.steps = steps;
             doneCount += 1;
             inFlightCount = Math.max(0, inFlightCount - 1);
             if (record.status !== 'success') errorCount += 1;
@@ -722,6 +785,7 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
         await client.failWorker(options.benchmarkSlug, options.runId, claimed.workerId, claimed.attemptId, error).catch(() => {});
         throw error;
       } finally {
+        await uploadWorkerLogArtifact();
         clearInterval(heartbeat);
         clearInterval(resultFlush);
       }

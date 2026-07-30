@@ -16,6 +16,9 @@
       "require": "./dist/index.cjs"
     }
   },
+  "bin": {
+    "bench": "./dist/bin.cjs"
+  },
   "files": [
     "dist",
     "README.md"
