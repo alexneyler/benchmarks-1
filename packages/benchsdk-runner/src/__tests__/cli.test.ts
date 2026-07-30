@@ -12,9 +12,6 @@ describe('runBenchmarkFile', () => {
 
   it('rejects `create run` with neither a file nor --benchmark', async () => {
     await expect(runBenchmarkFile(['create', 'run'])).rejects.toThrow(/--benchmark/);
-    await expect(runBenchmarkFile(['create', 'run', '--benchmark', 'sandbox-tti-local'])).rejects.toThrow(
-      /--iterations/,
-    );
   });
 
   it('rejects when the command is not `run`', async () => {

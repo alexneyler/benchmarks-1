@@ -29,6 +29,8 @@ export interface BenchmarkRun {
   name?: string | null;
   status: BenchmarkRunStatus | string;
   totalTasks: number;
+  /** The run declared no size: `totalTasks` is the sum of what its participants declare. */
+  participantSized?: boolean;
   workerCount: number;
   config?: JsonObject;
   createdAt?: string;
@@ -116,8 +118,9 @@ export interface UpdateBenchmarkInput {
 
 export interface CreateRunInput {
   name?: string;
-  totalTasks: number;
-  workerCount: number;
+  /** Omit to open a participant-sized run: each participant declares its own size when it registers. */
+  totalTasks?: number;
+  workerCount?: number;
   participants?: string[];
   config?: JsonObject;
 }

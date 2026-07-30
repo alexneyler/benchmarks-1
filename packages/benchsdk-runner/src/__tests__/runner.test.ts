@@ -178,7 +178,10 @@ describe('runBenchmark', () => {
       createRun: vi.fn(async (...a: any[]) => { calls.createRun.push(a); return { run: { id: 'run-1' }, participants: [] }; }),
       planWorkers: vi.fn(async (...a: any[]) => { calls.planWorkers.push(a); return []; }),
       upsertParticipant: vi.fn(async (...a: any[]) => { calls.upsertParticipant.push(a); return {}; }),
-      getRun: vi.fn(async (slug: string, runId: string) => { calls.getRun.push([slug, runId]); return { id: runId, totalTasks: 3 }; }),
+      getRun: vi.fn(async (slug: string, runId: string) => {
+        calls.getRun.push([slug, runId]);
+        return { id: runId, totalTasks: 3, participantSized: runId === 'run-open' };
+      }),
       runWorker: vi.fn(async (opts: any) => {
         calls.runWorker.push(opts);
         const total = calls.createRun[0]?.[1]?.totalTasks ?? calls.upsertParticipant[0]?.[3]?.totalTasks ?? 1;
@@ -324,7 +327,7 @@ describe('runBenchmark', () => {
     expect(outcome.dashboardUrl).toBeUndefined();
   });
 
-  it('takes its iteration count from the joined run, and rejects --iterations alongside --run-id', async () => {
+  it('takes its iteration count from a sized run, and rejects an --iterations that disagrees', async () => {
     const config: BenchmarkConfig<typeof participants[number]> = {
       benchmarkSlug: 'sandbox-tti-local',
       benchmarkName: 'Sandbox TTI',
@@ -338,7 +341,26 @@ describe('runBenchmark', () => {
 
     await expect(
       runBenchmark(config, defineTask(async () => ({})), ['--run-id', 'run-shared', '--iterations', '5']),
-    ).rejects.toThrow('--iterations cannot be combined with --run-id');
+    ).rejects.toThrow('disagrees with run run-shared');
+  });
+
+  it('brings its own iteration count to a participant-sized run', async () => {
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 'sandbox-tti-local',
+      benchmarkName: 'Sandbox TTI',
+      iterations: 1,
+      participants: [participants[0]],
+    };
+
+    const outcome = await runBenchmark(config, defineTask(async () => ({})), [
+      '--run-id',
+      'run-open',
+      '--iterations',
+      '4',
+    ]);
+
+    expect(outcome.config.iterations).toBe(4);
+    expect(calls.upsertParticipant[0][3]).toMatchObject({ totalTasks: 4 });
   });
 
   it('throws NoAvailableParticipantsError, listing the skips, when no participant has its env vars set', async () => {

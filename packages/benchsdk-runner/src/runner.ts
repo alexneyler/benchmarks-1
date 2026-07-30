@@ -300,14 +300,17 @@ export async function createBenchmark(slug: string, options: { name?: string; ki
  */
 export async function createRun(options: {
   benchmarkSlug: string;
-  iterations: number;
+  iterations?: number;
 }): Promise<{ runId: string; dashboardUrl: string }> {
   const { baseUrl, apiKey } = resolvePlatform();
   const client = createBenchmarkClient({ baseUrl, apiKey });
+  // Without `iterations` the run is participant-sized: it takes its total from
+  // the participants that register, so opening a run needs nothing but a name.
   const { run, organizationSlug } = await client.createRun(options.benchmarkSlug, {
-    name: `${options.benchmarkSlug} — ${options.iterations} iterations`,
-    totalTasks: options.iterations,
-    workerCount: 1,
+    name: options.iterations
+      ? `${options.benchmarkSlug} — ${options.iterations} iterations`
+      : options.benchmarkSlug,
+    ...(options.iterations ? { totalTasks: options.iterations, workerCount: 1 } : {}),
   });
   return { runId: run.id, dashboardUrl: dashboardUrlFor(baseUrl, organizationSlug, options.benchmarkSlug, run.id) };
 }
@@ -326,9 +329,6 @@ export async function runBenchmark<T extends BaseParticipant>(
   argv: string[] = [],
 ): Promise<BenchmarkRunOutcome> {
   const args = parseCliArgs(argv);
-  if (args.runId && args.iterations !== undefined) {
-    throw new Error('--iterations cannot be combined with --run-id: the run already owns its size.');
-  }
   const config = applyIdentityOverrides(fileConfig, args);
   let resolved = mergeConfig(config, args);
   const available = resolveParticipants(config, resolved);
@@ -336,16 +336,24 @@ export async function runBenchmark<T extends BaseParticipant>(
   const { baseUrl, apiKey } = resolvePlatform();
   const client = createBenchmarkClient({ baseUrl, apiKey });
 
-  // A joined run is the single source of truth for how many tasks there are, so
-  // sibling processes can't disagree about the size of the run they share.
+  // A run that declared a size is the single source of truth for it, so sibling
+  // processes can't disagree about the run they share. A participant-sized run
+  // declared none — each joiner brings its own iteration count.
   if (args.runId) {
     const run = await client.getRun(config.benchmarkSlug, args.runId);
-    if (config.phases?.length && run.totalTasks !== resolved.iterations) {
-      throw new Error(
-        `Run ${args.runId} has ${run.totalTasks} tasks but this benchmark's phases total ${resolved.iterations}.`,
-      );
+    if (!run.participantSized) {
+      if (args.iterations !== undefined && args.iterations !== run.totalTasks) {
+        throw new Error(
+          `--iterations ${args.iterations} disagrees with run ${args.runId}, which was created with ${run.totalTasks}.`,
+        );
+      }
+      if (config.phases?.length && run.totalTasks !== resolved.iterations) {
+        throw new Error(
+          `Run ${args.runId} has ${run.totalTasks} tasks but this benchmark's phases total ${resolved.iterations}.`,
+        );
+      }
+      resolved = { ...resolved, iterations: run.totalTasks };
     }
-    resolved = { ...resolved, iterations: run.totalTasks };
   }
 
   const schedule = buildSchedule(config, resolved.iterations, task);

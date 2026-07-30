@@ -73,8 +73,10 @@ async function create(argv: string[]): Promise<void> {
     const fileConfig = file ? await loadConfig(file) : undefined;
     const benchmarkSlug = args.benchmark ?? fileConfig?.benchmarkSlug;
     if (!benchmarkSlug) throw new Error('bench create run needs --benchmark <slug> (or a file to read it from).');
-    const iterations = fileConfig ? mergeConfig(fileConfig, args).iterations : args.iterations;
-    if (!iterations) throw new Error('bench create run needs --iterations N (or a file to read it from).');
+    // No size at all is fine: the run then takes its total from the
+    // participants that register, which is what lets one run be opened before
+    // anyone knows which providers will join or how much each will do.
+    const iterations = args.iterations ?? (fileConfig ? mergeConfig(fileConfig, args).iterations : undefined);
 
     const { runId, dashboardUrl } = await createRun({ benchmarkSlug, iterations });
     console.error(`Run created: ${runId}\nView at: ${dashboardUrl}`);

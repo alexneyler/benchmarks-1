@@ -79,12 +79,13 @@ jobs:
           # `bench create` only talks to the platform — no provider credentials —
           # and prints the run id alone on stdout (diagnostics go to stderr).
           CLI=(npx tsx packages/benchsdk-runner/dist/bin.js)
-          ITERATIONS=${{ github.event.inputs.iterations || (github.event_name == 'push' && '10') || '100' }}
           MODE="${{ github.event.inputs.mode }}"
 
+          # No size here: the run takes its total from the providers that
+          # register into it, so this job needs to know nothing about the matrix.
           open_run() {
             "${CLI[@]}" create benchmark "$1" --name "$2" --kind sandbox >/dev/null
-            "${CLI[@]}" create run --benchmark "$1" --iterations "$ITERATIONS"
+            "${CLI[@]}" create run --benchmark "$1"
           }
 
           if [ -z "$MODE" ] || [ "$MODE" = sequential ]; then
@@ -170,11 +171,12 @@ jobs:
           # One entrypoint, three launch shapes: the knobs come from the CLI and
           # --benchmark picks which platform benchmark each reports to. --run-id
           # joins the shared run for that mode (this job still registers itself
-          # and claims its own worker in it); the run owns the iteration count,
-          # so --iterations is only passed when we open our own run.
+          # and claims its own worker in it, bringing its own iteration count).
           BENCH=(npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/sandbox/tti.bench.ts)
-          COMMON=(--provider ${{ matrix.provider }})
-          ITERATIONS=${{ github.event.inputs.iterations || (github.event_name == 'push' && '10') || '100' }}
+          COMMON=(
+            --provider ${{ matrix.provider }}
+            --iterations ${{ github.event.inputs.iterations || (github.event_name == 'push' && '10') || '100' }}
+          )
           CONCURRENCY=${{ github.event.inputs.concurrency || (github.event_name == 'push' && '10') || '100' }}
           # Sequential is one-at-a-time by definition, so it never gets
           # --concurrency (the config default pins it to 1).
@@ -185,18 +187,12 @@ jobs:
             --benchmark sandbox-burst-local --name 'Sandbox burst TTI (local)')
           if [ -n "${{ needs.create-runs.outputs.sequential }}" ]; then
             SEQUENTIAL+=(--run-id "${{ needs.create-runs.outputs.sequential }}")
-          else
-            SEQUENTIAL+=(--iterations "$ITERATIONS")
           fi
           if [ -n "${{ needs.create-runs.outputs.staggered }}" ]; then
             STAGGERED+=(--run-id "${{ needs.create-runs.outputs.staggered }}")
-          else
-            STAGGERED+=(--iterations "$ITERATIONS")
           fi
           if [ -n "${{ needs.create-runs.outputs.burst }}" ]; then
             BURST+=(--run-id "${{ needs.create-runs.outputs.burst }}")
-          else
-            BURST+=(--iterations "$ITERATIONS")
           fi
           case "${{ github.event.inputs.mode }}" in
             sequential) "${SEQUENTIAL[@]}" ;;
