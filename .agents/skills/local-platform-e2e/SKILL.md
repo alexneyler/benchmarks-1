@@ -145,16 +145,14 @@ runBenchmark(config, task, [{ name: 'local', requiredEnvVars: [] } as any], proc
 
 Run it:
 ```bash
-BENCHMARKS_PLATFORM_URL=http://localhost:3000 COMPUTESDK_ADMIN_API_KEY=local-admin-key \
+BENCHMARKS_PLATFORM_URL=http://localhost:3000 BENCHMARKS_PLATFORM_API_KEY=<org bp_ key> \
   npx tsx e2e-local/local.bench.ts --iterations 4 --concurrency 2
 ```
 `BENCHMARKS_PLATFORM_URL` is the **root** URL (the runner appends `/api/v1`).
 
-The runner reads `COMPUTESDK_ADMIN_API_KEY ?? COMPUTESDK_API_KEY`, so to prove the master key
-is not needed, pass an org `bp_` key as `COMPUTESDK_API_KEY` and strip the admin vars from the
-child env (`env -u COMPUTESDK_ADMIN_API_KEY -u ADMIN_API_KEY …`). Note the "View at:" URL the
-CLI prints uses `BENCHMARKS_PLATFORM_ORG_SLUG` (default `computesdk`), **not** the org that owns
-the key, so with an org key the printed link may 404 — set that env var to the key's org slug.
+The runner authenticates with `BENCHMARKS_PLATFORM_API_KEY` (an org-scoped `bp_` key — mint one
+locally per the section below) and pulls the owning org slug from the server, so the "View at:"
+URL it prints always points at the run's real org (no `BENCHMARKS_PLATFORM_ORG_SLUG` needed).
 
 ## 6b. Probing tenant isolation
 
