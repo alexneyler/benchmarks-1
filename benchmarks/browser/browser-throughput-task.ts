@@ -11,7 +11,7 @@
  */
 import type { BenchmarkTask, TaskContext, TaskResult } from '@benchsdk/runner';
 import { TaskError } from '@benchsdk/runner';
-import type { JsonValue, TaskStepRecord } from '@benchsdk/client';
+import type { JsonValue } from '@benchsdk/client';
 import { navUrlForIteration, runThroughputIteration } from './throughput-benchmark.js';
 import type { ThroughputProviderConfig } from './throughput-types.js';
 
@@ -31,7 +31,10 @@ export function makeThroughputTask(): BenchmarkTask<ThroughputProviderConfig> {
     }
 
     const navigateUrl = navUrlForIteration(taskIndex);
-    const result = await runThroughputIteration(provider, timeout, sessionCreateOptions, navigateUrl);
+    // runThroughputIteration wraps the session lifecycle in real `ctx.step`
+    // calls (create/connect/actions/release) and reports throughput via
+    // `ctx.measure` inside the `actions` step — no fabricated step records.
+    const result = await runThroughputIteration(provider, timeout, sessionCreateOptions, navigateUrl, ctx);
 
     const data = {
       createMs: result.createMs,
@@ -52,20 +55,9 @@ export function makeThroughputTask(): BenchmarkTask<ThroughputProviderConfig> {
       throw new TaskError(result.error, { code: 'THROUGHPUT_ERROR', data });
     }
 
-    // Emit the lifecycle as pre-measured steps. actionsPerSecond/actionsCompleted
-    // are non-latency metrics (a throughput the action step's latency can't
-    // express), so they ride on the `actions` step's data → step_data_json.
-    const steps: TaskStepRecord[] = [
-      { name: 'create', status: 'success', latencyMs: result.createMs },
-      { name: 'connect', status: 'success', latencyMs: result.connectMs },
-      {
-        name: 'actions',
-        status: 'success',
-        latencyMs: result.taskMs,
-        data: { actionsPerSecond: result.actionsPerSecond, actionsCompleted: result.actionsCompleted },
-      },
-      { name: 'release', status: 'success', latencyMs: result.releaseMs },
-    ];
-    return { data, steps };
+    // Steps (create/connect/actions/release) and the throughput metric on
+    // `actions` are recorded by the framework via the `ctx.step`/`ctx.measure`
+    // calls inside runThroughputIteration; the task just returns task-level data.
+    return { data };
   };
 }
