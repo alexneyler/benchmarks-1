@@ -11,7 +11,7 @@
  */
 import type { BenchmarkTask, TaskContext, TaskResult } from '@benchsdk/runner';
 import { TaskError } from '@benchsdk/runner';
-import type { JsonValue } from '@benchsdk/client';
+import type { JsonValue, TaskStepRecord } from '@benchsdk/client';
 import { navUrlForIteration, runThroughputIteration } from './throughput-benchmark.js';
 import type { ThroughputProviderConfig } from './throughput-types.js';
 
@@ -51,6 +51,21 @@ export function makeThroughputTask(): BenchmarkTask<ThroughputProviderConfig> {
     if (result.error) {
       throw new TaskError(result.error, { code: 'THROUGHPUT_ERROR', data });
     }
-    return { data };
+
+    // Emit the lifecycle as pre-measured steps. actionsPerSecond/actionsCompleted
+    // are non-latency metrics (a throughput the action step's latency can't
+    // express), so they ride on the `actions` step's data → step_data_json.
+    const steps: TaskStepRecord[] = [
+      { name: 'create', status: 'success', latencyMs: result.createMs },
+      { name: 'connect', status: 'success', latencyMs: result.connectMs },
+      {
+        name: 'actions',
+        status: 'success',
+        latencyMs: result.taskMs,
+        data: { actionsPerSecond: result.actionsPerSecond, actionsCompleted: result.actionsCompleted },
+      },
+      { name: 'release', status: 'success', latencyMs: result.releaseMs },
+    ];
+    return { data, steps };
   };
 }
