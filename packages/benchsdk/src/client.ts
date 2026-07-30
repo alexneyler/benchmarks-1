@@ -249,7 +249,7 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
     },
 
     async createRun(benchmarkSlug, input) {
-      return request<{ run: BenchmarkRun; participants: BenchmarkParticipant[] }>(
+      return request<{ run: BenchmarkRun; participants: BenchmarkParticipant[]; organizationSlug: string }>(
         'POST',
         `/benchmarks/${encodePath(benchmarkSlug)}/runs`,
         input as unknown as JsonObject,

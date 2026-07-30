@@ -219,11 +219,18 @@ function defaultOnResult(record: TaskResultRecord, meta: { iterations: number })
   }
 }
 
-function resolvePlatform(): { baseUrl: string; orgSlug: string } {
+function resolvePlatform(): { baseUrl: string; apiKey: string } {
   const root = (process.env.BENCHMARKS_PLATFORM_URL || DEFAULT_PLATFORM_URL).replace(/\/+$/, '');
+  const apiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      'BENCHMARKS_PLATFORM_API_KEY is required. Create an org-scoped API key ' +
+        'in your organization settings on the platform and set it in your .env.'
+    );
+  }
   return {
     baseUrl: `${root}/api/v1`,
-    orgSlug: process.env.BENCHMARKS_PLATFORM_ORG_SLUG || 'computesdk',
+    apiKey,
   };
 }
 
@@ -253,8 +260,8 @@ export async function runBenchmark<T extends BaseParticipant>(
     throw new NoAvailableParticipantsError(skipped);
   }
 
-  const { baseUrl, orgSlug } = resolvePlatform();
-  const client = createBenchmarkClient({ baseUrl });
+  const { baseUrl, apiKey } = resolvePlatform();
+  const client = createBenchmarkClient({ baseUrl, apiKey });
 
   const concurrencyLabel = resolved.groupBy === 'round' ? 'n/a (round mode)' : String(resolved.concurrency);
   console.log(`${config.benchmarkName} (self-contained)`);
@@ -269,14 +276,14 @@ export async function runBenchmark<T extends BaseParticipant>(
     ...(config.benchmarkKind ? { kind: config.benchmarkKind } : {}),
   });
 
-  const { run } = await client.createRun(config.benchmarkSlug, {
+  const { run, organizationSlug } = await client.createRun(config.benchmarkSlug, {
     name: `${config.benchmarkSlug} — ${totalTasks} iterations, concurrency ${resolved.concurrency}`,
     totalTasks,
     workerCount: 1,
     participants: available.map((p) => p.name),
   });
 
-  const dashboardUrl = `${baseUrl.replace(/\/api\/v1\/?$/, '')}/${orgSlug}/benchmarks/${config.benchmarkSlug}/runs/${run.id}`;
+  const dashboardUrl = `${baseUrl.replace(/\/api\/v1\/?$/, '')}/${organizationSlug}/benchmarks/${config.benchmarkSlug}/runs/${run.id}`;
   console.log(`Run created: ${run.id}`);
   console.log(`View at: ${dashboardUrl}\n`);
 
@@ -284,7 +291,7 @@ export async function runBenchmark<T extends BaseParticipant>(
 
   let participantRecords: ParticipantRecords[];
   if (resolved.groupBy === 'round') {
-    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, run, baseUrl, onResult);
+    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, run, baseUrl, apiKey, onResult);
   } else {
     participantRecords = await runGroupedByParticipant(config, schedule, available, resolved, client, run, onResult);
   }
@@ -378,6 +385,7 @@ async function runGroupedByRound<T extends BaseParticipant>(
   client: BenchmarkClient,
   run: BenchmarkRun,
   baseUrl: string,
+  apiKey: string,
   onResult: OnResult,
 ): Promise<ParticipantRecords[]> {
   const reporters = new Map<string, BenchmarkReporter | null>();
@@ -400,6 +408,7 @@ async function runGroupedByRound<T extends BaseParticipant>(
     try {
       reporter = await BenchmarkReporter.claim({
         baseUrl,
+        apiKey,
         benchmarkSlug: config.benchmarkSlug,
         runId: run.id,
         participantSlug: participant.name,
