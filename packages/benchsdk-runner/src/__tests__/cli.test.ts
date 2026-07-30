@@ -6,12 +6,12 @@ const fixture = (name: string) => `src/__tests__/fixtures/${name}`;
 
 describe('runBenchmarkFile', () => {
   it('rejects when the command is not `run`', async () => {
-    await expect(runBenchmarkFile([])).rejects.toThrow(/Usage: bench run/);
-    await expect(runBenchmarkFile(['nope', fixture('good.bench.ts')])).rejects.toThrow(/Usage: bench run/);
+    await expect(runBenchmarkFile([])).rejects.toThrow(/Usage: bench <run|create-run>/);
+    await expect(runBenchmarkFile(['nope', fixture('good.bench.ts')])).rejects.toThrow(/Usage: bench <run|create-run>/);
   });
 
   it('rejects when no file is given', async () => {
-    await expect(runBenchmarkFile(['run'])).rejects.toThrow(/Usage: bench run/);
+    await expect(runBenchmarkFile(['run'])).rejects.toThrow(/Usage: bench <run|create-run>/);
   });
 
   it('rejects a module that does not export a config', async () => {

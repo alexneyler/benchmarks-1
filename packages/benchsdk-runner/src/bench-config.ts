@@ -132,7 +132,8 @@ export interface ResolvedRunConfig {
  */
 export interface BenchmarkRunOutcome {
   runId: string;
-  dashboardUrl: string;
+  /** Absent when the process joined a run via `--run-id`: the org slug the URL needs comes from creating the run. */
+  dashboardUrl?: string;
   participants: ParticipantRecords[];
   config: ResolvedRunConfig;
 }

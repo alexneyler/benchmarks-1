@@ -4,20 +4,25 @@
  * via the internal `runBenchmark`. CLI flags override the config's knobs, and
  * `config.onComplete` (if any) fires once the run finishes.
  *
+ * `bench create-run <file> [--flags]` opens a platform run for the same file
+ * without executing it and prints its id, so several `bench run --run-id <id>`
+ * processes — one per provider, in parallel — report into one comparable run
+ * while each still claims its own worker.
+ *
  * The executable wrapper lives in `bin.ts`; this module has no side effects so
  * it can be unit-tested by calling `runBenchmarkFile` directly.
  */
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { runBenchmark } from './runner.js';
+import { createRunOnly, runBenchmark } from './runner.js';
 import { NoAvailableParticipantsError } from './no-available-participants.js';
 import type { BaseParticipant } from '@benchsdk/client';
 import type { BenchmarkConfig, BenchmarkTask } from './bench-config.js';
 
 const USAGE =
-  'Usage: bench run <file.bench.ts> [--iterations N] [--concurrency N] ' +
+  'Usage: bench <run|create-run> <file.bench.ts> [--iterations N] [--concurrency N] ' +
   '[--stagger-delay-ms N] [--group-by participant|round] [--provider a,b] ' +
-  "[--slug my-benchmark] [--name 'My benchmark']";
+  "[--slug my-benchmark] [--name 'My benchmark'] [--run-id <id>] (run only)";
 
 /** A benchmark module is expected to export `config` and `task`. */
 interface BenchmarkModule {
@@ -39,7 +44,7 @@ function isBenchmarkConfig(value: unknown): value is BenchmarkConfig {
  */
 export async function runBenchmarkFile(argv: string[]): Promise<void> {
   const [command, file, ...rest] = argv;
-  if (command !== 'run' || !file) {
+  if ((command !== 'run' && command !== 'create-run') || !file) {
     throw new Error(USAGE);
   }
 
@@ -52,6 +57,15 @@ export async function runBenchmarkFile(argv: string[]): Promise<void> {
   if (!isBenchmarkConfig(config)) {
     throw new Error(`${file} must export a \`config\` created with defineBenchmarkConfig (with participants).`);
   }
+
+  if (command === 'create-run') {
+    const { runId, dashboardUrl } = await createRunOnly(config as BenchmarkConfig<BaseParticipant>, rest);
+    console.error(`Run created: ${runId}\nView at: ${dashboardUrl}`);
+    // stdout carries the id alone so callers can capture it: RUN_ID=$(bench create-run ...)
+    console.log(runId);
+    return;
+  }
+
   if (typeof task !== 'function') {
     throw new Error(`${file} must export a \`task\` created with defineTask.`);
   }

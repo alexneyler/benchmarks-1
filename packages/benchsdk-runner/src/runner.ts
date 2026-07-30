@@ -24,7 +24,6 @@ import { NoAvailableParticipantsError } from './no-available-participants.js';
 import type {
   BaseParticipant,
   BenchmarkClient,
-  BenchmarkRun,
   JsonObject,
   RunWorkerContext,
   TaskResultRecord,
@@ -46,6 +45,8 @@ import { LogBuffer } from './log-buffer.js';
 export interface CliArgs {
   slug?: string;
   name?: string;
+  /** Join this existing platform run instead of creating one (`--run-id`). */
+  runId?: string;
   iterations?: number;
   concurrency?: number;
   staggerDelayMs?: number;
@@ -111,6 +112,13 @@ export function parseCliArgs(argv: string[]): CliArgs {
         const { value, nextIndex } = readValue(arg, i);
         if (value.trim() === '') throw new Error('--name expects a value');
         args.name = value;
+        i = nextIndex;
+        break;
+      }
+      case '--run-id': {
+        const { value, nextIndex } = readValue(arg, i);
+        if (value.trim() === '') throw new Error('--run-id expects a value');
+        args.runId = value;
         i = nextIndex;
         break;
       }
@@ -233,11 +241,70 @@ function resolvePlatform(): { baseUrl: string; apiKey: string } {
   };
 }
 
+/** Applies the `--slug`/`--name` overrides, so one entrypoint can report under several benchmarks. */
+function applyIdentityOverrides<T extends BaseParticipant>(
+  fileConfig: BenchmarkConfig<T>,
+  args: CliArgs,
+): BenchmarkConfig<T> {
+  return {
+    ...fileConfig,
+    ...(args.slug ? { benchmarkSlug: args.slug } : {}),
+    ...(args.name ? { benchmarkName: args.name } : {}),
+  };
+}
+
+function dashboardUrlFor(baseUrl: string, organizationSlug: string, benchmarkSlug: string, runId: string): string {
+  return `${baseUrl.replace(/\/api\/v1\/?$/, '')}/${organizationSlug}/benchmarks/${benchmarkSlug}/runs/${runId}`;
+}
+
+/** The participants a run covers: `--provider` selection, minus any whose env vars are unset. */
+function resolveParticipants<T extends BaseParticipant>(config: BenchmarkConfig<T>, resolved: ResolvedRunConfig): T[] {
+  const { available, skipped } = filterParticipantsByEnv(selectParticipants(config.participants, resolved.providers));
+  for (const s of skipped) {
+    console.log(`Skipping ${s.name}: missing ${s.missing.join(', ')}`);
+  }
+  if (available.length === 0) throw new NoAvailableParticipantsError(skipped);
+  return available;
+}
+
+/**
+ * Creates a platform run up front without executing anything, so several
+ * `runBenchmark` processes can report into it via `--run-id` — one run holding
+ * every participant is what makes them rankable against each other, and the
+ * processes stay independent (a provider per CI job).
+ */
+export async function createRunOnly<T extends BaseParticipant>(
+  fileConfig: BenchmarkConfig<T>,
+  argv: string[] = [],
+): Promise<{ runId: string; dashboardUrl: string }> {
+  const args = parseCliArgs(argv);
+  const config = applyIdentityOverrides(fileConfig, args);
+  const resolved = mergeConfig(config, args);
+  const available = resolveParticipants(config, resolved);
+
+  const { baseUrl, apiKey } = resolvePlatform();
+  const client = createBenchmarkClient({ baseUrl, apiKey });
+  await client.upsertBenchmark(config.benchmarkSlug, {
+    name: config.benchmarkName,
+    ...(config.benchmarkKind ? { kind: config.benchmarkKind } : {}),
+  });
+  const { run, organizationSlug } = await client.createRun(config.benchmarkSlug, {
+    name: `${config.benchmarkSlug} — ${resolved.iterations} iterations, concurrency ${resolved.concurrency}`,
+    totalTasks: resolved.iterations,
+    workerCount: 1,
+    participants: available.map((p) => p.name),
+  });
+
+  return { runId: run.id, dashboardUrl: dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id) };
+}
+
 /**
  * Runs `config`'s `task` against `participants`. Selects participants by
  * `--provider` (if given), env-gates them, then drives them per the resolved
  * `groupBy`. `--slug`/`--name` retarget the whole run at a different platform
- * benchmark, so one entrypoint can report under several slugs.
+ * benchmark, so one entrypoint can report under several slugs; `--run-id`
+ * joins a run created by `bench create-run` instead of opening a new one, so
+ * sibling processes (e.g. one CI job per provider) land in the same run.
  */
 export async function runBenchmark<T extends BaseParticipant>(
   fileConfig: BenchmarkConfig<T>,
@@ -245,25 +312,12 @@ export async function runBenchmark<T extends BaseParticipant>(
   argv: string[] = [],
 ): Promise<BenchmarkRunOutcome> {
   const args = parseCliArgs(argv);
-  const config = {
-    ...fileConfig,
-    ...(args.slug ? { benchmarkSlug: args.slug } : {}),
-    ...(args.name ? { benchmarkName: args.name } : {}),
-  };
+  const config = applyIdentityOverrides(fileConfig, args);
   const resolved = mergeConfig(config, args);
   const schedule = buildSchedule(config, resolved.iterations, task);
   const totalTasks = schedule.length;
 
-  const selected = selectParticipants(config.participants, resolved.providers);
-  const { available, skipped } = filterParticipantsByEnv(selected);
-
-  for (const s of skipped) {
-    console.log(`Skipping ${s.name}: missing ${s.missing.join(', ')}`);
-  }
-
-  if (available.length === 0) {
-    throw new NoAvailableParticipantsError(skipped);
-  }
+  const available = resolveParticipants(config, resolved);
 
   const { baseUrl, apiKey } = resolvePlatform();
   const client = createBenchmarkClient({ baseUrl, apiKey });
@@ -276,34 +330,40 @@ export async function runBenchmark<T extends BaseParticipant>(
       `staggerDelayMs=${resolved.staggerDelayMs}, groupBy=${resolved.groupBy}\n`,
   );
 
-  await client.upsertBenchmark(config.benchmarkSlug, {
-    name: config.benchmarkName,
-    ...(config.benchmarkKind ? { kind: config.benchmarkKind } : {}),
-  });
-
-  const { run, organizationSlug } = await client.createRun(config.benchmarkSlug, {
-    name: `${config.benchmarkSlug} — ${totalTasks} iterations, concurrency ${resolved.concurrency}`,
-    totalTasks,
-    workerCount: 1,
-    participants: available.map((p) => p.name),
-  });
-
-  const dashboardUrl = `${baseUrl.replace(/\/api\/v1\/?$/, '')}/${organizationSlug}/benchmarks/${config.benchmarkSlug}/runs/${run.id}`;
-  console.log(`Run created: ${run.id}`);
-  console.log(`View at: ${dashboardUrl}\n`);
+  let runId: string;
+  let dashboardUrl: string | undefined;
+  if (args.runId) {
+    runId = args.runId;
+    console.log(`Joining run: ${runId}\n`);
+  } else {
+    await client.upsertBenchmark(config.benchmarkSlug, {
+      name: config.benchmarkName,
+      ...(config.benchmarkKind ? { kind: config.benchmarkKind } : {}),
+    });
+    const { run, organizationSlug } = await client.createRun(config.benchmarkSlug, {
+      name: `${config.benchmarkSlug} — ${totalTasks} iterations, concurrency ${resolved.concurrency}`,
+      totalTasks,
+      workerCount: 1,
+      participants: available.map((p) => p.name),
+    });
+    runId = run.id;
+    dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
+    console.log(`Run created: ${runId}`);
+    console.log(`View at: ${dashboardUrl}\n`);
+  }
 
   const onResult = defaultOnResult;
 
   let participantRecords: ParticipantRecords[];
   if (resolved.groupBy === 'round') {
-    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, run, baseUrl, apiKey, onResult);
+    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, runId, baseUrl, apiKey, onResult);
   } else {
-    participantRecords = await runGroupedByParticipant(config, schedule, available, resolved, client, run, onResult);
+    participantRecords = await runGroupedByParticipant(config, schedule, available, resolved, client, runId, onResult);
   }
 
-  console.log(`All done. View at: ${dashboardUrl}`);
+  console.log(dashboardUrl ? `All done. View at: ${dashboardUrl}` : `All done. Run: ${runId}`);
   const outcome: BenchmarkRunOutcome = {
-    runId: run.id,
+    runId,
     dashboardUrl,
     participants: participantRecords,
     config: resolved,
@@ -325,7 +385,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
   available: T[],
   resolved: ResolvedRunConfig,
   client: BenchmarkClient,
-  run: BenchmarkRun,
+  runId: string,
   onResult: OnResult,
 ): Promise<ParticipantRecords[]> {
   const participantRecords: ParticipantRecords[] = [];
@@ -338,11 +398,11 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
     // count can't inflate launch offsets: a task whose slot frees after its
     // scheduled launch time starts immediately instead of sleeping index*delay.
     let rampStartMs: number | undefined;
-    await client.planWorkers(config.benchmarkSlug, run.id, participant.name);
+    await client.planWorkers(config.benchmarkSlug, runId, participant.name);
 
     const result = await client.runWorker({
       benchmarkSlug: config.benchmarkSlug,
-      runId: run.id,
+      runId: runId,
       participantSlug: participant.name,
       concurrency: resolved.concurrency,
       task: async (ctx: RunWorkerContext) => {
@@ -372,7 +432,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
     });
 
     if (!result.assignment) {
-      console.error(`  No pending worker to claim for run ${run.id} — it may already be fully claimed.`);
+      console.error(`  No pending worker to claim for run ${runId} — it may already be fully claimed.`);
       participantRecords.push({ participant: participant.name, records: result.records ?? [] });
       continue;
     }
@@ -397,7 +457,7 @@ async function runGroupedByRound<T extends BaseParticipant>(
   available: T[],
   resolved: ResolvedRunConfig,
   client: BenchmarkClient,
-  run: BenchmarkRun,
+  runId: string,
   baseUrl: string,
   apiKey: string,
   onResult: OnResult,
@@ -414,7 +474,7 @@ async function runGroupedByRound<T extends BaseParticipant>(
     // reads `targetConcurrency` as tasks-per-worker, so it must be the full
     // schedule length — otherwise only one task is planned and every record
     // past the first falls outside the worker's task range.
-    await client.planWorkers(config.benchmarkSlug, run.id, participant.name, {
+    await client.planWorkers(config.benchmarkSlug, runId, participant.name, {
       workerCount: 1,
       targetConcurrency: schedule.length,
     });
@@ -424,7 +484,7 @@ async function runGroupedByRound<T extends BaseParticipant>(
         baseUrl,
         apiKey,
         benchmarkSlug: config.benchmarkSlug,
-        runId: run.id,
+        runId: runId,
         participantSlug: participant.name,
         processKind: 'process',
         processKey: process.env.HOSTNAME ?? 'local',

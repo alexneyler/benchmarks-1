@@ -56,6 +56,12 @@ describe('parseCliArgs', () => {
     expect(() => parseCliArgs(['--name', ' '])).toThrow('--name');
   });
 
+  it('parses --run-id', () => {
+    expect(parseCliArgs(['--run-id', 'run-1'])).toEqual({ runId: 'run-1' });
+    expect(parseCliArgs(['--run-id=run-1'])).toEqual({ runId: 'run-1' });
+    expect(() => parseCliArgs(['--run-id', ''])).toThrow('--run-id');
+  });
+
   it('throws on a non-slug --slug', () => {
     expect(() => parseCliArgs(['--slug', 'Sandbox TTI'])).toThrow('--slug');
     expect(() => parseCliArgs(['--slug', ''])).toThrow('--slug');
@@ -292,6 +298,25 @@ describe('runBenchmark', () => {
     expect(calls.upsertBenchmark[0][0]).toBe('sandbox-burst-local');
     expect(calls.upsertBenchmark[0][1]).toMatchObject({ name: 'Sandbox burst TTI' });
     expect(calls.createRun[0][0]).toBe('sandbox-burst-local');
+  });
+
+  it('joins the run named by --run-id instead of creating one', async () => {
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 'sandbox-tti-local',
+      benchmarkName: 'Sandbox TTI',
+      iterations: 1,
+      participants: [participants[0]],
+    };
+
+    const outcome = await runBenchmark(config, defineTask(async () => ({})), ['--run-id', 'run-shared']);
+
+    expect(calls.upsertBenchmark).toHaveLength(0);
+    expect(calls.createRun).toHaveLength(0);
+    // The participant still plans and claims its own worker, just inside the shared run.
+    expect(calls.planWorkers[0].slice(0, 3)).toEqual(['sandbox-tti-local', 'run-shared', 'e2b']);
+    expect(calls.runWorker[0]).toMatchObject({ runId: 'run-shared' });
+    expect(outcome.runId).toBe('run-shared');
+    expect(outcome.dashboardUrl).toBeUndefined();
   });
 
   it('throws NoAvailableParticipantsError, listing the skips, when no participant has its env vars set', async () => {
