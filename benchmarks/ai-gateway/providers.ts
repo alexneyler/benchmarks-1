@@ -123,7 +123,7 @@ export const providers: AIGatewayProviderConfig[] = [
     // (`/v1/messages/`, confirmed against its published OpenAPI spec at
     // concentrate.ai/docs/api-reference/openapi.json) alongside a separate
     // OpenAI-compatible `/v1/chat/completions/`. We use the Anthropic-shaped
-    // one so this sits in the same wireFormat group as Cloudflare/Pydantic/
+    // one so this sits in the same wireFormat group as Cloudflare/Pydantic/ 
     // anthropic-direct. `anthropic/` is this gateway's provider-prefix syntax
     // (same idea as llmgateway's pinning above) to route to Anthropic itself
     // rather than Azure or Bedrock, which Concentrate's own "model fortress"
