@@ -90,6 +90,9 @@
     "bench:cpu-node": "tsx benchmarks/src/run.ts --mode cpu-node",
     "generate-cpu-node-svg": "tsx benchmarks/sandbox/generate-cpu-node-svg.ts",
     "smoke:cpu-node": "tsx benchmarks/scripts/smoke.ts --suite=cpu-node",
+    "bench:memory": "tsx benchmarks/src/run.ts --mode memory",
+    "generate-memory-svg": "tsx benchmarks/sandbox/generate-memory-svg.ts",
+    "smoke:memory": "tsx benchmarks/scripts/smoke.ts --suite=memory",
     "test:benchmarks": "node --import tsx --test 'benchmarks/sandbox/__tests__/*.test.ts'"
   },
   "dependencies": {
