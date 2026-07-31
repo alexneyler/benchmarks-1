@@ -54,6 +54,7 @@ type GenericBenchmarkResult = {
 // Benchmark suite IDs for the standalone benchmarks
 const BENCHMARK_SUITE_IDS = [
   'cpu-node',
+  'disk',
 ];
 const BENCHMARK_DIR_NAMES = new Set(BENCHMARK_SUITE_IDS.map(id => id.replace(/-/g, '_')));
 
