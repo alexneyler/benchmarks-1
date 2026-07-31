@@ -1,4 +1,4 @@
-name: Disk Benchmark
+name: Sandbox Disk Benchmark
 
 on:
   push:
