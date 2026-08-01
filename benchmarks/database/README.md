@@ -30,5 +30,8 @@ DATABASE_POSTGRES_URL=postgresql://postgres:postgres@127.0.0.1:5433/benchmark \
 The payload defaults to 1 KiB and can be changed with `--payload-size`, for
 example `--payload-size 4096`.
 
+Results are written to `results/database/<YYYY-MM-DD>.json` and
+`results/database/latest.json`.
+
 To add a provider, add one entry to `providers.ts` and implement its
 `DatabaseClient` in a client module.

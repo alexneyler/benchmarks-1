@@ -49,8 +49,7 @@ export function recordsToDatabaseResults(
     return {
       provider: participant.participant,
       mode: 'database',
-      database: provider?.database,
-      table: process.env.DATABASE_BENCH_TABLE || 'benchmark_crud',
+      table: provider?.table ?? 'benchmark_crud',
       payloadBytes: opts.payloadBytes,
       iterations,
       summary,

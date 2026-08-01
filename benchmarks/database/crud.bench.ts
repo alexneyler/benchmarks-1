@@ -55,7 +55,7 @@ export const config = defineBenchmarkConfig({
 });
 
 export const task = defineTask<DatabaseProviderConfig>(async (ctx) => {
-  const { participant, step, measure } = ctx;
+  const { participant, step } = ctx;
   const timeout = participant.timeout ?? 30_000;
   let client = clients.get(participant.name);
   if (!client) {
@@ -75,13 +75,10 @@ export const task = defineTask<DatabaseProviderConfig>(async (ctx) => {
       client,
       {
         step: (name, fn) => step(name, () => withTimeout(Promise.resolve(fn()), timeout, `${name} timed out`)),
-        verify: (fn) => withTimeout(Promise.resolve(fn()), timeout, 'Delete verification timed out'),
       },
       payloadBytes,
     );
-    const data = { ...result };
-    measure(data);
-    return { data };
+    return { data: result };
   } catch (error) {
     const message = formatError(error);
     throw new TaskError(message, {

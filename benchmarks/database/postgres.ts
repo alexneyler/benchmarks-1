@@ -13,9 +13,9 @@ function quoteIdentifier(identifier: string): string {
 }
 
 export function createPostgresClient(
-  connectionString = process.env.DATABASE_POSTGRES_URL,
-  tableName = process.env.DATABASE_BENCH_TABLE || 'benchmark_crud',
+  options: { connectionString?: string; table: string },
 ): DatabaseClient {
+  const { connectionString, table: tableName } = options;
   if (!connectionString) {
     throw new Error('DATABASE_POSTGRES_URL is required');
   }
@@ -61,7 +61,8 @@ export function createPostgresClient(
     },
 
     async delete(id: string) {
-      await pool.query(`DELETE FROM ${table} WHERE id = $1`, [id]);
+      const result = await pool.query(`DELETE FROM ${table} WHERE id = $1`, [id]);
+      return result.rowCount ?? 0;
     },
 
     async close() {

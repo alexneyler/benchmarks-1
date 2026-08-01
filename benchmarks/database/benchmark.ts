@@ -2,11 +2,10 @@ import { writeFileSync } from 'node:fs';
 import os from 'node:os';
 import crypto from 'node:crypto';
 import { computeStats } from '../src/util/stats.js';
-import type { DatabaseClient, DatabaseDocument, DatabaseBenchmarkResult, DatabaseTimingResult } from './types.js';
+import type { DatabaseClient, DatabaseDocument, DatabaseBenchmarkResult } from './types.js';
 
 interface StepContext {
   step<R>(name: string, fn: () => Promise<R> | R): Promise<R>;
-  verify?<R>(fn: () => Promise<R> | R): Promise<R>;
 }
 
 function round(value: number): number {
@@ -46,7 +45,7 @@ export async function runCrudCycle(
   client: DatabaseClient,
   ctx: StepContext,
   payloadBytes: number,
-): Promise<DatabaseTimingResult> {
+) {
   const totalStart = performance.now();
   const id = `benchmark-${Date.now()}-${randomId()}`;
   const payload = makePayload(payloadBytes);
@@ -83,12 +82,10 @@ export async function runCrudCycle(
     assertDocument(readAfterUpdateDocument, updatedDocument, 'update/read');
 
     const deleteStart = performance.now();
-    await ctx.step('delete', () => client.delete(id));
+    const deleted = await ctx.step('delete', () => client.delete(id));
     const deleteMs = performance.now() - deleteStart;
-
-    const afterDelete = await (ctx.verify ? ctx.verify(() => client.read(id)) : client.read(id));
-    if (afterDelete !== null) {
-      throw new Error('delete verification failed');
+    if (deleted !== 1) {
+      throw new Error(`delete verification failed: removed ${deleted} rows`);
     }
 
     return {
@@ -117,7 +114,6 @@ export async function writeDatabaseResultsJson(
   const cleanResults = results.map((result) => ({
     provider: result.provider,
     mode: result.mode,
-    ...(result.database ? { database: result.database } : {}),
     table: result.table,
     payloadBytes: result.payloadBytes,
     iterations: result.iterations.map((iteration) => ({
