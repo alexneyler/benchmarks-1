@@ -6,6 +6,7 @@ import { vercel } from '@storagesdk/adapters/vercel';
 import { gcs } from '@storagesdk/adapters/gcs';
 import { azure } from '@storagesdk/adapters/azure';
 import { tensorlake } from '@storagesdk/adapters/tensorlake';
+import { archil } from '@storagesdk/adapters/archil';
 import type { StorageProviderConfig } from './types.js';
 
 /**
@@ -206,6 +207,28 @@ export const storageProviders: StorageProviderConfig[] = [
         ...(process.env.TENSORLAKE_API_URL
           ? { apiUrl: process.env.TENSORLAKE_API_URL }
           : {}),
+      }),
+    }),
+    fileSizes: [1 * 1024 * 1024, 4 * 1024 * 1024, 10 * 1024 * 1024, 16 * 1024 * 1024],
+  },
+  {
+    // Archil disks speak S3 through their own endpoints; `bucket` is the disk id.
+    // The adapter has no snapshot/fork support, so upload/download only.
+    name: 'archil',
+    requiredEnvVars: [
+      'ARCHIL_S3_ACCESS_KEY_ID',
+      'ARCHIL_S3_SECRET_ACCESS_KEY',
+      'ARCHIL_BUCKET',
+      'ARCHIL_REGION',
+    ],
+    bucket: process.env.ARCHIL_BUCKET!,
+    createStorage: () => new Storage({
+      adapter: archil({
+        bucket: process.env.ARCHIL_BUCKET!,
+        region: process.env.ARCHIL_REGION!,
+        accessKeyId: process.env.ARCHIL_S3_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.ARCHIL_S3_SECRET_ACCESS_KEY!,
+        ...(process.env.ARCHIL_BRANCH ? { branch: process.env.ARCHIL_BRANCH } : {}),
       }),
     }),
     fileSizes: [1 * 1024 * 1024, 4 * 1024 * 1024, 10 * 1024 * 1024, 16 * 1024 * 1024],
