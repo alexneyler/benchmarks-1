@@ -213,7 +213,6 @@ export const storageProviders: StorageProviderConfig[] = [
   },
   {
     // Archil disks speak S3 through their own endpoints; `bucket` is the disk id.
-    // The adapter has no snapshot/fork support, so upload/download only.
     name: 'archil',
     requiredEnvVars: [
       'ARCHIL_S3_ACCESS_KEY_ID',
@@ -232,6 +231,27 @@ export const storageProviders: StorageProviderConfig[] = [
       }),
     }),
     fileSizes: [1 * 1024 * 1024, 4 * 1024 * 1024, 10 * 1024 * 1024, 16 * 1024 * 1024],
+    // The Archil adapter wraps the S3 adapter, so it inherits its
+    // sibling-bucket snapshot/fork emulation (server-side copy + root
+    // manifest) — here a sibling disk. That needs credentials allowed to
+    // create/delete disks, so point snapshot-fork mode at a dedicated disk.
+    snapshotFork: {
+      requiredEnvVars: [
+        'ARCHIL_SNAPSHOT_S3_ACCESS_KEY_ID',
+        'ARCHIL_SNAPSHOT_S3_SECRET_ACCESS_KEY',
+        'ARCHIL_SNAPSHOT_BUCKET',
+        'ARCHIL_REGION',
+      ],
+      bucket: process.env.ARCHIL_SNAPSHOT_BUCKET!,
+      createStorage: () => new Storage({
+        adapter: archil({
+          bucket: process.env.ARCHIL_SNAPSHOT_BUCKET!,
+          region: process.env.ARCHIL_REGION!,
+          accessKeyId: process.env.ARCHIL_SNAPSHOT_S3_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.ARCHIL_SNAPSHOT_S3_SECRET_ACCESS_KEY!,
+        }),
+      }),
+    },
   },
   //
   // add providers above
