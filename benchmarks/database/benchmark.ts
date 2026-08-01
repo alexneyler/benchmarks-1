@@ -6,6 +6,7 @@ import type { DatabaseClient, DatabaseDocument, DatabaseBenchmarkResult } from '
 
 interface StepContext {
   step<R>(name: string, fn: () => Promise<R> | R): Promise<R>;
+  cleanup(fn: () => Promise<unknown> | unknown): Promise<unknown>;
 }
 
 function round(value: number): number {
@@ -99,7 +100,7 @@ export async function runCrudCycle(
     };
   } catch (error) {
     try {
-      await client.delete(id);
+      await ctx.cleanup(() => client.delete(id));
     } catch {
       // Best-effort cleanup after a failed cycle.
     }

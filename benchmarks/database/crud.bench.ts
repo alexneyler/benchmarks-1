@@ -75,6 +75,7 @@ export const task = defineTask<DatabaseProviderConfig>(async (ctx) => {
       client,
       {
         step: (name, fn) => step(name, () => withTimeout(Promise.resolve(fn()), timeout, `${name} timed out`)),
+        cleanup: (fn) => withTimeout(Promise.resolve(fn()), 10_000, 'Delete timed out'),
       },
       payloadBytes,
     );
