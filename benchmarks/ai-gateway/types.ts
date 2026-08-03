@@ -1,4 +1,4 @@
-export type AIGatewayWireFormat = 'openai' | 'anthropic' | 'responses';
+export type AIGatewayWireFormat = 'openai' | 'anthropic' | 'responses' | 'gemini';
 
 export interface AIGatewayProviderConfig {
   /** Provider name */
