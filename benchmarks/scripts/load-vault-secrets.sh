@@ -50,6 +50,16 @@ if [ ! -s /tmp/vault.envdef ]; then
   return 1 2>/dev/null || exit 1
 fi
 
+# Multiple vault objects can carry the same `name` label. If we don't catch that
+# here, `nsc vault export` will emit duplicate `export KEY=...` lines and the last
+# value wins, so a storage-only `ARCHIL_REGION` could silently override the
+# sandbox `ARCHIL_REGION`. Surface duplicates as a hard error.
+dupes=$(awk -F= '{print $1}' /tmp/vault.envdef | sort | uniq -d | paste -sd ', ')
+if [ -n "$dupes" ]; then
+  echo "::error::Duplicate vault env-var name(s) after KEY filter: $dupes. Use unique 'name' labels, or add an override like ARCHIL_STORAGE_REGION for the storage disk." >&2
+  return 1 2>/dev/null || exit 1
+fi
+
 # Eval exports each resolved secret into the current shell.
 eval "$(nsc vault export --envdef /tmp/vault.envdef --shell=bash)"
 
