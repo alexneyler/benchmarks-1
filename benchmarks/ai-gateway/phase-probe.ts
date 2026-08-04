@@ -6,14 +6,68 @@ import type { AIGatewayProviderConfig, AIGatewayWireFormat, PhaseProbeResult } f
 
 const RECEIPT_HEADERS = ['x-vercel-id', 'cf-ray', 'x-request-id', 'request-id', 'anthropic-request-id'];
 
-// Matches OpenAI's `delta.content`, Anthropic's `delta.text`, the Responses
-// API's flat `"delta":"…"` string, and Gemini's `parts[].text` alike, so we
-// can timestamp the first content token without fully parsing every SSE
-// event on the hot path. Safe to share: in the OpenAI/Anthropic/Gemini
-// formats "delta"/"content" are always objects (`"delta":{…}`,
-// `"content":{…}`), never followed directly by a quote, so the added
-// alternatives can't false-match those.
-const CONTENT_RE = /"(?:content|text|delta)"\s*:\s*"[^"]/;
+/**
+ * Returns the regex that detects the first *visible* content token for a
+ * given wire format — deliberately per-format, not one shared pattern.
+ *
+ * A single shared `"(?:content|text|delta)"\s*:\s*"[^"]` regex was used
+ * here previously, on the reasoning that each format's real content field
+ * is never a bare string under any of the other names. That held for every
+ * format this benchmark exercised until Kimi K3 via OpenRouter/Vercel,
+ * confirmed live: both stream a `reasoning_details` array alongside the
+ * real `content` field, and each entry looks like
+ * `{"type":"reasoning.text","text":"…"}` — a genuine `"text":"…"` match,
+ * just on invisible reasoning, not the answer. The shared regex fired on
+ * that first reasoning token, so OpenRouter and Vercel's Kimi-family TTFT
+ * numbers were measuring "time to first reasoning token" while every other
+ * participant in that family measured "time to first visible token" — a
+ * real correctness bug, not just an unlucky benchmark run (confirmed by the
+ * reported numbers: 2s/8s vs. 24-38s for a model with reasoning locked
+ * "always on").
+ *
+ * Fix: only match the field name that's genuinely the answer content for
+ * *that* format, not every alternative used across all formats:
+ * - `openai`: `delta.content` only. Chat Completions never uses a bare
+ *   `"text"` or `"delta"` string for the real answer, so restricting to
+ *   `content` removes the `reasoning_details[].text` collision entirely —
+ *   not just for Kimi, for any `openai`-format participant that might
+ *   stream a similarly-shaped reasoning trace.
+ * - `anthropic`: `delta.text` (content_block_delta). Anthropic's extended
+ *   thinking blocks use `"thinking":"…"`, not `"text"`, so no equivalent
+ *   collision risk here.
+ * - `responses`: the flat `"delta":"…"` string (`response.output_text.
+ *   delta`). Note: if reasoning summaries were ever requested for a
+ *   `responses`-format participant, `response.reasoning_summary_text.delta`
+ *   events use this same field name and would reproduce the identical
+ *   false-positive risk — not currently triggered, since no participant in
+ *   this repo requests reasoning summaries, but worth knowing if that
+ *   changes.
+ * - `gemini`: `parts[].text` — Gemini's only real content field name, no
+ *   collision risk since Gemini has no equivalent nested reasoning-trace
+ *   shape in this benchmark's usage.
+ *
+ * `includeReasoning` deliberately widens the `openai` case back to also
+ * match reasoning content — used only when
+ * `AIGatewayProviderConfig.reasoningCountsAsFirstToken` is set (see that
+ * flag's doc comment in `types.ts` for the full rationale). Confirmed live
+ * across all six Kimi-family participants: exactly two reasoning-field
+ * conventions exist — `reasoning_content` (Moonshot direct, Cloudflare) and
+ * `reasoning` (OpenRouter, Vercel, LLM Gateway, Concentrate) — both handled
+ * here rather than assumed to match from one gateway to the next, the same
+ * live-verification discipline that caught the `reasoning_details[].text`
+ * bug above in the first place.
+ */
+function contentRegexFor(wireFormat: AIGatewayWireFormat, includeReasoning: boolean): RegExp {
+  if (wireFormat === 'openai') {
+    return includeReasoning
+      ? /"(?:content|reasoning|reasoning_content)"\s*:\s*"[^"]/
+      : /"content"\s*:\s*"[^"]/;
+  }
+  if (wireFormat === 'responses') return /"delta"\s*:\s*"[^"]/;
+  // 'anthropic' and 'gemini' both use "text" as their real content field,
+  // with no collision risk in either case (see rationale above).
+  return /"text"\s*:\s*"[^"]/;
+}
 
 function now(): number {
   return performance.now();
@@ -156,6 +210,7 @@ function sendAndMeasure(
 ): Promise<RawProbeOutcome> {
   return withTimeout(new Promise<RawProbeOutcome>((resolve, reject) => {
     const start = now();
+    const contentRe = contentRegexFor(config.wireFormat, config.reasoningCountsAsFirstToken ?? false);
 
     const req = https.request({
       host: config.host,
@@ -187,7 +242,7 @@ function sendAndMeasure(
 
       res.on('data', (chunk: Buffer) => {
         buf += chunk.toString('utf8');
-        if (ttftMs === 0 && CONTENT_RE.test(buf)) {
+        if (ttftMs === 0 && contentRe.test(buf)) {
           ttftMs = now() - start;
         }
         outputTokens = extractOutputTokens(config.wireFormat, buf) ?? outputTokens;

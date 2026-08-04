@@ -88,7 +88,6 @@
     "bench:ai-gateway:pydantic": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts --provider pydantic-ai-gateway",
     "bench:ai-gateway:concentrate": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts --provider concentrate-ai-gateway",
     "bench:ai-gateway:anthropic": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts --provider anthropic-direct",
-    "bench:ai-gateway:kimi": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts --provider kimi-direct",
     "generate-ai-gateway-svg": "tsx benchmarks/ai-gateway/generate-svg.ts",
     "bench:ai-gateway-openai": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-openai.bench.ts",
     "bench:ai-gateway-openai:openrouter": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-openai.bench.ts --provider openrouter",
@@ -106,7 +105,15 @@
     "bench:ai-gateway-gemini:llmgateway": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-gemini.bench.ts --provider llmgateway",
     "bench:ai-gateway-gemini:concentrate": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-gemini.bench.ts --provider concentrate-ai-gateway",
     "bench:ai-gateway-gemini:direct": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-gemini.bench.ts --provider gemini-direct",
-    "generate-ai-gateway-gemini-svg": "tsx benchmarks/ai-gateway/generate-svg.ts --dir ai-gateway-gemini --title \"AI Gateway Benchmarks — Gemini\" --out ai-gateway-gemini.svg"
+    "generate-ai-gateway-gemini-svg": "tsx benchmarks/ai-gateway/generate-svg.ts --dir ai-gateway-gemini --title \"AI Gateway Benchmarks — Gemini\" --out ai-gateway-gemini.svg",
+    "bench:ai-gateway-kimi": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-kimi.bench.ts",
+    "bench:ai-gateway-kimi:openrouter": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-kimi.bench.ts --provider openrouter",
+    "bench:ai-gateway-kimi:vercel": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-kimi.bench.ts --provider vercel-ai-gateway",
+    "bench:ai-gateway-kimi:cloudflare": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-kimi.bench.ts --provider cloudflare-ai-gateway",
+    "bench:ai-gateway-kimi:llmgateway": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-kimi.bench.ts --provider llmgateway",
+    "bench:ai-gateway-kimi:concentrate": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-kimi.bench.ts --provider concentrate-ai-gateway",
+    "bench:ai-gateway-kimi:direct": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-kimi.bench.ts --provider kimi-direct",
+    "generate-ai-gateway-kimi-svg": "tsx benchmarks/ai-gateway/generate-svg.ts --dir ai-gateway-kimi --title \"AI Gateway Benchmarks — Kimi\" --out ai-gateway-kimi.svg"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1076.0",

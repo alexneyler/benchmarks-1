@@ -74,26 +74,33 @@ function probeData(result: PhaseProbeResult): JsonObject {
   };
 }
 
-async function aiGatewayTask(ctx: TaskContext<AIGatewayProviderConfig>): Promise<TaskResult> {
-  const isCold = ctx.phase === 'cold';
-  const result = isCold
-    ? await runColdProbe(ctx.participant, PROMPT, MAX_TOKENS, TIMEOUT_MS)
-    : await runWarmProbe(ctx.participant, PROMPT, MAX_TOKENS, TIMEOUT_MS);
+/**
+ * Returns a task closed over `maxTokens`/`timeoutMs` so each family can size
+ * them independently (see `AIGatewayFamilyDef`) without shared constants
+ * forcing every family to the same values.
+ */
+function makeAIGatewayTask(maxTokens: number, timeoutMs: number) {
+  return async function aiGatewayTask(ctx: TaskContext<AIGatewayProviderConfig>): Promise<TaskResult> {
+    const isCold = ctx.phase === 'cold';
+    const result = isCold
+      ? await runColdProbe(ctx.participant, PROMPT, maxTokens, timeoutMs)
+      : await runWarmProbe(ctx.participant, PROMPT, maxTokens, timeoutMs);
 
-  const steps = phaseSteps(result);
+    const steps = phaseSteps(result);
 
-  if (result.error) {
-    ctx.log(`${ctx.participant.name} ${result.mode} probe failed: ${result.error}`, probeData(result));
-    throw new TaskError(result.error, { code: 'probe_failed', data: probeData(result), steps });
-  }
-  ctx.log(
-    `${ctx.participant.name} ${result.mode} probe: ttfb=${result.ttfbMs}ms ttft=${result.ttftMs}ms`,
-    probeData(result),
-  );
-  return {
-    data: probeData(result),
-    steps,
-    latencyMs: isCold ? result.coldE2eMs ?? result.ttftMs : result.ttftMs,
+    if (result.error) {
+      ctx.log(`${ctx.participant.name} ${result.mode} probe failed: ${result.error}`, probeData(result));
+      throw new TaskError(result.error, { code: 'probe_failed', data: probeData(result), steps });
+    }
+    ctx.log(
+      `${ctx.participant.name} ${result.mode} probe: ttfb=${result.ttfbMs}ms ttft=${result.ttftMs}ms`,
+      probeData(result),
+    );
+    return {
+      data: probeData(result),
+      steps,
+      latencyMs: isCold ? result.coldE2eMs ?? result.ttftMs : result.ttftMs,
+    };
   };
 }
 
@@ -103,6 +110,35 @@ export interface AIGatewayFamilyDef {
   providers: AIGatewayProviderConfig[];
   /** Subdirectory of `results/` this family's JSON output is written to. */
   resultsDirName: string;
+  /**
+   * `max_tokens`/`max_output_tokens` per request. Defaults to 200 (the
+   * Anthropic/OpenAI/Gemini families' value). Override only when a family's
+   * target model forces it. Confirmed live for the Kimi family: `kimi-k3`
+   * runs with reasoning locked to "always on," and reasoning tokens count
+   * against this budget — one test consumed 688 of 802 total completion
+   * tokens on reasoning alone before producing any visible text, and at 200
+   * the entire budget was exhausted by reasoning with zero output
+   * (`finish_reason: "length"`, no content deltas at all). Unlike the
+   * OpenAI family's GPT-5-mini situation, there's no non-reasoning model to
+   * switch to instead — Kimi has no fast/lite tier — so this override is
+   * permanent for that family, not a temporary workaround.
+   */
+  maxTokens?: number;
+  /**
+   * Per-request timeout in ms. Defaults to 45s (the Anthropic/OpenAI/Gemini
+   * families' value). Override only when a family's target model forces it.
+   * Confirmed live for the Kimi family: with reasoning locked to "always
+   * on," `ttftMs` — time to the first *visible* content token, after
+   * whatever invisible reasoning preceded it — can run past 20 seconds on
+   * its own (one live warm-phase probe measured `ttft=21395ms`). A cold
+   * probe adds DNS/TCP/TLS plus that same reasoning delay on top, which
+   * blew past the default 45s budget in practice. This is genuine model
+   * behavior the benchmark should be able to measure, not something to
+   * paper over — raising the timeout lets a slow-but-real response
+   * complete and be recorded accurately instead of being cut off and
+   * reported as a generic timeout error.
+   */
+  timeoutMs?: number;
 }
 
 /**
@@ -144,5 +180,8 @@ export function buildAIGatewayFamily(
       }),
   });
 
-  return { config, task: defineTask(aiGatewayTask) };
+  return {
+    config,
+    task: defineTask(makeAIGatewayTask(def.maxTokens ?? MAX_TOKENS, def.timeoutMs ?? TIMEOUT_MS)),
+  };
 }
