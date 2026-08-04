@@ -213,20 +213,19 @@ export const storageProviders: StorageProviderConfig[] = [
   },
   {
     // Archil disks speak S3 through their own endpoints; `bucket` is the disk id.
-    // Use ARCHIL_STORAGE_REGION when the storage disk is in a different region
-    // than the sandbox disk (ARCHIL_REGION).
+    // Reuse the same disk id (ARCHIL_DISK_ID) that the sandbox benchmark uses.
     name: 'archil',
     requiredEnvVars: [
       'ARCHIL_S3_ACCESS_KEY_ID',
       'ARCHIL_S3_SECRET_ACCESS_KEY',
-      'ARCHIL_BUCKET',
+      'ARCHIL_DISK_ID',
       'ARCHIL_REGION',
     ],
-    bucket: process.env.ARCHIL_BUCKET!,
+    bucket: process.env.ARCHIL_DISK_ID!,
     createStorage: () => new Storage({
       adapter: archil({
-        bucket: process.env.ARCHIL_BUCKET!,
-        region: process.env.ARCHIL_STORAGE_REGION ?? process.env.ARCHIL_REGION!,
+        bucket: process.env.ARCHIL_DISK_ID!,
+        region: process.env.ARCHIL_REGION!,
         accessKeyId: process.env.ARCHIL_S3_ACCESS_KEY_ID!,
         secretAccessKey: process.env.ARCHIL_S3_SECRET_ACCESS_KEY!,
         ...(process.env.ARCHIL_BRANCH ? { branch: process.env.ARCHIL_BRANCH } : {}),
@@ -241,14 +240,14 @@ export const storageProviders: StorageProviderConfig[] = [
       requiredEnvVars: [
         'ARCHIL_S3_ACCESS_KEY_ID',
         'ARCHIL_S3_SECRET_ACCESS_KEY',
-        'ARCHIL_BUCKET',
+        'ARCHIL_DISK_ID',
         'ARCHIL_REGION',
       ],
-      bucket: process.env.ARCHIL_BUCKET!,
+      bucket: process.env.ARCHIL_DISK_ID!,
       createStorage: () => new Storage({
         adapter: archil({
-          bucket: process.env.ARCHIL_BUCKET!,
-          region: process.env.ARCHIL_STORAGE_REGION ?? process.env.ARCHIL_REGION!,
+          bucket: process.env.ARCHIL_DISK_ID!,
+          region: process.env.ARCHIL_REGION!,
           accessKeyId: process.env.ARCHIL_S3_ACCESS_KEY_ID!,
           secretAccessKey: process.env.ARCHIL_S3_SECRET_ACCESS_KEY!,
           ...(process.env.ARCHIL_BRANCH ? { branch: process.env.ARCHIL_BRANCH } : {}),

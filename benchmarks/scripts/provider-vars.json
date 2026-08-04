@@ -184,7 +184,7 @@
     "archil": [
       "ARCHIL_S3_ACCESS_KEY_ID",
       "ARCHIL_S3_SECRET_ACCESS_KEY",
-      "ARCHIL_BUCKET",
+      "ARCHIL_DISK_ID",
       "ARCHIL_REGION"
     ]
   },
@@ -295,7 +295,7 @@
     "archil": [
       "ARCHIL_S3_ACCESS_KEY_ID",
       "ARCHIL_S3_SECRET_ACCESS_KEY",
-      "ARCHIL_BUCKET",
+      "ARCHIL_DISK_ID",
       "ARCHIL_REGION"
     ]
   }
