@@ -3,9 +3,8 @@
  * HTTPS for git hosting providers by shelling out to `git`.
  * Declarative — exports `config` + `task`; `bench run` owns the entrypoint.
  *
- * The push/pull workflow runs only when BOTH the participant's token env var
- * AND the writable repo URL override are set. For the read-only public fixtures
- * (GitHub/GitLab/Bitbucket defaults), only the `clone` step is exercised.
+ * Every participant requires both a writable `*_GIT_REPO_URL` env var and a
+ * matching `*_TOKEN` env var; the runner skips providers without credentials.
  *
  *   bench run benchmarks/git/git.bench.ts
  *   bench run benchmarks/git/git.bench.ts --provider tensorlake --iterations 5
@@ -33,7 +32,7 @@ const COMMITTER_EMAIL = 'bench@example.com';
 
 function resolveRepoConfig(config: GitProviderConfig): { repoUrl: string; writable: boolean } {
   const override = config.repoUrlEnvVar ? process.env[config.repoUrlEnvVar] : undefined;
-  const repoUrl = override ? sanitizeRepoUrl(override) : sanitizeRepoUrl(config.url);
+  const repoUrl = override ? sanitizeRepoUrl(override) : sanitizeRepoUrl(config.url ?? '');
   return { repoUrl, writable: !!override };
 }
 

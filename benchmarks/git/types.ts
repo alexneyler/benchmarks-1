@@ -1,9 +1,9 @@
 import type { BaseParticipant } from '@benchsdk/client';
 
 export interface GitProviderConfig extends BaseParticipant {
-  /** HTTPS URL of the repo to clone (used when no env override is set). */
-  url: string;
-  /** Optional env var that overrides `url` for the read/write repo. */
+  /** Optional fallback HTTPS URL of the repo to clone. */
+  url?: string;
+  /** Env var that overrides `url` for the read/write repo. */
   repoUrlEnvVar?: string;
   /** Optional env var holding an HTTPS auth token for push/pull. */
   tokenEnvVar?: string;
