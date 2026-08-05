@@ -7,7 +7,7 @@ export interface GitProviderConfig extends BaseParticipant {
   repoUrlEnvVar?: string;
   /** Optional env var holding an HTTPS auth token for push/pull. */
   tokenEnvVar?: string;
-  /** Username passed to isomorphic-git's `onAuth` callback when a token is set. */
+  /** Username supplied to `git` via GIT_ASKPASS when a token is set. */
   tokenUsername?: string;
   /** Default branch to pull back into after pushing a test branch. */
   defaultBranch?: string;
@@ -26,6 +26,8 @@ export interface GitTimingResult {
   repoUrl: string;
   /** Test branch that was pushed/pulled. */
   branch: string;
+  /** Commit SHA produced by the benchmark push, when available. */
+  commitSha?: string;
   /** Error message if this iteration failed. */
   error?: string;
 }
