@@ -17,26 +17,34 @@ export function recordsToGitResults(participants: ParticipantRecords[]): GitBenc
       const d = (r.data ?? {}) as JsonObject;
       const base: GitTimingResult = {
         cloneMs: num(d.cloneMs),
-        pushMs: num(d.pushMs),
-        pullMs: num(d.pullMs),
-        repoUrl: typeof d.repoUrl === 'string' ? d.repoUrl : '',
         branch: typeof d.branch === 'string' ? d.branch : '',
         commitSha: typeof d.commitSha === 'string' ? d.commitSha : undefined,
       };
+      if (d.pushSkipped) {
+        base.pushSkipped = true;
+      } else if (typeof d.pushMs === 'number') {
+        base.pushMs = d.pushMs;
+      }
+      if (d.pullSkipped) {
+        base.pullSkipped = true;
+      } else if (typeof d.pullMs === 'number') {
+        base.pullMs = d.pullMs;
+      }
       return r.status === 'error' ? { ...base, error: r.errorCode ?? 'error' } : base;
     });
 
     const successful = iterations.filter((i) => !i.error);
+    const successfulPush = successful.filter((i) => !i.pushSkipped && typeof i.pushMs === 'number');
+    const successfulPull = successful.filter((i) => !i.pullSkipped && typeof i.pullMs === 'number');
     const summary = {
       cloneMs: computeStats(successful.map((i) => i.cloneMs)),
-      pushMs: computeStats(successful.map((i) => i.pushMs)),
-      pullMs: computeStats(successful.map((i) => i.pullMs)),
+      pushMs: computeStats(successfulPush.map((i) => i.pushMs as number)),
+      pullMs: computeStats(successfulPull.map((i) => i.pullMs as number)),
     };
 
     return {
       provider: participant.participant,
       mode: 'git' as const,
-      repoUrl: iterations[0]?.repoUrl ?? '',
       iterations,
       summary,
       successRate: iterations.length ? successful.length / iterations.length : 0,
@@ -51,8 +59,25 @@ export async function writeGitResultsJson(results: GitBenchmarkResult[], outPath
   const clean = results.map((r) => ({
     provider: r.provider,
     mode: r.mode,
-    repoUrl: r.repoUrl,
-    iterations: r.iterations,
+    iterations: r.iterations.map((i) => {
+      const entry: Record<string, unknown> = {
+        cloneMs: i.cloneMs,
+        branch: i.branch,
+      };
+      if (i.commitSha !== undefined) entry.commitSha = i.commitSha;
+      if (i.pushSkipped) {
+        entry.pushSkipped = true;
+      } else if (i.pushMs !== undefined) {
+        entry.pushMs = i.pushMs;
+      }
+      if (i.pullSkipped) {
+        entry.pullSkipped = true;
+      } else if (i.pullMs !== undefined) {
+        entry.pullMs = i.pullMs;
+      }
+      if (i.error !== undefined) entry.error = i.error;
+      return entry;
+    }),
     summary: r.summary,
     ...(r.successRate !== undefined ? { successRate: r.successRate } : {}),
     ...(r.compositeScore !== undefined ? { compositeScore: r.compositeScore } : {}),

@@ -91,11 +91,12 @@ export const task = defineTask<GitProviderConfig>(async (ctx) => {
   const { repoUrl, writable } = resolveRepoConfig(participant);
   const token = participant.tokenEnvVar ? process.env[participant.tokenEnvVar] : undefined;
   const username = participant.tokenUsername ?? 'token';
-  const useAuth = !!(token && writable);
+  const useAuth = !!(token && writable && repoUrl);
 
   const branch = `${participant.name}-${taskIndex}-${Date.now()}`;
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'bench-git-'));
   const workDir = path.join(tempDir, 'repo');
+  const pullDir = path.join(tempDir, 'pull');
   const askpassPath = path.join(tempDir, 'askpass.sh');
 
   if (useAuth) {
@@ -128,8 +129,15 @@ export const task = defineTask<GitProviderConfig>(async (ctx) => {
     cloneMs = performance.now() - cloneStart;
 
     if (!useAuth) {
-      measure({ cloneMs, repoUrl, branch, pushMs: 0, pullMs: 0, commitSha: '' });
-      return { data: { cloneMs, pushMs: 0, pullMs: 0, repoUrl, branch, commitSha: '' } };
+      const skippedData: Record<string, number | string | boolean> = {
+        cloneMs,
+        branch,
+        commitSha: '',
+        pushSkipped: true,
+        pullSkipped: true,
+      };
+      measure(skippedData as any);
+      return { data: skippedData as any };
     }
 
     const defaultBranch = await runGit(['branch', '--show-current'], workDir)
@@ -157,24 +165,31 @@ export const task = defineTask<GitProviderConfig>(async (ctx) => {
     pushMs = performance.now() - pushStart;
     pushSucceeded = true;
 
-    await runGit(['checkout', defaultBranch], workDir);
+    // Prepare a separate shallow clone so the pull actually fetches the new
+    // branch from the remote instead of finding all objects already local.
+    await fs.promises.mkdir(pullDir, { recursive: true });
+    await runGit(['init'], pullDir);
+    await runGit(['remote', 'add', 'origin', repoUrl], pullDir);
+    await runGit(['fetch', '--depth', '1', 'origin', defaultBranch], pullDir);
+    await runGit(['checkout', '-b', defaultBranch, 'FETCH_HEAD'], pullDir);
 
     const pullStart = performance.now();
     await step('pull', () =>
       withTimeout(
-        runGit(['pull', '--ff-only', 'origin', branch], workDir),
+        runGit(['pull', '--ff-only', 'origin', branch], pullDir),
         timeout,
         'Git pull timed out',
       ),
     );
     pullMs = performance.now() - pullStart;
 
-    measure({ cloneMs, pushMs, pullMs, repoUrl, branch, commitSha });
-    return { data: { cloneMs, pushMs, pullMs, repoUrl, branch, commitSha } };
+    const authData: Record<string, number | string> = { cloneMs, pushMs, pullMs, branch, commitSha };
+    measure(authData as any);
+    return { data: authData as any };
   } catch (err) {
     throw new TaskError(formatError(err), {
       code: 'GIT_WORKFLOW_ERROR',
-      data: { repoUrl, branch, cloneMs, pushMs, pullMs },
+      data: { branch, cloneMs, pushMs, pullMs },
     });
   } finally {
     if (pushSucceeded && useAuth) {

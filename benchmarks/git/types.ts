@@ -18,12 +18,14 @@ export interface GitProviderConfig extends BaseParticipant {
 export interface GitTimingResult {
   /** Time to shallow clone the repo in ms. */
   cloneMs: number;
-  /** Time to commit and push the test branch in ms. */
-  pushMs: number;
-  /** Time to pull the test branch into the default branch in ms. */
-  pullMs: number;
-  /** Repository URL used. */
-  repoUrl: string;
+  /** Time to commit and push the test branch in ms, when measured. */
+  pushMs?: number;
+  /** Time to pull the test branch in ms, when measured. */
+  pullMs?: number;
+  /** True when push was skipped (no writable repo/token). */
+  pushSkipped?: boolean;
+  /** True when pull was skipped (no writable repo/token). */
+  pullSkipped?: boolean;
   /** Test branch that was pushed/pulled. */
   branch: string;
   /** Commit SHA produced by the benchmark push, when available. */
@@ -41,7 +43,6 @@ export interface GitStats {
 export interface GitBenchmarkResult {
   provider: string;
   mode: 'git';
-  repoUrl: string;
   iterations: GitTimingResult[];
   summary: GitStats;
   /** Composite weighted score (0-100, higher = better). Computed post-benchmark. */
