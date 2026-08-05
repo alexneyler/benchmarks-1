@@ -66,9 +66,16 @@ jobs:
 
           ITERATIONS="${{ (github.event_name == 'schedule' && '50') || github.event.inputs.iterations || '10' }}"
 
+          # Every provider job passes the same --run-key, so all matrix jobs
+          # get-or-create one shared platform run and each registers only its
+          # own participant. The attempt is in the key so workflow re-runs open
+          # fresh runs instead of rejoining the completed ones.
+          RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
           npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/git/git.bench.ts \
             --provider ${{ matrix.provider }} \
-            --iterations $ITERATIONS
+            --iterations $ITERATIONS \
+            --run-key "$RUN_KEY"
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
