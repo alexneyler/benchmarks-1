@@ -16,11 +16,15 @@ import { promisify } from 'node:util';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineBenchmarkConfig, defineTask, TaskError } from '@benchsdk/runner';
 import { withTimeout } from '../src/util/timeout.js';
 import { formatError } from '../src/util/error.js';
 import { providers } from './providers.js';
+import { writeGitLegacyResults } from './legacy-results.js';
 import type { GitProviderConfig } from './types.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const execFileAsync = promisify(execFile);
 const CLONE_TIMEOUT_MS = 60_000;
@@ -77,6 +81,8 @@ export const config = defineBenchmarkConfig({
   iterations: 3,
   concurrency: 1,
   participants: providers,
+  onComplete: (outcome) =>
+    writeGitLegacyResults(outcome.participants, path.resolve(__dirname, '../../results/git')),
 });
 
 export const task = defineTask<GitProviderConfig>(async (ctx) => {
