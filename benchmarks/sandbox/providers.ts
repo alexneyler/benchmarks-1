@@ -1,4 +1,5 @@
 import { archil } from '@computesdk/archil';
+import { arker } from '@computesdk/arker';
 import { beam } from '@computesdk/beam';
 import { blaxel } from '@computesdk/blaxel';
 import { codesandbox } from '@computesdk/codesandbox';
@@ -21,6 +22,7 @@ import { opencomputer } from '@computesdk/opencomputer';
 // import { railway } from '@computesdk/railway';
 import { runloop } from '@computesdk/runloop';
 import { sandbox0 } from '@computesdk/sandbox0';
+import { sail } from '@computesdk/sail';
 import { sprites } from '@computesdk/sprites';
 import { superserve } from '@computesdk/superserve';
 import { tenki } from '@computesdk/tenki';
@@ -42,6 +44,14 @@ export const providers: ProviderConfig[] = [
     requiredEnvVars: ['ARCHIL_API_KEY', 'ARCHIL_REGION', 'ARCHIL_DISK_ID'],
     createCompute: () => archil({ apiKey: process.env.ARCHIL_API_KEY!, region: process.env.ARCHIL_REGION! }),
     sandboxOptions: { diskId: process.env.ARCHIL_DISK_ID! }
+  },
+  {
+    // Arker sizes via `platforms` on the factory, not sandbox.create(), so like
+    // lightning it is set from the dax workflow env (ARKER_PLATFORMS=graviton4).
+    name: 'arker',
+    requiredEnvVars: ['ARKER_API_KEY'],
+    createCompute: () => arker({ apiKey: process.env.ARKER_API_KEY! }),
+    sandboxOptions: { templateId: 'ubuntu-small' },
   },
   {
     // Activated in daily + PR benchmarks once BEAM_TOKEN / BEAM_WORKSPACE_ID secrets landed.
@@ -184,6 +194,15 @@ export const providers: ProviderConfig[] = [
     name: 'sandbox0',
     requiredEnvVars: ['SANDBOX0_TOKEN'],
     createCompute: () => sandbox0({ token: process.env.SANDBOX0_TOKEN! }),
+    // TTI modes (sequential, staggered, and burst) use 128 MiB for Sandbox0.
+    // DAX overrides memory to 16 GiB while preserving this hard TTL.
+    // Outlive the 10-minute DAX timeout without leaving a zombie sandbox if cleanup cannot run.
+    sandboxOptions: { memory: 128, hardTtl: 900 },
+  },
+  {
+    name: 'sail',
+    requiredEnvVars: ['SAIL_API_KEY'],
+    createCompute: () => sail({ apiKey: process.env.SAIL_API_KEY! }),
   },
   {
     name: 'sprites',

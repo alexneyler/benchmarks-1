@@ -5,6 +5,9 @@
       "ARCHIL_REGION",
       "ARCHIL_DISK_ID"
     ],
+    "arker": [
+      "ARKER_API_KEY"
+    ],
     "beam": [
       "BEAM_TOKEN",
       "BEAM_WORKSPACE_ID"
@@ -65,6 +68,9 @@
     ],
     "sandbox0": [
       "SANDBOX0_TOKEN"
+    ],
+    "sail": [
+      "SAIL_API_KEY"
     ],
     "sprites": [
       "SPRITES_TOKEN"
@@ -174,6 +180,12 @@
       "TENSORLAKE_ORGANIZATION_ID",
       "TENSORLAKE_PROJECT_ID",
       "TENSORLAKE_FILESYSTEM"
+    ],
+    "archil": [
+      "ARCHIL_S3_ACCESS_KEY_ID",
+      "ARCHIL_S3_SECRET_ACCESS_KEY",
+      "ARCHIL_BUCKET",
+      "ARCHIL_REGION"
     ]
   },
   "scale": {
@@ -279,6 +291,12 @@
       "TENSORLAKE_ORGANIZATION_ID",
       "TENSORLAKE_PROJECT_ID",
       "TENSORLAKE_FILESYSTEM"
+    ],
+    "archil": [
+      "ARCHIL_S3_ACCESS_KEY_ID",
+      "ARCHIL_S3_SECRET_ACCESS_KEY",
+      "ARCHIL_BUCKET",
+      "ARCHIL_REGION"
     ]
   }
 }
