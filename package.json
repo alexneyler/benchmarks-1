@@ -89,7 +89,11 @@
     "bench:ai-gateway:pydantic": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts --provider pydantic-ai-gateway",
     "bench:ai-gateway:concentrate": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts --provider concentrate-ai-gateway",
     "bench:ai-gateway:anthropic": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts --provider anthropic-direct",
-    "generate-ai-gateway-svg": "tsx benchmarks/ai-gateway/generate-svg.ts"
+    "generate-ai-gateway-svg": "tsx benchmarks/ai-gateway/generate-svg.ts",
+    "bench:git": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/git/git.bench.ts",
+    "bench:git:github": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/git/git.bench.ts --provider github",
+    "bench:git:gitlab": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/git/git.bench.ts --provider gitlab",
+    "bench:git:bitbucket": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/git/git.bench.ts --provider bitbucket"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1076.0",
@@ -150,6 +154,7 @@
     "computesdk": "^4.1.4",
     "dotenv": "^17.4.2",
     "e2b": "^2.35.0",
+    "isomorphic-git": "1.40.0",
     "p-limit": "^7.3.0",
     "pg": "^8.22.0",
     "playwright-core": "^1.61.1",
