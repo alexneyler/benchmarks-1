@@ -762,10 +762,8 @@ function printGitResultsTable(results: GitBenchmarkResult[]): void {
     const ok = r.iterations.filter((i) => !i.error).length;
     const total = r.iterations.length;
     const clone = (r.summary.cloneMs.median / 1000).toFixed(2) + 's';
-    const pushAllSkipped = r.iterations.every((i) => i.pushSkipped);
-    const pullAllSkipped = r.iterations.every((i) => i.pullSkipped);
-    const push = pushAllSkipped ? '--' : (r.summary.pushMs.median / 1000).toFixed(2) + 's';
-    const pull = pullAllSkipped ? '--' : (r.summary.pullMs.median / 1000).toFixed(2) + 's';
+    const push = (r.summary.pushMs.median / 1000).toFixed(2) + 's';
+    const pull = (r.summary.pullMs.median / 1000).toFixed(2) + 's';
     console.log([r.provider.padEnd(14), clone.padEnd(12), push.padEnd(12), pull.padEnd(12), `${ok}/${total}`.padEnd(10)].join(' | '));
   }
   console.log('='.repeat(95));

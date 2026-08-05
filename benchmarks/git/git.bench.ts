@@ -30,10 +30,9 @@ const CLONE_TIMEOUT_MS = 60_000;
 const COMMITTER_NAME = 'ComputeSDK Benchmark';
 const COMMITTER_EMAIL = 'bench@example.com';
 
-function resolveRepoConfig(config: GitProviderConfig): { repoUrl: string; writable: boolean } {
-  const override = config.repoUrlEnvVar ? process.env[config.repoUrlEnvVar] : undefined;
-  const repoUrl = override ? sanitizeRepoUrl(override) : sanitizeRepoUrl(config.url ?? '');
-  return { repoUrl, writable: !!override };
+function resolveRepoConfig(config: GitProviderConfig): { repoUrl: string } {
+  const repoUrl = config.repoUrlEnvVar ? sanitizeRepoUrl(process.env[config.repoUrlEnvVar] ?? '') : '';
+  return { repoUrl };
 }
 
 function sanitizeRepoUrl(repoUrl: string): string {
@@ -47,30 +46,23 @@ function sanitizeRepoUrl(repoUrl: string): string {
   }
 }
 
-function buildGitEnv(
-  useAuth: boolean,
-  username: string,
-  token: string,
-  askpassPath?: string,
-): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = { ...process.env, GIT_TERMINAL_PROMPT: '0' };
-  if (useAuth && askpassPath) {
-    env.GIT_ASKPASS = askpassPath;
-    env.GIT_BENCH_USER = username;
-    env.GIT_BENCH_PASS = token;
-  }
-  return env;
+function escapeShell(s: string): string {
+  return s.replace(/'/g, `'\\''`);
 }
 
-async function writeAskpassScript(askpassPath: string): Promise<void> {
+function buildGitEnv(askpassPath: string): NodeJS.ProcessEnv {
+  return { ...process.env, GIT_ASKPASS: askpassPath, GIT_TERMINAL_PROMPT: '0' };
+}
+
+async function writeAskpassScript(askpassPath: string, username: string, token: string): Promise<void> {
   const script = `#!/bin/sh
 case "$1" in
-  *Password*) printf '%s\\n' "$GIT_BENCH_PASS" ;;
-  *Username*) printf '%s\\n' "$GIT_BENCH_USER" ;;
-  *) printf '%s\\n' "$GIT_BENCH_USER" ;;
+  *Password*) printf '%s\\n' '${escapeShell(token)}' ;;
+  *Username*) printf '%s\\n' '${escapeShell(username)}' ;;
+  *) printf '%s\\n' '${escapeShell(username)}' ;;
 esac
 `;
-  await fs.promises.writeFile(askpassPath, script, { mode: 0o755 });
+  await fs.promises.writeFile(askpassPath, script, { mode: 0o700 });
 }
 
 export const config = defineBenchmarkConfig({
@@ -88,10 +80,9 @@ export const task = defineTask<GitProviderConfig>(async (ctx) => {
   const { participant, step, measure, taskIndex } = ctx;
   const timeout = participant.timeout ?? CLONE_TIMEOUT_MS;
 
-  const { repoUrl, writable } = resolveRepoConfig(participant);
-  const token = participant.tokenEnvVar ? process.env[participant.tokenEnvVar] : undefined;
-  const username = participant.tokenUsername ?? 'token';
-  const useAuth = !!(token && writable && repoUrl);
+  const repoUrl = resolveRepoConfig(participant).repoUrl;
+  const token = process.env[participant.tokenEnvVar] ?? '';
+  const username = participant.tokenUsername;
 
   const branch = `${participant.name}-${taskIndex}-${Date.now()}`;
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'bench-git-'));
@@ -99,11 +90,9 @@ export const task = defineTask<GitProviderConfig>(async (ctx) => {
   const pullDir = path.join(tempDir, 'pull');
   const askpassPath = path.join(tempDir, 'askpass.sh');
 
-  if (useAuth) {
-    await writeAskpassScript(askpassPath);
-  }
+  await writeAskpassScript(askpassPath, username, token);
 
-  const env = buildGitEnv(useAuth, username, token ?? '', askpassPath);
+  const env = buildGitEnv(askpassPath);
   function runGit(
     args: string[],
     cwd: string,
@@ -115,7 +104,7 @@ export const task = defineTask<GitProviderConfig>(async (ctx) => {
   let cloneMs = 0;
   let pushMs = 0;
   let pullMs = 0;
-  let pushSucceeded = false;
+  let pushAttempted = false;
 
   try {
     const cloneStart = performance.now();
@@ -127,18 +116,6 @@ export const task = defineTask<GitProviderConfig>(async (ctx) => {
       ),
     );
     cloneMs = performance.now() - cloneStart;
-
-    if (!useAuth) {
-      const skippedData: Record<string, number | string | boolean> = {
-        cloneMs,
-        branch,
-        commitSha: '',
-        pushSkipped: true,
-        pullSkipped: true,
-      };
-      measure(skippedData as any);
-      return { data: skippedData as any };
-    }
 
     const defaultBranch = await runGit(['branch', '--show-current'], workDir)
       .then((r) => r.stdout.trim())
@@ -154,6 +131,7 @@ export const task = defineTask<GitProviderConfig>(async (ctx) => {
     );
     const commitSha = commitResult.stdout.match(/\[.+?\s+([a-f0-9]+)\]/)?.[1] ?? '';
 
+    pushAttempted = true;
     const pushStart = performance.now();
     await step('push', () =>
       withTimeout(
@@ -163,7 +141,6 @@ export const task = defineTask<GitProviderConfig>(async (ctx) => {
       ),
     );
     pushMs = performance.now() - pushStart;
-    pushSucceeded = true;
 
     // Prepare a separate shallow clone so the pull actually fetches the new
     // branch from the remote instead of finding all objects already local.
@@ -192,7 +169,7 @@ export const task = defineTask<GitProviderConfig>(async (ctx) => {
       data: { branch, cloneMs, pushMs, pullMs },
     });
   } finally {
-    if (pushSucceeded && useAuth) {
+    if (pushAttempted) {
       await runGit(['push', 'origin', '--delete', branch], workDir, timeout).catch(() => {});
     }
     await fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});

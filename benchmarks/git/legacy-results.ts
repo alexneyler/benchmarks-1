@@ -17,29 +17,19 @@ export function recordsToGitResults(participants: ParticipantRecords[]): GitBenc
       const d = (r.data ?? {}) as JsonObject;
       const base: GitTimingResult = {
         cloneMs: num(d.cloneMs),
+        pushMs: num(d.pushMs),
+        pullMs: num(d.pullMs),
         branch: typeof d.branch === 'string' ? d.branch : '',
         commitSha: typeof d.commitSha === 'string' ? d.commitSha : undefined,
       };
-      if (d.pushSkipped) {
-        base.pushSkipped = true;
-      } else if (typeof d.pushMs === 'number') {
-        base.pushMs = d.pushMs;
-      }
-      if (d.pullSkipped) {
-        base.pullSkipped = true;
-      } else if (typeof d.pullMs === 'number') {
-        base.pullMs = d.pullMs;
-      }
       return r.status === 'error' ? { ...base, error: r.errorCode ?? 'error' } : base;
     });
 
     const successful = iterations.filter((i) => !i.error);
-    const successfulPush = successful.filter((i) => !i.pushSkipped && typeof i.pushMs === 'number');
-    const successfulPull = successful.filter((i) => !i.pullSkipped && typeof i.pullMs === 'number');
     const summary = {
       cloneMs: computeStats(successful.map((i) => i.cloneMs)),
-      pushMs: computeStats(successfulPush.map((i) => i.pushMs as number)),
-      pullMs: computeStats(successfulPull.map((i) => i.pullMs as number)),
+      pushMs: computeStats(successful.map((i) => i.pushMs)),
+      pullMs: computeStats(successful.map((i) => i.pullMs)),
     };
 
     return {
@@ -62,19 +52,11 @@ export async function writeGitResultsJson(results: GitBenchmarkResult[], outPath
     iterations: r.iterations.map((i) => {
       const entry: Record<string, unknown> = {
         cloneMs: i.cloneMs,
+        pushMs: i.pushMs,
+        pullMs: i.pullMs,
         branch: i.branch,
       };
       if (i.commitSha !== undefined) entry.commitSha = i.commitSha;
-      if (i.pushSkipped) {
-        entry.pushSkipped = true;
-      } else if (i.pushMs !== undefined) {
-        entry.pushMs = i.pushMs;
-      }
-      if (i.pullSkipped) {
-        entry.pullSkipped = true;
-      } else if (i.pullMs !== undefined) {
-        entry.pullMs = i.pullMs;
-      }
       if (i.error !== undefined) entry.error = i.error;
       return entry;
     }),
