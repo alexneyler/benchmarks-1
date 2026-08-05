@@ -44,7 +44,7 @@ export function recordsToGitResults(participants: ParticipantRecords[]): GitBenc
   });
 }
 
-async function writeGitResultsJson(results: GitBenchmarkResult[], outPath: string): Promise<void> {
+export async function writeGitResultsJson(results: GitBenchmarkResult[], outPath: string): Promise<void> {
   const fs = await import('node:fs');
   const os = await import('node:os');
 

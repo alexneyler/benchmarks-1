@@ -6,6 +6,7 @@ on:
     paths:
       - 'benchmarks/git/**'
       - 'benchmarks/src/util/**'
+      - 'benchmarks/src/merge-results.ts'
       - 'package.json'
       - '.github/workflows/git-benchmarks.yml'
   schedule:
@@ -36,13 +37,15 @@ permissions:
 
 jobs:
   bench:
-    name: Git Benchmark
+    name: Bench ${{ matrix.provider }}
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: ${{ (github.event.inputs.provider != '' && fromJson(format('["{0}"]', github.event.inputs.provider))) || fromJson('["github","gitlab","bitbucket","tensorlake"]') }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -61,24 +64,48 @@ jobs:
         run: |
           . benchmarks/scripts/load-vault-secrets.sh '^(GITHUB_GIT_REPO_URL|GITHUB_TOKEN|GITLAB_GIT_REPO_URL|GITLAB_TOKEN|BITBUCKET_GIT_REPO_URL|BITBUCKET_TOKEN|TENSORLAKE_GIT_REPO_URL|TENSORLAKE_API_KEY|BENCHMARKS_PLATFORM_API_KEY)$'
 
-          PROVIDER_ARG=""
-          if [ -n "${{ github.event.inputs.provider }}" ]; then
-            PROVIDER_ARG="--provider ${{ github.event.inputs.provider }}"
-          fi
-
           ITERATIONS="${{ (github.event_name == 'schedule' && '50') || github.event.inputs.iterations || '10' }}"
 
           npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/git/git.bench.ts \
-            $PROVIDER_ARG \
+            --provider ${{ matrix.provider }} \
             --iterations $ITERATIONS
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: git-results
+          name: git-results-${{ matrix.provider }}
           path: results/git/
           if-no-files-found: ignore
           retention-days: 7
+
+  collect:
+    name: Collect Git Results
+    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    needs: [bench]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            pnpm update
+          else
+            pnpm install --frozen-lockfile
+          fi
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          pattern: git-results-*
+      - name: Merge results
+        run: npx tsx benchmarks/src/merge-results.ts --input artifacts --mode git
       - name: Commit and push results
         if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
         run: |
