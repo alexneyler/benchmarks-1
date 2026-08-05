@@ -31,12 +31,10 @@ concurrency:
   group: git-benchmarks
   cancel-in-progress: true
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   bench:
+    permissions:
+      contents: read
     name: Bench ${{ matrix.provider }}
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
     timeout-minutes: 60
@@ -52,12 +50,7 @@ jobs:
           node-version: 24
           cache: 'pnpm'
       - name: Install dependencies
-        run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            pnpm update
-          else
-            pnpm install --frozen-lockfile
-          fi
+        run: pnpm install --frozen-lockfile
       - name: Clear stale results from checkout
         run: rm -rf results/git/
       - name: Run git benchmark
@@ -90,6 +83,8 @@ jobs:
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
     needs: [bench]
     if: always()
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -100,12 +95,7 @@ jobs:
           node-version: 24
           cache: 'pnpm'
       - name: Install dependencies
-        run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            pnpm update
-          else
-            pnpm install --frozen-lockfile
-          fi
+        run: pnpm install --frozen-lockfile
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
