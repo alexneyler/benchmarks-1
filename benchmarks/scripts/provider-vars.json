@@ -186,6 +186,18 @@
       "ARCHIL_S3_SECRET_ACCESS_KEY",
       "ARCHIL_BUCKET",
       "ARCHIL_REGION"
+    ],
+    "neon": [
+      "NEON_BUCKET",
+      "NEON_ENDPOINT",
+      "NEON_ACCESS_KEY_ID",
+      "NEON_SECRET_ACCESS_KEY",
+      "NEON_REGION",
+      "NEON_SNAPSHOT_BUCKET",
+      "NEON_SNAPSHOT_ENDPOINT",
+      "NEON_SNAPSHOT_ACCESS_KEY_ID",
+      "NEON_SNAPSHOT_SECRET_ACCESS_KEY",
+      "NEON_SNAPSHOT_REGION"
     ]
   },
   "scale": {
