@@ -15,6 +15,7 @@
  *     per participant.
  */
 import {
+  BenchmarkApiError,
   BenchmarkReporter,
   createBenchmarkClient,
   filterParticipantsByEnv,
@@ -369,10 +370,22 @@ export async function runBenchmark<T extends BaseParticipant>(
     !args.benchmark ||
     args.benchmark === fileConfig.benchmarkSlug;
   if (identityIsOurs) {
-    await client.upsertBenchmark(config.benchmarkSlug, {
-      name: config.benchmarkName,
-      ...(config.benchmarkKind ? { kind: config.benchmarkKind } : {}),
-    });
+    try {
+      await client.upsertBenchmark(config.benchmarkSlug, {
+        name: config.benchmarkName,
+        ...(config.benchmarkKind ? { kind: config.benchmarkKind } : {}),
+      });
+    } catch (error) {
+      // Org-scoped platform keys cannot update benchmark metadata (it's an
+      // admin-only route), but they can still run it. Verify the benchmark
+      // exists and continue; if it doesn't, getBenchmark will surface the
+      // right error.
+      if (error instanceof BenchmarkApiError && error.status === 403) {
+        await client.getBenchmark(config.benchmarkSlug);
+      } else {
+        throw error;
+      }
+    }
   }
 
   let runId: string;
