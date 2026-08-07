@@ -99,6 +99,9 @@
     "bench:dns": "tsx benchmarks/src/run.ts --mode dns",
     "generate-dns-svg": "tsx benchmarks/sandbox/generate-dns-svg.ts",
     "smoke:dns": "tsx benchmarks/scripts/smoke.ts --suite=dns",
+    "bench:network-localhost": "tsx benchmarks/src/run.ts --mode network-localhost",
+    "generate-network-localhost-svg": "tsx benchmarks/sandbox/generate-network-localhost-svg.ts",
+    "smoke:network-localhost": "tsx benchmarks/scripts/smoke.ts --suite=network-localhost",
     "test:benchmarks": "node --import tsx --test 'benchmarks/sandbox/__tests__/*.test.ts'"
   },
   "dependencies": {

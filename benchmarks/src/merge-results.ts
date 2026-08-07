@@ -57,6 +57,7 @@ const BENCHMARK_SUITE_IDS = [
   'download',
   'latency',
   'dns',
+  'network-localhost',
 ];
 const BENCHMARK_DIR_NAMES = new Set(BENCHMARK_SUITE_IDS.map(id => id.replace(/-/g, '_')));
 
