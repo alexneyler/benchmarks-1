@@ -96,6 +96,9 @@
     "bench:latency": "tsx benchmarks/src/run.ts --mode latency",
     "generate-latency-svg": "tsx benchmarks/sandbox/generate-latency-svg.ts",
     "smoke:latency": "tsx benchmarks/scripts/smoke.ts --suite=latency",
+    "bench:dns": "tsx benchmarks/src/run.ts --mode dns",
+    "generate-dns-svg": "tsx benchmarks/sandbox/generate-dns-svg.ts",
+    "smoke:dns": "tsx benchmarks/scripts/smoke.ts --suite=dns",
     "test:benchmarks": "node --import tsx --test 'benchmarks/sandbox/__tests__/*.test.ts'"
   },
   "dependencies": {

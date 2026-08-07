@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import { SUITE_CONFIG as CPU_NODE_CONFIG, scoreMetric as scoreCpuNode, parseWorkloadResult as parseCpuNodeResult } from '../sandbox/cpu-node.js';
 import { SUITE_CONFIG as DOWNLOAD_CONFIG, scoreMetric as scoreDownload, parseWorkloadResult as parseDownloadResult } from '../sandbox/download.js';
 import { SUITE_CONFIG as LATENCY_CONFIG, scoreMetric as scoreLatency, parseWorkloadResult as parseLatencyResult } from '../sandbox/latency.js';
+import { SUITE_CONFIG as DNS_CONFIG, scoreMetric as scoreDns, parseWorkloadResult as parseDnsResult } from '../sandbox/dns.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -28,12 +29,20 @@ function getArg(flag: string): string | undefined {
 
 async function main(): Promise<void> {
   const suiteId = getArg('--suite') || 'cpu-node';
-  const suite = suiteId === 'download' ? DOWNLOAD_CONFIG : suiteId === 'latency' ? LATENCY_CONFIG : CPU_NODE_CONFIG;
+  const suite = suiteId === 'download'
+    ? DOWNLOAD_CONFIG
+    : suiteId === 'latency'
+      ? LATENCY_CONFIG
+      : suiteId === 'dns'
+        ? DNS_CONFIG
+        : CPU_NODE_CONFIG;
   const parseWorkloadResult = suiteId === 'download'
     ? parseDownloadResult
     : suiteId === 'latency'
       ? parseLatencyResult
-      : parseCpuNodeResult;
+      : suiteId === 'dns'
+        ? parseDnsResult
+        : parseCpuNodeResult;
   const scriptsDir = path.join(ROOT, 'benchmarks', 'scripts');
   const workloadPath = path.join(scriptsDir, suite.workloadPath);
   const stdoutPath = path.join(scriptsDir, `${suiteId}-stdout.js`);
@@ -81,7 +90,9 @@ async function main(): Promise<void> {
     ? scoreDownload(parsed.metric.value, DOWNLOAD_CONFIG)
     : suiteId === 'latency'
       ? scoreLatency(parsed.metric.value, LATENCY_CONFIG)
-      : scoreCpuNode(parsed.metric.value, CPU_NODE_CONFIG);
+      : suiteId === 'dns'
+        ? scoreDns(parsed.metric.value, DNS_CONFIG)
+        : scoreCpuNode(parsed.metric.value, CPU_NODE_CONFIG);
   console.log(`    ✓ ${parsed.metric.value.toLocaleString()} ${parsed.metric.unit} in ${elapsedMs} ms (score ${score.toFixed(1)}/100)`);
   console.log(`\n[smoke] 1 passed · 0 failed · 1 total`);
   process.exit(0);
