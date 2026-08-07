@@ -16,6 +16,7 @@ import { SUITE_CONFIG as LATENCY_CONFIG, scoreMetric as scoreLatency, parseWorkl
 import { SUITE_CONFIG as DNS_CONFIG, scoreMetric as scoreDns, parseWorkloadResult as parseDnsResult } from '../sandbox/dns.js';
 import { SUITE_CONFIG as NETWORK_LOCALHOST_CONFIG, scoreMetric as scoreNetworkLocalhost, parseWorkloadResult as parseNetworkLocalhostResult } from '../sandbox/network-localhost.js';
 import { SUITE_CONFIG as NETWORK_WAN_CONFIG, scoreMetric as scoreNetworkWan, parseWorkloadResult as parseNetworkWanResult } from '../sandbox/network-wan.js';
+import { SUITE_CONFIG as PGBENCH_CONFIG, scoreMetric as scorePgbench, parseWorkloadResult as parsePgbenchResult } from '../sandbox/pgbench.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -41,7 +42,9 @@ async function main(): Promise<void> {
           ? NETWORK_LOCALHOST_CONFIG
           : suiteId === 'network-wan'
             ? NETWORK_WAN_CONFIG
-            : CPU_NODE_CONFIG;
+            : suiteId === 'pgbench'
+              ? PGBENCH_CONFIG
+              : CPU_NODE_CONFIG;
   const parseWorkloadResult = suiteId === 'download'
     ? parseDownloadResult
     : suiteId === 'latency'
@@ -52,7 +55,9 @@ async function main(): Promise<void> {
           ? parseNetworkLocalhostResult
           : suiteId === 'network-wan'
             ? parseNetworkWanResult
-            : parseCpuNodeResult;
+            : suiteId === 'pgbench'
+              ? parsePgbenchResult
+              : parseCpuNodeResult;
   const scriptsDir = path.join(ROOT, 'benchmarks', 'scripts');
   const workloadPath = path.join(scriptsDir, suite.workloadPath);
   const stdoutPath = path.join(scriptsDir, `${suiteId}-stdout.js`);
@@ -68,13 +73,30 @@ async function main(): Promise<void> {
   if (fs.existsSync(stdoutPath)) {
     fs.copyFileSync(stdoutPath, path.join(workdir, 'bench', 'stdout.js'));
   }
+  let fixtureRoot: string | undefined;
+  if (suiteId === 'pgbench') {
+    const manifestPath = path.join(ROOT, 'dist', 'bundles', 'manifest.json');
+    if (!fs.existsSync(manifestPath)) {
+      console.error('[smoke] ✗ pgbench bundle manifest missing; run pnpm run build:bundles');
+      process.exit(1);
+    }
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as { pglite?: { path?: string } };
+    const bundlePath = manifest.pglite?.path ? path.join(ROOT, 'dist', 'bundles', manifest.pglite.path) : '';
+    fixtureRoot = path.join(workdir, 'fixture');
+    fs.mkdirSync(fixtureRoot, { recursive: true });
+    const extracted = spawnSync('tar', ['-xzf', bundlePath, '-C', fixtureRoot], { encoding: 'utf8' });
+    if (extracted.status !== 0) {
+      console.error(`[smoke] ✗ failed to extract pgbench bundle: ${extracted.stderr || '(no stderr)'}`);
+      process.exit(1);
+    }
+  }
 
   const startedAt = Date.now();
   const result = spawnSync('node', [path.join(workdir, 'bench', suite.workloadPath)], {
     cwd: path.join(workdir, 'bench'),
     encoding: 'utf8',
     timeout: suite.timeoutMs,
-    env: { ...process.env, BENCH_SUITE: suiteId },
+    env: { ...process.env, BENCH_SUITE: suiteId, ...(fixtureRoot ? { BENCH_FIXTURE_ROOT: fixtureRoot } : {}) },
   });
   spawnSync('rm', ['-rf', workdir]);
   const elapsedMs = Date.now() - startedAt;
@@ -106,7 +128,9 @@ async function main(): Promise<void> {
           ? scoreNetworkLocalhost(parsed.metric.value, NETWORK_LOCALHOST_CONFIG)
           : suiteId === 'network-wan'
             ? scoreNetworkWan(parsed.metric.value, NETWORK_WAN_CONFIG)
-            : scoreCpuNode(parsed.metric.value, CPU_NODE_CONFIG);
+            : suiteId === 'pgbench'
+              ? scorePgbench(parsed.metric.value, PGBENCH_CONFIG)
+              : scoreCpuNode(parsed.metric.value, CPU_NODE_CONFIG);
   console.log(`    ✓ ${parsed.metric.value.toLocaleString()} ${parsed.metric.unit} in ${elapsedMs} ms (score ${score.toFixed(1)}/100)`);
   console.log(`\n[smoke] 1 passed · 0 failed · 1 total`);
   process.exit(0);

@@ -105,6 +105,10 @@
     "bench:network-wan": "tsx benchmarks/src/run.ts --mode network-wan",
     "generate-network-wan-svg": "tsx benchmarks/sandbox/generate-network-wan-svg.ts",
     "smoke:network-wan": "tsx benchmarks/scripts/smoke.ts --suite=network-wan",
+    "build:bundles": "tsx benchmarks/scripts/build-bundles.ts",
+    "bench:pgbench": "tsx benchmarks/src/run.ts --mode pgbench",
+    "generate-pgbench-svg": "tsx benchmarks/sandbox/generate-pgbench-svg.ts",
+    "smoke:pgbench": "tsx benchmarks/scripts/smoke.ts --suite=pgbench",
     "test:benchmarks": "node --import tsx --test 'benchmarks/sandbox/__tests__/*.test.ts'"
   },
   "dependencies": {

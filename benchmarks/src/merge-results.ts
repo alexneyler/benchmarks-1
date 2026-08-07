@@ -59,6 +59,7 @@ const BENCHMARK_SUITE_IDS = [
   'dns',
   'network-localhost',
   'network-wan',
+  'pgbench',
 ];
 const BENCHMARK_DIR_NAMES = new Set(BENCHMARK_SUITE_IDS.map(id => id.replace(/-/g, '_')));
 

@@ -14,6 +14,7 @@ import { runLatencyBenchmark, writeLatencyResultsJson, SUITE_CONFIG as LATENCY_C
 import { runDnsBenchmark, writeDnsResultsJson, SUITE_CONFIG as DNS_CONFIG } from '../sandbox/dns.js';
 import { runNetworkLocalhostBenchmark, writeNetworkLocalhostResultsJson, SUITE_CONFIG as NETWORK_LOCALHOST_CONFIG } from '../sandbox/network-localhost.js';
 import { runNetworkWanBenchmark, writeNetworkWanResultsJson, SUITE_CONFIG as NETWORK_WAN_CONFIG } from '../sandbox/network-wan.js';
+import { runPgbenchBenchmark, writePgbenchResultsJson, SUITE_CONFIG as PGBENCH_CONFIG } from '../sandbox/pgbench.js';
 import { runStorageBenchmark, writeStorageResultsJson } from '../storage/benchmark.js';
 import {
   runSnapshotForkBenchmark,
@@ -51,7 +52,7 @@ import type { ThroughputBenchmarkResult, ThroughputTimingResult } from '../brows
 import type { AIGatewayBenchmarkResult } from '../ai-gateway/types.js';
 
 // Per-benchmark suite IDs dispatched via direct imports (like dax)
-const BENCHMARK_SUITE_IDS = ['cpu-node', 'download', 'latency', 'dns', 'network-localhost', 'network-wan'];
+const BENCHMARK_SUITE_IDS = ['cpu-node', 'download', 'latency', 'dns', 'network-localhost', 'network-wan', 'pgbench'];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -750,6 +751,52 @@ async function runNetworkWanBenchmarkSuite(toRun: typeof providers): Promise<voi
   }
 }
 
+/**
+ * Per-benchmark runner for pgbench. Mirrors the other standalone suites:
+ * direct provider iteration, per-day results, and an SVG chart.
+ */
+async function runPgbenchBenchmarkSuite(toRun: typeof providers): Promise<void> {
+  const suite = PGBENCH_CONFIG;
+  const replicas = explicitReplicas ?? suite.defaultReplicas;
+
+  console.log('\n' + '='.repeat(70));
+  console.log(`  BENCHMARK: ${suite.id} (${suite.label})`);
+  console.log(`    Unit: ${suite.unit} (${suite.higherIsBetter ? 'higher is better' : 'lower is better'}), ceiling: ${suite.ceiling}, replicates: ${replicas}`);
+  console.log('='.repeat(70));
+
+  const results = [];
+  for (const providerConfig of toRun) {
+    const result = await runPgbenchBenchmark({ ...providerConfig, replicas });
+    results.push(result);
+  }
+
+  console.log('\n--- Pgbench Benchmark Results ---');
+  for (const r of results) {
+    if (r.skipped) {
+      console.log(`${r.provider}: SKIPPED (${r.skipReason})`);
+      continue;
+    }
+    console.log(`${r.provider}: median ${r.summary.median.toFixed(1)} TPS · score ${r.compositeScore} (${r.summary.n}/${r.iterations.length} OK)`);
+  }
+
+  const timestamp = new Date().toISOString().slice(0, 10);
+  const resultsDir = path.resolve(__dirname, `../../results/${perfModeToDir(suite.id)}`);
+  fs.mkdirSync(resultsDir, { recursive: true });
+  const outPath = path.join(resultsDir, `${timestamp}.json`);
+  await writePgbenchResultsJson(results, outPath);
+  const latestPath = path.join(resultsDir, 'latest.json');
+  fs.copyFileSync(outPath, latestPath);
+  console.log(`Copied latest: ${latestPath}`);
+
+  try {
+    const { spawnSync } = await import('node:child_process');
+    const scriptPath = path.resolve(__dirname, '../sandbox/generate-pgbench-svg.ts');
+    spawnSync('npx', ['tsx', scriptPath], { stdio: 'inherit' });
+  } catch (err) {
+    console.warn(`    [generate-svg] skipped: ${err instanceof Error ? err.message : String(err)}`);
+  }
+}
+
 async function runSandboxDax(toRun: typeof providers): Promise<void> {
   console.log('\n' + '='.repeat(70));
   console.log('  MODE: SANDBOX DAX');
@@ -977,6 +1024,8 @@ async function main() {
         await runNetworkLocalhostBenchmarkSuite(toRun);
       } else if (suiteId === 'network-wan') {
         await runNetworkWanBenchmarkSuite(toRun);
+      } else if (suiteId === 'pgbench') {
+        await runPgbenchBenchmarkSuite(toRun);
       } else {
         console.error(`Unknown benchmark: ${suiteId}`);
         process.exit(1);
