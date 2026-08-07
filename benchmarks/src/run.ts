@@ -10,6 +10,7 @@ import { runStaggeredBenchmark } from '../sandbox/staggered.js';
 import { runDaxBenchmark, writeDaxResultsJson } from '../sandbox/dax.js';
 import { runCpuNodeBenchmark, writeCpuNodeResultsJson, SUITE_CONFIG as CPU_NODE_CONFIG } from '../sandbox/cpu-node.js';
 import { runDownloadBenchmark, writeDownloadResultsJson, SUITE_CONFIG as DOWNLOAD_CONFIG } from '../sandbox/download.js';
+import { runLatencyBenchmark, writeLatencyResultsJson, SUITE_CONFIG as LATENCY_CONFIG } from '../sandbox/latency.js';
 import { runStorageBenchmark, writeStorageResultsJson } from '../storage/benchmark.js';
 import {
   runSnapshotForkBenchmark,
@@ -47,7 +48,7 @@ import type { ThroughputBenchmarkResult, ThroughputTimingResult } from '../brows
 import type { AIGatewayBenchmarkResult } from '../ai-gateway/types.js';
 
 // Per-benchmark suite IDs dispatched via direct imports (like dax)
-const BENCHMARK_SUITE_IDS = ['cpu-node', 'download'];
+const BENCHMARK_SUITE_IDS = ['cpu-node', 'download', 'latency'];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -562,6 +563,52 @@ async function runDownloadBenchmarkSuite(toRun: typeof providers): Promise<void>
   }
 }
 
+/**
+ * Per-benchmark runner for latency. Mirrors the other standalone suites:
+ * direct provider iteration, per-day results, and a generated SVG chart.
+ */
+async function runLatencyBenchmarkSuite(toRun: typeof providers): Promise<void> {
+  const suite = LATENCY_CONFIG;
+  const replicas = explicitReplicas ?? suite.defaultReplicas;
+
+  console.log('\n' + '='.repeat(70));
+  console.log(`  BENCHMARK: ${suite.id} (${suite.label})`);
+  console.log(`    Unit: ${suite.unit} (${suite.higherIsBetter ? 'higher is better' : 'lower is better'}), ceiling: ${suite.ceiling}, replicates: ${replicas}`);
+  console.log('='.repeat(70));
+
+  const results = [];
+  for (const providerConfig of toRun) {
+    const result = await runLatencyBenchmark({ ...providerConfig, replicas });
+    results.push(result);
+  }
+
+  console.log('\n--- Latency Benchmark Results ---');
+  for (const r of results) {
+    if (r.skipped) {
+      console.log(`${r.provider}: SKIPPED (${r.skipReason})`);
+      continue;
+    }
+    console.log(`${r.provider}: median ${r.summary.median.toFixed(1)}ms · score ${r.compositeScore} (${r.summary.n}/${r.iterations.length} OK)`);
+  }
+
+  const timestamp = new Date().toISOString().slice(0, 10);
+  const resultsDir = path.resolve(__dirname, `../../results/${perfModeToDir(suite.id)}`);
+  fs.mkdirSync(resultsDir, { recursive: true });
+  const outPath = path.join(resultsDir, `${timestamp}.json`);
+  await writeLatencyResultsJson(results, outPath);
+  const latestPath = path.join(resultsDir, 'latest.json');
+  fs.copyFileSync(outPath, latestPath);
+  console.log(`Copied latest: ${latestPath}`);
+
+  try {
+    const { spawnSync } = await import('node:child_process');
+    const scriptPath = path.resolve(__dirname, '../sandbox/generate-latency-svg.ts');
+    spawnSync('npx', ['tsx', scriptPath], { stdio: 'inherit' });
+  } catch (err) {
+    console.warn(`    [generate-svg] skipped: ${err instanceof Error ? err.message : String(err)}`);
+  }
+}
+
 async function runSandboxDax(toRun: typeof providers): Promise<void> {
   console.log('\n' + '='.repeat(70));
   console.log('  MODE: SANDBOX DAX');
@@ -781,6 +828,8 @@ async function main() {
         await runCpuNodeBenchmarkSuite(toRun);
       } else if (suiteId === 'download') {
         await runDownloadBenchmarkSuite(toRun);
+      } else if (suiteId === 'latency') {
+        await runLatencyBenchmarkSuite(toRun);
       } else {
         console.error(`Unknown benchmark: ${suiteId}`);
         process.exit(1);

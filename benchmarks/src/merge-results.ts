@@ -55,6 +55,7 @@ type GenericBenchmarkResult = {
 const BENCHMARK_SUITE_IDS = [
   'cpu-node',
   'download',
+  'latency',
 ];
 const BENCHMARK_DIR_NAMES = new Set(BENCHMARK_SUITE_IDS.map(id => id.replace(/-/g, '_')));
 
