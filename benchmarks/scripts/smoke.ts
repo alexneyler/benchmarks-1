@@ -1,5 +1,5 @@
 /**
- * Smoke harness for the cpu-node benchmark. Runs the workload locally
+ * Smoke harness for standalone sandbox benchmarks. Runs the workload locally
  * (no ComputeSDK, no cloud sandbox) and asserts it emits a parseable
  * WorkloadResult JSON line.
  *
@@ -10,7 +10,8 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
-import { SUITE_CONFIG, scoreMetric, parseWorkloadResult } from '../sandbox/cpu-node.js';
+import { SUITE_CONFIG as CPU_NODE_CONFIG, scoreMetric as scoreCpuNode, parseWorkloadResult as parseCpuNodeResult } from '../sandbox/cpu-node.js';
+import { SUITE_CONFIG as DOWNLOAD_CONFIG, scoreMetric as scoreDownload, parseWorkloadResult as parseDownloadResult } from '../sandbox/download.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -25,12 +26,14 @@ function getArg(flag: string): string | undefined {
 }
 
 async function main(): Promise<void> {
-  const suite = SUITE_CONFIG;
+  const suiteId = getArg('--suite') || 'cpu-node';
+  const suite = suiteId === 'download' ? DOWNLOAD_CONFIG : CPU_NODE_CONFIG;
+  const parseWorkloadResult = suiteId === 'download' ? parseDownloadResult : parseCpuNodeResult;
   const scriptsDir = path.join(ROOT, 'benchmarks', 'scripts');
   const workloadPath = path.join(scriptsDir, suite.workloadPath);
-  const stdoutPath = path.join(scriptsDir, 'cpu-node-stdout.js');
+  const stdoutPath = path.join(scriptsDir, `${suiteId}-stdout.js`);
 
-  console.log(`\n[smoke] ▶ cpu-node  (${suite.label})`);
+  console.log(`\n[smoke] ▶ ${suiteId}  (${suite.label})`);
   console.log(`    ceiling: ${suite.ceiling} ${suite.unit} (${suite.higherIsBetter ? '↑ better' : '↓ better'})`);
 
   // Write the workload + stdout helper to a temp dir and run with node
@@ -47,7 +50,7 @@ async function main(): Promise<void> {
     cwd: path.join(workdir, 'bench'),
     encoding: 'utf8',
     timeout: suite.timeoutMs,
-    env: { ...process.env, BENCH_SUITE: 'cpu-node' },
+    env: { ...process.env, BENCH_SUITE: suiteId },
   });
   spawnSync('rm', ['-rf', workdir]);
   const elapsedMs = Date.now() - startedAt;
@@ -69,7 +72,9 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const score = scoreMetric(parsed.metric.value, suite);
+  const score = suiteId === 'download'
+    ? scoreDownload(parsed.metric.value, DOWNLOAD_CONFIG)
+    : scoreCpuNode(parsed.metric.value, CPU_NODE_CONFIG);
   console.log(`    ✓ ${parsed.metric.value.toLocaleString()} ${parsed.metric.unit} in ${elapsedMs} ms (score ${score.toFixed(1)}/100)`);
   console.log(`\n[smoke] 1 passed · 0 failed · 1 total`);
   process.exit(0);
