@@ -225,9 +225,9 @@ export async function runPgbenchBenchmark(
         'Sandbox creation timed out',
       );
 
-      phase = 'bundle upload';
+      phase = 'bundle filesystem upload';
       if (payload.bundleB64) {
-        await uploadBundleChunked(sandbox, payload.bundleB64);
+        await uploadBundle(sandbox, payload.bundleB64);
       }
 
       phase = 'bundle extraction';
@@ -427,22 +427,13 @@ function buildSingleCommand(suite: typeof SUITE_CONFIG, payload: Payload): strin
   return lines.join('\n');
 }
 
-const B64_CHUNK = 128 * 1024;
-
-async function uploadBundleChunked(sandbox: any, bundleB64: string): Promise<void> {
+async function uploadBundle(sandbox: any, bundleB64: string): Promise<void> {
   const cleaned = bundleB64.replace(/\s+/g, '');
-  await runCheckedCommand(sandbox, 'mkdir -p /tmp/bench', 'create bundle upload directory');
-  await runCheckedCommand(sandbox, ': > /tmp/bench/pglite.tar.gz.b64', 'initialize bundle upload');
-  for (let i = 0; i < cleaned.length; i += B64_CHUNK) {
-    const idx = Math.floor(i / B64_CHUNK);
-    const chunk = cleaned.slice(i, i + B64_CHUNK);
-    const marker = '__BENCH_BUNDLE_' + idx.toString(36) + '_' + Math.random().toString(36).slice(2, 8) + '__';
-    await runCheckedCommand(
-      sandbox,
-      'cat >> /tmp/bench/pglite.tar.gz.b64 <<\'' + marker + '\'\n' + chunk + '\n' + marker,
-      'upload bundle chunk ' + (idx + 1),
-    );
+  if (!sandbox.filesystem || typeof sandbox.filesystem.writeFile !== 'function') {
+    throw new Error('provider does not expose the universal filesystem.writeFile API');
   }
+  await sandbox.filesystem.mkdir('/tmp/bench').catch(() => undefined);
+  await sandbox.filesystem.writeFile('/tmp/bench/pglite.tar.gz.b64', cleaned);
   await runCheckedCommand(sandbox, 'base64 -d /tmp/bench/pglite.tar.gz.b64 > /tmp/bench/pglite.tar.gz', 'decode uploaded bundle');
   await runCheckedCommand(sandbox, 'rm /tmp/bench/pglite.tar.gz.b64', 'remove encoded bundle');
 }
