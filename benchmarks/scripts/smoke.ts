@@ -15,6 +15,7 @@ import { SUITE_CONFIG as DOWNLOAD_CONFIG, scoreMetric as scoreDownload, parseWor
 import { SUITE_CONFIG as LATENCY_CONFIG, scoreMetric as scoreLatency, parseWorkloadResult as parseLatencyResult } from '../sandbox/latency.js';
 import { SUITE_CONFIG as DNS_CONFIG, scoreMetric as scoreDns, parseWorkloadResult as parseDnsResult } from '../sandbox/dns.js';
 import { SUITE_CONFIG as NETWORK_LOCALHOST_CONFIG, scoreMetric as scoreNetworkLocalhost, parseWorkloadResult as parseNetworkLocalhostResult } from '../sandbox/network-localhost.js';
+import { SUITE_CONFIG as NETWORK_WAN_CONFIG, scoreMetric as scoreNetworkWan, parseWorkloadResult as parseNetworkWanResult } from '../sandbox/network-wan.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -38,7 +39,9 @@ async function main(): Promise<void> {
         ? DNS_CONFIG
         : suiteId === 'network-localhost'
           ? NETWORK_LOCALHOST_CONFIG
-          : CPU_NODE_CONFIG;
+          : suiteId === 'network-wan'
+            ? NETWORK_WAN_CONFIG
+            : CPU_NODE_CONFIG;
   const parseWorkloadResult = suiteId === 'download'
     ? parseDownloadResult
     : suiteId === 'latency'
@@ -47,7 +50,9 @@ async function main(): Promise<void> {
         ? parseDnsResult
         : suiteId === 'network-localhost'
           ? parseNetworkLocalhostResult
-          : parseCpuNodeResult;
+          : suiteId === 'network-wan'
+            ? parseNetworkWanResult
+            : parseCpuNodeResult;
   const scriptsDir = path.join(ROOT, 'benchmarks', 'scripts');
   const workloadPath = path.join(scriptsDir, suite.workloadPath);
   const stdoutPath = path.join(scriptsDir, `${suiteId}-stdout.js`);
@@ -99,7 +104,9 @@ async function main(): Promise<void> {
         ? scoreDns(parsed.metric.value, DNS_CONFIG)
         : suiteId === 'network-localhost'
           ? scoreNetworkLocalhost(parsed.metric.value, NETWORK_LOCALHOST_CONFIG)
-          : scoreCpuNode(parsed.metric.value, CPU_NODE_CONFIG);
+          : suiteId === 'network-wan'
+            ? scoreNetworkWan(parsed.metric.value, NETWORK_WAN_CONFIG)
+            : scoreCpuNode(parsed.metric.value, CPU_NODE_CONFIG);
   console.log(`    ✓ ${parsed.metric.value.toLocaleString()} ${parsed.metric.unit} in ${elapsedMs} ms (score ${score.toFixed(1)}/100)`);
   console.log(`\n[smoke] 1 passed · 0 failed · 1 total`);
   process.exit(0);

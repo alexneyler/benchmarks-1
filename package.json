@@ -102,6 +102,9 @@
     "bench:network-localhost": "tsx benchmarks/src/run.ts --mode network-localhost",
     "generate-network-localhost-svg": "tsx benchmarks/sandbox/generate-network-localhost-svg.ts",
     "smoke:network-localhost": "tsx benchmarks/scripts/smoke.ts --suite=network-localhost",
+    "bench:network-wan": "tsx benchmarks/src/run.ts --mode network-wan",
+    "generate-network-wan-svg": "tsx benchmarks/sandbox/generate-network-wan-svg.ts",
+    "smoke:network-wan": "tsx benchmarks/scripts/smoke.ts --suite=network-wan",
     "test:benchmarks": "node --import tsx --test 'benchmarks/sandbox/__tests__/*.test.ts'"
   },
   "dependencies": {
