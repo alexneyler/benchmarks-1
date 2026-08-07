@@ -139,8 +139,10 @@ function getResultFiles(type: string): ResultFile[] {
   }
 
   // Generic fallback: results/<type>/latest.json and results/<type>/*/latest.json
-  add(type, 'default');
-  for (const sub of subDirs(type)) add(`${type}/${sub}`, sub);
+  if (files.length === 0) {
+    add(type, 'default');
+    for (const sub of subDirs(type)) add(`${type}/${sub}`, sub);
+  }
 
   return files;
 }
