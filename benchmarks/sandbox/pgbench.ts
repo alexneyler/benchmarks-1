@@ -216,6 +216,7 @@ export async function runPgbenchBenchmark(
     const rStart = performance.now();
 
     let sandbox: any = null;
+    let phase = 'sandbox creation';
     try {
       const compute = config.createCompute();
       sandbox = await withTimeout(
@@ -224,10 +225,26 @@ export async function runPgbenchBenchmark(
         'Sandbox creation timed out',
       );
 
-      if (payload.bundleB64 && payload.bundleLarge) {
+      phase = 'bundle upload';
+      if (payload.bundleB64) {
         await uploadBundleChunked(sandbox, payload.bundleB64);
       }
 
+      phase = 'bundle extraction';
+      await runCheckedCommand(
+        sandbox,
+        'mkdir -p /tmp/bench/fixture && tar -tzf /tmp/bench/pglite.tar.gz >/dev/null && tar -xzf /tmp/bench/pglite.tar.gz -C /tmp/bench/fixture && rm -f /tmp/bench/pglite.tar.gz',
+        'bundle extraction',
+      );
+
+      phase = 'PGlite preflight';
+      await runCheckedCommand(
+        sandbox,
+        `test -f /tmp/bench/fixture/node_modules/@electric-sql/pglite/package.json && node -e 'import("file:///tmp/bench/fixture/node_modules/@electric-sql/pglite/dist/index.js").then(() => console.log("PGLITE_IMPORT_OK")).catch(e => { console.error(e.stack || e); process.exit(1); })'`,
+        'PGlite import preflight',
+      );
+
+      phase = 'pgbench workload';
       const shellCmd = buildSingleCommand(suite, payload);
       const result = await withTimeout(
         sandbox.runCommand(shellCmd, { timeout: suite.timeoutMs }),
@@ -250,7 +267,7 @@ export async function runPgbenchBenchmark(
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      iterations.push({ ok: false, suite: suite.id, reason: classifyError(message), error: message, meta: {} });
+      iterations.push({ ok: false, suite: suite.id, reason: classifyError(message), error: phase + ': ' + message, meta: {} });
     } finally {
       replicateMs.push(performance.now() - rStart);
       if (sandbox) {
@@ -352,7 +369,7 @@ function classifyError(message: string): FailureReason {
 
 interface Payload {
   ok: true; scriptName: string; scriptContent: string; stdoutContent: string;
-  bundleB64: string; bundleLarge: boolean;
+  bundleB64: string;
 }
 interface PayloadErr { ok: false; error: string }
 
@@ -381,7 +398,6 @@ function buildPayload(): Payload | PayloadErr {
     scriptName: SUITE_CONFIG.workloadPath,
     scriptContent, stdoutContent,
     bundleB64,
-    bundleLarge: bundleB64.length > 180 * 1024,
   };
 }
 
@@ -392,7 +408,7 @@ function randomMarker(prefix: string): string {
 function buildSingleCommand(suite: typeof SUITE_CONFIG, payload: Payload): string {
   const lines: string[] = [];
   lines.push('set -e');
-  lines.push('mkdir -p /tmp/bench /tmp/bench/fixture');
+  lines.push('mkdir -p /tmp/bench');
 
   if (payload.stdoutContent) {
     const m1 = randomMarker('STDOUT');
@@ -406,16 +422,6 @@ function buildSingleCommand(suite: typeof SUITE_CONFIG, payload: Payload): strin
   lines.push(payload.scriptContent);
   lines.push(m2);
 
-  if (payload.bundleB64 && !payload.bundleLarge) {
-    const m3 = randomMarker('BUNDLE');
-    lines.push('base64 -d <<\'' + m3 + '\' > /tmp/bench/pglite.tar.gz');
-    lines.push(payload.bundleB64);
-    lines.push(m3);
-  }
-  if (payload.bundleB64) {
-    lines.push('tar -xzf /tmp/bench/pglite.tar.gz -C /tmp/bench/fixture && rm -f /tmp/bench/pglite.tar.gz');
-  }
-
   lines.push('BENCH_FIXTURE_ROOT=/tmp/bench/fixture BENCH_SUITE=' + suite.id + ' node /tmp/bench/' + payload.scriptName);
 
   return lines.join('\n');
@@ -425,16 +431,29 @@ const B64_CHUNK = 128 * 1024;
 
 async function uploadBundleChunked(sandbox: any, bundleB64: string): Promise<void> {
   const cleaned = bundleB64.replace(/\s+/g, '');
-  await sandbox.runCommand('mkdir -p /tmp/bench');
-  await sandbox.runCommand(': > /tmp/bench/pglite.tar.gz.b64');
+  await runCheckedCommand(sandbox, 'mkdir -p /tmp/bench', 'create bundle upload directory');
+  await runCheckedCommand(sandbox, ': > /tmp/bench/pglite.tar.gz.b64', 'initialize bundle upload');
   for (let i = 0; i < cleaned.length; i += B64_CHUNK) {
     const idx = Math.floor(i / B64_CHUNK);
     const chunk = cleaned.slice(i, i + B64_CHUNK);
     const marker = '__BENCH_BUNDLE_' + idx.toString(36) + '_' + Math.random().toString(36).slice(2, 8) + '__';
-    await sandbox.runCommand('cat >> /tmp/bench/pglite.tar.gz.b64 <<\'' + marker + '\'\n' + chunk + '\n' + marker);
+    await runCheckedCommand(
+      sandbox,
+      'cat >> /tmp/bench/pglite.tar.gz.b64 <<\'' + marker + '\'\n' + chunk + '\n' + marker,
+      'upload bundle chunk ' + (idx + 1),
+    );
   }
-  await sandbox.runCommand('base64 -d /tmp/bench/pglite.tar.gz.b64 > /tmp/bench/pglite.tar.gz');
-  await sandbox.runCommand('rm /tmp/bench/pglite.tar.gz.b64');
+  await runCheckedCommand(sandbox, 'base64 -d /tmp/bench/pglite.tar.gz.b64 > /tmp/bench/pglite.tar.gz', 'decode uploaded bundle');
+  await runCheckedCommand(sandbox, 'rm /tmp/bench/pglite.tar.gz.b64', 'remove encoded bundle');
+}
+
+async function runCheckedCommand(sandbox: any, command: string, label: string): Promise<void> {
+  const result = await sandbox.runCommand(command, { timeout: 120_000 }) as { exitCode?: number; stdout?: string; stderr?: string };
+  if (result.exitCode !== 0) {
+    const stderr = (result.stderr || '').slice(-1000);
+    const stdout = (result.stdout || '').slice(-500);
+    throw new Error(`${label} failed (exit ${result.exitCode ?? 'unknown'})${stderr ? `; stderr: ${stderr}` : ''}${stdout ? `; stdout: ${stdout}` : ''}`);
+  }
 }
 
 function lastMeta(results: PgbenchWorkloadResult[]): PgbenchWorkloadMeta | undefined {
