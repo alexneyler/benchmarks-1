@@ -777,6 +777,11 @@ async function runPgbenchBenchmarkSuite(toRun: typeof providers): Promise<void> 
       continue;
     }
     console.log(`${r.provider}: median ${r.summary.median.toFixed(1)} TPS · score ${r.compositeScore} (${r.summary.n}/${r.iterations.length} OK)`);
+    for (const iteration of r.iterations) {
+      if (!iteration.ok) {
+        console.error(`${r.provider}: pgbench failure [${iteration.reason}] ${iteration.error || '(no error details)'}`);
+      }
+    }
   }
 
   const timestamp = new Date().toISOString().slice(0, 10);
