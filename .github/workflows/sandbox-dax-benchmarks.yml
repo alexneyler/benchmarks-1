@@ -259,3 +259,5 @@ jobs:
       - name: Commit and push
         if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
         run: benchmarks/scripts/commit-results.sh sandbox-dax-benchmarks 'results/sandbox-dax/' 'dax.svg'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

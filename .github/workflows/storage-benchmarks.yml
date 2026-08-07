@@ -261,3 +261,5 @@ jobs:
       - name: Commit and push
         if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
         run: benchmarks/scripts/commit-results.sh storage-benchmarks 'package.json' 'pnpm-lock.yaml' 'storage_*.svg' 'results/storage/'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

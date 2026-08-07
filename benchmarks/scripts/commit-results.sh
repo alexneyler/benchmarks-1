@@ -71,7 +71,7 @@ git commit -m "$title"
 # Fetch the latest base before pushing to minimize the chance the PR branch
 # is behind. This handles the common stale checkout case.
 git fetch origin "$base_branch"
-git rebase "origin/$base_branch" || { git rebase --abort; exit 1; }
+git rebase --autostash "origin/$base_branch" || { git rebase --abort; exit 1; }
 
 if ! git push origin "$branch"; then
   echo "Failed to push branch $branch" >&2
@@ -112,6 +112,7 @@ for attempt in 1 2 3 4 5; do
 
   if [ "$(echo "$merge_resp" | jq -r '.merged // false')" = "true" ]; then
     echo "Merged pull request #$pr_number"
+    git push origin --delete "$branch" || true
     exit 0
   fi
 
@@ -121,7 +122,7 @@ for attempt in 1 2 3 4 5; do
   # If the PR is behind the base, rebase and force-push the branch.
   if echo "$msg" | grep -qiE "not mergeable|merge conflict|head was modified|required status check|update branch|ahead|behind"; then
     git fetch origin "$base_branch"
-    if git rebase "origin/$base_branch"; then
+    if git rebase --autostash "origin/$base_branch"; then
       if git push origin "$branch" --force-with-lease; then
         echo "Rebased and force-pushed; retrying merge"
         sleep 5

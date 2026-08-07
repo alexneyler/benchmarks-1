@@ -22,3 +22,5 @@ jobs:
       - run: pnpm run generate-pricing-svg
       - name: Commit and push
         run: benchmarks/scripts/commit-results.sh pricing-svg 'pricing.svg'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

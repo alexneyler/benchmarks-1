@@ -306,3 +306,5 @@ jobs:
       - name: Commit and push
         if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
         run: benchmarks/scripts/commit-results.sh sandbox-tti-benchmarks 'package.json' 'pnpm-lock.yaml' 'results.svg' '*_tti.svg' 'pricing.svg' 'results/'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

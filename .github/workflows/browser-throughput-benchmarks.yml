@@ -272,3 +272,5 @@ jobs:
       - name: Commit and push
         if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
         run: benchmarks/scripts/commit-results.sh browser-throughput-benchmarks 'package.json' 'pnpm-lock.yaml' 'browser-throughput.svg' 'results/browser-throughput/'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

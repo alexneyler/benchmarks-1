@@ -156,3 +156,5 @@ jobs:
       - name: Commit and push
         if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
         run: benchmarks/scripts/commit-results.sh sandbox-realworld 'results/' 'realworld.svg'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
