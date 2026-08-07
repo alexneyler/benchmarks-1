@@ -138,10 +138,14 @@ function getResultFiles(type: string): ResultFile[] {
     add('sandbox-dax', 'default');
   }
 
-  // Generic fallback: results/<type>/latest.json and results/<type>/*/latest.json
+  // Generic fallback: non-special sandbox modes write to results/<type>_tti/latest.json
+  // (matching merge-results.ts modeToDir), so probe both <type> and <type>_tti.
   if (files.length === 0) {
-    add(type, 'default');
-    for (const sub of subDirs(type)) add(`${type}/${sub}`, sub);
+    const candidates = [type, `${type}_tti`];
+    for (const dir of candidates) {
+      add(dir, dir);
+      for (const sub of subDirs(dir)) add(`${dir}/${sub}`, sub);
+    }
   }
 
   return files;
