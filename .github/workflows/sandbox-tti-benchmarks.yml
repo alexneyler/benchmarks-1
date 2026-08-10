@@ -106,6 +106,7 @@ jobs:
           node-version: 24
           cache: 'pnpm'
       - uses: namespacelabs/nscloud-setup@v0
+        if: env.SHOULD_RUN == 'true'
       - name: Install dependencies
         if: env.SHOULD_RUN == 'true'
         run: |
