@@ -289,12 +289,10 @@ function applyShape<T extends BaseParticipant>(
   shape: BenchmarkShape | undefined,
 ): BenchmarkConfig<T> {
   if (!shape) return config;
-  const kind = shape.kind ?? config.benchmarkKind;
   return {
     ...config,
     benchmarkSlug: shape.slug,
     benchmarkName: shape.name ?? shape.slug,
-    ...(kind ? { benchmarkKind: kind } : {}),
     ...(shape.staggerDelayMs !== undefined ? { staggerDelayMs: shape.staggerDelayMs } : {}),
   };
 }
@@ -371,7 +369,6 @@ export async function runBenchmark<T extends BaseParticipant>(
   if (identityIsOurs) {
     await client.upsertBenchmark(config.benchmarkSlug, {
       name: config.benchmarkName,
-      ...(config.benchmarkKind ? { kind: config.benchmarkKind } : {}),
     });
   }
 
@@ -383,7 +380,6 @@ export async function runBenchmark<T extends BaseParticipant>(
     // providers this process runs and let each sibling register its own, so the
     // run lists exactly who's benchmarked and each brings its own task count.
     const { run, organizationSlug } = await client.createRun(config.benchmarkSlug, {
-      name: config.benchmarkName,
       runKey: args.runKey,
     });
     runId = run.id;
@@ -391,18 +387,17 @@ export async function runBenchmark<T extends BaseParticipant>(
     for (const participant of available) {
       await client.upsertParticipant(config.benchmarkSlug, runId, participant.name, { totalTasks });
     }
-    console.log(`Shared run (key "${args.runKey}"): ${runId}`);
+    console.log(`Shared run (key "${args.runKey}"): ${run.name} (${runId})`);
     console.log(`View at: ${dashboardUrl}\n`);
   } else {
     const { run, organizationSlug } = await client.createRun(config.benchmarkSlug, {
-      name: `${config.benchmarkSlug} — ${totalTasks} iterations, concurrency ${resolved.concurrency}`,
       totalTasks,
       workerCount: 1,
       participants: available.map((p) => p.name),
     });
     runId = run.id;
     dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
-    console.log(`Run created: ${runId}`);
+    console.log(`Run created: ${run.name} (${runId})`);
     console.log(`View at: ${dashboardUrl}\n`);
   }
 

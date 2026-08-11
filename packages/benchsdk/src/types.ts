@@ -14,7 +14,6 @@ export interface BenchmarkResource {
   id: string;
   slug: string;
   name: string;
-  kind?: string | null;
   status?: string;
   config?: JsonObject;
   defaultRunConfig?: JsonObject;
@@ -104,7 +103,6 @@ export interface BenchmarkAssignment {
 
 export interface UpsertBenchmarkInput {
   name: string;
-  kind?: string;
   status?: string;
   config?: JsonObject;
   defaultRunConfig?: JsonObject;
@@ -112,14 +110,12 @@ export interface UpsertBenchmarkInput {
 
 export interface UpdateBenchmarkInput {
   name?: string;
-  kind?: string;
   status?: string;
   config?: JsonObject;
   defaultRunConfig?: JsonObject;
 }
 
 export interface CreateRunInput {
-  name?: string;
   /**
    * Idempotency key for get-or-create: sibling callers passing the same key
    * (per org + benchmark) converge on one run instead of each opening its own.
@@ -133,7 +129,6 @@ export interface CreateRunInput {
 }
 
 export interface UpdateRunInput {
-  name?: string;
   status?: BenchmarkRunStatus;
   config?: JsonObject;
 }
@@ -321,14 +316,14 @@ export interface BenchmarkResultsOverviewRun {
 }
 
 export interface BenchmarkResultsOverview {
-  benchmark: Pick<BenchmarkResource, 'id' | 'slug' | 'name' | 'kind'>;
+  benchmark: Pick<BenchmarkResource, 'id' | 'slug' | 'name'>;
   generatedAt: string;
   analytics: BenchmarkResultsOverviewAnalytics;
   items: BenchmarkResultsOverviewRun[];
 }
 
 export interface BenchmarkRunResults {
-  benchmark: Pick<BenchmarkResource, 'id' | 'slug' | 'name' | 'kind'>;
+  benchmark: Pick<BenchmarkResource, 'id' | 'slug' | 'name'>;
   run: Pick<BenchmarkRun, 'id' | 'status' | 'totalTasks' | 'workerCount'>;
   generatedAt: string;
   overall: BenchmarkResultSummary;

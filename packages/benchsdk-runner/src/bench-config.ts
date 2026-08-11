@@ -50,12 +50,10 @@ export type GroupBy = 'participant' | 'round';
  * override it.
  */
 export interface BenchmarkShape {
-  /** Platform slug this shape reports under (e.g. 'sandbox-burst-local'). */
+  /** Platform slug this shape reports under (e.g. 'sandbox-tti'). */
   slug: string;
   /** Display name shown on the platform; defaults to the slug. */
   name?: string;
-  /** Benchmark kind; defaults to the config's `benchmarkKind`. */
-  kind?: string;
   /** Default stagger delay (ms) for this shape; overridable with `--stagger-delay-ms`. */
   staggerDelayMs?: number;
 }
@@ -176,8 +174,6 @@ export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
   benchmarkSlug: string;
   /** Human-readable name shown on the platform. Overridable with `--name`. */
   benchmarkName: string;
-  /** Optional platform benchmark kind (e.g. 'sandbox'). */
-  benchmarkKind?: string;
   /**
    * Named variants of this benchmark, selected with `--shape <name>`. Each
    * shape swaps in its own platform identity (and optional stable knob) while
