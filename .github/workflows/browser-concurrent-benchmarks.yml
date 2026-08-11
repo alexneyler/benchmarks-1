@@ -9,13 +9,6 @@ on:
       - 'benchmarks/src/util/**'
       - 'benchmarks/src/merge-results.ts'
       - 'package.json'
-  pull_request:
-    paths:
-      - 'benchmarks/browser/*concurrent*'
-      - 'benchmarks/browser/concurrent-*'
-      - 'benchmarks/src/util/**'
-      - 'benchmarks/src/merge-results.ts'
-      - 'package.json'
   schedule:
     - cron: '0 4 * * 1' # Weekly on Monday at 04:00 UTC (offset from other browser benchmarks)
   workflow_dispatch:
@@ -30,15 +23,14 @@ concurrency:
   group: browser-concurrent-benchmarks
   cancel-in-progress: true
 
-permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
+permissions: {}
 
 jobs:
   setup:
     name: Resolve target pages
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    permissions:
+      contents: read
     outputs:
       urls: ${{ steps.pick.outputs.urls }}
     steps:
@@ -47,8 +39,9 @@ jobs:
         run: |
           # Resolve one concrete article per round up front so every
           # provider benchmarks against the same page in a given round.
-          # We need at most 50 URLs (max iterations at c1).
-          count=50
+          # On push (smoke test) we only need 3; on schedule/dispatch we
+          # need up to 50 (max iterations at c1).
+          count=${{ github.event_name == 'push' && '3' || '50' }}
           urls=()
           for i in $(seq 1 "$count"); do
             for attempt in 1 2 3 4 5; do
@@ -77,6 +70,9 @@ jobs:
   bench:
     name: Bench ${{ matrix.provider }} at c${{ matrix.concurrency_level }}
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    permissions:
+      contents: read
+      id-token: write
     needs: setup
     timeout-minutes: 60
     strategy:
@@ -127,10 +123,13 @@ jobs:
           . benchmarks/scripts/load-vault-secrets.sh '^(BROWSERBASE_API_KEY|BROWSERBASE_PROJECT_ID|BROWSER_USE_API_KEY|HYPERBROWSER_API_KEY|KERNEL_API_KEY|NOTTE_API_KEY|STEEL_API_KEY|TILION_API_KEY|TILION_BASE_URL|COMPUTESDK_ADMIN_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
 
           RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          # On push (smoke test) use 3 iterations regardless of concurrency
+          # level; on schedule/workflow_dispatch use the full matrix value.
+          ITERS=${{ github.event_name == 'push' && '3' || matrix.iterations }}
           npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/browser/browser-concurrent.bench.ts \
             --provider ${{ matrix.provider }} \
             --concurrency-level ${{ matrix.concurrency_level }} \
-            --iterations ${{ matrix.iterations }} \
+            --iterations "$ITERS" \
             --run-key "$RUN_KEY"
       - name: Upload results
         if: always()
@@ -144,6 +143,9 @@ jobs:
   collect:
     name: Collect Results
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    permissions:
+      contents: write
+      pull-requests: write
     needs: bench
     if: always()
     steps:
@@ -182,7 +184,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Commit and push
-        if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
+        if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.event.inputs.dry_run != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
