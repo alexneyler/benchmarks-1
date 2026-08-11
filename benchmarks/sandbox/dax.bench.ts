@@ -38,7 +38,6 @@ const destroyTimeoutMs = 15_000;
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'sandbox-dax-local',
   benchmarkName: 'Dax sandbox benchmark (local)',
-  benchmarkKind: 'sandbox',
   iterations: 3,
   concurrency: 1,
   groupBy: 'round',

@@ -55,7 +55,6 @@ function legacyShape(run: ResolvedRunConfig): { resultsDir: string; mode?: Bench
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'sandbox-tti-local',
   benchmarkName: 'Sandbox TTI (local)',
-  benchmarkKind: 'sandbox',
   iterations: 2,
   concurrency: 1,
   // The launch shapes: same task, distinct platform identities. `--shape burst`

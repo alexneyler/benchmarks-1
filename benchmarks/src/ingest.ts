@@ -184,13 +184,6 @@ function deriveBenchmarkName(slug: string): string {
     .join(' ');
 }
 
-function deriveBenchmarkKind(type: string): string {
-  if (['storage', 'snapshot-fork'].includes(type)) return 'storage';
-  if (['browser', 'browser-throughput'].includes(type)) return 'browser';
-  if (type === 'ai-gateway') return 'ai-gateway';
-  return 'sandbox';
-}
-
 function makeRunKey(type: string, group: string): string {
   const parts = [
     'ingest',
@@ -450,11 +443,9 @@ async function ingestFile(file: ResultFile, type: string) {
   const groupMode = raw.config?.mode || file.group;
   const benchmarkSlug = deriveBenchmarkSlug(type, file.group);
   const benchmarkName = deriveBenchmarkName(benchmarkSlug);
-  const benchmarkKind = deriveBenchmarkKind(type);
 
   await api('PUT', `/benchmarks/${encodeURIComponent(benchmarkSlug)}`, {
     name: benchmarkName,
-    kind: benchmarkKind,
     status: 'active',
     ...(ORGANIZATION_ID ? { organizationId: ORGANIZATION_ID } : {}),
   });

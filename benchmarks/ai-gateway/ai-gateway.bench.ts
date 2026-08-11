@@ -138,7 +138,6 @@ if (phases.length === 0) {
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'ai-gateway',
   benchmarkName: 'AI Gateway Benchmark',
-  benchmarkKind: 'ai-gateway',
   phases,
   groupBy: 'round',
   participants: providers,
