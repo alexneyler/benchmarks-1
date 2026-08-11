@@ -623,8 +623,8 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
       }, options.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS);
       resultFlush.unref?.();
 
-      // Accumulated across the worker's tasks via `ctx.log`, uploaded once as a
-      // worker log artifact when the worker finishes.
+      // Accumulated across the worker's tasks via `ctx.step` and `ctx.log`,
+      // uploaded once as a worker log artifact when the worker finishes.
       const workerLogLines: string[] = [];
 
       async function runFinishHook(status: 'success' | 'error'): Promise<void> {
@@ -713,10 +713,14 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
               if (stepOptions.readiness === 'poll') {
                 await waitForStepReady(name, stepOptions);
               }
-              return await fn();
+              const value = await fn();
+              workerLogLines.push(`${new Date().toISOString()} [task ${taskIndex}] ${name}`);
+              return value;
             } catch (error) {
               stepRecord.status = 'error';
               stepRecord.errorCode = getErrorCode(error);
+              workerLogLines.push(`${new Date().toISOString()} [task ${taskIndex}] ${name}`);
+              workerLogLines.push(`  error: ${error instanceof Error ? error.message : String(error)}`);
               throw error;
             } finally {
               activeStep = previousStep;
