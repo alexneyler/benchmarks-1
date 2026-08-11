@@ -56,7 +56,6 @@ const concurrentTimeoutMs =
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'browser-concurrent-local',
   benchmarkName: 'Browser Concurrent (local)',
-  benchmarkKind: 'browser',
   iterations: 1,
   concurrency: 1,
   participants: throughputProviders,
