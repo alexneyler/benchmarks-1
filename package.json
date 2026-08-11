@@ -73,8 +73,6 @@
     "bench:burst-100k:watch": "pnpm run bench:scale:watch",
     "update-readme": "tsx benchmarks/src/update-readme.ts",
     "generate-svg": "tsx benchmarks/sandbox/generate-svg.ts",
-    "generate-svg:sequential": "tsx benchmarks/sandbox/generate-svg.ts --mode sequential",
-    "generate-svg:staggered": "tsx benchmarks/sandbox/generate-svg.ts --mode staggered",
     "generate-svg:burst": "tsx benchmarks/sandbox/generate-svg.ts --mode burst",
     "generate-dax-svg": "tsx benchmarks/sandbox/generate-dax-svg.ts",
     "generate-storage-svg": "tsx benchmarks/storage/generate-svg.ts",
