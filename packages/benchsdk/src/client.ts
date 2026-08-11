@@ -49,6 +49,7 @@ const DEFAULT_READY_POLL_INTERVAL_MS = 1000;
 const MAX_TASK_RESULT_RECORDS = 5000;
 const MAX_TASK_RECORD_STEPS = 100;
 const MAX_HEARTBEAT_CONCURRENCY_SAMPLES = 20;
+const MAX_WORKER_LOG_LINES = 100_000;
 
 export class BenchmarkApiError extends Error {
   constructor(
@@ -626,6 +627,17 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
       // Accumulated across the worker's tasks via `ctx.step` and `ctx.log`,
       // uploaded once as a worker log artifact when the worker finishes.
       const workerLogLines: string[] = [];
+      let workerLogTruncated = false;
+      function appendWorkerLog(line: string): void {
+        if (workerLogLines.length >= MAX_WORKER_LOG_LINES) {
+          if (!workerLogTruncated) {
+            workerLogTruncated = true;
+            workerLogLines.push('... (worker log truncated)');
+          }
+          return;
+        }
+        workerLogLines.push(line);
+      }
 
       async function runFinishHook(status: 'success' | 'error'): Promise<void> {
         await options.onFinish?.({
@@ -685,7 +697,7 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
 
           function log(message: string, meta?: JsonObject): void {
             const suffix = meta && Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : '';
-            workerLogLines.push(`${new Date().toISOString()} [task ${taskIndex}] ${message}${suffix}`);
+            appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] ${message}${suffix}`);
           }
 
           async function step<T>(name: string, fn: () => Promise<T> | T, stepOptions: DefineStepOptions = {}): Promise<T> {
@@ -714,13 +726,13 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
                 await waitForStepReady(name, stepOptions);
               }
               const value = await fn();
-              workerLogLines.push(`${new Date().toISOString()} [task ${taskIndex}] ${name}`);
+              appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] ${name}`);
               return value;
             } catch (error) {
               stepRecord.status = 'error';
               stepRecord.errorCode = getErrorCode(error);
-              workerLogLines.push(`${new Date().toISOString()} [task ${taskIndex}] ${name}`);
-              workerLogLines.push(`  error: ${error instanceof Error ? error.message : String(error)}`);
+              appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] ${name}`);
+              appendWorkerLog(`  error: ${error instanceof Error ? error.message : String(error)}`);
               throw error;
             } finally {
               activeStep = previousStep;
