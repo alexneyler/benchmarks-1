@@ -1,7 +1,7 @@
 /**
  * Merge per-provider benchmark results into combined result files.
  *
- * Usage: tsx src/merge-results.ts --input <artifacts-dir> [--mode storage|snapshot-fork|browser|browser-throughput|ai-gateway]
+ * Usage: tsx src/merge-results.ts --input <artifacts-dir> [--mode storage|snapshot-fork|browser|browser-throughput|browser-concurrent|ai-gateway]
  *
  * By default, merges sandbox benchmark results: reads latest.json files from
  * the input directory, groups by mode (sequential/staggered/burst), computes
@@ -21,6 +21,11 @@
  * With --mode ai-gateway, merges AI gateway benchmark results: deduplicates
  * by provider, computes AI-gateway-specific composite scores, and writes
  * combined files to results/ai-gateway/latest.json.
+ *
+ * With --mode browser-concurrent, merges concurrent benchmark results:
+ * groups by concurrency level (c1/c5/c10/c25/c50), deduplicates by provider
+ * within each level, computes concurrent-specific composite scores, and
+ * writes combined files to results/browser-concurrent/<level>/latest.json.
  */
 import fs from 'fs';
 import path from 'path';
@@ -33,12 +38,14 @@ import {
   sortThroughputByCompositeScore,
 } from '../browser/throughput-scoring.js';
 import { computeAIGatewayCompositeScores, sortAIGatewayByCompositeScore } from '../ai-gateway/scoring.js';
+import { computeConcurrentCompositeScores, sortConcurrentByCompositeScore } from '../browser/concurrent-scoring.js';
 import { printResultsTable, writeResultsJson } from '../sandbox/table.js';
 import type { BenchmarkResult } from '../sandbox/types.js';
 import type { StorageBenchmarkResult } from '../storage/types.js';
 import type { SnapshotForkBenchmarkResult } from '../storage/snapshot-fork-types.js';
 import type { BrowserBenchmarkResult } from '../browser/types.js';
 import type { ThroughputBenchmarkResult } from '../browser/throughput-types.js';
+import type { ConcurrentBenchmarkResult } from '../browser/concurrent-types.js';
 import type { AIGatewayBenchmarkResult } from '../ai-gateway/types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -734,6 +741,108 @@ async function mainAIGateway() {
   console.log(`Copied latest: ${latestPath}`);
 }
 
+/**
+ * Merge browser-concurrent benchmark results. Results from different
+ * concurrency levels are stored in separate subdirectories (c1, c5, c10,
+ * c25, c50). Each subdirectory's latest.json contains results from a single
+ * provider (one CI job per provider × concurrency level). This function
+ * merges all providers' results within each concurrency level.
+ */
+async function mainBrowserConcurrent() {
+  // Find all latest.json files, grouped by concurrency level directory
+  const jsonFiles: string[] = [];
+  function walk(dir: string) {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name === 'latest.json') jsonFiles.push(full);
+    }
+  }
+  walk(path.resolve(inputDir!));
+
+  if (jsonFiles.length === 0) {
+    console.error(`No latest.json files found in ${inputDir}`);
+    process.exit(1);
+  }
+
+  console.log(`Found ${jsonFiles.length} result files`);
+
+  // Group files by their parent directory name (c1, c5, c10, c25, c50)
+  const filesByLevel = new Map<string, string[]>();
+  for (const file of jsonFiles) {
+    const levelDir = path.basename(path.dirname(file));
+    if (!filesByLevel.has(levelDir)) filesByLevel.set(levelDir, []);
+    filesByLevel.get(levelDir)!.push(file);
+  }
+
+  const { writeConcurrentResultsJson } = await import('../browser/concurrent-benchmark.js');
+
+  for (const [levelDir, files] of filesByLevel) {
+    const seen = new Map<string, { result: ConcurrentBenchmarkResult; fromSingleProvider: boolean }>();
+
+    for (const file of files) {
+      const raw = JSON.parse(fs.readFileSync(file, 'utf-8')) as { results: ConcurrentBenchmarkResult[] };
+      const fromSingleProvider = raw.results.length === 1;
+      for (const result of raw.results) {
+        const existing = seen.get(result.provider);
+        if (!existing || (fromSingleProvider && !existing.fromSingleProvider)) {
+          seen.set(result.provider, { result, fromSingleProvider });
+        }
+      }
+    }
+
+    const deduped = Array.from(seen.values()).map(e => e.result);
+    const concurrencyLevel = deduped[0]?.concurrencyLevel ?? parseInt(levelDir.replace('c', ''), 10);
+    console.log(`\nMerging ${deduped.length} provider results for mode: browser-concurrent (c${concurrencyLevel})`);
+
+    computeConcurrentCompositeScores(deduped);
+
+    // Print table
+    const sorted = sortConcurrentByCompositeScore(deduped);
+    console.log(`\n${'='.repeat(120)}`);
+    console.log(`  BROWSER CONCURRENT BENCHMARK RESULTS (c${concurrencyLevel})`);
+    console.log('='.repeat(120));
+    console.log(
+      ['Provider', 'Score', 'Create', 'Task', 'Task (p95)', 'Screenshot', 'APS/sess', 'Alive', 'Success']
+        .map((h, i) => h.padEnd([14, 8, 10, 10, 10, 12, 10, 8, 10][i]))
+        .join(' | '),
+    );
+    for (const r of sorted) {
+      if (r.skipped) continue;
+      const score = r.compositeScore !== undefined ? r.compositeScore.toFixed(1) : '--';
+      const createMed = `${(r.summary.createMs.median / 1000).toFixed(2)}s`;
+      const taskMed = `${(r.summary.taskMs.median / 1000).toFixed(2)}s`;
+      const taskP95 = `${(r.summary.taskMs.p95 / 1000).toFixed(2)}s`;
+      const screenshotMed = `${Math.round(r.summary.perActionType.screenshot?.median ?? 0)}ms`;
+      const aps = r.summary.perSessionActionsPerSecond.median.toFixed(2);
+      const alive = `${r.summary.sessionsAlive.median}/${r.concurrencyLevel}`;
+      let totalSessions = 0, fullSuccess = 0;
+      for (const round of r.rounds) {
+        for (const session of round.sessions) {
+          totalSessions++;
+          if (!session.error && session.actionsCompleted === 10) fullSuccess++;
+        }
+      }
+      const successPct = totalSessions > 0 ? `${((fullSuccess / totalSessions) * 100).toFixed(0)}%` : '0%';
+      console.log([r.provider.padEnd(14), score.padEnd(8), createMed.padEnd(10), taskMed.padEnd(10), taskP95.padEnd(10), screenshotMed.padEnd(12), aps.padEnd(10), alive.padEnd(8), successPct.padEnd(10)].join(' | '));
+    }
+    console.log('='.repeat(120));
+
+    // Write combined results
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const resultsDir = path.resolve(ROOT, `results/browser-concurrent/${levelDir}`);
+    fs.mkdirSync(resultsDir, { recursive: true });
+
+    const outPath = path.join(resultsDir, `${timestamp}.json`);
+    await writeConcurrentResultsJson(deduped, outPath, { concurrencyLevel });
+
+    const latestPath = path.join(resultsDir, 'latest.json');
+    fs.copyFileSync(outPath, latestPath);
+    console.log(`Copied latest: ${latestPath}`);
+  }
+}
+
 const runner = mergeMode === 'storage'
   ? mainStorage
   : mergeMode === 'snapshot-fork'
@@ -742,6 +851,8 @@ const runner = mergeMode === 'storage'
   ? mainBrowser
   : mergeMode === 'browser-throughput'
   ? mainBrowserThroughput
+  : mergeMode === 'browser-concurrent'
+  ? mainBrowserConcurrent
   : mergeMode === 'ai-gateway'
   ? mainAIGateway
   : main;
