@@ -70,6 +70,9 @@ export function recordsToConcurrentResults(
         sessions,
       };
 
+      if (d.createTimedOut === true) round.createTimedOut = true;
+      if (d.roundFailed === true || round.sessionsAlive === 0) round.roundFailed = true;
+
       const errMsg = str(d.errorMessage);
       if (r.status === 'error' || errMsg) {
         round.error = errMsg ?? r.errorCode ?? 'error';

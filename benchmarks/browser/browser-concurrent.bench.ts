@@ -11,9 +11,13 @@
  * benchmark's per-file-size directories:
  *   results/browser-concurrent/c1/, c5/, c10/, c25/, c50/
  *
- *   bench run benchmarks/browser/browser-concurrent.bench.ts --concurrency-level 50 --iterations 1
- *   bench run benchmarks/browser/browser-concurrent.bench.ts --concurrency-level 1 --iterations 50
- *   bench run benchmarks/browser/browser-concurrent.bench.ts --provider browserbase --concurrency-level 25 --iterations 2
+ *   bench run benchmarks/browser/browser-concurrent.bench.ts --concurrency-level 50 --iterations 3
+ *   bench run benchmarks/browser/browser-concurrent.bench.ts --concurrency-level 1 --iterations 10
+ *   bench run benchmarks/browser/browser-concurrent.bench.ts --provider browserbase --concurrency-level 25 --iterations 3
+ *
+ * Levels must be run against a provider one at a time. Running them
+ * concurrently puts every level's sessions on the same provider account
+ * simultaneously, which destroys the comparison the benchmark is making.
  */
 import '../src/env.js';
 import path from 'node:path';
@@ -86,9 +90,18 @@ function parseNavUrls(): string[] {
   return raw.split(/\s+/).filter(u => u.length > 0);
 }
 
-function navUrlForRound(roundIndex: number): string {
-  if (NAV_URLS.length > 0) return NAV_URLS[roundIndex % NAV_URLS.length];
-  return RANDOM_URL;
+/**
+ * Pick the article for one session.
+ *
+ * Indexing by session rather than by round keeps the page mix comparable
+ * across concurrency levels. Sharing a single URL per round would let a c50
+ * round hit one CDN-warmed article with 50 sessions while a c1 round pays
+ * cold-fetch cost on a different article every time, so page weight and cache
+ * state would vary with the dimension under test.
+ */
+function navUrlForSession(roundIndex: number, sessionIndex: number): string {
+  if (NAV_URLS.length === 0) return RANDOM_URL;
+  return NAV_URLS[(roundIndex * concurrencyLevel + sessionIndex) % NAV_URLS.length];
 }
 
 function isArticleLink(href: string | null): boolean {
@@ -115,6 +128,17 @@ async function timeAction<T>(
  * Run the 10-action loop on a single page. Identical to the throughput
  * benchmark's loop but with LOOPS_PER_SESSION=1 (one loop = 10 actions).
  */
+/** A session the provider actually handed back, with its own create latency. */
+interface CreatedSession {
+  sessionId: string;
+  connectUrl: string;
+  createMs: number;
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 async function runActionLoop(page: Page, results: ActionResult[], navigateUrl: string): Promise<void> {
   for (let loop = 0; loop < LOOPS_PER_SESSION; loop++) {
     const baseIdx = loop * ACTIONS_PER_LOOP;
@@ -234,7 +258,6 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
   const sessionCreateOptions = participant.sessionCreateOptions ?? {};
 
   const provider = await getProvider(participant);
-  const navigateUrl = navUrlForRound(taskIndex);
 
   const totalStart = performance.now();
   let createMs = 0;
@@ -243,37 +266,73 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
   let releaseMs = 0;
   let sessionsAlive = 0;
   let aggregateActionsPerSecond = 0;
+  let createTimedOut = false;
   const sessionResults: SessionResult[] = [];
   let roundError: string | undefined;
+  let harnessFailure = false;
 
   // Declared outside try so the finally block can close them.
   let browsers: Browser[] = [];
-  let aliveSessions: { sessionId: string; connectUrl: string }[] = [];
+  let aliveSessions: CreatedSession[] = [];
+
+  // Every session id the provider hands back, whether or not the round goes on
+  // to use it. The finally block destroys all of them: releasing only the
+  // sessions that reached the action phase leaks the rest, and leaked sessions
+  // hold provider quota until their idle timeout, which corrupts later rounds.
+  const createdSessionIds = new Set<string>();
+  let cleanupComplete = false;
+
+  const destroySession = (sessionId: string) =>
+    withTimeout(
+      Promise.resolve(provider.session.destroy(sessionId)),
+      15_000,
+      'Session destroy timed out',
+    ).catch(() => {});
+
+  /**
+   * Start one session, recording its id as soon as the provider reports it.
+   * A create that resolves after its timeout still produces a live session, so
+   * it is destroyed on arrival once cleanup has already run.
+   */
+  const createTrackedSession = (): Promise<CreatedSession> => {
+    const started = performance.now();
+    const underlying = Promise.resolve(
+      provider.session.create(sessionCreateOptions),
+    ) as Promise<{ sessionId: string; connectUrl: string }>;
+
+    void underlying.then(
+      (session) => {
+        if (!session?.sessionId) return;
+        createdSessionIds.add(session.sessionId);
+        if (cleanupComplete) void destroySession(session.sessionId);
+      },
+      () => {},
+    );
+
+    return withTimeout(underlying, timeout, 'Session creation timed out').then(session => ({
+      ...session,
+      createMs: performance.now() - started,
+    }));
+  };
 
   try {
     // ── Phase 1: Create all N sessions in parallel ──────────────────────────
     const createStart = performance.now();
     const createResults = await step('create-all', () =>
-      Promise.allSettled(
-        Array.from({ length: concurrencyLevel }, () =>
-          withTimeout(
-            provider.session.create(sessionCreateOptions),
-            timeout,
-            'Session creation timed out',
-          ),
-        ),
-      ),
+      Promise.allSettled(Array.from({ length: concurrencyLevel }, () => createTrackedSession())),
     );
     createMs = performance.now() - createStart;
 
-    aliveSessions = createResults
-      .filter((r): r is PromiseFulfilledResult<{ sessionId: string; connectUrl: string }> => r.status === 'fulfilled')
-      .map(r => r.value);
-
-    const failedCreates = createResults.length - aliveSessions.length;
-
-    // Record failed sessions
-    for (let i = 0; i < failedCreates; i++) {
+    aliveSessions = [];
+    for (const result of createResults) {
+      if (result.status === 'fulfilled') {
+        aliveSessions.push(result.value);
+        continue;
+      }
+      // Keep the provider's own message: it is the only way to tell a quota
+      // rejection from a rate limit, an auth failure, or a timeout.
+      const reason = errorMessage(result.reason);
+      if (/timed out/i.test(reason)) createTimedOut = true;
       sessionResults.push({
         sessionId: '',
         createMs: 0,
@@ -282,131 +341,145 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
         actionsCompleted: 0,
         actionsPerSecond: 0,
         actions: [],
-        error: 'Session creation failed',
+        error: reason,
       });
     }
 
     if (aliveSessions.length === 0) {
-      throw new Error('All session creations failed');
+      // A provider refusing every session is a result, not a harness fault.
+      // Throwing would lose this round's per-session errors, because the
+      // client records only an error message and drops the task's data.
+      roundError = 'All session creations failed';
     }
 
     // ── Phase 2: CDP-connect all sessions in parallel ───────────────────────
-    const connectStart = performance.now();
-    const connectResults = await step('connect-all', () =>
-      Promise.allSettled(
-        aliveSessions.map(s =>
-          withTimeout(chromium.connectOverCDP(s.connectUrl), 30_000, 'CDP connection timed out'),
-        ),
-      ),
-    );
-    connectMs = performance.now() - connectStart;
-
     const pages: Page[] = [];
-    const connectedSessionIds: string[] = [];
+    const connectedSessions: CreatedSession[] = [];
+    const connectedConnectMs: number[] = [];
 
-    for (let i = 0; i < connectResults.length; i++) {
-      const result = connectResults[i];
-      const session = aliveSessions[i];
-      if (result.status === 'fulfilled') {
-        const browser = result.value;
+    if (aliveSessions.length > 0) {
+      const connectStart = performance.now();
+      const connectResults = await step('connect-all', () =>
+        Promise.allSettled(
+          aliveSessions.map(async (s) => {
+            const started = performance.now();
+            const browser = await withTimeout(
+              chromium.connectOverCDP(s.connectUrl),
+              30_000,
+              'CDP connection timed out',
+            );
+            return { browser, connectMs: performance.now() - started };
+          }),
+        ),
+      );
+      connectMs = performance.now() - connectStart;
+
+      for (let i = 0; i < connectResults.length; i++) {
+        const result = connectResults[i];
+        const session = aliveSessions[i];
+
+        if (result.status === 'rejected') {
+          sessionResults.push({
+            sessionId: session.sessionId,
+            createMs: session.createMs,
+            connectMs: 0,
+            taskMs: 0,
+            actionsCompleted: 0,
+            actionsPerSecond: 0,
+            actions: [],
+            error: errorMessage(result.reason),
+          });
+          continue;
+        }
+
+        const { browser, connectMs: sessionConnectMs } = result.value;
         browsers.push(browser);
         const [context] = browser.contexts();
-        if (!context) throw new Error('No default browser context found');
-        const [existingPage] = context.pages();
-        const page = existingPage ?? (await context.newPage());
+        const page = context ? context.pages()[0] ?? (await context.newPage()) : undefined;
+
+        if (!page) {
+          sessionResults.push({
+            sessionId: session.sessionId,
+            createMs: session.createMs,
+            connectMs: sessionConnectMs,
+            taskMs: 0,
+            actionsCompleted: 0,
+            actionsPerSecond: 0,
+            actions: [],
+            error: 'No default browser context found',
+          });
+          continue;
+        }
+
         pages.push(page);
-        connectedSessionIds.push(session.sessionId);
-      } else {
-        sessionResults.push({
-          sessionId: session.sessionId,
-          createMs: 0,
-          connectMs: 0,
-          taskMs: 0,
-          actionsCompleted: 0,
-          actionsPerSecond: 0,
-          actions: [],
-          error: 'CDP connection failed',
-        });
+        connectedSessions.push(session);
+        connectedConnectMs.push(sessionConnectMs);
       }
-    }
 
-    sessionsAlive = pages.length;
-
-    if (pages.length === 0) {
-      throw new Error('All CDP connections failed');
+      sessionsAlive = pages.length;
+      if (pages.length === 0) roundError ??= 'All CDP connections failed';
     }
 
     // ─── BARRIER: all surviving sessions are alive + connected ──────────────
 
     // ── Phase 3: Run 10-action loop on all sessions simultaneously ──────────
-    // runActionLoop pushes to a passed array, so we create one per page.
-    const actionArrays: ActionResult[][] = pages.map(() => []);
-    const actionStart = performance.now();
-    const loopResults = await step('actions-all', () =>
-      Promise.allSettled(
-        pages.map((page, i) => runActionLoop(page, actionArrays[i], navigateUrl)),
-      ),
-    );
-    taskMs = performance.now() - actionStart;
+    if (pages.length > 0) {
+      // runActionLoop pushes to a passed array, so we create one per page.
+      const actionArrays: ActionResult[][] = pages.map(() => []);
+      const actionStart = performance.now();
+      const loopResults = await step('actions-all', () =>
+        Promise.allSettled(
+          pages.map((page, i) =>
+            runActionLoop(page, actionArrays[i], navUrlForSession(taskIndex, i)),
+          ),
+        ),
+      );
+      taskMs = performance.now() - actionStart;
 
-    // Collect per-session results
-    let totalActionsCompleted = 0;
-    for (let i = 0; i < loopResults.length; i++) {
-      const result = loopResults[i];
-      if (result.status === 'fulfilled') {
+      let totalActionsCompleted = 0;
+      for (let i = 0; i < loopResults.length; i++) {
+        const result = loopResults[i];
+        const session = connectedSessions[i];
+        // Actions completed before a mid-loop throw are still measurements.
         const actions = actionArrays[i];
         const actionsCompleted = actions.filter(a => a.success).length;
         const sessionTaskMs = actions.reduce((sum, a) => sum + a.durationMs, 0);
-        const sessionAps = sessionTaskMs > 0 ? actionsCompleted / (sessionTaskMs / 1000) : 0;
         totalActionsCompleted += actionsCompleted;
         sessionResults.push({
-          sessionId: connectedSessionIds[i],
-          createMs: 0,
-          connectMs: 0,
+          sessionId: session?.sessionId ?? '',
+          createMs: session?.createMs ?? 0,
+          connectMs: connectedConnectMs[i] ?? 0,
           taskMs: sessionTaskMs,
           actionsCompleted,
-          actionsPerSecond: sessionAps,
+          actionsPerSecond: sessionTaskMs > 0 ? actionsCompleted / (sessionTaskMs / 1000) : 0,
           actions,
-        });
-      } else {
-        sessionResults.push({
-          sessionId: connectedSessionIds[i] ?? '',
-          createMs: 0,
-          connectMs: 0,
-          taskMs: 0,
-          actionsCompleted: 0,
-          actionsPerSecond: 0,
-          actions: [],
-          error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+          ...(result.status === 'rejected' ? { error: errorMessage(result.reason) } : {}),
         });
       }
+
+      aggregateActionsPerSecond = taskMs > 0 ? totalActionsCompleted / (taskMs / 1000) : 0;
     }
 
-    aggregateActionsPerSecond = taskMs > 0 ? totalActionsCompleted / (taskMs / 1000) : 0;
     measure({ aggregateActionsPerSecond, sessionsAlive, sessionsAttempted: concurrencyLevel });
-
-    // ── Phase 4: Release all sessions in parallel ────────────────────────────
-    const releaseStart = performance.now();
-    await step(
-      'release-all',
-      () =>
-        Promise.allSettled(
-          aliveSessions.map(s =>
-            withTimeout(
-              provider.session.destroy(s.sessionId),
-              15_000,
-              'Session destroy timed out',
-            ).catch(() => {}),
-          ),
-        ),
-      { reportConcurrency: false },
-    );
-    releaseMs = performance.now() - releaseStart;
   } catch (err) {
-    roundError = err instanceof Error ? err.message : String(err);
+    roundError = errorMessage(err);
+    harnessFailure = true;
   } finally {
     // Close all CDP browser connections
     await Promise.allSettled(browsers.map(b => b.close().catch(() => {})));
+
+    // ── Phase 4: Release every session the provider created ─────────────────
+    // Runs in `finally` so a round that fails after creating sessions still
+    // releases them instead of holding provider quota until idle timeout.
+    const releaseStart = performance.now();
+    const releaseAll = () => Promise.allSettled([...createdSessionIds].map(destroySession));
+    if (harnessFailure) {
+      await releaseAll();
+    } else {
+      await step('release-all', releaseAll, { reportConcurrency: false });
+    }
+    releaseMs = performance.now() - releaseStart;
+    cleanupComplete = true;
   }
 
   const totalMs = performance.now() - totalStart;
@@ -422,11 +495,16 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
     totalMs,
     aggregateActionsPerSecond,
     sessions: sessionResults as unknown as JsonValue,
+    ...(createTimedOut ? { createTimedOut } : {}),
+    ...(sessionsAlive === 0 ? { roundFailed: true } : {}),
     ...(roundError ? { errorMessage: roundError } : {}),
   };
 
-  if (roundError) {
-    throw new TaskError(roundError, { code: 'CONCURRENT_ERROR', data });
+  // Only unexpected exceptions throw. A provider refusing sessions is data the
+  // benchmark exists to collect, and throwing would discard it: the client
+  // records an error message and drops the task's data payload entirely.
+  if (harnessFailure) {
+    throw new TaskError(roundError ?? 'Round failed', { code: 'CONCURRENT_ERROR', data });
   }
 
   return { data };

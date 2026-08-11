@@ -51,7 +51,14 @@ function computeStats(values: number[]): ConcurrentStatsTriple {
  * across all sessions in all rounds — this is the degradation signal.
  */
 export function summarizeRounds(rounds: RoundResult[]): ConcurrentStats {
-  const createValues = rounds.map(r => r.createMs).filter(v => v > 0);
+  // A create phase that hit the timeout is censored at the timeout value, not
+  // measured, so folding it into the latency distribution would report the
+  // timeout constant as if it were a provisioning time. The lost sessions are
+  // already penalized through the success rate.
+  const createValues = rounds
+    .filter(r => !r.createTimedOut)
+    .map(r => r.createMs)
+    .filter(v => v > 0);
   const connectValues = rounds.map(r => r.connectMs).filter(v => v > 0);
   const taskValues = rounds.map(r => r.taskMs).filter(v => v > 0);
   const sessionsAliveValues = rounds.map(r => r.sessionsAlive).filter(v => v > 0);
@@ -146,6 +153,8 @@ export async function writeConcurrentResultsJson(
         })),
         ...(s.error ? { error: s.error } : {}),
       })),
+      ...(round.createTimedOut ? { createTimedOut: true } : {}),
+      ...(round.roundFailed ? { roundFailed: true } : {}),
       ...(round.error ? { error: round.error } : {}),
     })),
     summary: {

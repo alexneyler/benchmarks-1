@@ -41,20 +41,25 @@ function scoreLatency(valueMs: number): number {
  * A session counts as successful iff it completed all ACTIONS_PER_SESSION
  * actions without error. Partial completions still contribute timing data but
  * are not counted as full successes.
+ *
+ * The denominator is the number of sessions *attempted*, not the number
+ * recorded. A round where the provider refused every session records no
+ * sessions at all, so counting recorded sessions would make wholesale failures
+ * invisible and let a provider that served 10 of 50 sessions report 100%.
  */
 export function computeConcurrentSuccessRate(result: ConcurrentBenchmarkResult): number {
   if (result.skipped || result.rounds.length === 0) return 0;
-  let totalSessions = 0;
+  let attempted = 0;
   let fullySuccessful = 0;
   for (const round of result.rounds) {
+    attempted += round.sessionsAttempted || round.sessions.length;
     for (const session of round.sessions) {
-      totalSessions++;
       if (!session.error && session.actionsCompleted === ACTIONS_PER_SESSION) {
         fullySuccessful++;
       }
     }
   }
-  return totalSessions > 0 ? fullySuccessful / totalSessions : 0;
+  return attempted > 0 ? fullySuccessful / attempted : 0;
 }
 
 function computeConcurrentScore(

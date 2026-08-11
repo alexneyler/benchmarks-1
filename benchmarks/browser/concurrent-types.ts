@@ -91,6 +91,14 @@ export interface RoundResult {
   sessions: SessionResult[];
   /** Error message if the entire round failed */
   error?: string;
+  /** True when no session survived create + connect, so the round produced no timings. */
+  roundFailed?: boolean;
+  /**
+   * True when at least one create hit the timeout. The parallel create wall
+   * clock is then censored by the timeout rather than measured, so it is
+   * excluded from latency stats and counted only as a failure.
+   */
+  createTimedOut?: boolean;
 }
 
 export interface ConcurrentStatsTriple {
