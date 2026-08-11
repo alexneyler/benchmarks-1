@@ -166,7 +166,7 @@ function deriveBenchmarkSlug(type: string, group: string): string {
   if (type === 'sandbox') {
     if (group === 'sequential') return 'sandbox-tti-local';
     if (group === 'staggered') return 'sandbox-staggered-local';
-    if (group === 'burst') return 'sandbox-burst-local';
+    if (group === 'burst') return 'sandbox-tti';
   }
   if (type === 'storage') return 'storage-local';
   if (type === 'snapshot-fork') return 'snapshot-fork-local';
