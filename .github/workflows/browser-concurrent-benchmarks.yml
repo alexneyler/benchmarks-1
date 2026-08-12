@@ -107,19 +107,19 @@ jobs:
           . benchmarks/scripts/load-vault-secrets.sh '^(BROWSERBASE_API_KEY|BROWSERBASE_PROJECT_ID|BROWSER_USE_API_KEY|HYPERBROWSER_API_KEY|KERNEL_API_KEY|NOTTE_API_KEY|STEEL_API_KEY|TILION_API_KEY|TILION_BASE_URL|COMPUTESDK_ADMIN_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
 
           # One invocation covers the whole sweep: the benchmark runs one task
-          # per concurrency level, so --iterations selects how many levels run
-          # (2 = c1 and c5) and the rounds within each level are fixed in the
-          # benchmark. Levels therefore run one after another in a single
-          # process, never as parallel matrix jobs: parallel level jobs put
-          # every level's sessions on the same provider account at once, so c1
-          # would measure its baseline while 5 + 10 + 25 + 50 sibling sessions
-          # were live and every level's numbers would depend on overlap.
+          # per concurrency level, and --levels picks which levels run (the
+          # rounds at each level are fixed in the benchmark). Levels therefore
+          # run one after another in a single process, never as parallel matrix
+          # jobs: parallel level jobs put every level's sessions on the same
+          # provider account at once, so c1 would measure its baseline while
+          # 5 + 10 + 25 + 50 sibling sessions were live and every level's
+          # numbers would depend on overlap.
           if [ "${{ github.event_name }}" = "push" ]; then
-            LEVELS=2                 # smoke test: c1 and c5 only
+            LEVELS="1,5"             # smoke test: cheapest two levels
             export CONCURRENT_ROUNDS_PER_LEVEL=1
             export CONCURRENT_LEVEL_COOLDOWN_MS=10000
           else
-            LEVELS=5
+            LEVELS="1,5,10,25,50"
             export CONCURRENT_LEVEL_COOLDOWN_MS=60000
           fi
 
@@ -129,7 +129,7 @@ jobs:
           RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/browser/browser-concurrent.bench.ts \
             --provider ${{ matrix.provider }} \
-            --iterations "$LEVELS" \
+            --levels "$LEVELS" \
             --run-key "$RUN_KEY"
       - name: Upload results
         if: always()
