@@ -3,67 +3,126 @@
  * in parallel, waits for all to be alive + connected (barrier), runs a fixed
  * 10-action loop on every session simultaneously, then releases all.
  *
- * The custom `--concurrency-level` flag (parsed from argv, like storage's
- * `--file-size`) controls N — the number of sessions active at the same time.
- * The runner's `--iterations` controls how many barrier rounds execute.
+ * One task per concurrency level: task 0 runs every round at 1 session, task 4
+ * every round at 50, so a single platform run carries the whole sweep. The
+ * level comes from `ctx.taskIndex`, which makes the platform's task index the
+ * concurrency axis — its per-iteration view is then the degradation curve.
  *
- * Results are organized by concurrency level, mirroring the storage
+ * This shape exists because a participant carries one task count for the whole
+ * run, so the levels cannot be separate participants without also splitting
+ * the providers apart. Keeping one participant per provider and spending its
+ * five tasks on the five levels keeps provider rankings intact and still
+ * reports each level separately, via a task index and per-level step names.
+ *
+ *   bench run benchmarks/browser/browser-concurrent.bench.ts --iterations 5
+ *   bench run benchmarks/browser/browser-concurrent.bench.ts --provider browserbase --iterations 5
+ *
+ * Results are still organized by concurrency level, mirroring the storage
  * benchmark's per-file-size directories:
  *   results/browser-concurrent/c1/, c5/, c10/, c25/, c50/
  *
- *   bench run benchmarks/browser/browser-concurrent.bench.ts --concurrency-level 50 --iterations 3
- *   bench run benchmarks/browser/browser-concurrent.bench.ts --concurrency-level 1 --iterations 10
- *   bench run benchmarks/browser/browser-concurrent.bench.ts --provider browserbase --concurrency-level 25 --iterations 3
- *
- * Levels must be run against a provider one at a time. Running them
- * concurrently puts every level's sessions on the same provider account
- * simultaneously, which destroys the comparison the benchmark is making.
+ * Levels run one at a time within a task, and a cooldown separates them:
+ * overlapping them would put two levels' sessions on the same provider account
+ * at once, which destroys the comparison the benchmark is making.
  */
 import '../src/env.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser, type Page } from 'playwright-core';
-import { defineBenchmarkConfig, defineTask, TaskError } from '@benchsdk/runner';
+import { defineBenchmarkConfig, defineTask, TaskError, type TaskContext } from '@benchsdk/runner';
 import type { JsonValue } from '@benchsdk/client';
 import { withTimeout } from '../src/util/timeout.js';
 import { throughputProviders } from './throughput-providers.js';
-import { writeConcurrentLegacyResults } from './concurrent-legacy-results.js';
+import { writeConcurrentSweepResults } from './concurrent-legacy-results.js';
 import {
   ACTIONS_PER_LOOP,
   ACTIONS_PER_SESSION,
+  CONCURRENCY_LEVELS,
   LOOPS_PER_SESSION,
+  ROUNDS_PER_LEVEL,
+  levelForTaskIndex,
   type ActionResult,
+  type RoundResult,
   type SessionResult,
   type ConcurrentProviderConfig,
 } from './concurrent-types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// ── Custom CLI flag: --concurrency-level (runner ignores unknown flags) ──────
-const args = process.argv.slice(2);
-function getArgValue(argv: string[], flag: string): string | undefined {
-  const idx = argv.indexOf(flag);
-  return idx !== -1 && idx + 1 < argv.length ? argv[idx + 1] : undefined;
-}
-const concurrencyLevel = parseInt(getArgValue(args, '--concurrency-level') ?? '50', 10);
-if (!Number.isFinite(concurrencyLevel) || concurrencyLevel < 1) {
-  console.error(`Invalid --concurrency-level "${getArgValue(args, '--concurrency-level')}". Must be a positive integer.`);
-  process.exit(1);
-}
-
 const concurrentTimeoutMs =
   throughputProviders.reduce((max, p) => Math.max(max, p.timeout ?? 120_000), 0) || 120_000;
+
+/**
+ * Rounds that fit in one task record: the client caps a record at 100 steps and
+ * every round reports create/connect/actions/release.
+ */
+const MAX_ROUNDS_PER_TASK = 25;
+
+/**
+ * Overrides the per-level round count, for the push smoke test. Set to 1 there
+ * so a workflow change can be exercised in a couple of minutes instead of
+ * running the full 31 rounds.
+ */
+const ROUNDS_OVERRIDE = (() => {
+  const raw = process.env.CONCURRENT_ROUNDS_PER_LEVEL;
+  if (!raw) return undefined;
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < 1) return undefined;
+  // Each round reports 4 steps and the client rejects a task record carrying
+  // more than 100, which would throw away the whole level rather than trim it.
+  if (parsed > MAX_ROUNDS_PER_TASK) {
+    console.warn(
+      `CONCURRENT_ROUNDS_PER_LEVEL=${parsed} exceeds the ${MAX_ROUNDS_PER_TASK} rounds that fit ` +
+        `in one task record (4 steps each); using ${MAX_ROUNDS_PER_TASK}.`,
+    );
+    return MAX_ROUNDS_PER_TASK;
+  }
+  return parsed;
+})();
+
+/**
+ * Pause between levels, so sessions a provider is still tearing down do not
+ * count against the next level's quota. Providers cap concurrent sessions
+ * (kernel at 10, steel at 5 on its hobby plan), and a release is acknowledged
+ * before the slot is actually free, so without this the next level starts
+ * against a partly occupied account and measures our own cleanup lag.
+ */
+const LEVEL_COOLDOWN_MS = (() => {
+  const raw = process.env.CONCURRENT_LEVEL_COOLDOWN_MS;
+  if (!raw) return 60_000;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 60_000;
+})();
+
+/**
+ * Every round, in full detail, keyed by provider then level.
+ *
+ * The local result files are written from this rather than from the records
+ * sent to the platform: a c50 task covers 1,500 actions, which does not belong
+ * in a task payload, so the platform gets per-round aggregates while the
+ * committed artifact keeps everything.
+ */
+const collectedRounds = new Map<string, Map<number, RoundResult[]>>();
+
+function collectRound(provider: string, level: number, round: RoundResult): void {
+  const byLevel = collectedRounds.get(provider) ?? new Map<number, RoundResult[]>();
+  collectedRounds.set(provider, byLevel);
+  const rounds = byLevel.get(level) ?? [];
+  rounds.push(round);
+  byLevel.set(level, rounds);
+}
 
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'browser-concurrent-local',
   benchmarkName: 'Browser Concurrent (local)',
-  iterations: 1,
+  // One task per level. Overriding this with --iterations leaves levels
+  // unmeasured or task indices without a level, so the task rejects it.
+  iterations: CONCURRENCY_LEVELS.length,
   concurrency: 1,
   participants: throughputProviders,
-  onComplete: (outcome) =>
-    writeConcurrentLegacyResults(outcome.participants, {
-      resultsDir: path.resolve(__dirname, `../../results/browser-concurrent/c${concurrencyLevel}`),
-      concurrencyLevel,
+  onComplete: () =>
+    writeConcurrentSweepResults(collectedRounds, {
+      resultsRoot: path.resolve(__dirname, '../../results/browser-concurrent'),
       timeoutMs: concurrentTimeoutMs,
     }),
 });
@@ -99,7 +158,7 @@ function parseNavUrls(): string[] {
  * cold-fetch cost on a different article every time, so page weight and cache
  * state would vary with the dimension under test.
  */
-function navUrlForSession(roundIndex: number, sessionIndex: number): string {
+function navUrlForSession(concurrencyLevel: number, roundIndex: number, sessionIndex: number): string {
   if (NAV_URLS.length === 0) return RANDOM_URL;
   return NAV_URLS[(roundIndex * concurrencyLevel + sessionIndex) % NAV_URLS.length];
 }
@@ -284,9 +343,19 @@ async function getProvider(participant: ConcurrentProviderConfig): Promise<any> 
   return provider;
 }
 
-// ── Barrier-protocol task ────────────────────────────────────────────────────
-export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
-  const { participant, taskIndex, step, measure, log } = ctx;
+// ── One barrier round ────────────────────────────────────────────────────────
+type RoundContext = Pick<TaskContext<ConcurrentProviderConfig>, 'participant' | 'step' | 'log'> & {
+  concurrencyLevel: number;
+  roundIndex: number;
+};
+
+/**
+ * Runs one barrier round and always returns its result, including when the
+ * provider refuses every session. `harnessFailure` is reserved for our own
+ * bugs: a provider refusing load is a measurement, not an error.
+ */
+async function runRound(ctx: RoundContext): Promise<{ round: RoundResult; harnessFailure: boolean }> {
+  const { participant, step, log, concurrencyLevel, roundIndex } = ctx;
   const timeout = participant.timeout ?? 120_000;
   const sessionCreateOptions = participant.sessionCreateOptions ?? {};
 
@@ -351,7 +420,10 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
   try {
     // ── Phase 1: Create all N sessions in parallel ──────────────────────────
     const createStart = performance.now();
-    const createResults = await step('create-all', () =>
+    // Step names carry the level because the platform groups step
+    // distributions by name alone: a shared `create-all` would merge a
+    // 1-session create with a 50-session create into one distribution.
+    const createResults = await step(`create-all-c${concurrencyLevel}`, () =>
       Promise.allSettled(Array.from({ length: concurrencyLevel }, () => createTrackedSession())),
     );
     createMs = performance.now() - createStart;
@@ -381,7 +453,7 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
     }
 
     log(
-      `c${concurrencyLevel} round ${taskIndex} create-all: ${aliveSessions.length}/${concurrencyLevel} created in ${Math.round(createMs)}ms`,
+      `c${concurrencyLevel} round ${roundIndex} create-all: ${aliveSessions.length}/${concurrencyLevel} created in ${Math.round(createMs)}ms`,
       {
         concurrencyLevel,
         created: aliveSessions.length,
@@ -406,7 +478,7 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
 
     if (aliveSessions.length > 0) {
       const connectStart = performance.now();
-      const connectResults = await step('connect-all', () =>
+      const connectResults = await step(`connect-all-c${concurrencyLevel}`, () =>
         Promise.allSettled(
           aliveSessions.map(async (s) => {
             const started = performance.now();
@@ -467,7 +539,7 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
 
       sessionsAlive = pages.length;
       log(
-        `c${concurrencyLevel} round ${taskIndex} connect-all: ${pages.length}/${aliveSessions.length} connected in ${Math.round(connectMs)}ms`,
+        `c${concurrencyLevel} round ${roundIndex} connect-all: ${pages.length}/${aliveSessions.length} connected in ${Math.round(connectMs)}ms`,
         {
           concurrencyLevel,
           connected: pages.length,
@@ -486,10 +558,10 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
       // runActionLoop pushes to a passed array, so we create one per page.
       const actionArrays: ActionResult[][] = pages.map(() => []);
       const actionStart = performance.now();
-      const loopResults = await step('actions-all', () =>
+      const loopResults = await step(`actions-all-c${concurrencyLevel}`, () =>
         Promise.allSettled(
           pages.map((page, i) =>
-            runActionLoop(page, actionArrays[i], navUrlForSession(taskIndex, i)),
+            runActionLoop(page, actionArrays[i], navUrlForSession(concurrencyLevel, roundIndex, i)),
           ),
         ),
       );
@@ -519,7 +591,6 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
       aggregateActionsPerSecond = taskMs > 0 ? totalActionsCompleted / (taskMs / 1000) : 0;
     }
 
-    measure({ aggregateActionsPerSecond, sessionsAlive, sessionsAttempted: concurrencyLevel });
   } catch (err) {
     roundError = errorMessage(err);
     harnessFailure = true;
@@ -535,7 +606,7 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
     if (harnessFailure) {
       await releaseAll();
     } else {
-      await step('release-all', releaseAll, { reportConcurrency: false });
+      await step(`release-all-c${concurrencyLevel}`, releaseAll, { reportConcurrency: false });
     }
     releaseMs = performance.now() - releaseStart;
     cleanupComplete = true;
@@ -543,8 +614,9 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
 
   const totalMs = performance.now() - totalStart;
 
-  const data = {
+  const round: RoundResult = {
     concurrencyLevel,
+    roundIndex,
     sessionsAttempted: concurrencyLevel,
     sessionsAlive,
     createMs,
@@ -553,17 +625,17 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
     releaseMs,
     totalMs,
     aggregateActionsPerSecond,
-    sessions: sessionResults as unknown as JsonValue,
+    sessions: sessionResults,
     ...(createTimedOut ? { createTimedOut } : {}),
     ...(sessionsAlive === 0 ? { roundFailed: true } : {}),
-    ...(roundError ? { errorMessage: roundError } : {}),
+    ...(roundError ? { error: roundError } : {}),
   };
 
   // Logged before the throw below so a harness failure still reports what the
   // round achieved, not just that it died.
   const actionsCompleted = sessionResults.reduce((sum, s) => sum + s.actionsCompleted, 0);
   log(
-    `c${concurrencyLevel} round ${taskIndex} complete: ${sessionsAlive}/${concurrencyLevel} sessions, ` +
+    `c${concurrencyLevel} round ${roundIndex} complete: ${sessionsAlive}/${concurrencyLevel} sessions, ` +
       `${actionsCompleted}/${concurrencyLevel * ACTIONS_PER_SESSION} actions in ${Math.round(totalMs)}ms`,
     {
       concurrencyLevel,
@@ -579,12 +651,129 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
     },
   );
 
-  // Only unexpected exceptions throw. A provider refusing sessions is data the
-  // benchmark exists to collect, and throwing would discard it: the client
-  // records an error message and drops the task's data payload entirely.
-  if (harnessFailure) {
-    throw new TaskError(roundError ?? 'Round failed', { code: 'CONCURRENT_ERROR', data });
+  return { round, harnessFailure };
+}
+
+// ── One task per concurrency level ───────────────────────────────────────────
+export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
+  const { participant, taskIndex, step, measure, log } = ctx;
+
+  const concurrencyLevel = levelForTaskIndex(taskIndex);
+  if (concurrencyLevel === undefined) {
+    throw new TaskError(
+      `Task index ${taskIndex} has no concurrency level. This benchmark runs one task per ` +
+        `level, so it needs exactly ${CONCURRENCY_LEVELS.length} iterations ` +
+        `(${CONCURRENCY_LEVELS.join(', ')} sessions).`,
+      { code: 'CONCURRENT_BAD_ITERATIONS' },
+    );
   }
 
-  return { data };
+  const roundCount = ROUNDS_OVERRIDE ?? ROUNDS_PER_LEVEL[concurrencyLevel];
+  const rounds: RoundResult[] = [];
+  let harnessFailure = false;
+  let harnessError: string | undefined;
+
+  for (let roundIndex = 0; roundIndex < roundCount; roundIndex++) {
+    const outcome = await runRound({ participant, step, log, concurrencyLevel, roundIndex });
+    rounds.push(outcome.round);
+    // Collected as each round finishes, so a later harness failure still
+    // leaves the earlier rounds in the local result file.
+    collectRound(participant.name, concurrencyLevel, outcome.round);
+    if (outcome.harnessFailure) {
+      harnessFailure = true;
+      harnessError = outcome.round.error;
+      break;
+    }
+  }
+
+  const sessionsAttempted = rounds.reduce((sum, r) => sum + r.sessionsAttempted, 0);
+  const sessionsAlive = rounds.reduce((sum, r) => sum + r.sessionsAlive, 0);
+  const actionsCompleted = rounds.reduce(
+    (sum, r) => sum + r.sessions.reduce((n, s) => n + s.actionsCompleted, 0),
+    0,
+  );
+
+  measure({ concurrencyLevel, sessionsAttempted, sessionsAlive, actionsCompleted });
+
+  const data = {
+    concurrencyLevel,
+    roundsRun: rounds.length,
+    roundsPlanned: roundCount,
+    sessionsAttempted,
+    sessionsAlive,
+    actionsCompleted,
+    // Per-round aggregates only. The per-session and per-action detail stays in
+    // the local artifact: a c50 task covers 1,500 actions, which is far more
+    // than belongs in one task payload.
+    rounds: rounds.map(summarizeRoundForPlatform) as unknown as JsonValue,
+    ...(harnessError ? { errorMessage: harnessError } : {}),
+  };
+
+  log(
+    `c${concurrencyLevel} level complete: ${rounds.length}/${roundCount} rounds, ` +
+      `${sessionsAlive}/${sessionsAttempted} sessions, ${actionsCompleted} actions`,
+    {
+      concurrencyLevel,
+      roundsRun: rounds.length,
+      sessionsAlive,
+      sessionsAttempted,
+      actionsCompleted,
+      ...(harnessError ? { harnessError } : {}),
+    },
+  );
+
+  // Levels run back to back inside one process, so the drain that used to sit
+  // between workflow invocations happens here. It runs before the throw below,
+  // because a level that failed part way through is the case most likely to
+  // have left sessions behind for the next level to trip over. Skipped after
+  // the last level, where it would only delay the run's completion.
+  if (taskIndex < CONCURRENCY_LEVELS.length - 1 && LEVEL_COOLDOWN_MS > 0) {
+    await new Promise((resolve) => setTimeout(resolve, LEVEL_COOLDOWN_MS));
+  }
+
+  // Only our own bugs throw. A provider refusing sessions is data the benchmark
+  // exists to collect, and throwing would discard it: the client records an
+  // error message and drops the task's data payload entirely.
+  if (harnessFailure) {
+    throw new TaskError(harnessError ?? 'Level failed', { code: 'CONCURRENT_ERROR', data });
+  }
+
+  return {
+    data,
+    // The median round, not the level's wall clock. A level's duration is
+    // dominated by its round count (c1 runs 10 rounds, c50 only 3), so wall
+    // clock would rank c1 as the slowest level and inverts the very curve the
+    // task index exists to show.
+    latencyMs: median(rounds.filter((r) => !r.createTimedOut).map((r) => r.totalMs)),
+  };
 });
+
+/** Per-round aggregate for the platform payload: no per-session detail. */
+function summarizeRoundForPlatform(round: RoundResult): Record<string, JsonValue> {
+  const failures = round.sessions.map((s) => s.error).filter((e): e is string => Boolean(e));
+  return {
+    roundIndex: round.roundIndex,
+    sessionsAttempted: round.sessionsAttempted,
+    sessionsAlive: round.sessionsAlive,
+    createMs: Math.round(round.createMs),
+    connectMs: Math.round(round.connectMs),
+    taskMs: Math.round(round.taskMs),
+    releaseMs: Math.round(round.releaseMs),
+    totalMs: Math.round(round.totalMs),
+    aggregateActionsPerSecond: Math.round(round.aggregateActionsPerSecond * 100) / 100,
+    ...(round.createTimedOut ? { createTimedOut: true } : {}),
+    ...(round.roundFailed ? { roundFailed: true } : {}),
+    ...(round.error ? { errorMessage: round.error } : {}),
+    // Counts rather than a sample, because a level can hit two distinct limits
+    // in one round: a concurrency cap on some sessions and a rate limit on the
+    // rest.
+    ...(failures.length > 0 ? { reasons: reasonCounts(failures) } : {}),
+  };
+}
+
+function median(values: number[]): number | undefined {
+  if (values.length === 0) return undefined;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}

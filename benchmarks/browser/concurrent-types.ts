@@ -40,6 +40,33 @@ export const ACTION_TYPES: ActionType[] = [
 export const CONCURRENCY_LEVELS = [1, 5, 10, 25, 50] as const;
 export type ConcurrencyLevel = (typeof CONCURRENCY_LEVELS)[number];
 
+/**
+ * Barrier rounds run at each level. One task per level means the level's task
+ * runs all of its rounds, so these counts live here rather than in the
+ * workflow.
+ *
+ * Weighted toward the low levels only as far as their cost allows: a c50 round
+ * holds 50 sessions on the provider's account, so repeating it as often as c1
+ * would spend the run's whole budget on the most expensive cell. Every level
+ * still gets more than one round, because a single round makes the median and
+ * the p95 the same number.
+ *
+ * Keep these at 25 or below: one task covers a whole level and reports four
+ * steps per round, against a 100-step limit per task record.
+ */
+export const ROUNDS_PER_LEVEL: Record<ConcurrencyLevel, number> = {
+  1: 10,
+  5: 10,
+  10: 5,
+  25: 3,
+  50: 3,
+};
+
+/** Level for a task index; one task per level, in CONCURRENCY_LEVELS order. */
+export function levelForTaskIndex(taskIndex: number): ConcurrencyLevel | undefined {
+  return CONCURRENCY_LEVELS[taskIndex];
+}
+
 export interface ActionResult {
   /** 1-based index of the action within the session (1-10) */
   index: number;
@@ -71,6 +98,10 @@ export interface SessionResult {
 
 /** Per-round (one barrier protocol execution) timing data. */
 export interface RoundResult {
+  /** Sessions held open simultaneously during this round. */
+  concurrencyLevel: number;
+  /** Position of this round within its level, from 0. */
+  roundIndex: number;
   /** How many sessions were attempted (= concurrency level) */
   sessionsAttempted: number;
   /** How many sessions survived create + connect */
