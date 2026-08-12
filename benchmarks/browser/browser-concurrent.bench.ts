@@ -40,8 +40,10 @@ import { defineBenchmarkConfig, defineTask, TaskError, type TaskContext } from '
 import type { JsonValue } from '@benchsdk/client';
 import { withTimeout } from '../src/util/timeout.js';
 import { throughputProviders } from './throughput-providers.js';
+import { sessionHitActionTimeout } from './concurrent-benchmark.js';
 import { writeConcurrentSweepResults } from './concurrent-legacy-results.js';
 import {
+  ACTION_TIMEOUT_MS,
   ACTIONS_PER_LOOP,
   ACTIONS_PER_SESSION,
   CONCURRENCY_LEVELS,
@@ -157,7 +159,6 @@ export const config = defineBenchmarkConfig({
 const RANDOM_URL = 'https://en.wikipedia.org/wiki/Special:Random';
 const FIRST_HEADING = '#firstHeading';
 const ARTICLE_LINK_SELECTOR = '#mw-content-text a[href*="/wiki/"]';
-const ACTION_TIMEOUT_MS = 30_000;
 
 const NAV_URLS: string[] = parseNavUrls();
 
@@ -652,6 +653,7 @@ async function runRound(ctx: RoundContext): Promise<{ round: RoundResult; harnes
     totalMs,
     aggregateActionsPerSecond,
     sessions: sessionResults,
+    ...(sessionResults.some(sessionHitActionTimeout) ? { actionTimedOut: true } : {}),
     ...(createTimedOut ? { createTimedOut } : {}),
     ...(sessionsAlive === 0 ? { roundFailed: true } : {}),
     ...(roundError ? { error: roundError } : {}),
@@ -786,6 +788,7 @@ function summarizeRoundForPlatform(round: RoundResult): Record<string, JsonValue
     releaseMs: Math.round(round.releaseMs),
     totalMs: Math.round(round.totalMs),
     aggregateActionsPerSecond: Math.round(round.aggregateActionsPerSecond * 100) / 100,
+    ...(round.actionTimedOut ? { actionTimedOut: true } : {}),
     ...(round.createTimedOut ? { createTimedOut: true } : {}),
     ...(round.roundFailed ? { roundFailed: true } : {}),
     ...(round.error ? { errorMessage: round.error } : {}),

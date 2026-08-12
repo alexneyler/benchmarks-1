@@ -38,10 +38,22 @@ jobs:
         id: pick
         run: |
           # Resolve concrete articles up front so every provider benchmarks
-          # against the same pages. Sessions index into this list, so 50 covers
-          # a full c50 round; longer levels wrap, which keeps the page mix
-          # identical across providers.
+          # against the same pages. One session takes one URL, so 50 covers a
+          # full c50 round and every provider sees the same page mix.
           count=${{ github.event_name == 'push' && '5' || '50' }}
+
+          # Accept a page only if it offers what the action loop needs: several
+          # distinct article links inside #mw-content-text, which is where the
+          # loop's selector looks and where it clicks.
+          #
+          # The old check grepped the whole document for any /wiki/ link, so a
+          # page whose only qualifying links sat in the chrome (navigation,
+          # sidebar, footer) passed and then stalled in the browser. In run
+          # 31626532250 two of the fifty articles did exactly that, timing out
+          # waitForSelector or click at 30s for every provider alike, capping
+          # success at 96% and setting a 63s task p95 that had nothing to do
+          # with concurrency.
+          MIN_LINKS=5
           urls=()
           for i in $(seq 1 "$count"); do
             for attempt in 1 2 3 4 5; do
@@ -52,12 +64,24 @@ jobs:
                 break
               fi
               html=$(curl -sL -A 'ComputeSDK-Benchmark' "$url")
-              if echo "$html" | grep -qP 'href="(//en\.wikipedia\.org)?/wiki/[^"]*" *' \
-                 && echo "$html" | grep -oP 'href="[^"]*"' \
-                    | grep -qP '/wiki/[^:]*$'; then
+              # Content area only, and namespaced links (Help:, File:, wikt:)
+              # dropped the same way isArticleLink drops them. All three href
+              # forms are accepted because the content area is served with
+              # absolute and ./-relative links while the page chrome uses
+              # /wiki/ — matching only the last form counts zero links on even
+              # a large article.
+              links=$(printf '%s' "$html" \
+                | sed -n '/id="mw-content-text"/,$p' \
+                | grep -oP 'href="(\./|/wiki/|https://en\.wikipedia\.org/wiki/)[^"#:]+"' \
+                | sort -u | wc -l)
+              if [ "$links" -ge "$MIN_LINKS" ]; then
                 break
               fi
+              echo "Rejected $url: $links in-content article links, need $MIN_LINKS"
             done
+            if [ "$links" -lt "$MIN_LINKS" ]; then
+              echo "::warning::Using $url after $attempt attempts: only $links in-content article links"
+            fi
             urls+=("$url")
           done
           {
@@ -116,7 +140,6 @@ jobs:
           # numbers would depend on overlap.
           if [ "${{ github.event_name }}" = "push" ]; then
             LEVELS="1,5"             # smoke test: cheapest two levels
-            export CONCURRENT_ROUNDS_PER_LEVEL=1
             export CONCURRENT_LEVEL_COOLDOWN_MS=10000
           else
             LEVELS="1,5,10,25,50"

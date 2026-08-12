@@ -4,6 +4,7 @@
  * executions) instead of individual sessions.
  */
 import {
+  ACTION_TIMEOUT_MS,
   ACTION_TYPES,
   ACTIONS_PER_SESSION,
   type ActionType,
@@ -47,6 +48,44 @@ function computeStats(values: number[]): ConcurrentStatsTriple {
 }
 
 /**
+ * True when a session lost an action to the timeout. Such an action was cut off
+ * at the limit rather than measured, so anything derived from its duration
+ * reports the timeout constant instead of the provider's latency.
+ */
+export function sessionHitActionTimeout(session: SessionResult): boolean {
+  return session.actions.some(
+    (a) =>
+      !a.success &&
+      (a.durationMs >= ACTION_TIMEOUT_MS * 0.95 || /time(d)?\s?out/i.test(a.error ?? '')),
+  );
+}
+
+/**
+ * The round's action wall clock, with timed-out sessions taken out.
+ *
+ * A round ends when its slowest session ends, so one session stalled on an
+ * unusable page sets the whole round's duration: in run 31626532250 two of the
+ * fifty shared articles pushed otherwise 3-7s rounds to 31s and 63s, for every
+ * provider alike. Rebuilding the wall clock from the slowest *unaffected*
+ * session keeps the barrier's meaning while dropping the censored part.
+ *
+ * Rounds are not discarded wholesale, because each level runs one round and its
+ * sessions each draw a different page: at c50 a single bad article would
+ * otherwise erase the level's only latency observation.
+ */
+export function effectiveTaskMs(round: RoundResult): number {
+  const withActions = round.sessions.filter((s) => s.actions.length > 0);
+  if (withActions.length === 0) return round.taskMs;
+
+  const clean = withActions.filter((s) => !sessionHitActionTimeout(s));
+  if (clean.length === withActions.length) return round.taskMs;
+  // Every session was censored: the round says nothing about latency.
+  if (clean.length === 0) return 0;
+
+  return Math.max(...clean.map((s) => s.taskMs));
+}
+
+/**
  * Summarize rounds into aggregate stats. Per-action-type stats are computed
  * across all sessions in all rounds — this is the degradation signal.
  */
@@ -60,7 +99,7 @@ export function summarizeRounds(rounds: RoundResult[]): ConcurrentStats {
     .map(r => r.createMs)
     .filter(v => v > 0);
   const connectValues = rounds.map(r => r.connectMs).filter(v => v > 0);
-  const taskValues = rounds.map(r => r.taskMs).filter(v => v > 0);
+  const taskValues = rounds.map(effectiveTaskMs).filter(v => v > 0);
   const sessionsAliveValues = rounds.map(r => r.sessionsAlive).filter(v => v > 0);
   const aggregateApsValues = rounds.map(r => r.aggregateActionsPerSecond).filter(v => v > 0);
 
@@ -153,6 +192,7 @@ export async function writeConcurrentResultsJson(
         })),
         ...(s.error ? { error: s.error } : {}),
       })),
+      ...(round.actionTimedOut ? { actionTimedOut: true } : {}),
       ...(round.createTimedOut ? { createTimedOut: true } : {}),
       ...(round.roundFailed ? { roundFailed: true } : {}),
       ...(round.error ? { error: round.error } : {}),
