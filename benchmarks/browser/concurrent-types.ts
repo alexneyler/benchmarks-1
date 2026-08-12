@@ -136,6 +136,20 @@ export interface ConcurrentBenchmarkResult {
   compositeScore?: number;
   /** Success rate as a fraction (0 to 1). Computed post-benchmark. */
   successRate?: number;
+  /** Most sessions run at once in any round. Computed post-benchmark. */
+  sessionCeiling?: number;
+  /** Concurrency the latency samples actually experienced. Computed post-benchmark. */
+  concurrencyAchieved?: number;
+  /**
+   * False when the provider never sustained the requested concurrency, so its
+   * latency describes a smaller experiment and must not be charted alongside
+   * providers that ran the full load.
+   */
+  latencyRepresentative?: boolean;
+  /** True when an account limit, not capacity, kept the level out of reach. */
+  quotaLimited?: boolean;
+  /** The provider's own limit message, for attribution. */
+  quotaEvidence?: string;
   skipped?: boolean;
   skipReason?: string;
 }

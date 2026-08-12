@@ -170,6 +170,13 @@ export async function writeConcurrentResultsJson(
     },
     ...(r.compositeScore !== undefined ? { compositeScore: round(r.compositeScore) } : {}),
     ...(r.successRate !== undefined ? { successRate: round(r.successRate) } : {}),
+    ...(r.sessionCeiling !== undefined ? { sessionCeiling: r.sessionCeiling } : {}),
+    ...(r.concurrencyAchieved !== undefined ? { concurrencyAchieved: r.concurrencyAchieved } : {}),
+    ...(r.latencyRepresentative !== undefined
+      ? { latencyRepresentative: r.latencyRepresentative }
+      : {}),
+    ...(r.quotaLimited ? { quotaLimited: true } : {}),
+    ...(r.quotaEvidence ? { quotaEvidence: r.quotaEvidence } : {}),
     ...(r.skipped ? { skipped: r.skipped, skipReason: r.skipReason } : {}),
   }));
 

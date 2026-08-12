@@ -1,3 +1,4 @@
+import { analyzeCapacity } from './concurrent-capacity.js';
 import {
   ACTIONS_PER_SESSION,
   type ConcurrentBenchmarkResult,
@@ -88,6 +89,13 @@ export function computeConcurrentCompositeScores(
   for (const result of results) {
     const successRate = computeConcurrentSuccessRate(result);
     result.successRate = successRate;
+
+    const capacity = analyzeCapacity(result);
+    result.sessionCeiling = capacity.sessionCeiling;
+    result.concurrencyAchieved = capacity.concurrencyAchieved;
+    result.latencyRepresentative = capacity.latencyRepresentative;
+    result.quotaLimited = capacity.quotaLimited;
+    if (capacity.quotaEvidence) result.quotaEvidence = capacity.quotaEvidence;
 
     if (result.skipped || successRate === 0) {
       result.compositeScore = 0;

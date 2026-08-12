@@ -23,6 +23,7 @@ import {
   computeConcurrentCompositeScores,
   sortConcurrentByCompositeScore,
 } from './concurrent-scoring.js';
+import { ensureCapacityFields } from './concurrent-capacity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
@@ -46,6 +47,15 @@ function getArgValue(flag: string): string | undefined {
 const actionTypeArg = (getArgValue('--action-type') ?? 'screenshot') as ActionType;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+/** Provider limit messages carry `&`, `<` and quotes; unescaped they break the SVG. */
+function escapeXml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 function formatProviderName(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -77,8 +87,29 @@ function generateLeaderboardSVG(
   if (!results.every(r => r.compositeScore !== undefined)) {
     computeConcurrentCompositeScores(results);
   }
+  ensureCapacityFields(results);
 
   const sorted = sortConcurrentByCompositeScore(results).filter(r => !r.skipped);
+
+  const withheld = sorted.filter(r => r.latencyRepresentative === false);
+  const quotaCapped = sorted.filter(r => r.quotaLimited);
+  const footerLines = [
+    `Each round creates ${concurrencyLevel} sessions in parallel, holds all alive (barrier), runs 10 actions on each simultaneously, then releases all. Lower latency is better.`,
+  ];
+  if (withheld.length > 0) {
+    footerLines.push(
+      `-- latency withheld, load not sustained: ${withheld
+        .map(r => `${formatProviderName(r.provider)} held ${Math.round(r.concurrencyAchieved ?? 0)}/${concurrencyLevel}`)
+        .join(', ')}. Timings taken while most of the load was refused are not comparable.`,
+    );
+  }
+  if (quotaCapped.length > 0) {
+    footerLines.push(
+      `* capped by an account limit rather than capacity: ${quotaCapped
+        .map(r => formatProviderName(r.provider))
+        .join(', ')}.`,
+    );
+  }
 
   const rowHeight = 44;
   const headerHeight = 110;
@@ -87,7 +118,7 @@ function generateLeaderboardSVG(
   const width = 1280;
   const tableTop = headerHeight + padding;
   const tableBottom = tableTop + tableHeaderHeight + (sorted.length * rowHeight);
-  const height = tableBottom + padding + 30 + 20;
+  const height = tableBottom + padding + 30 + 20 + (footerLines.length - 1) * 14;
 
   const cols = {
     rank: 40,
@@ -180,29 +211,44 @@ function generateLeaderboardSVG(
       }
     }
     const allFailed = fullSuccess === 0;
+    // Latency measured while most of the load was refused describes a smaller
+    // experiment than the one requested, so it is withheld rather than shown
+    // next to providers that ran the full level.
+    const hideLatency = allFailed || r.latencyRepresentative === false;
     const score = r.compositeScore !== undefined ? r.compositeScore.toFixed(1) : '--';
 
-    let speedClass = allFailed ? 'slow' : 'fast';
-    if (!allFailed && perSessionAps < 1.0) speedClass = 'slow';
-    else if (!allFailed && perSessionAps < 2.5) speedClass = 'medium';
+    let speedClass = hideLatency ? 'slow' : 'fast';
+    if (!hideLatency && perSessionAps < 1.0) speedClass = 'slow';
+    else if (!hideLatency && perSessionAps < 2.5) speedClass = 'medium';
 
     let rankClass = 'rank';
     if (rank === 1) rankClass = 'rank rank-1';
     else if (rank === 2) rankClass = 'rank rank-2';
     else if (rank === 3) rankClass = 'rank rank-3';
 
-    const successPct = totalSessions > 0 ? ((fullSuccess / totalSessions) * 100).toFixed(0) : '0';
+    // Attempted sessions, not recorded ones: a round the provider refused
+    // outright records nothing, so recorded-session denominators hide it.
+    const successPct =
+      r.successRate !== undefined
+        ? (r.successRate * 100).toFixed(0)
+        : totalSessions > 0
+          ? ((fullSuccess / totalSessions) * 100).toFixed(0)
+          : '0';
+    // The sustained figure, not the best round: a provider that touched the
+    // full level once and spent the rest throttled would otherwise report the
+    // peak as if it were typical.
+    const sustained = r.concurrencyAchieved !== undefined ? Math.round(r.concurrencyAchieved) : aliveMed;
 
     svg += `
   <text class="${rankClass}" x="${cols.rank}" y="${y}">${rank}</text>
   <text class="row provider" x="${cols.provider}" y="${y}">${formatProviderName(r.provider)}</text>
   <text class="row total" x="${cols.score}" y="${y}">${score}</text>
-  <text class="row total ${speedClass}" x="${cols.create}" y="${y}">${allFailed ? '--' : formatSeconds(createMed)}</text>
-  <text class="row" x="${cols.task}" y="${y}">${allFailed ? '--' : formatSeconds(taskMed)}</text>
-  <text class="row" x="${cols.taskP95}" y="${y}">${allFailed ? '--' : formatSeconds(taskP95)}</text>
-  <text class="row" x="${cols.screenshot}" y="${y}">${allFailed ? '--' : formatMs(screenshotMed)}</text>
-  <text class="row ${speedClass}" x="${cols.aps}" y="${y}">${allFailed ? '--' : perSessionAps.toFixed(2) + '/s'}</text>
-  <text class="row" x="${cols.alive}" y="${y}">${aliveMed}/${r.concurrencyLevel}</text>
+  <text class="row total ${speedClass}" x="${cols.create}" y="${y}">${hideLatency ? '--' : formatSeconds(createMed)}</text>
+  <text class="row" x="${cols.task}" y="${y}">${hideLatency ? '--' : formatSeconds(taskMed)}</text>
+  <text class="row" x="${cols.taskP95}" y="${y}">${hideLatency ? '--' : formatSeconds(taskP95)}</text>
+  <text class="row" x="${cols.screenshot}" y="${y}">${hideLatency ? '--' : formatMs(screenshotMed)}</text>
+  <text class="row ${speedClass}" x="${cols.aps}" y="${y}">${hideLatency ? '--' : perSessionAps.toFixed(2) + '/s'}</text>
+  <text class="row" x="${cols.alive}" y="${y}">${sustained}/${r.concurrencyLevel}${r.quotaLimited ? ' *' : ''}</text>
   <text class="row status" x="${cols.status}" y="${y}">${successPct}%</text>
 `;
 
@@ -217,9 +263,13 @@ function generateLeaderboardSVG(
     hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
   });
 
+  const footerTop = height - 14 - (footerLines.length - 1) * 14;
+
   svg += `
-  <text class="timestamp" x="${width - padding}" y="${height - 28}" text-anchor="end">Last updated: ${date}</text>
-  <text class="timestamp" x="${padding}" y="${height - 14}">Each round creates ${concurrencyLevel} sessions in parallel, holds all alive (barrier), runs 10 actions on each simultaneously, then releases all. Lower latency is better.</text>
+  <text class="timestamp" x="${width - padding}" y="${footerTop - 14}" text-anchor="end">Last updated: ${date}</text>
+${footerLines
+  .map((line, i) => `  <text class="timestamp" x="${padding}" y="${footerTop + i * 14}">${escapeXml(line)}</text>`)
+  .join('\n')}
 </svg>`;
 
   return svg;
@@ -269,10 +319,12 @@ function generateDegradationSVG(
   const chartWidth = chartRight - chartLeft;
 
   // Find max latency for Y axis scaling
+  // Scaled over charted points only, so a withheld outlier can't stretch the
+  // axis and flatten every line that is actually plotted.
   let maxLatency = 0;
   for (const level of levels) {
     for (const r of dataByLevel.get(level)!) {
-      if (r.skipped) continue;
+      if (r.skipped || r.latencyRepresentative === false) continue;
       const med = r.summary.perActionType[actionType]?.median ?? 0;
       if (med > maxLatency) maxLatency = med;
     }
@@ -296,7 +348,7 @@ function generateDegradationSVG(
   };
 
   const title = 'Browser Concurrent — Degradation Curve';
-  const subtitle = `Median ${actionType} latency vs. concurrent sessions`;
+  const subtitle = `Median ${actionType} latency vs. concurrent sessions — a line ends at the highest level the provider sustained`;
 
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   <style>
@@ -338,15 +390,30 @@ function generateDegradationSVG(
 
   // Plot lines for each provider
   const legendEntries: { name: string; color: string }[] = [];
+  const ceilingNotes: string[] = [];
   for (const provider of providers) {
     const color = PROVIDER_COLORS[provider] ?? '#656d76';
     legendEntries.push({ name: provider, color });
 
     const points: string[] = [];
+    let sustainedLevel = 0;
     for (const level of levels) {
       const results = dataByLevel.get(level)!;
       const r = results.find(r => r.provider === provider && !r.skipped);
       if (!r) continue;
+      // A level the provider never sustained produces latency for a smaller
+      // experiment. Plotting it reads as "flat under load" when the truth is
+      // that the load was refused, so the line simply ends here.
+      //
+      // The note reports the highest level actually sustained, not the peak
+      // session count: a provider can touch 13 sessions in one round of c50
+      // while sustaining nothing above c1, and reporting 13 would credit it
+      // with a concurrency it never held.
+      if (r.latencyRepresentative === false) {
+        ceilingNotes.push(`${formatProviderName(provider)} ${sustainedLevel}${r.quotaLimited ? '*' : ''}`);
+        break;
+      }
+      sustainedLevel = level;
       const med = r.summary.perActionType[actionType]?.median ?? 0;
       if (med > 0) {
         const x = xScale(level);
@@ -355,13 +422,14 @@ function generateDegradationSVG(
       }
     }
 
+    // A single sustained level still deserves its marker; only the connecting
+    // line needs two.
     if (points.length >= 2) {
       svg += `  <polyline points="${points.join(' ')}" fill="none" stroke="${color}" stroke-width="2.5"/>\n`;
-      // Draw dots at each point
-      for (const p of points) {
-        const [x, y] = p.split(',').map(Number);
-        svg += `  <circle cx="${x}" cy="${y}" r="4" fill="${color}"/>\n`;
-      }
+    }
+    for (const p of points) {
+      const [x, y] = p.split(',').map(Number);
+      svg += `  <circle cx="${x}" cy="${y}" r="4" fill="${color}"/>\n`;
     }
   }
 
@@ -372,6 +440,10 @@ function generateDegradationSVG(
     svg += `  <rect x="${legendX}" y="${legendY - 10}" width="12" height="12" fill="${entry.color}" rx="2"/>\n`;
     svg += `  <text class="legend" x="${legendX + 18}" y="${legendY}">${formatProviderName(entry.name)}</text>\n`;
     legendX += 18 + formatProviderName(entry.name).length * 7 + 24;
+  }
+
+  if (ceilingNotes.length > 0) {
+    svg += `  <text class="subtitle" x="${padding}" y="${legendY - 22}">Highest concurrency sustained: ${escapeXml(ceilingNotes.join(', '))} (* account limit, not capacity)</text>\n`;
   }
 
   svg += `</svg>`;
@@ -407,6 +479,7 @@ function main() {
     if (!fs.existsSync(p)) continue;
     const raw = fs.readFileSync(p, 'utf-8');
     const data: ResultFile = JSON.parse(raw);
+    ensureCapacityFields(data.results);
     dataByLevel.set(level, data.results);
   }
 
