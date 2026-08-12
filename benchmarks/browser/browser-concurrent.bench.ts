@@ -30,6 +30,7 @@ import { throughputProviders } from './throughput-providers.js';
 import { writeConcurrentLegacyResults } from './concurrent-legacy-results.js';
 import {
   ACTIONS_PER_LOOP,
+  ACTIONS_PER_SESSION,
   LOOPS_PER_SESSION,
   type ActionResult,
   type SessionResult,
@@ -157,6 +158,20 @@ function errorMessage(err: unknown): string {
   return String(err);
 }
 
+/**
+ * Distinct failure reasons with their counts. A capacity collapse is often
+ * mixed — kernel refused sessions for both a concurrency cap and a rate limit
+ * in the same round — so reporting only the first reason mis-attributes it.
+ */
+function reasonCounts(errors: string[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const error of errors) {
+    const key = error.slice(0, 200);
+    counts[key] = (counts[key] ?? 0) + 1;
+  }
+  return counts;
+}
+
 async function runActionLoop(page: Page, results: ActionResult[], navigateUrl: string): Promise<void> {
   for (let loop = 0; loop < LOOPS_PER_SESSION; loop++) {
     const baseIdx = loop * ACTIONS_PER_LOOP;
@@ -271,7 +286,7 @@ async function getProvider(participant: ConcurrentProviderConfig): Promise<any> 
 
 // ── Barrier-protocol task ────────────────────────────────────────────────────
 export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
-  const { participant, taskIndex, step, measure } = ctx;
+  const { participant, taskIndex, step, measure, log } = ctx;
   const timeout = participant.timeout ?? 120_000;
   const sessionCreateOptions = participant.sessionCreateOptions ?? {};
 
@@ -342,6 +357,7 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
     createMs = performance.now() - createStart;
 
     aliveSessions = [];
+    const createErrors: string[] = [];
     for (const result of createResults) {
       if (result.status === 'fulfilled') {
         aliveSessions.push(result.value);
@@ -350,6 +366,7 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
       // Keep the provider's own message: it is the only way to tell a quota
       // rejection from a rate limit, an auth failure, or a timeout.
       const reason = errorMessage(result.reason);
+      createErrors.push(reason);
       if (/timed out/i.test(reason)) createTimedOut = true;
       sessionResults.push({
         sessionId: '',
@@ -363,6 +380,17 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
       });
     }
 
+    log(
+      `c${concurrencyLevel} round ${taskIndex} create-all: ${aliveSessions.length}/${concurrencyLevel} created in ${Math.round(createMs)}ms`,
+      {
+        concurrencyLevel,
+        created: aliveSessions.length,
+        refused: createErrors.length,
+        createMs: Math.round(createMs),
+        ...(createErrors.length > 0 ? { reasons: reasonCounts(createErrors) } : {}),
+      },
+    );
+
     if (aliveSessions.length === 0) {
       // A provider refusing every session is a result, not a harness fault.
       // Throwing would lose this round's per-session errors, because the
@@ -374,6 +402,7 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
     const pages: Page[] = [];
     const connectedSessions: CreatedSession[] = [];
     const connectedConnectMs: number[] = [];
+    const connectErrors: string[] = [];
 
     if (aliveSessions.length > 0) {
       const connectStart = performance.now();
@@ -397,6 +426,7 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
         const session = aliveSessions[i];
 
         if (result.status === 'rejected') {
+          connectErrors.push(errorMessage(result.reason));
           sessionResults.push({
             sessionId: session.sessionId,
             createMs: session.createMs,
@@ -416,6 +446,7 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
         const page = context ? context.pages()[0] ?? (await context.newPage()) : undefined;
 
         if (!page) {
+          connectErrors.push('No default browser context found');
           sessionResults.push({
             sessionId: session.sessionId,
             createMs: session.createMs,
@@ -435,6 +466,16 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
       }
 
       sessionsAlive = pages.length;
+      log(
+        `c${concurrencyLevel} round ${taskIndex} connect-all: ${pages.length}/${aliveSessions.length} connected in ${Math.round(connectMs)}ms`,
+        {
+          concurrencyLevel,
+          connected: pages.length,
+          failed: connectErrors.length,
+          connectMs: Math.round(connectMs),
+          ...(connectErrors.length > 0 ? { reasons: reasonCounts(connectErrors) } : {}),
+        },
+      );
       if (pages.length === 0) roundError ??= 'All CDP connections failed';
     }
 
@@ -517,6 +558,26 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
     ...(sessionsAlive === 0 ? { roundFailed: true } : {}),
     ...(roundError ? { errorMessage: roundError } : {}),
   };
+
+  // Logged before the throw below so a harness failure still reports what the
+  // round achieved, not just that it died.
+  const actionsCompleted = sessionResults.reduce((sum, s) => sum + s.actionsCompleted, 0);
+  log(
+    `c${concurrencyLevel} round ${taskIndex} complete: ${sessionsAlive}/${concurrencyLevel} sessions, ` +
+      `${actionsCompleted}/${concurrencyLevel * ACTIONS_PER_SESSION} actions in ${Math.round(totalMs)}ms`,
+    {
+      concurrencyLevel,
+      sessionsAlive,
+      actionsCompleted,
+      aggregateActionsPerSecond: Math.round(aggregateActionsPerSecond * 100) / 100,
+      createMs: Math.round(createMs),
+      connectMs: Math.round(connectMs),
+      taskMs: Math.round(taskMs),
+      releaseMs: Math.round(releaseMs),
+      totalMs: Math.round(totalMs),
+      ...(roundError ? { roundError } : {}),
+    },
+  );
 
   // Only unexpected exceptions throw. A provider refusing sessions is data the
   // benchmark exists to collect, and throwing would discard it: the client
