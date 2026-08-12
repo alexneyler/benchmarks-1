@@ -113,8 +113,8 @@ function collectRound(provider: string, level: number, round: RoundResult): void
 }
 
 export const config = defineBenchmarkConfig({
-  benchmarkSlug: 'browser-concurrent-local',
-  benchmarkName: 'Browser Concurrent (local)',
+  benchmarkSlug: 'browser-concurrency',
+  benchmarkName: 'Browser Concurrency',
   // One task per level. Overriding this with --iterations leaves levels
   // unmeasured or task indices without a level, so the task rejects it.
   iterations: CONCURRENCY_LEVELS.length,
