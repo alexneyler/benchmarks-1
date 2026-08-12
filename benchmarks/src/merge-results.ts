@@ -811,12 +811,20 @@ async function mainBrowserConcurrent() {
     for (const r of sorted) {
       if (r.skipped) continue;
       const score = r.compositeScore !== undefined ? r.compositeScore.toFixed(1) : '--';
-      const createMed = `${(r.summary.createMs.median / 1000).toFixed(2)}s`;
-      const taskMed = `${(r.summary.taskMs.median / 1000).toFixed(2)}s`;
-      const taskP95 = `${(r.summary.taskMs.p95 / 1000).toFixed(2)}s`;
-      const screenshotMed = `${Math.round(r.summary.perActionType.screenshot?.median ?? 0)}ms`;
-      const aps = r.summary.perSessionActionsPerSecond.median.toFixed(2);
-      const alive = `${r.summary.sessionsAlive.median}/${r.concurrencyLevel}`;
+      // Withheld for the same reason the charts withhold it: timings sampled
+      // while most of the load was refused describe a smaller experiment.
+      const hideLatency = r.latencyRepresentative === false;
+      const createMed = hideLatency ? '--' : `${(r.summary.createMs.median / 1000).toFixed(2)}s`;
+      const taskMed = hideLatency ? '--' : `${(r.summary.taskMs.median / 1000).toFixed(2)}s`;
+      const taskP95 = hideLatency ? '--' : `${(r.summary.taskMs.p95 / 1000).toFixed(2)}s`;
+      const screenshotMed = hideLatency
+        ? '--'
+        : `${Math.round(r.summary.perActionType.screenshot?.median ?? 0)}ms`;
+      const aps = hideLatency ? '--' : r.summary.perSessionActionsPerSecond.median.toFixed(2);
+      const sustained = r.concurrencyAchieved !== undefined
+        ? Math.round(r.concurrencyAchieved)
+        : r.summary.sessionsAlive.median;
+      const alive = `${sustained}/${r.concurrencyLevel}${r.quotaLimited ? '*' : ''}`;
       let totalSessions = 0, fullSuccess = 0;
       for (const round of r.rounds) {
         for (const session of round.sessions) {
@@ -824,10 +832,30 @@ async function mainBrowserConcurrent() {
           if (!session.error && session.actionsCompleted === 10) fullSuccess++;
         }
       }
-      const successPct = totalSessions > 0 ? `${((fullSuccess / totalSessions) * 100).toFixed(0)}%` : '0%';
+      const successPct =
+        r.successRate !== undefined
+          ? `${(r.successRate * 100).toFixed(0)}%`
+          : totalSessions > 0
+            ? `${((fullSuccess / totalSessions) * 100).toFixed(0)}%`
+            : '0%';
       console.log([r.provider.padEnd(14), score.padEnd(8), createMed.padEnd(10), taskMed.padEnd(10), taskP95.padEnd(10), screenshotMed.padEnd(12), aps.padEnd(10), alive.padEnd(8), successPct.padEnd(10)].join(' | '));
     }
     console.log('='.repeat(120));
+    const withheld = sorted.filter(r => !r.skipped && r.latencyRepresentative === false);
+    if (withheld.length > 0) {
+      console.log(
+        `  -- latency withheld, load not sustained: ${withheld
+          .map(r => `${r.provider} held ${Math.round(r.concurrencyAchieved ?? 0)}/${r.concurrencyLevel}`)
+          .join(', ')}`,
+      );
+    }
+    const quotaCapped = sorted.filter(r => r.quotaLimited);
+    if (quotaCapped.length > 0) {
+      console.log(`  *  capped by an account limit, not capacity: ${quotaCapped.map(r => r.provider).join(', ')}`);
+      for (const r of quotaCapped) {
+        if (r.quotaEvidence) console.log(`     ${r.provider}: ${r.quotaEvidence}`);
+      }
+    }
 
     // Write combined results
     const timestamp = new Date().toISOString().slice(0, 10);
