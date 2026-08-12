@@ -102,8 +102,8 @@ importers:
         specifier: ^1.9.4
         version: 1.9.4
       '@computesdk/mosaic':
-        specifier: ^0.1.2
-        version: 0.1.2
+        specifier: ^0.1.4
+        version: 0.1.4
       '@computesdk/namespace':
         specifier: ^1.6.14
         version: 1.6.14
@@ -697,8 +697,8 @@ packages:
   '@computesdk/modal@1.9.4':
     resolution: {integrity: sha512-MTxwhw+Ol/UaOJBpTfQmg1vo8s9rIhWZeCzcfG6LndwuQoq4CVWwjO+fGT9lB7wVBaddtbWaks3R7PI9GH+meg==}
 
-  '@computesdk/mosaic@0.1.2':
-    resolution: {integrity: sha512-VZAZmtH+O/bj4GcjN9Z+FQwl5y1nstaPvh+562Jg87Fnp5NVeyknciWaI6gk4vgIUFQDDiHRoZ9B7W/X1OHN7w==}
+  '@computesdk/mosaic@0.1.4':
+    resolution: {integrity: sha512-+Nl2XmPErrZyEiPG28wOYmFOHC4Kw7J5xngUcfGVFxVZQ2eA+ytfyraOmFA4DVGXq3geT8wcJ8SCWO5grJTFpg==}
 
   '@computesdk/namespace@1.6.14':
     resolution: {integrity: sha512-K0XSkDyDBlr0XJW+SXXNg0q/ksNTz+Dz5N8FI4z+mzOCQ9OlpsdSDpatAHzQa2AE/00OBCbhdYgOr4mm0dPEVQ==}
@@ -714,6 +714,9 @@ packages:
 
   '@computesdk/provider@2.1.4':
     resolution: {integrity: sha512-abTZS8kpif4QpLZ7Jzo6hmlje2b3YB4VRC8hVkrb/tKXwt0QcU7Nao7tM1phRru0HxVrfHycb/vZtdJSlNFGeA==}
+
+  '@computesdk/provider@2.1.5':
+    resolution: {integrity: sha512-y1vmqZui7pQDzfCrZErUmNi6Ny7x76p8sz4J1iPl+ueuLX/teysyrrng6B3OZCiyrknzB4AtLXlDkzWmNnP8DA==}
 
   '@computesdk/quilt@1.0.2':
     resolution: {integrity: sha512-9AaYSE6haZBNoB8pVjqSVtrgSBX6KmuPJblsDdiWvscbvuAfZ/2/IRCdmT7wSF0S1b2vC2WMm2I+4+6i+0CpRA==}
@@ -6317,9 +6320,9 @@ snapshots:
       computesdk: 4.1.4
       modal: 0.7.6
 
-  '@computesdk/mosaic@0.1.2':
+  '@computesdk/mosaic@0.1.4':
     dependencies:
-      '@computesdk/provider': 2.1.4
+      '@computesdk/provider': 2.1.5
       computesdk: 4.1.4
 
   '@computesdk/namespace@1.6.14':
@@ -6353,6 +6356,12 @@ snapshots:
       computesdk: 4.1.4
 
   '@computesdk/provider@2.1.4':
+    dependencies:
+      '@computesdk/cmd': 0.4.1
+      computesdk: 4.1.4
+      daemond: 0.1.4
+
+  '@computesdk/provider@2.1.5':
     dependencies:
       '@computesdk/cmd': 0.4.1
       computesdk: 4.1.4
