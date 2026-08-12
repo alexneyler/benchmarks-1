@@ -18,7 +18,8 @@
     "benchmarks/browser/**/*.ts",
     "benchmarks/storage/**/*.ts",
     "benchmarks/ai-gateway/**/*.ts",
-    "benchmarks/scale/**/*.ts"
+    "benchmarks/scale/**/*.ts",
+    "benchmarks/examples/**/*.ts"
   ],
   "exclude": ["node_modules", "benchmarks/dist", "packages", "results", ".git"]
 }
