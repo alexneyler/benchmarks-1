@@ -14,6 +14,20 @@ import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';
 import type { NoopParticipant } from './participants.js';
 import { exampleProviders } from './participants.js';
 
+/**
+ * `groupBy: 'round'` changes execution order:
+ *
+ *   Round 0: alpha task 0, beta task 0, gamma task 0
+ *   Round 1: alpha task 1, beta task 1, gamma task 1
+ *   ...
+ *
+ * This is useful when you want the Nth iteration of every provider to start at
+ * roughly the same wall-clock time, rather than finishing all iterations for
+ * one provider before moving to the next.
+ *
+ * `concurrency` is set to 1 here because the round-robin path runs one task per
+ * round; the ordering is the primary concern, not per-participant burst.
+ */
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'examples-round-robin',
   benchmarkName: 'Examples: Round Robin',
@@ -23,6 +37,11 @@ export const config = defineBenchmarkConfig({
   participants: exampleProviders,
 });
 
+/**
+ * `taskIndex` is the zero-based slot index within the participant's assignment.
+ * In round mode it effectively represents the round number, so we log it to
+ * make the ordering visible in the worker log.
+ */
 export const task = defineTask<NoopParticipant>(async ({ participant, step, measure, log, taskIndex }) => {
   log(`round ${taskIndex + 1} for ${participant.name}`);
 

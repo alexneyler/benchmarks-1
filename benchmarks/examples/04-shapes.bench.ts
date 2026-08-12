@@ -17,6 +17,18 @@ import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';
 import type { NoopParticipant } from './participants.js';
 import { createNoopParticipant } from './participants.js';
 
+/**
+ * The base config defines the default identity. `shapes` then declares variants.
+ *
+ * - `quick` reports under a different platform slug and has no stagger delay.
+ * - `thorough` reports under another slug and staggers each task start by 250ms.
+ *
+ * `--shape quick` swaps the identity before the run is created, so the platform
+ * records the run under `examples-shapes-quick` instead of `examples-shapes`.
+ *
+ * `iterations` and `concurrency` are not part of the shape because they are
+ * environment-specific scale knobs; override them from the CLI per run.
+ */
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'examples-shapes',
   benchmarkName: 'Examples: Shapes',
@@ -37,6 +49,10 @@ export const config = defineBenchmarkConfig({
   participants: [createNoopParticipant('noop', 100)],
 });
 
+/**
+ * The task itself is the same for both shapes; the only difference is the
+ * platform identity and the stagger delay selected by `--shape`.
+ */
 export const task = defineTask<NoopParticipant>(async ({ participant, step, measure, log }) => {
   log('starting shaped iteration');
 
