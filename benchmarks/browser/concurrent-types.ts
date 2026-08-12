@@ -3,10 +3,9 @@
  *
  * Each "round" creates N browser sessions in parallel, waits for all to be
  * alive + connected (barrier), runs a fixed 10-action loop on every session
- * simultaneously, then releases all. The runner's `--iterations` controls how
- * many rounds execute; the custom `--concurrency-level` flag (parsed from
- * argv, like storage's `--file-size`) controls N — the number of sessions
- * active at the same time.
+ * simultaneously, then releases all. N is the concurrency level, and each level
+ * is one phase of the run: the level's task runs every round at that level, so
+ * ROUNDS_PER_LEVEL fixes the round count and `--levels` picks which levels run.
  *
  * Results are organized by concurrency level, mirroring the storage
  * benchmark's per-file-size directories:
@@ -62,9 +61,47 @@ export const ROUNDS_PER_LEVEL: Record<ConcurrencyLevel, number> = {
   50: 3,
 };
 
-/** Level for a task index; one task per level, in CONCURRENCY_LEVELS order. */
-export function levelForTaskIndex(taskIndex: number): ConcurrencyLevel | undefined {
-  return CONCURRENCY_LEVELS[taskIndex];
+/** Phase name for a level. Each level is one phase, so records carry `c25`. */
+export function phaseNameForLevel(level: number): string {
+  return `c${level}`;
+}
+
+/**
+ * Level a phase name refers to.
+ *
+ * The level is read back from the phase rather than from the task index,
+ * because the index is positional: running a subset would otherwise map task 0
+ * to c1 no matter which level was actually asked for.
+ */
+export function levelFromPhaseName(phase: string | undefined): ConcurrencyLevel | undefined {
+  return CONCURRENCY_LEVELS.find((level) => phaseNameForLevel(level) === phase);
+}
+
+/** Parses a `--levels 1,5` value into levels, or reports what was wrong. */
+export function parseLevels(raw: string | undefined): {
+  levels: ConcurrencyLevel[];
+  error?: string;
+} {
+  if (!raw) return { levels: [...CONCURRENCY_LEVELS] };
+  const requested = raw.split(',').map((part) => part.trim()).filter(Boolean);
+  const unknown = requested.filter(
+    (part) => !CONCURRENCY_LEVELS.some((level) => String(level) === part),
+  );
+  if (requested.length === 0 || unknown.length > 0) {
+    return {
+      levels: [],
+      error:
+        `Invalid --levels "${raw}"` +
+        (unknown.length > 0 ? `: unknown level(s) ${unknown.join(', ')}` : '') +
+        `. Choose from ${CONCURRENCY_LEVELS.join(', ')}.`,
+    };
+  }
+  // Ascending regardless of the order given, so the sweep always climbs and the
+  // cooldown between levels is never asked to shed a bigger level into a
+  // smaller one.
+  return {
+    levels: CONCURRENCY_LEVELS.filter((level) => requested.includes(String(level))),
+  };
 }
 
 export interface ActionResult {

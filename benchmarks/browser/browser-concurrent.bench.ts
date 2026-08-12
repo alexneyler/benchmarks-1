@@ -3,10 +3,16 @@
  * in parallel, waits for all to be alive + connected (barrier), runs a fixed
  * 10-action loop on every session simultaneously, then releases all.
  *
- * One task per concurrency level: task 0 runs every round at 1 session, task 4
- * every round at 50, so a single platform run carries the whole sweep. The
- * level comes from `ctx.taskIndex`, which makes the platform's task index the
- * concurrency axis — its per-iteration view is then the degradation curve.
+ * One phase per concurrency level, one task each: the c1 task runs every round
+ * at 1 session, the c50 task every round at 50, so a single platform run carries
+ * the whole sweep and the task index becomes the concurrency axis — the
+ * platform's per-iteration view is then the degradation curve.
+ *
+ * `--levels` picks which levels run; the rounds at each level are fixed by
+ * ROUNDS_PER_LEVEL. There is deliberately no way to ask for "more iterations":
+ * repeating a level means more rounds, which is a property of the level, and
+ * the runner rejects `--iterations` outright because this benchmark declares
+ * phases.
  *
  * This shape exists because a participant carries one task count for the whole
  * run, so the levels cannot be separate participants without also splitting
@@ -14,8 +20,9 @@
  * five tasks on the five levels keeps provider rankings intact and still
  * reports each level separately, via a task index and per-level step names.
  *
- *   bench run benchmarks/browser/browser-concurrent.bench.ts --iterations 5
- *   bench run benchmarks/browser/browser-concurrent.bench.ts --provider browserbase --iterations 5
+ *   bench run benchmarks/browser/browser-concurrent.bench.ts
+ *   bench run benchmarks/browser/browser-concurrent.bench.ts --levels 1,5
+ *   bench run benchmarks/browser/browser-concurrent.bench.ts --provider browserbase --levels 50
  *
  * Results are still organized by concurrency level, mirroring the storage
  * benchmark's per-file-size directories:
@@ -40,7 +47,9 @@ import {
   CONCURRENCY_LEVELS,
   LOOPS_PER_SESSION,
   ROUNDS_PER_LEVEL,
-  levelForTaskIndex,
+  levelFromPhaseName,
+  parseLevels,
+  phaseNameForLevel,
   type ActionResult,
   type RoundResult,
   type SessionResult,
@@ -51,6 +60,21 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const concurrentTimeoutMs =
   throughputProviders.reduce((max, p) => Math.max(max, p.timeout ?? 120_000), 0) || 120_000;
+
+// ── Custom CLI flag: --levels (the runner ignores flags it does not know) ─────
+// Which levels to sweep, not how many times anything repeats: the rounds at each
+// level are fixed by ROUNDS_PER_LEVEL. `--iterations` cannot express this, and
+// the runner rejects it outright for benchmarks that declare phases.
+const levelsArg = (() => {
+  const argv = process.argv.slice(2);
+  const idx = argv.indexOf('--levels');
+  return idx !== -1 && idx + 1 < argv.length ? argv[idx + 1] : undefined;
+})();
+const { levels: SELECTED_LEVELS, error: levelsError } = parseLevels(levelsArg);
+if (levelsError) {
+  console.error(levelsError);
+  process.exit(1);
+}
 
 /**
  * Rounds that fit in one task record: the client caps a record at 100 steps and
@@ -115,9 +139,11 @@ function collectRound(provider: string, level: number, round: RoundResult): void
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'browser-concurrency',
   benchmarkName: 'Browser Concurrency',
-  // One task per level. Overriding this with --iterations leaves levels
-  // unmeasured or task indices without a level, so the task rejects it.
-  iterations: CONCURRENCY_LEVELS.length,
+  // One phase per level, one task each: the phase names the level a record
+  // belongs to, so nothing depends on task position, and declaring phases makes
+  // the runner refuse `--iterations` instead of silently reinterpreting it as a
+  // number of levels.
+  phases: SELECTED_LEVELS.map((level) => ({ name: phaseNameForLevel(level), iterations: 1 })),
   concurrency: 1,
   participants: throughputProviders,
   onComplete: () =>
@@ -656,15 +682,14 @@ async function runRound(ctx: RoundContext): Promise<{ round: RoundResult; harnes
 
 // ── One task per concurrency level ───────────────────────────────────────────
 export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
-  const { participant, taskIndex, step, measure, log } = ctx;
+  const { participant, taskIndex, phase, step, measure, log } = ctx;
 
-  const concurrencyLevel = levelForTaskIndex(taskIndex);
+  const concurrencyLevel = levelFromPhaseName(phase);
   if (concurrencyLevel === undefined) {
     throw new TaskError(
-      `Task index ${taskIndex} has no concurrency level. This benchmark runs one task per ` +
-        `level, so it needs exactly ${CONCURRENCY_LEVELS.length} iterations ` +
-        `(${CONCURRENCY_LEVELS.join(', ')} sessions).`,
-      { code: 'CONCURRENT_BAD_ITERATIONS' },
+      `Task ${taskIndex} has phase ${phase ?? '(none)'}, which names no concurrency level. ` +
+        `Levels are selected with --levels (${CONCURRENCY_LEVELS.join(', ')}), not --iterations.`,
+      { code: 'CONCURRENT_BAD_PHASE' },
     );
   }
 
@@ -727,7 +752,7 @@ export const task = defineTask<ConcurrentProviderConfig>(async (ctx) => {
   // because a level that failed part way through is the case most likely to
   // have left sessions behind for the next level to trip over. Skipped after
   // the last level, where it would only delay the run's completion.
-  if (taskIndex < CONCURRENCY_LEVELS.length - 1 && LEVEL_COOLDOWN_MS > 0) {
+  if (taskIndex < SELECTED_LEVELS.length - 1 && LEVEL_COOLDOWN_MS > 0) {
     await new Promise((resolve) => setTimeout(resolve, LEVEL_COOLDOWN_MS));
   }
 
