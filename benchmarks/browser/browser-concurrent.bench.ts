@@ -118,8 +118,7 @@ async function timeAction<T>(
     const value = await withTimeout(fn(), ACTION_TIMEOUT_MS, 'Action timed out');
     return { durationMs: performance.now() - start, success: true, value };
   } catch (err) {
-    const error = err instanceof Error ? err.message : String(err);
-    return { durationMs: performance.now() - start, success: false, error };
+    return { durationMs: performance.now() - start, success: false, error: errorMessage(err) };
   }
 }
 
@@ -134,8 +133,28 @@ interface CreatedSession {
   createMs: number;
 }
 
+/**
+ * Not every provider SDK rejects with an Error: notte throws a plain object,
+ * which `String()` flattens to "[object Object]" and discards the reason a
+ * session was refused — the one thing a capacity failure needs to report.
+ */
 function errorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'string') return err;
+  if (err !== null && typeof err === 'object') {
+    const record = err as Record<string, unknown>;
+    for (const key of ['message', 'error', 'detail']) {
+      const value = record[key];
+      if (typeof value === 'string' && value.length > 0) return value;
+    }
+    try {
+      const json = JSON.stringify(err);
+      if (json && json !== '{}') return json;
+    } catch {
+      // Circular or non-serializable; fall through to String().
+    }
+  }
+  return String(err);
 }
 
 async function runActionLoop(page: Page, results: ActionResult[], navigateUrl: string): Promise<void> {
