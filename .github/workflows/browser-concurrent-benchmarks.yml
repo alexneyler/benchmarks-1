@@ -123,9 +123,9 @@ jobs:
             export CONCURRENT_LEVEL_COOLDOWN_MS=60000
           fi
 
-          # One platform run for the whole sweep. The level is a task index
-          # rather than part of the run key, so all five levels land in the same
-          # run and each provider registers exactly once.
+          # One platform run for the whole sweep. Each level is a phase within
+          # the run rather than part of the run key, so every level lands in the
+          # same run and each provider registers exactly once.
           RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/browser/browser-concurrent.bench.ts \
             --provider ${{ matrix.provider }} \
