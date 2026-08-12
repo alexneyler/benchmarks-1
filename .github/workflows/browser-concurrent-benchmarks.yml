@@ -37,11 +37,11 @@ jobs:
       - name: Resolve one shared random article per round
         id: pick
         run: |
-          # Resolve one concrete article per round up front so every
-          # provider benchmarks against the same page in a given round.
-          # On push (smoke test) we only need 3; on schedule/dispatch we
-          # need up to 50 (max iterations at c1).
-          count=${{ github.event_name == 'push' && '3' || '50' }}
+          # Resolve concrete articles up front so every provider benchmarks
+          # against the same pages. Sessions index into this list, so 50 covers
+          # a full c50 round; longer levels wrap, which keeps the page mix
+          # identical across providers.
+          count=${{ github.event_name == 'push' && '5' || '50' }}
           urls=()
           for i in $(seq 1 "$count"); do
             for attempt in 1 2 3 4 5; do
@@ -106,61 +106,31 @@ jobs:
         run: |
           . benchmarks/scripts/load-vault-secrets.sh '^(BROWSERBASE_API_KEY|BROWSERBASE_PROJECT_ID|BROWSER_USE_API_KEY|HYPERBROWSER_API_KEY|KERNEL_API_KEY|NOTTE_API_KEY|STEEL_API_KEY|TILION_API_KEY|TILION_BASE_URL|COMPUTESDK_ADMIN_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
 
-          # Concurrency levels run one after another inside this job, never as
-          # parallel matrix jobs. Parallel level jobs all target the same
-          # provider account at once, so the c1 job would measure its baseline
-          # while 5 + 10 + 25 + 50 sibling sessions were live on that account
-          # and every level's numbers would depend on scheduling overlap.
-          #
-          # A cooldown between levels lets sessions released at the end of one
-          # level clear the provider's quota before the next level starts.
+          # One invocation covers the whole sweep: the benchmark runs one task
+          # per concurrency level, and --levels picks which levels run (the
+          # rounds at each level are fixed in the benchmark). Levels therefore
+          # run one after another in a single process, never as parallel matrix
+          # jobs: parallel level jobs put every level's sessions on the same
+          # provider account at once, so c1 would measure its baseline while
+          # 5 + 10 + 25 + 50 sibling sessions were live and every level's
+          # numbers would depend on overlap.
           if [ "${{ github.event_name }}" = "push" ]; then
-            LEVELS="1 5"   # smoke test only
-            COOLDOWN=10
+            LEVELS="1,5"             # smoke test: cheapest two levels
+            export CONCURRENT_ROUNDS_PER_LEVEL=1
+            export CONCURRENT_LEVEL_COOLDOWN_MS=10000
           else
-            LEVELS="1 5 10 25 50"
-            COOLDOWN=60
+            LEVELS="1,5,10,25,50"
+            export CONCURRENT_LEVEL_COOLDOWN_MS=60000
           fi
 
-          # Rounds per level. Session-level metrics pool every session at a
-          # level, so a handful of rounds at high concurrency already yields a
-          # large sample; the round count only needs to give the barrier
-          # wall-clock a few observations.
-          iterations_for() {
-            case "$1" in
-              1)  echo 10 ;;
-              5)  echo 10 ;;
-              10) echo 5 ;;
-              25) echo 3 ;;
-              50) echo 3 ;;
-              *)  echo 3 ;;
-            esac
-          }
-
-          status=0
-          for level in $LEVELS; do
-            if [ "${{ github.event_name }}" = "push" ]; then
-              iters=1
-            else
-              iters=$(iterations_for "$level")
-            fi
-
-            echo "::group::c${level} (${iters} rounds)"
-            # One platform run per level: the benchmark slug is
-            # level-independent, so without the level in the key a provider
-            # would register as the same participant five times and the
-            # platform rejects the duplicate with 409 Conflict.
-            RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-c${level}"
-            npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/browser/browser-concurrent.bench.ts \
-              --provider ${{ matrix.provider }} \
-              --concurrency-level "$level" \
-              --iterations "$iters" \
-              --run-key "$RUN_KEY" || status=$?
-            echo "::endgroup::"
-
-            sleep "$COOLDOWN"
-          done
-          exit $status
+          # One platform run for the whole sweep. Each level is a phase within
+          # the run rather than part of the run key, so every level lands in the
+          # same run and each provider registers exactly once.
+          RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/browser/browser-concurrent.bench.ts \
+            --provider ${{ matrix.provider }} \
+            --levels "$LEVELS" \
+            --run-key "$RUN_KEY"
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
