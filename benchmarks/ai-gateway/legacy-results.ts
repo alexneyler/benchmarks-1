@@ -47,6 +47,7 @@ function recordToProbe(r: TaskResultRecord): PhaseProbeResult {
   }
   if (typeof d.outputTokens === 'number') probe.outputTokens = d.outputTokens;
   if (typeof d.outputTokensPerSec === 'number') probe.outputTokensPerSec = d.outputTokensPerSec;
+  if (typeof d.resolvedProvider === 'string') probe.resolvedProvider = d.resolvedProvider;
   if (r.status === 'error') probe.error = (d.errorMessage as string) ?? r.errorCode ?? 'error';
 
   return probe;
