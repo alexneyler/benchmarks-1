@@ -24,6 +24,7 @@ import { NoAvailableParticipantsError } from './no-available-participants.js';
 import type {
   BaseParticipant,
   BenchmarkClient,
+  DefineStepOptions,
   JsonObject,
   RunWorkerContext,
   TaskResultRecord,
@@ -40,6 +41,7 @@ import type {
   ResolvedRunConfig,
   TaskContext,
   TaskResult,
+  TaskStepOptions,
 } from './bench-config.js';
 import { LogBuffer } from './log-buffer.js';
 
@@ -72,6 +74,74 @@ function sleep(ms: number): Promise<void> {
 
 function getErrorCode(error: unknown): string {
   return error instanceof Error && error.name ? error.name : 'ERROR';
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, name: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new TaskError(`Step "${name}" timed out after ${ms}ms`, { code: 'step_timeout' })),
+      ms,
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
+async function runStepInvocations<R>(
+  name: string,
+  fn: () => Promise<R> | R,
+  options: TaskStepOptions | undefined,
+): Promise<R | R[]> {
+  const requestedConcurrency = options?.concurrency;
+  if (requestedConcurrency !== undefined && (!Number.isInteger(requestedConcurrency) || requestedConcurrency < 1)) {
+    throw new Error(`step "${name}" concurrency must be an integer >= 1 (got ${requestedConcurrency})`);
+  }
+  const timeoutMs = options?.timeoutMs;
+  if (timeoutMs !== undefined && (!Number.isFinite(timeoutMs) || timeoutMs < 0)) {
+    throw new Error(`step "${name}" timeoutMs must be a number >= 0 (got ${timeoutMs})`);
+  }
+
+  const count = requestedConcurrency ?? 1;
+  const invocations = Array.from({ length: count }, () => {
+    const promise = Promise.resolve().then(() => fn());
+    if (timeoutMs === undefined) return promise;
+    return withTimeout(promise, timeoutMs, name);
+  });
+
+  if (count === 1) {
+    return invocations[0];
+  }
+
+  const results: R[] = [];
+  let firstError: unknown;
+  for (const promise of invocations) {
+    try {
+      results.push(await promise);
+    } catch (error) {
+      if (firstError === undefined) firstError = error;
+    }
+  }
+  if (firstError !== undefined) throw firstError;
+  return results;
+}
+
+async function runStepWithClient<R, C extends number = 1>(
+  clientStep: RunWorkerContext['step'],
+  name: string,
+  fn: () => Promise<R> | R,
+  options?: TaskStepOptions & { concurrency?: C },
+): Promise<C extends 1 ? R : R[]> {
+  const { concurrency: _runnerConcurrency, timeoutMs: _runnerTimeout, ...clientOptions } = options ?? {};
+  const result = await clientStep(name, () => runStepInvocations(name, fn, options), clientOptions as DefineStepOptions);
+  return result as C extends 1 ? R : R[];
 }
 
 /**
@@ -465,12 +535,14 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
         }
         const slot = schedule[scheduleIndex];
         // The client owns step timing, `measure` attribution, and worker-log
-        // upload; the runner just threads them onto the task context.
+        // upload; the runner just threads them onto the task context. The runner
+        // wraps `ctx.step` so per-step `timeoutMs` and `concurrency` work in
+        // participant mode as well.
         const taskResult = await slot.task({
           participant,
           taskIndex: scheduleIndex,
           phase: slot.phase,
-          step: ctx.step,
+          step: (name, fn, options) => runStepWithClient(ctx.step, name, fn, options),
           measure: ctx.measure,
           log: ctx.log,
         });
@@ -639,7 +711,11 @@ async function runTaskRecord<T extends BaseParticipant>(
     participant,
     taskIndex: scheduleIndex,
     phase,
-    async step(name, fn) {
+    async step<R, C extends number = 1>(
+      name: string,
+      fn: () => Promise<R> | R,
+      options?: TaskStepOptions & { concurrency?: C },
+    ): Promise<C extends 1 ? R : R[]> {
       const stepStartedAtMs = Date.now();
       const stepRecord: TaskStepRecord = {
         name,
@@ -648,15 +724,17 @@ async function runTaskRecord<T extends BaseParticipant>(
         completedAt: new Date(stepStartedAtMs).toISOString(),
         latencyMs: 0,
       };
+      if (options?.concurrency !== undefined) stepRecord.concurrency = options.concurrency;
+      if (options?.timeoutMs !== undefined) stepRecord.timeoutMs = options.timeoutMs;
       const previousStep = activeStep;
       activeStep = stepRecord;
       try {
-        const result = await fn();
+        const result = await runStepInvocations<R>(name, fn, options);
         logBuffer.step(taskIndex, name, {});
-        return result;
+        return result as C extends 1 ? R : R[];
       } catch (error) {
         stepRecord.status = 'error';
-        stepRecord.errorCode = getErrorCode(error);
+        stepRecord.errorCode = error instanceof TaskError ? error.code ?? error.name : getErrorCode(error);
         logBuffer.step(taskIndex, name, { error: error instanceof Error ? error.message : String(error) });
         throw error;
       } finally {

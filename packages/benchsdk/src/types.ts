@@ -183,6 +183,10 @@ export interface TaskStepRecord {
   latencyMs?: number;
   errorCode?: string | null;
   data?: JsonObject;
+  /** Number of parallel invocations requested for this step. */
+  concurrency?: number;
+  /** Per-iteration timeout in milliseconds applied to this step. */
+  timeoutMs?: number;
 }
 
 export interface SendTaskResultsInput {

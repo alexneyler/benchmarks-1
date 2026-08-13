@@ -4,6 +4,7 @@ export type {
   BenchmarkTask,
   TaskContext,
   TaskResult,
+  TaskStepOptions,
   Phase,
   GroupBy,
   ParticipantRecords,

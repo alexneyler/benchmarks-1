@@ -707,4 +707,124 @@ describe('runBenchmark', () => {
     expect(recorded.e2b[0].errorCode).toBe('probe_failed');
     expect(recorded.e2b[0].data).toEqual({ mode: 'cold' });
   });
+
+  describe('ctx.step options', () => {
+    const setupRoundReporter = (recorded: TaskResultRecord[]) =>
+      reporterClaim.mockImplementation(async () => ({
+        taskIndexStart: 0,
+        recordResult: (r: TaskResultRecord) => recorded.push(r),
+        uploadArtifact: async () => ({}),
+        setProgress: () => {},
+        heartbeat: async () => {},
+        finish: async () => {},
+      }));
+
+    it('runs a step with timeoutMs that completes normally', async () => {
+      const recorded: TaskResultRecord[] = [];
+      setupRoundReporter(recorded);
+
+      const task = vi.fn(async (ctx: any) => {
+        const value = await ctx.step('fast', () => 'ok', { timeoutMs: 1000 });
+        expect(value).toBe('ok');
+        return {};
+      });
+
+      await runBenchmark(
+        { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'round', participants: [participants[0]] },
+        defineTask(task),
+        [],
+      );
+
+      const step = recorded[0].steps?.find((s) => s.name === 'fast');
+      expect(step?.status).toBe('success');
+      expect(step?.timeoutMs).toBe(1000);
+      expect(step?.errorCode).toBeUndefined();
+    });
+
+    it('times out a step with timeoutMs and records step_timeout', async () => {
+      const recorded: TaskResultRecord[] = [];
+      setupRoundReporter(recorded);
+
+      let caught: unknown;
+      const task = vi.fn(async (ctx: any) => {
+        try {
+          await ctx.step('slow', () => new Promise((resolve) => setTimeout(resolve, 5000)), { timeoutMs: 10 });
+        } catch (error) {
+          caught = error;
+        }
+        return {};
+      });
+
+      await runBenchmark(
+        { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'round', participants: [participants[0]] },
+        defineTask(task),
+        [],
+      );
+
+      expect(caught).toBeInstanceOf(TaskError);
+      expect((caught as TaskError).code).toBe('step_timeout');
+      const step = recorded[0].steps?.find((s) => s.name === 'slow');
+      expect(step?.status).toBe('error');
+      expect(step?.errorCode).toBe('step_timeout');
+      expect(step?.timeoutMs).toBe(10);
+    });
+
+    it('runs a step with concurrency > 1 and returns an array of results', async () => {
+      const recorded: TaskResultRecord[] = [];
+      setupRoundReporter(recorded);
+
+      const task = vi.fn(async (ctx: any) => {
+        const results = await ctx.step('parallel', () => 42, { concurrency: 3 });
+        expect(results).toEqual([42, 42, 42]);
+        return {};
+      });
+
+      await runBenchmark(
+        { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'round', participants: [participants[0]] },
+        defineTask(task),
+        [],
+      );
+
+      const step = recorded[0].steps?.find((s) => s.name === 'parallel');
+      expect(step?.status).toBe('success');
+      expect(step?.concurrency).toBe(3);
+    });
+
+    it('fails a step with concurrency > 1 when one invocation fails', async () => {
+      const recorded: TaskResultRecord[] = [];
+      setupRoundReporter(recorded);
+
+      let calls = 0;
+      let caught: unknown;
+      const task = vi.fn(async (ctx: any) => {
+        try {
+          await ctx.step(
+            'parallel',
+            () => {
+              const index = calls++;
+              if (index === 1) throw new TaskError('boom', { code: 'invocation_failed' });
+              return index;
+            },
+            { concurrency: 3 },
+          );
+        } catch (error) {
+          caught = error;
+        }
+        return {};
+      });
+
+      await runBenchmark(
+        { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'round', participants: [participants[0]] },
+        defineTask(task),
+        [],
+      );
+
+      expect(caught).toBeInstanceOf(TaskError);
+      expect((caught as TaskError).code).toBe('invocation_failed');
+      const step = recorded[0].steps?.find((s) => s.name === 'parallel');
+      expect(step?.status).toBe('error');
+      expect(step?.concurrency).toBe(3);
+      expect(step?.errorCode).toBe('invocation_failed');
+    });
+  });
 });
