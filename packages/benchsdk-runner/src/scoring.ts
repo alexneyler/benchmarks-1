@@ -142,6 +142,11 @@ export function score(outcome: BenchmarkRunOutcome, spec: ScoringSpec): Benchmar
 
     for (const metric of spec.metrics) {
       const samples = collectSamples(metric, passing);
+      // A metric with no data points should not contribute to the composite
+      // score; otherwise an empty lower-is-better metric would be scored as 100.
+      if (samples.length === 0) {
+        continue;
+      }
       const { median, p95, p99 } = computeStats(samples, metric.trim ?? 0.05);
       const metricScore =
         metric.weights.median * scoreStat(median, metric) +

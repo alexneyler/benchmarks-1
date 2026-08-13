@@ -497,17 +497,22 @@ export async function runBenchmark<T extends BaseParticipant>(
     config: resolved,
   };
   if (config.onScore) {
-    const spec = await config.onScore(lowerIsBetter, higherIsBetter);
-    const scored = score(outcome, spec);
-    const run = {
-      gitSha: process.env.GITHUB_SHA ?? getGitSha(),
-      gitRef: process.env.GITHUB_REF_NAME ?? process.env.GITHUB_REF ?? getGitRef(),
-      triggeredBy: process.env.GITHUB_EVENT_NAME ?? 'manual',
-      nodeVersion: process.version,
-      platform: os.platform(),
-      arch: os.arch(),
-    };
-    await client.submitRunSummary(config.benchmarkSlug, runId, { run, results: scored });
+    try {
+      const spec = await config.onScore(lowerIsBetter, higherIsBetter);
+      const scored = score(outcome, spec);
+      const run = {
+        gitSha: process.env.GITHUB_SHA ?? getGitSha(),
+        gitRef: process.env.GITHUB_REF_NAME ?? process.env.GITHUB_REF ?? getGitRef(),
+        triggeredBy: process.env.GITHUB_EVENT_NAME ?? 'manual',
+        nodeVersion: process.version,
+        platform: os.platform(),
+        arch: os.arch(),
+      };
+      await client.submitRunSummary(config.benchmarkSlug, runId, { run, results: scored });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn(`[benchsdk-runner] failed to submit run summary: ${message}`);
+    }
   }
   if (config.onComplete) await config.onComplete(outcome);
   return outcome;
