@@ -77,6 +77,14 @@ export interface TaskResult {
   latencyMs?: number;
 }
 
+/** Options for a single `ctx.step` invocation. */
+export interface TaskStepOptions extends Omit<DefineStepOptions, 'concurrency' | 'stepConcurrency'> {
+  /** Per-iteration timeout in milliseconds. If an invocation exceeds this, it is aborted and a `step_timeout` TaskError is thrown. */
+  timeoutMs?: number;
+  /** Number of times to invoke `fn` in parallel. Defaults to 1. When greater than 1, the step returns an array of results. */
+  concurrency?: number;
+}
+
 /**
  * Throw this from a task to record a failure while preserving domain data and
  * any pre-measured steps (a plain thrown Error loses them).
@@ -104,9 +112,15 @@ export interface TaskContext<T extends BaseParticipant = BaseParticipant> {
   phase?: string;
   /**
    * Runs `fn` as a named platform step. Mirrors `@benchsdk/client`'s
-   * `RunWorkerContext.step`; supports closures and try/finally.
+   * `RunWorkerContext.step`; supports closures and try/finally. A `concurrency`
+   * greater than 1 invokes `fn` that many times in parallel and returns an array.
+   * `timeoutMs` aborts any invocation that exceeds it with a `step_timeout` TaskError.
    */
-  step<R>(name: string, fn: () => Promise<R> | R, options?: DefineStepOptions): Promise<R>;
+  step<R, C extends number = 1>(
+    name: string,
+    fn: () => Promise<R> | R,
+    options?: TaskStepOptions & { concurrency?: C },
+  ): Promise<C extends 1 ? R : R[]>;
   /**
    * Attaches a JSON measurement to the platform. Inside a `step` it lands on
    * that step's data; at task top-level it lands on the task record's data.
