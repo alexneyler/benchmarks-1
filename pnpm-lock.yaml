@@ -66,8 +66,8 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1
       '@computesdk/createos-sandbox':
-        specifier: ^0.1.4
-        version: 0.1.4
+        specifier: ^0.1.6
+        version: 0.1.6
       '@computesdk/daytona':
         specifier: ^1.7.32
         version: 1.7.32(ws@8.21.1(bufferutil@4.1.0)(utf-8-validate@6.0.6))
@@ -114,8 +114,8 @@ importers:
         specifier: ^0.3.6
         version: 0.3.6(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@computesdk/opencomputer':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.0.3
+        version: 1.0.3
       '@computesdk/quilt':
         specifier: ^1.0.2
         version: 1.0.2
@@ -657,8 +657,8 @@ packages:
   '@computesdk/collimate@0.1.1':
     resolution: {integrity: sha512-i967Jx9M7pHiJZEDKQLgSdwleNiekU3D726ot9zdMw6J8zboueDGPgiaVhR7cqFtl91hHRh2tR9HGXRLt5WNFw==}
 
-  '@computesdk/createos-sandbox@0.1.4':
-    resolution: {integrity: sha512-Of+pNRXhcHvkYhwAe/5uQXnKzPPGsjFp3RvNHsxlcw2KMhnrlplLYNPzCHe/Y6H8ezWDj2rmUWf7hL+usVoorQ==}
+  '@computesdk/createos-sandbox@0.1.6':
+    resolution: {integrity: sha512-rBmXBo2o9+6KI1SBWUahUZfHfAt6Z4DYl++fMoc7FnZ/vM8Vk7KBtJ9EHdO0VyygAPVN9YnXJGZ1TJQeReEW3Q==}
     engines: {node: '>=22'}
 
   '@computesdk/daytona@1.7.32':
@@ -709,8 +709,8 @@ packages:
   '@computesdk/notte@0.3.6':
     resolution: {integrity: sha512-3/Z0eor1yrFrL+Vg5RjO0AQKszDJvyiqTbm4UgjWIGcExjIdG2a93PxJUvp02+ch5cPykfrs4pmnquOWfirJ0g==}
 
-  '@computesdk/opencomputer@1.0.1':
-    resolution: {integrity: sha512-430gMhj2kFbxZZvcCINJFgTBroG60VIOa67CQuGK5vbTwK3babHdOLiND5JK6P60m5QNwWw1jnPaq4PQLWHfnA==}
+  '@computesdk/opencomputer@1.0.3':
+    resolution: {integrity: sha512-Y34k/HLwDmD46gY2XD1un0WChV2qriL1OHeU5ojongqWsJ3xDXdAC+26tMA3kjJfVg0NWJ4BLkHXLxiiCFsgAg==}
 
   '@computesdk/provider@2.1.4':
     resolution: {integrity: sha512-abTZS8kpif4QpLZ7Jzo6hmlje2b3YB4VRC8hVkrb/tKXwt0QcU7Nao7tM1phRru0HxVrfHycb/vZtdJSlNFGeA==}
@@ -1508,8 +1508,8 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@nodeops-createos/sandbox@0.7.1':
-    resolution: {integrity: sha512-6bGA3wNe8OZ6pmcH2AzVA7grAalqzHGBrxY0DQkHTJ8JR/oSWRf/Xhdd0hNZYMDbkQQxwumRfbtfSZVot10/Lg==}
+  '@nodeops-createos/sandbox@0.8.1':
+    resolution: {integrity: sha512-xNm+maWd+TDcXe9rJmZP/BQRDG8fqMcJCrLeKvcuI2QB6FVHVJWszNU6q7BKgUg058no6D+y+5iwdiElXI1cIQ==}
     engines: {node: '>=20'}
 
   '@northflank/js-client@0.9.5':
@@ -1519,8 +1519,8 @@ packages:
   '@onkernel/sdk@0.49.0':
     resolution: {integrity: sha512-nsq5OfkaNKxRTCdXQF8BSTj/Wl0iBIqyWoI/ATgQt15pV+59E22MsZ+IHPiVwwb33tXLtnOqUe5ffOxm7l3GHg==}
 
-  '@opencomputer/sdk@0.12.4':
-    resolution: {integrity: sha512-/BpMJMHxskkSI2GUri27xej9eXMrjlvu85NxIz/luiEKJ6lJKFF3w6uTY0IweZlB50SqIt7/dsC5ksZFXkyPzA==}
+  '@opencomputer/sdk@0.15.1':
+    resolution: {integrity: sha512-vrlb/ebPW25dLy9UwqKGA3YrnVdkwduIejcunVBtbNqc6bqjsHdbO5ghj1mcUONZkV4vwup2cB/Gd7h6T7PiZQ==}
     engines: {node: '>=18'}
 
   '@opentelemetry/api-logs@0.217.0':
@@ -4147,8 +4147,8 @@ packages:
     resolution: {integrity: sha512-W5ZNO5KRPB5TkYmGVD9F6YqhsglXJzE6etpbmT+f6EQElhiX/UTG551cnsRGvLG3fyZEg9HwaDmNmj5nwJ4z9g==}
     engines: {node: '>=10'}
 
-  node-addon-api@8.9.0:
-    resolution: {integrity: sha512-ekZMeaaIzSQTSpr7X2X3iJM7lTzgnx8ahAG9pJfT/7+14mlEM8ZYQ9cgCDvSSRbReFK0oHli3WrZdCiRsgAT9Q==}
+  node-addon-api@8.9.2:
+    resolution: {integrity: sha512-VijLXbi3UACN69I0JVXJsX4tjACjNoQDgv2gTF6sx2wWEi8tkSg2eX8p5gSIFi8z2+DL3oHmY6OyKce38SDolg==}
     engines: {node: ^18 || ^20 || >= 21}
 
   node-domexception@1.0.0:
@@ -4312,8 +4312,8 @@ packages:
   package-manager-detector@0.2.11:
     resolution: {integrity: sha512-BEnLolu+yuz22S56CU1SUKq3XC3PkwD5wv4ikR4MfGvnRVcmzXR9DwSlW2fEamyTPyXHomBJRzgapeuBvRNzJQ==}
 
-  papaparse@5.5.4:
-    resolution: {integrity: sha512-SwzWD9gl/ElwYLCI0nUja1mFJzjq2D8ziShfNBa7zCHzkOozeOGDwHWQ+tvCzEZcewecWZ5U7kUopDnG+DFYEQ==}
+  papaparse@5.6.0:
+    resolution: {integrity: sha512-N2vuNQAYGK1/4vs6HJX86+VYU6OkiSTgdJz3JQfTk1y51cFCO/U8gnaeTF4iNE4r57Tt0sV47dUua1/19pxO6Q==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -4641,8 +4641,8 @@ packages:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
     engines: {node: '>= 14.18.0'}
 
-  readdirp@5.0.0:
-    resolution: {integrity: sha512-9u/XQ1pvrQtYyMpZe7DXKv2p5CNvyVwzUB6uhLAnQwHMSgKMBR62lc7AHljaeteeHXn11XTAaLLUVZYVZyuRBQ==}
+  readdirp@5.1.1:
+    resolution: {integrity: sha512-Kko+Y5XQ6fM+Ce3dq3m9YGxnacYZYl9cA1wZjaF3Vbry2L3i1qVg8+CAgNPsXRArPMUMCaOR7oa9Nqntc43JKA==}
     engines: {node: '>= 20.19.0'}
 
   readline@1.3.0:
@@ -4843,8 +4843,8 @@ packages:
     resolution: {integrity: sha512-aqVvWoyO21L23mb+drl4RmMXbf6N7FdHjAhTRA9ZBL7apWBgfWC16KjrASI+1p9GAroljyMHj6fK67i0UiTNvQ==}
     engines: {node: '>= 18'}
 
-  smol-toml@1.7.1:
-    resolution: {integrity: sha512-PPlsspAZ4jbMBu5DMFhfUGDQLu/vrL4SyBROVS37x8ynnVmFIs1VPBz1Co8Xks3TvpIaZXmU85y4DrQ+UyVFoQ==}
+  smol-toml@1.8.0:
+    resolution: {integrity: sha512-kCZr2V3ch9i00x8zXRhjUNVcjG9ijES5dDudkXvUVCT5QlJNQWElSJdZqyPemffHoLNUYwOcou0Fy+ojN0uHSQ==}
     engines: {node: '>= 18'}
 
   source-map-js@1.2.1:
@@ -5214,6 +5214,10 @@ packages:
 
   undici@7.28.0:
     resolution: {integrity: sha512-cRZYrTDwWznlnRiPjggAGxZXanty6M8RV1ff8Wm4LWXBp7/IG8v5DnOm74DtUBp9OONpK75YlPnIjQqX0dBDtA==}
+    engines: {node: '>=20.18.1'}
+
+  undici@7.29.0:
+    resolution: {integrity: sha512-IDxfleLmmbSskfWSUATiN1nfn2rDuvnMOqb5CWR92iIfojA0Ud+ulOAAEQ57LPr9rWmsreUyf5lwyao+7GNNVw==}
     engines: {node: '>=20.18.1'}
 
   undici@8.3.0:
@@ -6224,10 +6228,10 @@ snapshots:
       '@computesdk/provider': 2.1.4
       computesdk: 4.1.4
 
-  '@computesdk/createos-sandbox@0.1.4':
+  '@computesdk/createos-sandbox@0.1.6':
     dependencies:
-      '@computesdk/provider': 2.1.4
-      '@nodeops-createos/sandbox': 0.7.1
+      '@computesdk/provider': 2.1.5
+      '@nodeops-createos/sandbox': 0.8.1
 
   '@computesdk/daytona@1.7.32(ws@8.21.1(bufferutil@4.1.0)(utf-8-validate@6.0.6))':
     dependencies:
@@ -6349,10 +6353,10 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@computesdk/opencomputer@1.0.1':
+  '@computesdk/opencomputer@1.0.3':
     dependencies:
-      '@computesdk/provider': 2.1.4
-      '@opencomputer/sdk': 0.12.4
+      '@computesdk/provider': 2.1.5
+      '@opencomputer/sdk': 0.15.1
       computesdk: 4.1.4
 
   '@computesdk/provider@2.1.4':
@@ -7097,7 +7101,7 @@ snapshots:
 
   '@mongodb-js/zstd@7.0.0':
     dependencies:
-      node-addon-api: 8.9.0
+      node-addon-api: 8.9.2
       prebuild-install: 7.1.3
     optional: true
 
@@ -7115,10 +7119,10 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.1
 
-  '@nodeops-createos/sandbox@0.7.1':
+  '@nodeops-createos/sandbox@0.8.1':
     optionalDependencies:
       '@types/node': 26.1.1
-      undici: 7.28.0
+      undici: 7.29.0
 
   '@northflank/js-client@0.9.5':
     dependencies:
@@ -7135,7 +7139,7 @@ snapshots:
 
   '@onkernel/sdk@0.49.0': {}
 
-  '@opencomputer/sdk@0.12.4': {}
+  '@opencomputer/sdk@0.15.1': {}
 
   '@opentelemetry/api-logs@0.217.0':
     dependencies:
@@ -8620,7 +8624,7 @@ snapshots:
 
   chokidar@5.0.0:
     dependencies:
-      readdirp: 5.0.0
+      readdirp: 5.1.1
 
   chownr@1.1.4:
     optional: true
@@ -9822,11 +9826,11 @@ snapshots:
       ini: 6.0.0
       minimatch: 10.2.6
       modern-tar: 0.7.7
-      papaparse: 5.5.4
+      papaparse: 5.6.0
       quickjs-emscripten: 0.32.0
       re2js: 1.3.3
       seek-bzip: 2.0.0
-      smol-toml: 1.7.1
+      smol-toml: 1.8.0
       sprintf-js: 1.1.3
       sql.js: 1.14.1
       turndown: 7.2.4
@@ -10072,7 +10076,7 @@ snapshots:
       semver: 7.8.5
     optional: true
 
-  node-addon-api@8.9.0:
+  node-addon-api@8.9.2:
     optional: true
 
   node-domexception@1.0.0: {}
@@ -10098,7 +10102,7 @@ snapshots:
 
   node-liblzma@2.2.0:
     dependencies:
-      node-addon-api: 8.9.0
+      node-addon-api: 8.9.2
       node-gyp-build: 4.8.4
     optional: true
 
@@ -10236,7 +10240,7 @@ snapshots:
     dependencies:
       quansync: 0.2.11
 
-  papaparse@5.5.4: {}
+  papaparse@5.6.0: {}
 
   parent-module@1.0.1:
     dependencies:
@@ -10574,7 +10578,7 @@ snapshots:
 
   readdirp@4.1.2: {}
 
-  readdirp@5.0.0: {}
+  readdirp@5.1.1: {}
 
   readline@1.3.0: {}
 
@@ -10828,7 +10832,7 @@ snapshots:
 
   smol-toml@1.7.0: {}
 
-  smol-toml@1.7.1: {}
+  smol-toml@1.8.0: {}
 
   source-map-js@1.2.1: {}
 
@@ -11230,6 +11234,9 @@ snapshots:
   undici@6.27.0: {}
 
   undici@7.28.0: {}
+
+  undici@7.29.0:
+    optional: true
 
   undici@8.3.0: {}
 
