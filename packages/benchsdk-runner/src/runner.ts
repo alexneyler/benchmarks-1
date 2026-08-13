@@ -120,13 +120,14 @@ async function runStepInvocations<R>(
     return invocations[0];
   }
 
+  const outcomes = await Promise.allSettled(invocations);
   const results: R[] = [];
   let firstError: unknown;
-  for (const promise of invocations) {
-    try {
-      results.push(await promise);
-    } catch (error) {
-      if (firstError === undefined) firstError = error;
+  for (const outcome of outcomes) {
+    if (outcome.status === 'fulfilled') {
+      results.push(outcome.value);
+    } else if (firstError === undefined) {
+      firstError = outcome.reason;
     }
   }
   if (firstError !== undefined) throw firstError;
@@ -139,8 +140,13 @@ async function runStepWithClient<R, C extends number = 1>(
   fn: () => Promise<R> | R,
   options?: TaskStepOptions & { concurrency?: C },
 ): Promise<C extends 1 ? R : R[]> {
-  const { concurrency: _runnerConcurrency, timeoutMs: _runnerTimeout, ...clientOptions } = options ?? {};
-  const result = await clientStep(name, () => runStepInvocations(name, fn, options), clientOptions as DefineStepOptions);
+  const { concurrency: runnerConcurrency, timeoutMs, ...clientOptions } = options ?? {};
+  const clientStepOptions: DefineStepOptions = {
+    ...clientOptions,
+    timeoutMs,
+    stepConcurrency: runnerConcurrency,
+  };
+  const result = await clientStep(name, () => runStepInvocations(name, fn, options), clientStepOptions);
   return result as C extends 1 ? R : R[];
 }
 

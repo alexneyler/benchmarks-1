@@ -78,7 +78,7 @@ export interface TaskResult {
 }
 
 /** Options for a single `ctx.step` invocation. */
-export interface TaskStepOptions extends Omit<DefineStepOptions, 'concurrency'> {
+export interface TaskStepOptions extends Omit<DefineStepOptions, 'concurrency' | 'stepConcurrency'> {
   /** Per-iteration timeout in milliseconds. If an invocation exceeds this, it is aborted and a `step_timeout` TaskError is thrown. */
   timeoutMs?: number;
   /** Number of times to invoke `fn` in parallel. Defaults to 1. When greater than 1, the step returns an array of results. */

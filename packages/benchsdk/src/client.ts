@@ -84,6 +84,9 @@ function getApiKey(input?: string): string | undefined {
 }
 
 function getErrorCode(error: unknown): string {
+  if (error instanceof Error && 'code' in error && typeof (error as { code: unknown }).code === 'string' && (error as { code: string }).code) {
+    return (error as { code: string }).code;
+  }
   if (error instanceof Error && error.name) return error.name;
   return 'ERROR';
 }
@@ -709,6 +712,8 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
               completedAt: new Date().toISOString(),
               latencyMs: 0,
             };
+            if (stepOptions.timeoutMs !== undefined) stepRecord.timeoutMs = stepOptions.timeoutMs;
+            if (stepOptions.stepConcurrency !== undefined) stepRecord.concurrency = stepOptions.stepConcurrency;
 
             const shouldReportConcurrency = stepOptions.reportConcurrency ?? true;
             if (shouldReportConcurrency) {
