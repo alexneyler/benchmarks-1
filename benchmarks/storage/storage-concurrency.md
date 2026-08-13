@@ -56,3 +56,7 @@ bench/v1/p63/obj009999
 Each task reports throughput, latency percentiles, success/error rates by
 class, a `valid` flag, and the observed maximum active request count. The first
 5% of operations are warmup and excluded from the reported metrics.
+
+The workflow collects all provider cells into one `latest.json` artifact and
+generates `storage-concurrency.md` plus `storage-concurrency.svg` for the
+comparison.

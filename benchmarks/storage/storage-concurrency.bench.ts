@@ -19,14 +19,9 @@ import { withTimeout } from '../src/util/timeout.js';
 import { formatError } from '../src/util/error.js';
 import { storageProviders } from './providers.js';
 import type { StorageProviderConfig } from './types.js';
-import {
-  KEY_STRIDE,
-  KeyDistribution,
-  OBJECT_COUNT,
-  PREFIX_COUNT,
-  WORKER_PRIME,
-  requestKey,
-} from './storage-concurrency-corpus.js';
+import { requestKey } from './storage-concurrency-corpus.js';
+import type { KeyDistribution } from './storage-concurrency-corpus.js';
+import { writeStorageConcurrencyResults } from './storage-concurrency-results.js';
 
 const OPERATIONS = 1_200;
 const WARMUP_FRACTION = 0.05;
@@ -213,6 +208,7 @@ export const config = defineBenchmarkConfig<StorageProviderConfig>({
   concurrency: 1,
   groupBy: 'participant',
   participants: storageProviders,
+  onComplete: writeStorageConcurrencyResults,
 });
 
 export const task = defineTask<StorageProviderConfig>(async (ctx) => {
