@@ -84,8 +84,8 @@ importers:
         specifier: ^0.2.7
         version: 0.2.7(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@computesdk/isorun':
-        specifier: ^0.1.1
-        version: 0.1.1(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(zod@4.4.3)
+        specifier: ^0.1.2
+        version: 0.1.2(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(zod@4.4.3)
       '@computesdk/just-bash':
         specifier: ^0.4.15
         version: 0.4.15(just-bash@3.1.0)
@@ -676,8 +676,8 @@ packages:
   '@computesdk/hyperbrowser@0.2.7':
     resolution: {integrity: sha512-RXG/SQQPZ2Wpfk9dR0hZJ/GTmNeFNP2LMMy8+DNT4m2lUTtiIYrBCEXYdiNXkNfV8nxiKTXRCfkSxr4CxGkbJw==}
 
-  '@computesdk/isorun@0.1.1':
-    resolution: {integrity: sha512-4HiMxoySc43dd6RovnoAGef2wXMnqW7bfmo3N7E1xdiTICk6MVraRdchtXrpbJd+sOoqIhxaeakXo8xXSCST0A==}
+  '@computesdk/isorun@0.1.2':
+    resolution: {integrity: sha512-jkZazDqoWY1S751fL/7tfnd+RP3Ic+lkj6N2vJEPbcoivv3gD7houYBrRPMJ8U6adfpOLkxrFRx3JF7A64uJpQ==}
     engines: {node: '>=22.19.0'}
 
   '@computesdk/just-bash@0.4.15':
@@ -6274,9 +6274,9 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  '@computesdk/isorun@0.1.1(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(zod@4.4.3)':
+  '@computesdk/isorun@0.1.2(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(zod@4.4.3)':
     dependencies:
-      '@computesdk/provider': 2.1.4
+      '@computesdk/provider': 2.1.5
       computesdk: 4.1.4
       isorun: 1.0.1(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(zod@4.4.3)
     transitivePeerDependencies:
