@@ -33,6 +33,18 @@ Override the per-cell operation budget:
 pnpm bench:storage-concurrency -- --storage-operations 2000
 ```
 
+Seed the corpus for one provider:
+
+```bash
+pnpm bench:storage-concurrency:seed -- --provider aws-s3
+```
+
+Verify a 100-object sample:
+
+```bash
+pnpm bench:storage-concurrency:seed -- --verify --provider aws-s3
+```
+
 The corpus must be seeded at:
 
 ```text
@@ -41,6 +53,6 @@ bench/v1/p00/obj000000
 bench/v1/p63/obj009999
 ```
 
-Each task reports throughput, latency percentiles, success/error rates, and
-the observed maximum active request count. The first 5% of operations are
-warmup and excluded from the reported metrics.
+Each task reports throughput, latency percentiles, success/error rates by
+class, a `valid` flag, and the observed maximum active request count. The first
+5% of operations are warmup and excluded from the reported metrics.

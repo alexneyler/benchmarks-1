@@ -19,16 +19,18 @@ import { withTimeout } from '../src/util/timeout.js';
 import { formatError } from '../src/util/error.js';
 import { storageProviders } from './providers.js';
 import type { StorageProviderConfig } from './types.js';
+import {
+  KEY_STRIDE,
+  KeyDistribution,
+  OBJECT_COUNT,
+  PREFIX_COUNT,
+  WORKER_PRIME,
+  requestKey,
+} from './storage-concurrency-corpus.js';
 
 const OPERATIONS = 1_200;
 const WARMUP_FRACTION = 0.05;
-const OBJECT_COUNT = 10_000;
-const PREFIX_COUNT = 64;
-const KEY_STRIDE = 7919;
-const WORKER_PRIME = 104_729;
 const REQUEST_TIMEOUT_MS = 30_000;
-
-type KeyDistribution = 'SINGLE_PREFIX' | 'SPREAD_64';
 
 interface Cell {
   name: string;
@@ -64,15 +66,6 @@ function getOperations(): number {
     throw new Error('--storage-operations must be an integer >= 100');
   }
   return operations;
-}
-
-function keyFor(workerId: number, opSeq: number, distribution: KeyDistribution): string {
-  const rawIndex = distribution === 'SINGLE_PREFIX'
-    ? (opSeq * KEY_STRIDE) % Math.floor(OBJECT_COUNT / PREFIX_COUNT)
-    : (workerId * WORKER_PRIME + opSeq * KEY_STRIDE) % OBJECT_COUNT;
-  const index = distribution === 'SINGLE_PREFIX' ? rawIndex * PREFIX_COUNT : rawIndex;
-  const prefix = index % PREFIX_COUNT;
-  return `bench/v1/p${prefix.toString().padStart(2, '0')}/obj${index.toString().padStart(6, '0')}`;
 }
 
 function percentile(values: number[], p: number): number | null {
@@ -114,6 +107,10 @@ interface CellResult {
   throttleRate: number;
   timeoutRate: number;
   connectionErrorRate: number;
+  notFoundRate: number;
+  serverErrorRate: number;
+  clientErrorRate: number;
+  valid: boolean;
   status: 'COMPLETE';
   maxActiveRequests: number;
 }
@@ -139,7 +136,7 @@ async function runCell(
       maxActiveRequests = Math.max(maxActiveRequests, activeRequests);
       try {
         const bytes = await withTimeout(
-          storage.download(keyFor(workerId, opSeq++, cell.keyDistribution), { as: 'bytes' }),
+          storage.download(requestKey(workerId, opSeq++, cell.keyDistribution), { as: 'bytes' }),
           REQUEST_TIMEOUT_MS,
           'Storage GET timed out',
         );
@@ -176,6 +173,10 @@ async function runCell(
   const throttleCount = measured.filter((result) => result.errorClass === 'THROTTLE').length;
   const timeoutCount = measured.filter((result) => result.errorClass === 'TIMEOUT').length;
   const connectionErrorCount = measured.filter((result) => result.errorClass === 'CONN_ERROR').length;
+  const notFoundCount = measured.filter((result) => result.errorClass === 'NOT_FOUND').length;
+  const serverErrorCount = measured.filter((result) => result.errorClass === 'SERVER').length;
+  const clientErrorCount = measured.filter((result) => result.errorClass === 'CLIENT').length;
+  const rate = (count: number): number => Number((count / measured.length).toFixed(5));
   const start = Math.min(...measured.map((result) => result.startMs));
   const end = Math.max(...measured.map((result) => result.endMs));
   const durationSeconds = Math.max((end - start) / 1000, Number.EPSILON);
@@ -190,10 +191,14 @@ async function runCell(
     p95Ms: percentile(latencies, 0.95),
     // 1,200 operations leaves 1,140 measured samples, meeting the p99 gate.
     p99Ms: measured.length >= 1_000 ? percentile(latencies, 0.99) : null,
-    successRate: Number((successCount / measured.length).toFixed(5)),
-    throttleRate: Number((throttleCount / measured.length).toFixed(5)),
-    timeoutRate: Number((timeoutCount / measured.length).toFixed(5)),
-    connectionErrorRate: Number((connectionErrorCount / measured.length).toFixed(5)),
+    successRate: rate(successCount),
+    throttleRate: rate(throttleCount),
+    timeoutRate: rate(timeoutCount),
+    connectionErrorRate: rate(connectionErrorCount),
+    notFoundRate: rate(notFoundCount),
+    serverErrorRate: rate(serverErrorCount),
+    clientErrorRate: rate(clientErrorCount),
+    valid: successCount === measured.length,
     status: 'COMPLETE',
     maxActiveRequests,
   };
