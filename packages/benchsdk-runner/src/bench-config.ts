@@ -37,6 +37,7 @@ import type {
   TaskResultRecord,
   TaskStepRecord,
 } from '@benchsdk/client';
+import type { HigherIsBetter, LowerIsBetter, ScoringSpec } from './scoring.js';
 
 /** How tasks are ordered across participants. */
 export type GroupBy = 'participant' | 'round';
@@ -224,6 +225,12 @@ export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
   defaultProviders?: string[];
   /** The participants this benchmark can run against. `--provider` selects a subset by name. */
   participants: T[];
+  /**
+   * Run-level scoring hook, called once with `lowerIsBetter` and `higherIsBetter`
+   * primitives after the outcome is assembled but before `onComplete`. Use it to
+   * define how the run should be scored and reported to the platform.
+   */
+  onScore?: (lowerIsBetter: LowerIsBetter, higherIsBetter: HigherIsBetter) => ScoringSpec | Promise<ScoringSpec>;
   /**
    * Run-level completion hook, called once with the full outcome after every
    * participant finishes. Use it for aggregate output (legacy JSON/SVG

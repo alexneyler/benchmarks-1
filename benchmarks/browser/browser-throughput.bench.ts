@@ -21,7 +21,7 @@ import type { JsonValue } from '@benchsdk/client';
 import { withTimeout } from '../src/util/timeout.js';
 import { throughputProviders } from './throughput-providers.js';
 import { writeThroughputLegacyResults } from './browser-throughput-legacy-results.js';
-import { ACTIONS_PER_LOOP, LOOPS_PER_SESSION } from './throughput-types.js';
+import { ACTIONS_PER_LOOP, ACTIONS_PER_SESSION, LOOPS_PER_SESSION } from './throughput-types.js';
 import type { ActionResult, ThroughputProviderConfig } from './throughput-types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -35,6 +35,31 @@ export const config = defineBenchmarkConfig({
   iterations: 2,
   groupBy: 'round',
   participants: throughputProviders,
+  onScore: (lowerIsBetter, higherIsBetter) => ({
+    success: (record) => record.status === 'success' && typeof record.data?.actionsCompleted === 'number' && record.data.actionsCompleted === ACTIONS_PER_SESSION,
+    metrics: [
+      higherIsBetter('actionsPerSecond', {
+        unit: 'actions/sec',
+        floor: 0,
+        ceiling: 10,
+        weights: { median: 0.40, p95: 0, p99: 0 },
+      }),
+      lowerIsBetter('taskMs', {
+        unit: 'ms',
+        ceiling: 30000,
+        weights: { median: 0.25, p95: 0.20, p99: 0 },
+      }),
+      lowerIsBetter('screenshot', {
+        unit: 'ms',
+        ceiling: 30000,
+        value: (record) => {
+          const actions = Array.isArray(record.data?.actions) ? (record.data!.actions as any[]) : [];
+          return actions.filter((a) => a.type === 'screenshot' && a.success).map((a) => a.durationMs);
+        },
+        weights: { median: 0.15, p95: 0, p99: 0 },
+      }),
+    ],
+  }),
   onComplete: (outcome) =>
     writeThroughputLegacyResults(outcome.participants, {
       resultsDir: path.resolve(__dirname, '../../results/browser-throughput'),

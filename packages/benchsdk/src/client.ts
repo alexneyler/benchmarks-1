@@ -10,6 +10,7 @@ import type {
   BenchmarkResultsOverviewInput,
   BenchmarkRunImports,
   BenchmarkRunResults,
+  BenchmarkRunSummaryInput,
   BenchmarkRunTaskResults,
   BenchmarkRunTaskResultsInput,
   BenchmarkRunTimeline,
@@ -494,6 +495,14 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
       return request<BenchmarkRunImports>(
         'GET',
         `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/results/imports`,
+      );
+    },
+
+    async submitRunSummary(benchmarkSlug, runId, input) {
+      await request(
+        'POST',
+        `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/summary`,
+        input as unknown as JsonObject,
       );
     },
 

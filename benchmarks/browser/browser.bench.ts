@@ -26,6 +26,12 @@ export const config = defineBenchmarkConfig({
   iterations: 2,
   concurrency: 1,
   participants: browserProviders,
+  onScore: (lowerIsBetter) => ({
+    metrics: [
+      lowerIsBetter('totalMs', { unit: 'ms', ceiling: 10000, weights: { median: 0.40, p95: 0.20, p99: 0.10 } }),
+      lowerIsBetter('createMs', { unit: 'ms', ceiling: 10000, weights: { median: 0.30, p95: 0, p99: 0 } }),
+    ],
+  }),
   onComplete: (outcome) =>
     writeBrowserLegacyResults(outcome.participants, {
       resultsDir: path.resolve(__dirname, '../../results/browser'),

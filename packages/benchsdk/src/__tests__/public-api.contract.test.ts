@@ -35,6 +35,11 @@ import type {
   BenchmarkRunImportsSummary,
   BenchmarkRunImportItem,
   BenchmarkRunResults,
+  BenchmarkRunSummaryInput,
+  BenchmarkRunSummaryMetric,
+  BenchmarkRunSummaryResult,
+  BenchmarkRunSummaryRunMetadata,
+  BenchmarkRunSummaryScalar,
   BenchmarkRunStatus,
   BenchmarkRunTaskResults,
   BenchmarkRunTaskResultsInput,
@@ -118,6 +123,11 @@ type _PublicTypeSurface = [
   BenchmarkRunImportsSummary,
   BenchmarkRunImportItem,
   BenchmarkRunResults,
+  BenchmarkRunSummaryInput,
+  BenchmarkRunSummaryMetric,
+  BenchmarkRunSummaryResult,
+  BenchmarkRunSummaryRunMetadata,
+  BenchmarkRunSummaryScalar,
   BenchmarkRunStatus,
   BenchmarkRunTaskResults,
   BenchmarkRunTaskResultsInput,
@@ -309,6 +319,7 @@ function handler(url: string, method: string): Response {
   if (path.startsWith('/benchmarks/scale/runs/run_1/results/tasks') && method === 'GET') return jsonResponse(taskResultsResponse());
   if (path.startsWith('/benchmarks/scale/runs/run_1/results/timeline') && method === 'GET') return jsonResponse(timelineResponse());
   if (path === '/benchmarks/scale/runs/run_1/results/imports' && method === 'GET') return jsonResponse(importsResponse());
+  if (path === '/benchmarks/scale/runs/run_1/summary' && method === 'POST') return jsonResponse({});
   throw new Error(`unexpected request: ${method} ${url}`);
 }
 
@@ -1389,7 +1400,7 @@ describe('public API surface and type exports', () => {
     'BenchmarkResultsOverview', 'BenchmarkResultsOverviewAnalytics', 'BenchmarkResultsOverviewInput',
     'BenchmarkResultsOverviewRun', 'BenchmarkResultSummary', 'BenchmarkRun', 'BenchmarkRunImports',
     'BenchmarkRunAnalyticsSummary', 'BenchmarkRunImportsSummary', 'BenchmarkRunImportItem', 'BenchmarkRunResults',
-    'BenchmarkRunStatus', 'BenchmarkRunTaskResults', 'BenchmarkRunTaskResultsInput', 'BenchmarkRunTimeline',
+    'BenchmarkRunStatus', 'BenchmarkRunSummaryInput', 'BenchmarkRunSummaryMetric', 'BenchmarkRunSummaryResult', 'BenchmarkRunSummaryRunMetadata', 'BenchmarkRunSummaryScalar', 'BenchmarkRunTaskResults', 'BenchmarkRunTaskResultsInput', 'BenchmarkRunTimeline',
     'BenchmarkRunTimelineInput', 'BenchmarkRunWorker', 'BenchmarkStepResultSummary', 'BenchmarkTaskBucket',
     'BenchmarkWorkerAttempt', 'BenchmarkWorkerStatus', 'ClaimWorkerInput', 'CreateWorkerArtifactInput',
     'CreateWorkerArtifactResponse', 'CreateRunInput', 'DefineStepOptions',
@@ -1520,6 +1531,7 @@ describe('cross-area HTTP invariants', () => {
       await c.getRunTaskResults('scale', 'run_1', { bucketSize: 10, failureLimit: 2 });
       await c.getRunTimeline('scale', 'run_1', { bucketMs: 1000 });
       await c.getRunImports('scale', 'run_1');
+      await c.submitRunSummary('scale', 'run_1', { run: {}, results: [] });
     });
     expect(calls.map((call) => `${call.method} ${call.url}`)).toEqual([
       `PUT ${BASE}/benchmarks/scale`,
@@ -1552,6 +1564,7 @@ describe('cross-area HTTP invariants', () => {
       `GET ${BASE}/benchmarks/scale/runs/run_1/results/tasks?bucketSize=10&failureLimit=2`,
       `GET ${BASE}/benchmarks/scale/runs/run_1/results/timeline?bucketMs=1000`,
       `GET ${BASE}/benchmarks/scale/runs/run_1/results/imports`,
+      `POST ${BASE}/benchmarks/scale/runs/run_1/summary`,
     ]);
   });
 

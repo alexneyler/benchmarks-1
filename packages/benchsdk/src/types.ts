@@ -597,6 +597,46 @@ export interface RunWorkerOptions {
   task: TaskFunction;
 }
 
+export interface BenchmarkRunSummaryMetric {
+  name: string;
+  unit: string;
+  median: number;
+  p95: number;
+  p99: number;
+}
+
+export interface BenchmarkRunSummaryScalar {
+  name: string;
+  value: number;
+  unit: string;
+}
+
+export interface BenchmarkRunSummaryResult {
+  provider: string;
+  dimensions?: Record<string, unknown>;
+  metrics: BenchmarkRunSummaryMetric[];
+  scalars?: BenchmarkRunSummaryScalar[];
+  compositeScore: number;
+  successRate: number;
+  scoringVersion?: string | null;
+  skipped: boolean;
+  skipReason?: string | null;
+}
+
+export interface BenchmarkRunSummaryRunMetadata {
+  gitSha?: string;
+  gitRef?: string;
+  triggeredBy?: string;
+  nodeVersion?: string;
+  platform?: string;
+  arch?: string;
+}
+
+export interface BenchmarkRunSummaryInput {
+  run: BenchmarkRunSummaryRunMetadata;
+  results: BenchmarkRunSummaryResult[];
+}
+
 export interface BenchmarkClient {
   upsertBenchmark(slug: string, input: UpsertBenchmarkInput): Promise<BenchmarkResource>;
   updateBenchmark(slug: string, input: UpdateBenchmarkInput): Promise<BenchmarkResource>;
@@ -701,5 +741,6 @@ export interface BenchmarkClient {
     input?: BenchmarkRunTimelineInput,
   ): Promise<BenchmarkRunTimeline>;
   getRunImports(benchmarkSlug: string, runId: string): Promise<BenchmarkRunImports>;
+  submitRunSummary(benchmarkSlug: string, runId: string, input: BenchmarkRunSummaryInput): Promise<void>;
   runWorker(options: RunWorkerOptions): Promise<RunWorkerResult>;
 }
