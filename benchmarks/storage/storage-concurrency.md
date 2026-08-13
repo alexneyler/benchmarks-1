@@ -1,0 +1,46 @@
+# Storage Concurrency Benchmark
+
+This benchmark creates one platform run containing every environment-available
+storage provider and eight cells per provider:
+
+- concurrency: `1`, `8`, `32`, `128`
+- key distributions: `SINGLE_PREFIX`, `SPREAD_64`
+
+Each cell is one runner task. The task owns an internal closed-loop pool with
+the requested number of workers. A worker issues one GET, waits for it to
+finish, and immediately issues the next GET until the cell operation budget is
+complete.
+
+The runner's concurrency is fixed at `1` deliberately. This prevents cells
+from overlapping; the internal pool is the source of truth for storage request
+concurrency.
+
+## Run
+
+```bash
+pnpm bench:storage-concurrency
+```
+
+Run selected providers:
+
+```bash
+pnpm bench:storage-concurrency -- --provider aws-s3,cloudflare-r2
+```
+
+Override the per-cell operation budget:
+
+```bash
+pnpm bench:storage-concurrency -- --storage-operations 2000
+```
+
+The corpus must be seeded at:
+
+```text
+bench/v1/p00/obj000000
+...
+bench/v1/p63/obj009999
+```
+
+Each task reports throughput, latency percentiles, success/error rates, and
+the observed maximum active request count. The first 5% of operations are
+warmup and excluded from the reported metrics.
