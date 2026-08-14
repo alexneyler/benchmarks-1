@@ -9,7 +9,7 @@
  */
 import '../src/env.js';
 import type { Storage } from '@storagesdk/core';
-import { storageProviders } from './providers.js';
+import { isStorageProviderAvailable, storageProviders } from './providers.js';
 import type { StorageProviderConfig } from './types.js';
 import { corpusBody, corpusKey, OBJECT_COUNT, OBJECT_SIZE_BYTES } from './storage-concurrency-corpus.js';
 import { withTimeout } from '../src/util/timeout.js';
@@ -48,7 +48,9 @@ function selectedProviders(): StorageProviderConfig[] {
   const unavailable = candidates.filter((provider) =>
     provider.requiredEnvVars.some((name) => !process.env[name]),
   );
-  const available = candidates.filter((provider) => !unavailable.includes(provider));
+  const available = candidates.filter(
+    (provider) => !unavailable.includes(provider) && isStorageProviderAvailable(provider),
+  );
   for (const provider of unavailable) {
     console.log(`Skipping ${provider.name}: missing required credentials`);
   }
@@ -126,10 +128,17 @@ async function runProvider(
 const verifyOnly = hasFlag('--verify');
 const concurrency = positiveInt(argValue('--concurrency'), DEFAULT_CONCURRENCY, '--concurrency');
 
+const failures: string[] = [];
 for (const provider of selectedProviders()) {
   try {
     await runProvider(provider, verifyOnly, concurrency);
   } catch (error) {
-    throw new Error(`${provider.name}: ${formatError(error)}`);
+    const message = `${provider.name}: ${formatError(error)}`;
+    failures.push(message);
+    console.error(`Skipping provider after seed failure: ${message}`);
   }
+}
+
+if (failures.length > 0) {
+  console.error(`Corpus seeding completed with ${failures.length} provider failure(s)`);
 }

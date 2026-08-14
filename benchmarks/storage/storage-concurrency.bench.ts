@@ -17,7 +17,7 @@ import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';
 import type { Storage } from '@storagesdk/core';
 import { withTimeout } from '../src/util/timeout.js';
 import { formatError } from '../src/util/error.js';
-import { storageProviders } from './providers.js';
+import { isStorageProviderAvailable, storageProviders } from './providers.js';
 import type { StorageProviderConfig } from './types.js';
 import { requestKey } from './storage-concurrency-corpus.js';
 import type { KeyDistribution } from './storage-concurrency-corpus.js';
@@ -207,7 +207,7 @@ export const config = defineBenchmarkConfig<StorageProviderConfig>({
   // runner at one task in flight prevents cells from overlapping.
   concurrency: 1,
   groupBy: 'participant',
-  participants: storageProviders,
+  participants: storageProviders.filter(isStorageProviderAvailable),
   onComplete: writeStorageConcurrencyResults,
 });
 
