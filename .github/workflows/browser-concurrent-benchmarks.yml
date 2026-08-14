@@ -38,26 +38,67 @@ jobs:
         id: pick
         run: |
           # Resolve concrete articles up front so every provider benchmarks
-          # against the same pages. Sessions index into this list, so 50 covers
-          # a full c50 round; longer levels wrap, which keeps the page mix
-          # identical across providers.
+          # against the same pages. One session takes one URL, so 50 covers a
+          # full c50 round and every provider sees the same page mix.
           count=${{ github.event_name == 'push' && '5' || '50' }}
+
+          # Accept a page only if it offers what the action loop needs: several
+          # distinct article links inside #mw-content-text, which is where the
+          # loop's selector looks and where it clicks.
+          #
+          # The old check grepped the whole document for any /wiki/ link, so a
+          # page whose only qualifying links sat in the chrome (navigation,
+          # sidebar, footer) passed and then stalled in the browser. In run
+          # 31626532250 two of the fifty articles did exactly that, timing out
+          # waitForSelector or click at 30s for every provider alike, capping
+          # success at 96% and setting a 63s task p95 that had nothing to do
+          # with concurrency.
+          MIN_LINKS=5
           urls=()
           for i in $(seq 1 "$count"); do
+            # Reset per slot. Both are read after the attempt loop, and a slot
+            # that never reached the counting step would otherwise be judged on
+            # the previous slot's numbers.
+            url=''
+            links=0
             for attempt in 1 2 3 4 5; do
-              url=$(curl -sL -A 'ComputeSDK-Benchmark' -o /dev/null -w '%{url_effective}' \
+              resolved=$(curl -sL -A 'ComputeSDK-Benchmark' -o /dev/null -w '%{url_effective}' \
                 'https://en.wikipedia.org/wiki/Special:Random')
-              if [ -z "$url" ] || [[ "$url" == *"Special:Random"* ]]; then
-                url='https://en.wikipedia.org/wiki/Special:Random'
-                break
+              # Retry rather than give up: this is a transient redirect failure,
+              # which is what the attempt loop is for. Never put Special:Random
+              # itself in the list — each provider's browser would resolve it to
+              # a different article, so the slot would be neither validated nor
+              # shared, and a shared page set is the point of resolving up front.
+              if [ -z "$resolved" ] || [[ "$resolved" == *"Special:Random"* ]]; then
+                echo "Slot $i attempt $attempt: could not resolve a concrete article"
+                continue
               fi
+              url="$resolved"
               html=$(curl -sL -A 'ComputeSDK-Benchmark' "$url")
-              if echo "$html" | grep -qP 'href="(//en\.wikipedia\.org)?/wiki/[^"]*" *' \
-                 && echo "$html" | grep -oP 'href="[^"]*"' \
-                    | grep -qP '/wiki/[^:]*$'; then
+              # Content area only, and namespaced links (Help:, File:, wikt:)
+              # dropped the same way isArticleLink drops them. All three href
+              # forms are accepted because the content area is served with
+              # absolute and ./-relative links while the page chrome uses
+              # /wiki/ — matching only the last form counts zero links on even
+              # a large article.
+              # || true keeps a zero-match page from failing the step if this
+              # ever runs under pipefail, where the empty grep would abort it.
+              links=$(printf '%s' "$html" \
+                | sed -n '/id="mw-content-text"/,$p' \
+                | grep -oP 'href="(\./|/wiki/|https://en\.wikipedia\.org/wiki/)[^"#:]+"' \
+                | sort -u | wc -l || true)
+              if [ "$links" -ge "$MIN_LINKS" ]; then
                 break
               fi
+              echo "Rejected $url: $links in-content article links, need $MIN_LINKS"
             done
+            if [ -z "$url" ]; then
+              echo "::error::Slot $i: could not resolve an article in 5 attempts"
+              exit 1
+            fi
+            if [ "$links" -lt "$MIN_LINKS" ]; then
+              echo "::warning::Slot $i using $url: only $links in-content article links"
+            fi
             urls+=("$url")
           done
           {
@@ -116,7 +157,6 @@ jobs:
           # numbers would depend on overlap.
           if [ "${{ github.event_name }}" = "push" ]; then
             LEVELS="1,5"             # smoke test: cheapest two levels
-            export CONCURRENT_ROUNDS_PER_LEVEL=1
             export CONCURRENT_LEVEL_COOLDOWN_MS=10000
           else
             LEVELS="1,5,10,25,50"
