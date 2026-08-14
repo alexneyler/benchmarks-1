@@ -55,8 +55,11 @@ const markdown = [
   `Run: \`${data.runId}\`  `,
   `Generated: ${data.timestamp}`,
   '',
-  '## Provider comparison',
+  '## Provider ranking',
   '',
+  ...(summaries.length > 0
+    ? [`Top provider: **${summaries[0].displayName}** (${summaries[0].compositeScore.toFixed(2)}/100)`, '']
+    : ['No provider results were available.', '']),
   '| Rank | Provider | Composite score | Success rate | Valid cells | Peak throughput (ops/s) |',
   '|---:|---|---:|---:|---:|---:|',
   ...summaries.map((provider, index) =>
