@@ -1,0 +1,251 @@
+name: Sandbox Capabilities Matrix
+
+on:
+  schedule:
+    - cron: '0 10 * * 1' # Weekly on Monday at 10am UTC / 5am CDT
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: 'Provider to run (leave empty for all)'
+        required: false
+        default: ''
+      iterations:
+        description: 'Iterations per provider'
+        required: false
+        default: '1'
+      concurrency:
+        description: 'Concurrent sandboxes per provider'
+        required: false
+        default: '1'
+      publish:
+        description: 'Commit and push results to the repo'
+        required: false
+        default: true
+        type: boolean
+
+concurrency:
+  group: sandbox-capabilities
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  bench:
+    name: Capabilities ${{ matrix.provider }}
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    # runs-on: self-hosted
+    timeout-minutes: 30
+    env:
+      SHOULD_RUN: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.provider == '' || github.event.inputs.provider == matrix.provider }}
+    strategy:
+      fail-fast: false
+      matrix:
+        provider:
+          - archil
+          - arker
+          - beam
+          - blaxel
+          - cloud-run
+          - cloudflare
+          - codesandbox
+          - createos
+          - daytona
+          - declaw
+          - e2b
+          - hopx
+          - isorun
+          - lightning
+          - modal
+          - mosaic
+          - namespace
+          - northflank
+          - opencomputer
+          - runloop
+          - run-cloud
+          - sandbox0
+          - sail
+          - sprites
+          - superserve
+          - tenki
+          - tensorlake
+          - upstash
+          - vercel
+    steps:
+      - uses: actions/checkout@v4
+        if: env.SHOULD_RUN == 'true'
+      - uses: pnpm/action-setup@v4
+        if: env.SHOULD_RUN == 'true'
+      - uses: actions/setup-node@v4
+        if: env.SHOULD_RUN == 'true'
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - uses: namespacelabs/nscloud-setup@v0
+        if: env.SHOULD_RUN == 'true'
+      - name: Install dependencies
+        if: env.SHOULD_RUN == 'true'
+        run: pnpm install --frozen-lockfile
+      - name: Clear stale results from checkout
+        if: env.SHOULD_RUN == 'true'
+        run: rm -rf results/
+      - name: Run capabilities benchmark
+        if: env.SHOULD_RUN == 'true'
+        run: |
+          case '${{ matrix.provider }}' in
+            archil) KEYS='ARCHIL_API_KEY|ARCHIL_REGION|ARCHIL_DISK_ID' ;;
+            arker) KEYS='ARKER_API_KEY' ;;
+            beam) KEYS='BEAM_TOKEN|BEAM_WORKSPACE_ID' ;;
+            blaxel) KEYS='BL_API_KEY|BL_WORKSPACE' ;;
+            cloud-run) KEYS='CLOUD_RUN_SANDBOX_URL|CLOUD_RUN_SANDBOX_SECRET' ;;
+            cloudflare) KEYS='CLOUDFLARE_SANDBOX_URL|CLOUDFLARE_SANDBOX_SECRET' ;;
+            codesandbox) KEYS='CSB_API_KEY' ;;
+            createos) KEYS='CREATEOS_SANDBOX_API_KEY' ;;
+            daytona) KEYS='DAYTONA_API_KEY' ;;
+            declaw) KEYS='DECLAW_API_KEY' ;;
+            e2b) KEYS='E2B_API_KEY' ;;
+            hopx) KEYS='HOPX_API_KEY' ;;
+            isorun) KEYS='ISORUN_API_KEY' ;;
+            lightning) KEYS='LIGHTNING_API_KEY' ;;
+            modal) KEYS='MODAL_TOKEN_ID|MODAL_TOKEN_SECRET' ;;
+            mosaic) KEYS='MOSAIC_API_URL|MOSAIC_API_TOKEN' ;;
+            namespace) KEYS='NSC_TOKEN' ;;
+            northflank) KEYS='NORTHFLANK_TOKEN|NORTHFLANK_PROJECT_ID' ;;
+            opencomputer) KEYS='OPENCOMPUTER_API_KEY|OPENCOMPUTER_API_URL' ;;
+            runloop) KEYS='RUNLOOP_API_KEY' ;;
+            run-cloud) KEYS='RUN_CLOUD_API_KEY' ;;
+            sandbox0) KEYS='SANDBOX0_TOKEN' ;;
+            sail) KEYS='SAIL_API_KEY' ;;
+            sprites) KEYS='SPRITES_TOKEN' ;;
+            superserve) KEYS='SUPERSERVE_API_KEY' ;;
+            tenki) KEYS='TENKI_API_KEY' ;;
+            tensorlake) KEYS='TENSORLAKE_API_KEY' ;;
+            upstash) KEYS='UPSTASH_BOX_API_KEY' ;;
+            vercel) KEYS='VERCEL_TOKEN|VERCEL_TEAM_ID|VERCEL_PROJECT_ID' ;;
+          *) KEYS='' ;;
+          esac
+          if [ -n "$KEYS" ]; then
+            KEYS="BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY|${KEYS}"
+          else
+            KEYS='BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY'
+          fi
+          . benchmarks/scripts/load-vault-secrets.sh "$KEYS"
+
+          RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          pnpm exec -- tsx packages/benchsdk-runner/dist/bin.js run benchmarks/sandbox/capabilities.bench.ts \
+            --provider '${{ matrix.provider }}' \
+            --iterations '${{ github.event.inputs.iterations || '1' }}' \
+            --concurrency '${{ github.event.inputs.concurrency || '1' }}' \
+            --run-key "$RUN_KEY"
+      - name: Upload results
+        if: always() && env.SHOULD_RUN == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-capabilities-${{ matrix.provider }}
+          path: results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  collect:
+    name: Collect Capabilities Results
+    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    # runs-on: self-hosted
+    needs: bench
+    if: always()
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - uses: namespacelabs/nscloud-setup@v0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Download all results
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          pattern: results-capabilities-*
+      - name: Merge results
+        run: pnpm exec -- tsx benchmarks/src/merge-results.ts --input artifacts
+      - name: Write GitHub Step Summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const latestPath = path.join('results', 'sandbox-capabilities', 'latest.json');
+            if (!fs.existsSync(latestPath)) {
+              core.summary.addHeading('Sandbox Capabilities Matrix', 2);
+              core.summary.addRaw('No capabilities results were generated.');
+              await core.summary.write();
+              return;
+            }
+
+            const data = JSON.parse(fs.readFileSync(latestPath, 'utf-8'));
+            const results = data.results || [];
+            const featureNames = results.length > 0 ? Object.keys(results[0].features || {}) : [];
+
+            const summary = core.summary;
+            summary.addHeading('Sandbox Capabilities Matrix', 2);
+            summary.addRaw(`<p>Timestamp: ${data.timestamp || 'unknown'}<br>Providers: ${results.length}</p>`);
+
+            const header = ['Provider', ...featureNames];
+            const rows = results.map(({ provider, features }) => {
+              return [
+                provider,
+                ...featureNames.map((name) => (features && features[name] && features[name].passed ? '✅' : '❌')),
+              ];
+            });
+            summary.addTable([header, ...rows]);
+
+            const failures = results
+              .map(({ provider, features }) => ({
+                provider,
+                failed: Object.entries(features || {})
+                  .filter(([, value]) => !value.passed)
+                  .map(([name, value]) => ({ name, error: value.error || 'failed' })),
+              }))
+              .filter((entry) => entry.failed.length > 0);
+
+            if (failures.length > 0) {
+              summary.addHeading('Failure details', 3);
+              for (const { provider, failed } of failures) {
+                const content = failed
+                  .map((failure) => `- **${failure.name}**: ${failure.error}`)
+                  .join('\n');
+                summary.addDetails(`${provider} (${failed.length} failures)`, content);
+              }
+            }
+
+            await summary.write();
+      - name: Commit and push
+        if: github.event.inputs.publish != 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add results/sandbox-capabilities/
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "chore: update sandbox capabilities results [skip ci]"
+
+          branch="${GITHUB_REF#refs/heads/}"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "${branch}"
+            git rebase --autostash "origin/${branch}" || { git rebase --abort; exit 1; }
+            if git push origin "HEAD:${branch}"; then
+              echo "Pushed on attempt ${attempt}"
+              exit 0
+            fi
+            echo "Push rejected (attempt ${attempt}); will rebase and retry"
+          done
+          echo "Failed to push after multiple attempts" >&2
+          exit 1
