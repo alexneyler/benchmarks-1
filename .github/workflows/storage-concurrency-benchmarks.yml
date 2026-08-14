@@ -1,0 +1,134 @@
+name: Storage Concurrency Benchmark
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'benchmarks/storage/storage-concurrency.*'
+      - 'benchmarks/storage/report-storage-concurrency.ts'
+      - 'benchmarks/storage/providers.ts'
+      - 'benchmarks/src/util/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+  schedule:
+    - cron: '0 13 * * 3' # Weekly on Wednesday at 13:00 UTC
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: 'Optional provider name (for example aws-s3)'
+        required: false
+        default: ''
+        type: string
+      operations:
+        description: 'GET operations per concurrency cell'
+        required: false
+        default: '1200'
+        type: string
+      seed_corpus:
+        description: 'Seed missing corpus objects before benchmarking'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: storage-concurrency-benchmarks
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  benchmark:
+    name: Compare storage providers
+    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    # runs-on: self-hosted
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - uses: namespacelabs/nscloud-setup@df198f982fcecfb8264bea3f1274b56a61b6dfdc # v0.0.12
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run storage concurrency benchmark
+        env:
+          STORAGE_CONCURRENCY_PROVIDER: ${{ inputs.provider || '' }}
+          STORAGE_CONCURRENCY_OPERATIONS: ${{ inputs.operations || '1200' }}
+          STORAGE_CONCURRENCY_SEED: ${{ inputs.seed_corpus || 'false' }}
+        run: |
+          . benchmarks/scripts/load-vault-secrets.sh '^(AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION|S3_BUCKET|R2_ACCESS_KEY_ID|R2_SECRET_ACCESS_KEY|R2_BUCKET|R2_ACCOUNT_ID|TIGRIS_STORAGE_ACCESS_KEY_ID|TIGRIS_STORAGE_SECRET_ACCESS_KEY|TIGRIS_STORAGE_BUCKET|BLOB_READ_WRITE_TOKEN|VERCEL_BLOB_BUCKET|GCS_PROJECT_ID|GCS_BUCKET|GCS_CLIENT_EMAIL|GCS_PRIVATE_KEY|AZURE_ACCOUNT_NAME|AZURE_ACCOUNT_KEY|AZURE_CONTAINER|TENSORLAKE_API_KEY|TENSORLAKE_API_URL|TENSORLAKE_ORGANIZATION_ID|TENSORLAKE_PROJECT_ID|TENSORLAKE_FILESYSTEM|ARCHIL_S3_ACCESS_KEY_ID|ARCHIL_S3_SECRET_ACCESS_KEY|ARCHIL_BUCKET|ARCHIL_REGION|ARCHIL_BRANCH|NEON_BUCKET|NEON_ENDPOINT|NEON_ACCESS_KEY_ID|NEON_SECRET_ACCESS_KEY|NEON_REGION|BENCHMARKS_PLATFORM_API_KEY)'
+          PROVIDER_ARGS=()
+          if [ -n "$STORAGE_CONCURRENCY_PROVIDER" ]; then
+            PROVIDER_ARGS=(--provider "$STORAGE_CONCURRENCY_PROVIDER")
+          fi
+
+          if [ "$STORAGE_CONCURRENCY_SEED" = "true" ]; then
+            pnpm bench:storage-concurrency:seed -- "${PROVIDER_ARGS[@]}"
+          fi
+
+          pnpm bench:storage-concurrency -- "${PROVIDER_ARGS[@]}"
+      - name: Upload combined results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storage-concurrency-results
+          path: results/storage-concurrency/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  collect:
+    name: Collect Results
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: benchmark
+    if: always()
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Download combined results
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: storage-concurrency-results
+          path: artifacts/storage-concurrency/
+      - name: Generate comparison report
+        run: |
+          if [ ! -f artifacts/storage-concurrency/latest.json ]; then
+            echo 'No storage concurrency results found; skipping report.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if [ ! -f benchmarks/storage/report-storage-concurrency.ts ] \
+            || ! grep -q '"report:storage-concurrency"' package.json; then
+            echo 'Storage concurrency report generator is not present on this ref; skipping report.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          mkdir -p results/storage-concurrency
+          cp artifacts/storage-concurrency/latest.json results/storage-concurrency/latest.json
+          pnpm report:storage-concurrency
+          cat storage-concurrency.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload comparison report
+        if: hashFiles('storage-concurrency.md', 'storage-concurrency.svg') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: storage-concurrency-report
+          path: |
+            storage-concurrency.md
+            storage-concurrency.svg
+            results/storage-concurrency/latest.json
+          retention-days: 14

@@ -183,6 +183,10 @@ export interface TaskStepRecord {
   latencyMs?: number;
   errorCode?: string | null;
   data?: JsonObject;
+  /** Number of parallel invocations requested for this step. */
+  concurrency?: number;
+  /** Per-iteration timeout in milliseconds applied to this step. */
+  timeoutMs?: number;
 }
 
 export interface SendTaskResultsInput {
@@ -551,6 +555,10 @@ export interface DefineStepOptions {
   reportConcurrency?: boolean;
   /** Per-worker target for this step. Defaults to worker concurrency/assignment target. */
   concurrency?: number;
+  /** Number of parallel invocations the step function should run internally. Used by the runner to record step-level concurrency. */
+  stepConcurrency?: number;
+  /** Per-invocation timeout in milliseconds for this step. Used by the runner to record step-level timeout metadata. */
+  timeoutMs?: number;
   /** Readiness coordination mode. Defaults to internal. */
   readiness?: 'poll' | 'internal';
   /** Poll interval while waiting for readiness. Defaults to 1000ms. */
