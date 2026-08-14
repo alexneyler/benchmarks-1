@@ -12,7 +12,12 @@ import {
   shouldStartLoop,
   summarizeRounds,
 } from './concurrent-benchmark.js';
-import { computeSweepScore, supportedP95 } from './concurrent-scoring.js';
+import {
+  computeConcurrentCompositeScores,
+  computeConcurrentSuccessRate,
+  computeSweepScore,
+  supportedP95,
+} from './concurrent-scoring.js';
 import {
   ACTIONS_PER_LOOP,
   CONCURRENCY_LEVELS,
@@ -21,7 +26,9 @@ import {
   MIN_SAMPLES_FOR_P95,
   actionsPerSession,
   type ActionResult,
+  type ActionType,
   type ConcurrencyLevel,
+  type ConcurrentBenchmarkResult,
   type RoundResult,
   type SessionResult,
 } from './concurrent-types.js';
@@ -197,6 +204,45 @@ check('a p95 at the gate is reported', () => {
   const summary = summarizeRounds([round(sessions, sessions.length)]);
   assert.equal(summary.loopMs.samples, MIN_SAMPLES_FOR_P95);
   assert.notEqual(supportedP95(summary.loopMs), null);
+});
+
+console.log('\nNo partial credit');
+
+check('a session whose browser dies mid-run is a failure, not a partial success', () => {
+  // notte at c1 in run 2026-08-14: 132 of 200 actions succeeded, then every
+  // action failed with "Target page, context or browser has been closed".
+  const actions = Array.from({ length: 200 }, (_, i) => ({
+    index: i + 1,
+    type: 'navigate' as ActionType,
+    durationMs: 500,
+    success: i < 132,
+    ...(i < 132 ? {} : { error: 'Target page, context or browser has been closed' }),
+  }));
+  const died: SessionResult = { ...session(actions), actionsCompleted: 132 };
+  const result = {
+    provider: 'test',
+    concurrencyLevel: 1 as ConcurrencyLevel,
+    rounds: [round([died], 1)],
+    summary: summarizeRounds([round([died], 1)]),
+  } as ConcurrentBenchmarkResult;
+  assert.equal(computeConcurrentSuccessRate(result), 0);
+  computeConcurrentCompositeScores([result]);
+  // The success rate multiplies the composite, so no credit survives for the
+  // 132 actions that did work.
+  assert.equal(result.compositeScore, 0);
+});
+
+check('a session stopped by our own action budget still counts as a success', () => {
+  // Same shape, except every action it attempted succeeded: the harness ended
+  // the work, so this is not the provider failing.
+  const stopped = session(Array.from({ length: 130 }, () => loopOf(500)).flat());
+  const result = {
+    provider: 'test',
+    concurrencyLevel: 1 as ConcurrencyLevel,
+    rounds: [round([stopped], 1)],
+    summary: summarizeRounds([round([stopped], 1)]),
+  } as ConcurrentBenchmarkResult;
+  assert.equal(computeConcurrentSuccessRate(result), 1);
 });
 
 console.log('\nSweep score');

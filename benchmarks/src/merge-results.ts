@@ -868,7 +868,12 @@ async function mainBrowserConcurrent() {
       for (const round of r.rounds) {
         for (const session of round.sessions) {
           totalSessions++;
-          if (!session.error && session.actionsCompleted === 10) fullSuccess++;
+          // Same all-or-nothing rule as computeConcurrentSuccessRate, against the
+          // actions the session attempted. The old fixed 10 predates sessions
+          // running more than one loop, so it counted a session that completed
+          // all 200 of its actions as a failure.
+          const attempted = session.actions.length;
+          if (!session.error && attempted > 0 && session.actionsCompleted === attempted) fullSuccess++;
         }
       }
       const successPct =
