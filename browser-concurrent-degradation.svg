@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="630" viewBox="0 0 1000 630">
+  <style>
+    .bg { fill: #ffffff; }
+    .title { font: bold 24px 'Inter', 'SF Pro Display', -apple-system, sans-serif; fill: #24292f; }
+    .subtitle { font: 13px 'Inter', 'SF Pro Display', -apple-system, sans-serif; fill: #57606a; }
+    .axis { font: 11px 'Inter', 'SF Pro Display', -apple-system, sans-serif; fill: #57606a; }
+    .axis-label { font: 600 12px 'Inter', 'SF Pro Display', -apple-system, sans-serif; fill: #24292f; }
+    .grid { stroke: #e1e4e8; stroke-width: 1; stroke-dasharray: 4 4; }
+    .axis-line { stroke: #d0d7de; stroke-width: 1; }
+    .legend { font: 12px 'Inter', 'SF Pro Display', -apple-system, sans-serif; fill: #24292f; }
+  </style>
+  <rect class="bg" width="1000" height="630"/>
+
+  <text class="title" x="80" y="40">Browser Concurrent — Degradation Curve</text>
+  <text class="subtitle" x="80" y="62">Median screenshot latency vs. concurrent sessions — a line ends at the highest level the provider sustained</text>
+  <line class="grid" x1="80" y1="510" x2="920" y2="510"/>
+  <text class="axis" x="72" y="514" text-anchor="end">0ms</text>
+  <line class="grid" x1="80" y1="430" x2="920" y2="430"/>
+  <text class="axis" x="72" y="434" text-anchor="end">400ms</text>
+  <line class="grid" x1="80" y1="350" x2="920" y2="350"/>
+  <text class="axis" x="72" y="354" text-anchor="end">800ms</text>
+  <line class="grid" x1="80" y1="270" x2="920" y2="270"/>
+  <text class="axis" x="72" y="274" text-anchor="end">1200ms</text>
+  <line class="grid" x1="80" y1="190" x2="920" y2="190"/>
+  <text class="axis" x="72" y="194" text-anchor="end">1600ms</text>
+  <line class="grid" x1="80" y1="110" x2="920" y2="110"/>
+  <text class="axis" x="72" y="114" text-anchor="end">2000ms</text>
+  <line class="axis-line" x1="80" y1="510" x2="920" y2="510"/>
+  <line class="axis-line" x1="80" y1="110" x2="80" y2="510"/>
+  <text class="axis" x="80" y="530" text-anchor="middle">1</text>
+  <text class="axis" x="425.58279554306574" y="530" text-anchor="middle">5</text>
+  <text class="axis" x="574.4172044569343" y="530" text-anchor="middle">10</text>
+  <text class="axis" x="771.1655910861315" y="530" text-anchor="middle">25</text>
+  <text class="axis" x="920" y="530" text-anchor="middle">50</text>
+  <text class="axis-label" x="500" y="552" text-anchor="middle">Concurrent Sessions</text>
+  <text class="axis-label" x="20" y="310" text-anchor="middle" transform="rotate(-90 20 310)">Latency (ms)</text>
+  <polyline points="80,467.168 425.58279554306574,461.644 574.4172044569343,457.786 771.1655910861315,450.178 920,441.772" fill="none" stroke="#0969da" stroke-width="2.5"/>
+  <circle cx="80" cy="467.168" r="4" fill="#0969da"/>
+  <circle cx="425.58279554306574" cy="461.644" r="4" fill="#0969da"/>
+  <circle cx="574.4172044569343" cy="457.786" r="4" fill="#0969da"/>
+  <circle cx="771.1655910861315" cy="450.178" r="4" fill="#0969da"/>
+  <circle cx="920" cy="441.772" r="4" fill="#0969da"/>
+  <polyline points="80,440.196 425.58279554306574,458.782 574.4172044569343,451.194 771.1655910861315,445.454 920,438.82" fill="none" stroke="#d4a000" stroke-width="2.5"/>
+  <circle cx="80" cy="440.196" r="4" fill="#d4a000"/>
+  <circle cx="425.58279554306574" cy="458.782" r="4" fill="#d4a000"/>
+  <circle cx="574.4172044569343" cy="451.194" r="4" fill="#d4a000"/>
+  <circle cx="771.1655910861315" cy="445.454" r="4" fill="#d4a000"/>
+  <circle cx="920" cy="438.82" r="4" fill="#d4a000"/>
+  <polyline points="80,282.556 425.58279554306574,269.568 574.4172044569343,278.14599999999996 771.1655910861315,307.056 920,334.918" fill="none" stroke="#1a7f37" stroke-width="2.5"/>
+  <circle cx="80" cy="282.556" r="4" fill="#1a7f37"/>
+  <circle cx="425.58279554306574" cy="269.568" r="4" fill="#1a7f37"/>
+  <circle cx="574.4172044569343" cy="278.14599999999996" r="4" fill="#1a7f37"/>
+  <circle cx="771.1655910861315" cy="307.056" r="4" fill="#1a7f37"/>
+  <circle cx="920" cy="334.918" r="4" fill="#1a7f37"/>
+  <polyline points="80,462.778 425.58279554306574,467.304 574.4172044569343,462.056" fill="none" stroke="#8250df" stroke-width="2.5"/>
+  <circle cx="80" cy="462.778" r="4" fill="#8250df"/>
+  <circle cx="425.58279554306574" cy="467.304" r="4" fill="#8250df"/>
+  <circle cx="574.4172044569343" cy="462.056" r="4" fill="#8250df"/>
+  <polyline points="80,232.50400000000002 425.58279554306574,174.462" fill="none" stroke="#9a6700" stroke-width="2.5"/>
+  <circle cx="80" cy="232.50400000000002" r="4" fill="#9a6700"/>
+  <circle cx="425.58279554306574" cy="174.462" r="4" fill="#9a6700"/>
+  <polyline points="80,378.52 425.58279554306574,380.18" fill="none" stroke="#cf222e" stroke-width="2.5"/>
+  <circle cx="80" cy="378.52" r="4" fill="#cf222e"/>
+  <circle cx="425.58279554306574" cy="380.18" r="4" fill="#cf222e"/>
+  <polyline points="80,447.71 425.58279554306574,454.752 574.4172044569343,453.546 771.1655910861315,441.73400000000004 920,431.26800000000003" fill="none" stroke="#0550ae" stroke-width="2.5"/>
+  <circle cx="80" cy="447.71" r="4" fill="#0550ae"/>
+  <circle cx="425.58279554306574" cy="454.752" r="4" fill="#0550ae"/>
+  <circle cx="574.4172044569343" cy="453.546" r="4" fill="#0550ae"/>
+  <circle cx="771.1655910861315" cy="441.73400000000004" r="4" fill="#0550ae"/>
+  <circle cx="920" cy="431.26800000000003" r="4" fill="#0550ae"/>
+  <rect x="80" y="600" width="12" height="12" fill="#0969da" rx="2"/>
+  <text class="legend" x="98" y="610">Browserbase</text>
+  <rect x="199" y="600" width="12" height="12" fill="#d4a000" rx="2"/>
+  <text class="legend" x="217" y="610">Browseruse</text>
+  <rect x="311" y="600" width="12" height="12" fill="#1a7f37" rx="2"/>
+  <text class="legend" x="329" y="610">Hyperbrowser</text>
+  <rect x="437" y="600" width="12" height="12" fill="#8250df" rx="2"/>
+  <text class="legend" x="455" y="610">Kernel</text>
+  <rect x="521" y="600" width="12" height="12" fill="#9a6700" rx="2"/>
+  <text class="legend" x="539" y="610">Notte</text>
+  <rect x="598" y="600" width="12" height="12" fill="#cf222e" rx="2"/>
+  <text class="legend" x="616" y="610">Steel</text>
+  <rect x="675" y="600" width="12" height="12" fill="#0550ae" rx="2"/>
+  <text class="legend" x="693" y="610">Tilion</text>
+  <text class="subtitle" x="80" y="588">Highest concurrency sustained: Kernel 10*, Notte 5*, Steel 5* (* account limit, not capacity)</text>
+</svg>
