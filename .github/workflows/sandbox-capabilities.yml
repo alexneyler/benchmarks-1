@@ -87,19 +87,46 @@ jobs:
         if: env.SHOULD_RUN == 'true'
       - name: Install dependencies
         if: env.SHOULD_RUN == 'true'
-        run: |
-          if [ "${{ github.event_name }}" = 'schedule' ]; then
-            pnpm update
-          else
-            pnpm install --frozen-lockfile
-          fi
+        run: pnpm install --frozen-lockfile
       - name: Clear stale results from checkout
         if: env.SHOULD_RUN == 'true'
         run: rm -rf results/
       - name: Run capabilities benchmark
         if: env.SHOULD_RUN == 'true'
         run: |
-          . benchmarks/scripts/load-vault-secrets.sh '.*'
+          case '${{ matrix.provider }}' in
+            archil) KEYS='ARCHIL_API_KEY|ARCHIL_REGION|ARCHIL_DISK_ID' ;;
+            arker) KEYS='ARKER_API_KEY' ;;
+            beam) KEYS='BEAM_TOKEN|BEAM_WORKSPACE_ID' ;;
+            blaxel) KEYS='BL_API_KEY|BL_WORKSPACE' ;;
+            cloud-run) KEYS='CLOUD_RUN_SANDBOX_URL|CLOUD_RUN_SANDBOX_SECRET' ;;
+            cloudflare) KEYS='CLOUDFLARE_SANDBOX_URL|CLOUDFLARE_SANDBOX_SECRET' ;;
+            codesandbox) KEYS='CSB_API_KEY' ;;
+            createos) KEYS='CREATEOS_SANDBOX_API_KEY' ;;
+            daytona) KEYS='DAYTONA_API_KEY' ;;
+            declaw) KEYS='DECLAW_API_KEY' ;;
+            e2b) KEYS='E2B_API_KEY' ;;
+            hopx) KEYS='HOPX_API_KEY' ;;
+            isorun) KEYS='ISORUN_API_KEY' ;;
+            lightning) KEYS='LIGHTNING_API_KEY' ;;
+            modal) KEYS='MODAL_TOKEN_ID|MODAL_TOKEN_SECRET' ;;
+            mosaic) KEYS='MOSAIC_API_URL|MOSAIC_API_TOKEN' ;;
+            namespace) KEYS='NSC_TOKEN' ;;
+            northflank) KEYS='NORTHFLANK_TOKEN|NORTHFLANK_PROJECT_ID' ;;
+            opencomputer) KEYS='OPENCOMPUTER_API_KEY|OPENCOMPUTER_API_URL' ;;
+            runloop) KEYS='RUNLOOP_API_KEY' ;;
+            run-cloud) KEYS='RUN_CLOUD_API_KEY' ;;
+            sandbox0) KEYS='SANDBOX0_TOKEN' ;;
+            sail) KEYS='SAIL_API_KEY' ;;
+            sprites) KEYS='SPRITES_TOKEN' ;;
+            superserve) KEYS='SUPERSERVE_API_KEY' ;;
+            tenki) KEYS='TENKI_API_KEY' ;;
+            tensorlake) KEYS='TENSORLAKE_API_KEY' ;;
+            upstash) KEYS='UPSTASH_BOX_API_KEY' ;;
+            vercel) KEYS='VERCEL_TOKEN|VERCEL_TEAM_ID|VERCEL_PROJECT_ID' ;;
+          esac
+          KEYS="${KEYS}|BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY"
+          . benchmarks/scripts/load-vault-secrets.sh "$KEYS"
 
           RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/sandbox/capabilities.bench.ts \
@@ -133,12 +160,7 @@ jobs:
           cache: 'pnpm'
       - uses: namespacelabs/nscloud-setup@v0
       - name: Install dependencies
-        run: |
-          if [ "${{ github.event_name }}" = 'schedule' ]; then
-            pnpm update
-          else
-            pnpm install --frozen-lockfile
-          fi
+        run: pnpm install --frozen-lockfile
       - name: Download all results
         uses: actions/download-artifact@v4
         with:
