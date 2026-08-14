@@ -157,13 +157,12 @@ jobs:
 
   collect:
     name: Collect Capabilities Results
-    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    runs-on: namespace-profile-default
     # runs-on: self-hosted
     needs: bench
     if: always()
     permissions:
       contents: write
-      id-token: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
