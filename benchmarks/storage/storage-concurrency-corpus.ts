@@ -3,6 +3,7 @@ export const PREFIX_COUNT = 64;
 export const OBJECT_SIZE_BYTES = 1024;
 export const KEY_STRIDE = 7919;
 export const WORKER_PRIME = 104_729;
+const SINGLE_PREFIX_OBJECT_COUNT = Math.ceil(OBJECT_COUNT / PREFIX_COUNT);
 
 export type KeyDistribution = 'SINGLE_PREFIX' | 'SPREAD_64';
 
@@ -20,7 +21,7 @@ export function requestKey(
   distribution: KeyDistribution,
 ): string {
   const rawIndex = distribution === 'SINGLE_PREFIX'
-    ? (opSeq * KEY_STRIDE) % Math.floor(OBJECT_COUNT / PREFIX_COUNT)
+    ? (workerId * WORKER_PRIME + opSeq * KEY_STRIDE) % SINGLE_PREFIX_OBJECT_COUNT
     : (workerId * WORKER_PRIME + opSeq * KEY_STRIDE) % OBJECT_COUNT;
   const index = distribution === 'SINGLE_PREFIX' ? rawIndex * PREFIX_COUNT : rawIndex;
   return corpusKey(index);
