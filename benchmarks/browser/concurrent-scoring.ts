@@ -1,6 +1,6 @@
 import { analyzeCapacity } from './concurrent-capacity.js';
 import {
-  ACTIONS_PER_SESSION,
+  MIN_SAMPLES_FOR_P95,
   type ConcurrentBenchmarkResult,
   type ConcurrentStatsTriple,
 } from './concurrent-types.js';
@@ -37,11 +37,23 @@ function scoreLatency(valueMs: number): number {
 }
 
 /**
+ * The p95, or null when too few samples stand behind it. An absent count means
+ * the artifact predates sample tracking, and an unknown sample size cannot
+ * support the claim either.
+ */
+export function supportedP95(stats: ConcurrentStatsTriple): number | null {
+  if (stats.samples === undefined || stats.samples < MIN_SAMPLES_FOR_P95) return null;
+  return stats.p95;
+}
+
+/**
  * Compute the success rate for a concurrent benchmark result (0 to 1).
  *
- * A session counts as successful iff it completed all ACTIONS_PER_SESSION
- * actions without error. Partial completions still contribute timing data but
- * are not counted as full successes.
+ * A session counts as successful iff every action it attempted succeeded, and
+ * it attempted at least one. Comparing against a fixed total would misread a
+ * session that stopped early because the level ran out of its action budget:
+ * that is the harness ending the work, not the provider failing it. Partial
+ * completions still contribute timing data but are not counted as successes.
  *
  * The denominator is the number of sessions *attempted*, not the number
  * recorded. A round where the provider refused every session records no
@@ -55,7 +67,8 @@ export function computeConcurrentSuccessRate(result: ConcurrentBenchmarkResult):
   for (const round of result.rounds) {
     attempted += round.sessionsAttempted || round.sessions.length;
     for (const session of round.sessions) {
-      if (!session.error && session.actionsCompleted === ACTIONS_PER_SESSION) {
+      const attemptedActions = session.actions.length;
+      if (!session.error && attemptedActions > 0 && session.actionsCompleted === attemptedActions) {
         fullySuccessful++;
       }
     }
@@ -68,10 +81,17 @@ function computeConcurrentScore(
   weights: ConcurrentScoringWeights = DEFAULT_CONCURRENT_WEIGHTS,
 ): number {
   const screenshotMedian = result.summary.perActionType.screenshot?.median ?? 0;
+  // Per-loop rather than per-round: a level's action phase covers as many loops
+  // as that level runs, so round wall clocks are not comparable between levels.
+  // Artifacts written before loopMs existed ran one loop per session, where the
+  // round wall clock was the same measurement, so they still score.
+  const loop = result.summary.loopMs ?? result.summary.taskMs;
   return (
     weights.createMedian * scoreLatency(result.summary.createMs.median) +
-    weights.taskMedian * scoreLatency(result.summary.taskMs.median) +
-    weights.taskP95 * scoreLatency(result.summary.taskMs.p95) +
+    weights.taskMedian * scoreLatency(loop.median) +
+    // A p95 the sample count cannot support is the median again, so scoring it
+    // would weight one measurement twice instead of rewarding a tight tail.
+    weights.taskP95 * scoreLatency(supportedP95(loop) ?? loop.median) +
     weights.screenshotMedian * scoreLatency(screenshotMedian) +
     weights.perSessionApsMedian * scoreThroughput(result.summary.perSessionActionsPerSecond.median)
   );

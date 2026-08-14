@@ -17,12 +17,60 @@
  *   results/browser-concurrent/c50/latest.json  (50 sessions concurrently)
  */
 
-/** How many times the fixed action loop repeats within a single session. */
-export const LOOPS_PER_SESSION = 1;
 /** Number of discrete actions in one loop (matches throughput benchmark). */
 export const ACTIONS_PER_LOOP = 10;
-/** Total actions a session runs end-to-end. */
-export const ACTIONS_PER_SESSION = LOOPS_PER_SESSION * ACTIONS_PER_LOOP;
+
+/**
+ * Loops each session repeats, per level.
+ *
+ * The comparable unit across levels is one loop: ten actions on one session
+ * while `level` sessions run concurrently. Sample count is therefore
+ * `level x loops`, and with one loop everywhere the cheap levels were left with
+ * far too few: c1 produced a single session and ten actions, so its success
+ * rate could only be 0% or 100% and its latency had no distribution at all.
+ *
+ * Repeating loops inside the session buys samples without asking the provider
+ * for more browsers, which is the expensive part. These counts even the sample
+ * budget out at roughly 20-50 loops per level.
+ */
+export const LOOPS_PER_LEVEL: Record<ConcurrencyLevel, number> = {
+  1: 20,
+  5: 4,
+  10: 2,
+  25: 1,
+  50: 1,
+};
+
+/** Actions one session runs at a level, when it completes every loop. */
+export function actionsPerSession(level: ConcurrencyLevel): number {
+  return LOOPS_PER_LEVEL[level] * ACTIONS_PER_LOOP;
+}
+
+/**
+ * Wall-clock ceiling on a level's action phase. A session checks it between
+ * loops, so every session stops at the same loop boundary and the level keeps
+ * its concurrency while it runs. Without it a slow provider would spend hours
+ * on c1: notte averaged 3.6s per action, which is 12 minutes for 20 loops.
+ * Levels cut short report fewer samples, which the percentile gates then
+ * account for.
+ */
+export const LEVEL_ACTION_BUDGET_MS = (() => {
+  const raw = process.env.CONCURRENT_LEVEL_ACTION_BUDGET_MS;
+  if (raw === undefined) return 240_000;
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error(`CONCURRENT_LEVEL_ACTION_BUDGET_MS must be a positive number (got ${raw})`);
+  }
+  return value;
+})();
+
+/**
+ * Samples a percentile needs before it means anything. Below the p95 gate the
+ * value is indistinguishable from the median, so reporting it claims knowledge
+ * the run does not have.
+ */
+export const MIN_SAMPLES_FOR_P95 = 20;
+export const MIN_SAMPLES_FOR_P99 = 100;
 
 /**
  * Per-action timeout. Shared so the summarizer can recognise an action that was
@@ -167,6 +215,21 @@ export interface RoundResult {
   /** True when no session survived create + connect, so the round produced no timings. */
   roundFailed?: boolean;
   /**
+   * Highest number of sessions this round held on the provider at once, counted
+   * from create to destroy. It is measured rather than assumed: a level that
+   * overlapped its neighbour would report more than sessionsAttempted here,
+   * which is how a c1 level once ran against 91 live sessions unnoticed.
+   */
+  maxLiveSessions?: number;
+  /**
+   * Highest number of sessions running actions simultaneously. This is the
+   * number the level claims to test, so a c50 round that never reaches 50 did
+   * not exercise the concurrency it reports.
+   */
+  maxConcurrentActions?: number;
+  /** Loops each session was asked to run, before any budget cutoff. */
+  loopsPerSession?: number;
+  /**
    * True when at least one action hit the per-action timeout. Those actions were
    * cut off at the limit rather than measured, so the round's action wall clock
    * is censored and the summarizer rebuilds it from the unaffected sessions.
@@ -184,6 +247,12 @@ export interface ConcurrentStatsTriple {
   median: number;
   p95: number;
   p99: number;
+  /**
+   * Observations behind the numbers above. Consumers compare it against
+   * MIN_SAMPLES_FOR_P95 / MIN_SAMPLES_FOR_P99 and withhold what it cannot
+   * support, rather than printing the median three times over.
+   */
+  samples?: number;
 }
 
 export interface ConcurrentStats {
@@ -193,8 +262,15 @@ export interface ConcurrentStats {
   createMs: ConcurrentStatsTriple;
   /** Parallel connect wall clock */
   connectMs: ConcurrentStatsTriple;
-  /** Parallel action loop wall clock */
+  /** Parallel action loop wall clock, for the whole action phase of a round */
   taskMs: ConcurrentStatsTriple;
+  /**
+   * One session's time for one ten-action loop, pooled over every session and
+   * loop in the level. This is the latency metric that compares across levels:
+   * taskMs covers a whole action phase, so a level running 20 loops is not
+   * comparable to one running 1.
+   */
+  loopMs: ConcurrentStatsTriple;
   /** Aggregate actions/sec across all sessions */
   actionsPerSecond: ConcurrentStatsTriple;
   /** Per-session actions/sec (the degradation signal) */

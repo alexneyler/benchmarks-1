@@ -6,7 +6,9 @@
 import {
   ACTION_TIMEOUT_MS,
   ACTION_TYPES,
-  ACTIONS_PER_SESSION,
+  ACTIONS_PER_LOOP,
+  actionsPerSession,
+  type ConcurrencyLevel,
   type ActionType,
   type ConcurrentBenchmarkResult,
   type ConcurrentStats,
@@ -26,8 +28,77 @@ function percentile(sorted: number[], p: number): number {
   return sorted[Math.min(Math.max(idx, 0), sorted.length - 1)];
 }
 
+/**
+ * Counts how many things are in flight and remembers the peak.
+ *
+ * Concurrency was previously inferred from how many sessions survived, but
+ * surviving and running at the same time are different properties: sessions
+ * taking turns would report the same sessionsAlive as sessions running
+ * together. Counting directly turns the level's claim into a measurement.
+ */
+export class ConcurrencyTracker {
+  private active = 0;
+  private watchers = new Set<{ max: number }>();
+
+  enter(): () => void {
+    this.active++;
+    for (const watcher of this.watchers) {
+      if (this.active > watcher.max) watcher.max = this.active;
+    }
+    let released = false;
+    return () => {
+      // Idempotent: a create that resolves after its timeout can release twice.
+      if (released) return;
+      released = true;
+      this.active--;
+    };
+  }
+
+  /**
+   * Start recording the peak from now until stop(). Seeded with whatever is
+   * already in flight, so a round that inherits sessions from a level that has
+   * not finished cleaning up reports them instead of starting from zero.
+   */
+  watch(): { stop: () => number } {
+    const watcher = { max: this.active };
+    this.watchers.add(watcher);
+    return {
+      stop: () => {
+        this.watchers.delete(watcher);
+        return watcher.max;
+      },
+    };
+  }
+}
+
+/**
+ * Whether a session should begin another loop. The check sits on the loop
+ * boundary so every session in a level stops at the same point and the level
+ * holds its concurrency for as long as it runs; cutting sessions off mid-loop
+ * would leave partial loops in the samples and shrink concurrency unevenly.
+ * The first loop always runs, so a level always produces measurements.
+ */
+export function shouldStartLoop(loopIndex: number, now: number, deadline: number): boolean {
+  return loopIndex === 0 || now < deadline;
+}
+
+/**
+ * Per-loop times for one session: its actions split into ACTIONS_PER_LOOP
+ * chunks, each summed. One loop on one session is the unit that compares across
+ * levels, since a level's action phase covers as many loops as that level runs.
+ */
+export function sessionLoopTimes(session: SessionResult): number[] {
+  const times: number[] = [];
+  for (let i = 0; i + ACTIONS_PER_LOOP <= session.actions.length; i += ACTIONS_PER_LOOP) {
+    let sum = 0;
+    for (let j = i; j < i + ACTIONS_PER_LOOP; j++) sum += session.actions[j].durationMs;
+    times.push(sum);
+  }
+  return times;
+}
+
 function computeStats(values: number[]): ConcurrentStatsTriple {
-  if (values.length === 0) return { median: 0, p95: 0, p99: 0 };
+  if (values.length === 0) return { median: 0, p95: 0, p99: 0, samples: 0 };
 
   const sorted = [...values].sort((a, b) => a - b);
   const trimCount = Math.floor(sorted.length * 0.05);
@@ -40,10 +111,13 @@ function computeStats(values: number[]): ConcurrentStatsTriple {
     ? (trimmed[mid - 1] + trimmed[mid]) / 2
     : trimmed[mid];
 
+  // The count is carried so consumers can withhold a percentile the sample size
+  // cannot support: with one observation the p95 is just the median again.
   return {
     median,
     p95: percentile(trimmed, 95),
     p99: percentile(trimmed, 99),
+    samples: values.length,
   };
 }
 
@@ -100,6 +174,20 @@ export function summarizeRounds(rounds: RoundResult[]): ConcurrentStats {
     .filter(v => v > 0);
   const connectValues = rounds.map(r => r.connectMs).filter(v => v > 0);
   const taskValues = rounds.map(effectiveTaskMs).filter(v => v > 0);
+
+  // Pooled over every session and loop, so a level's sample count is
+  // level x loops rather than one per round. Sessions whose actions were cut
+  // off at the timeout are left out for the same reason their round's wall
+  // clock is rebuilt: the timeout is a censored value, not a measurement.
+  const loopValues: number[] = [];
+  for (const round of rounds) {
+    for (const session of round.sessions) {
+      if (sessionHitActionTimeout(session)) continue;
+      for (const loopMs of sessionLoopTimes(session)) {
+        if (loopMs > 0) loopValues.push(loopMs);
+      }
+    }
+  }
   const sessionsAliveValues = rounds.map(r => r.sessionsAlive).filter(v => v > 0);
   const aggregateApsValues = rounds.map(r => r.aggregateActionsPerSecond).filter(v => v > 0);
 
@@ -130,6 +218,7 @@ export function summarizeRounds(rounds: RoundResult[]): ConcurrentStats {
     createMs: computeStats(createValues),
     connectMs: computeStats(connectValues),
     taskMs: computeStats(taskValues),
+    loopMs: computeStats(loopValues),
     actionsPerSecond: computeStats(aggregateApsValues),
     perSessionActionsPerSecond: computeStats(perSessionApsValues),
     perActionType,
@@ -137,7 +226,7 @@ export function summarizeRounds(rounds: RoundResult[]): ConcurrentStats {
 }
 
 export function emptySummary(): ConcurrentStats {
-  const empty: ConcurrentStatsTriple = { median: 0, p95: 0, p99: 0 };
+  const empty: ConcurrentStatsTriple = { median: 0, p95: 0, p99: 0, samples: 0 };
   const perActionType = {} as Record<ActionType, ConcurrentStatsTriple>;
   for (const t of ACTION_TYPES) perActionType[t] = { ...empty };
   return {
@@ -145,6 +234,7 @@ export function emptySummary(): ConcurrentStats {
     createMs: { ...empty },
     connectMs: { ...empty },
     taskMs: { ...empty },
+    loopMs: { ...empty },
     actionsPerSecond: { ...empty },
     perSessionActionsPerSecond: { ...empty },
     perActionType,
@@ -152,7 +242,12 @@ export function emptySummary(): ConcurrentStats {
 }
 
 function roundStats(s: ConcurrentStatsTriple): ConcurrentStatsTriple {
-  return { median: round(s.median), p95: round(s.p95), p99: round(s.p99) };
+  return {
+    median: round(s.median),
+    p95: round(s.p95),
+    p99: round(s.p99),
+    ...(s.samples !== undefined ? { samples: s.samples } : {}),
+  };
 }
 
 export async function writeConcurrentResultsJson(
@@ -192,6 +287,9 @@ export async function writeConcurrentResultsJson(
         })),
         ...(s.error ? { error: s.error } : {}),
       })),
+      ...(round.maxLiveSessions !== undefined ? { maxLiveSessions: round.maxLiveSessions } : {}),
+      ...(round.maxConcurrentActions !== undefined ? { maxConcurrentActions: round.maxConcurrentActions } : {}),
+      ...(round.loopsPerSession !== undefined ? { loopsPerSession: round.loopsPerSession } : {}),
       ...(round.actionTimedOut ? { actionTimedOut: true } : {}),
       ...(round.createTimedOut ? { createTimedOut: true } : {}),
       ...(round.roundFailed ? { roundFailed: true } : {}),
@@ -202,6 +300,7 @@ export async function writeConcurrentResultsJson(
       createMs: roundStats(r.summary.createMs),
       connectMs: roundStats(r.summary.connectMs),
       taskMs: roundStats(r.summary.taskMs),
+      loopMs: roundStats(r.summary.loopMs),
       actionsPerSecond: roundStats(r.summary.actionsPerSecond),
       perSessionActionsPerSecond: roundStats(r.summary.perSessionActionsPerSecond),
       perActionType: Object.fromEntries(
@@ -221,6 +320,7 @@ export async function writeConcurrentResultsJson(
   }));
 
   const rounds = results.reduce((max, r) => Math.max(max, r.rounds.length), 0);
+  const level = options.concurrencyLevel ?? results[0]?.concurrencyLevel ?? 0;
 
   const output = {
     version: '1.0',
@@ -231,9 +331,10 @@ export async function writeConcurrentResultsJson(
       arch: os.arch(),
     },
     config: {
-      concurrencyLevel: options.concurrencyLevel ?? results[0]?.concurrencyLevel ?? 0,
+      concurrencyLevel: level,
       rounds,
-      actionsPerSession: ACTIONS_PER_SESSION,
+      actionsPerSession: level > 0 ? actionsPerSession(level as ConcurrencyLevel) : 0,
+      loopsPerSession: results[0]?.rounds?.[0]?.loopsPerSession ?? 0,
       timeoutMs: options.timeoutMs ?? 120_000,
     },
     results: cleanResults,

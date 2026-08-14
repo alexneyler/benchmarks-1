@@ -40,15 +40,17 @@ import { defineBenchmarkConfig, defineTask, TaskError, type TaskContext } from '
 import type { JsonValue } from '@benchsdk/client';
 import { withTimeout } from '../src/util/timeout.js';
 import { throughputProviders } from './throughput-providers.js';
-import { sessionHitActionTimeout } from './concurrent-benchmark.js';
+import { ConcurrencyTracker, sessionHitActionTimeout, shouldStartLoop } from './concurrent-benchmark.js';
 import { writeConcurrentSweepResults } from './concurrent-legacy-results.js';
 import {
   ACTION_TIMEOUT_MS,
   ACTIONS_PER_LOOP,
-  ACTIONS_PER_SESSION,
   CONCURRENCY_LEVELS,
-  LOOPS_PER_SESSION,
+  LEVEL_ACTION_BUDGET_MS,
+  LOOPS_PER_LEVEL,
   ROUNDS_PER_LEVEL,
+  actionsPerSession,
+  type ConcurrencyLevel,
   levelFromPhaseName,
   parseLevels,
   phaseNameForLevel,
@@ -258,8 +260,34 @@ function reasonCounts(errors: string[]): Record<string, number> {
   return counts;
 }
 
-async function runActionLoop(page: Page, results: ActionResult[], navigateUrl: string): Promise<void> {
-  for (let loop = 0; loop < LOOPS_PER_SESSION; loop++) {
+/**
+ * Sessions live on the provider across the whole process, so this is module
+ * scoped: a level that overlapped the previous one shows up as a peak above its
+ * own session count, which is what a per-round counter would miss.
+ */
+const liveSessionTracker = new ConcurrencyTracker();
+
+interface ActionLoopOptions {
+  loops: number;
+  /** performance.now() value after which no further loop starts. */
+  deadline: number;
+  /** Called around the session's active window so the round can measure concurrency. */
+  track: ConcurrencyTracker;
+}
+
+async function runActionLoop(
+  page: Page,
+  results: ActionResult[],
+  navigateUrl: string,
+  options: ActionLoopOptions,
+): Promise<void> {
+  const { loops, deadline, track } = options;
+  const release = track.enter();
+  try {
+  for (let loop = 0; loop < loops; loop++) {
+    // Checked between loops so every session stops on a loop boundary and the
+    // level holds its concurrency for as long as it runs.
+    if (!shouldStartLoop(loop, performance.now(), deadline)) break;
     const baseIdx = loop * ACTIONS_PER_LOOP;
 
     // 1. Navigate
@@ -350,6 +378,9 @@ async function runActionLoop(page: Page, results: ActionResult[], navigateUrl: s
       results.push({ index: baseIdx + 10, type: 'waitForSelector', durationMs: r.durationMs, success: r.success, error: r.error });
     }
   }
+  } finally {
+    release();
+  }
 }
 
 // ── Provider cache (thread-safe lazy init) ───────────────────────────────────
@@ -411,12 +442,21 @@ async function runRound(ctx: RoundContext): Promise<{ round: RoundResult; harnes
   const createdSessionIds = new Set<string>();
   let cleanupComplete = false;
 
+  const liveWatch = liveSessionTracker.watch();
+  const actionTracker = new ConcurrencyTracker();
+  const actionWatch = actionTracker.watch();
+  const loops = LOOPS_PER_LEVEL[concurrencyLevel as ConcurrencyLevel];
+
+  // One release per session id, so double destroys cannot double count.
+  const liveReleases = new Map<string, () => void>();
   const destroySession = (sessionId: string) =>
     withTimeout(
       Promise.resolve(provider.session.destroy(sessionId)),
       15_000,
       'Session destroy timed out',
-    ).catch(() => {});
+    )
+      .catch(() => {})
+      .finally(() => liveReleases.get(sessionId)?.());
 
   /**
    * Start one session, recording its id as soon as the provider reports it.
@@ -432,6 +472,9 @@ async function runRound(ctx: RoundContext): Promise<{ round: RoundResult; harnes
     void underlying.then(
       (session) => {
         if (!session?.sessionId) return;
+        if (!createdSessionIds.has(session.sessionId)) {
+          liveReleases.set(session.sessionId, liveSessionTracker.enter());
+        }
         createdSessionIds.add(session.sessionId);
         if (cleanupComplete) void destroySession(session.sessionId);
       },
@@ -585,10 +628,15 @@ async function runRound(ctx: RoundContext): Promise<{ round: RoundResult; harnes
       // runActionLoop pushes to a passed array, so we create one per page.
       const actionArrays: ActionResult[][] = pages.map(() => []);
       const actionStart = performance.now();
+      const deadline = actionStart + LEVEL_ACTION_BUDGET_MS;
       const loopResults = await step(`actions-all-c${concurrencyLevel}`, () =>
         Promise.allSettled(
           pages.map((page, i) =>
-            runActionLoop(page, actionArrays[i], navUrlForSession(concurrencyLevel, roundIndex, i)),
+            runActionLoop(page, actionArrays[i], navUrlForSession(concurrencyLevel, roundIndex, i), {
+              loops,
+              deadline,
+              track: actionTracker,
+            }),
           ),
         ),
       );
@@ -639,6 +687,9 @@ async function runRound(ctx: RoundContext): Promise<{ round: RoundResult; harnes
     cleanupComplete = true;
   }
 
+  const maxConcurrentActions = actionWatch.stop();
+  const maxLiveSessions = liveWatch.stop();
+
   const totalMs = performance.now() - totalStart;
 
   const round: RoundResult = {
@@ -652,6 +703,9 @@ async function runRound(ctx: RoundContext): Promise<{ round: RoundResult; harnes
     releaseMs,
     totalMs,
     aggregateActionsPerSecond,
+    maxLiveSessions,
+    maxConcurrentActions,
+    loopsPerSession: loops,
     sessions: sessionResults,
     ...(sessionResults.some(sessionHitActionTimeout) ? { actionTimedOut: true } : {}),
     ...(createTimedOut ? { createTimedOut } : {}),
@@ -662,13 +716,19 @@ async function runRound(ctx: RoundContext): Promise<{ round: RoundResult; harnes
   // Logged before the throw below so a harness failure still reports what the
   // round achieved, not just that it died.
   const actionsCompleted = sessionResults.reduce((sum, s) => sum + s.actionsCompleted, 0);
+  const actionsAttempted = sessionResults.reduce((sum, s) => sum + s.actions.length, 0);
   log(
     `c${concurrencyLevel} round ${roundIndex} complete: ${sessionsAlive}/${concurrencyLevel} sessions, ` +
-      `${actionsCompleted}/${concurrencyLevel * ACTIONS_PER_SESSION} actions in ${Math.round(totalMs)}ms`,
+      `${actionsCompleted}/${actionsAttempted} actions in ${Math.round(totalMs)}ms, ` +
+      `peak ${maxConcurrentActions}/${concurrencyLevel} concurrent`,
     {
       concurrencyLevel,
       sessionsAlive,
       actionsCompleted,
+      actionsAttempted,
+      loopsPerSession: loops,
+      maxConcurrentActions,
+      maxLiveSessions,
       aggregateActionsPerSecond: Math.round(aggregateActionsPerSecond * 100) / 100,
       createMs: Math.round(createMs),
       connectMs: Math.round(connectMs),
@@ -678,6 +738,25 @@ async function runRound(ctx: RoundContext): Promise<{ round: RoundResult; harnes
       ...(roundError ? { roundError } : {}),
     },
   );
+
+  // A level that never reached its own session count did not measure the
+  // concurrency it is filed under, and one that exceeded it was overlapping
+  // something else. Both make the level's numbers mean something other than
+  // their label, so neither is left to be noticed in the artifacts later.
+  if (sessionsAlive > 0 && maxConcurrentActions < sessionsAlive) {
+    log(
+      `c${concurrencyLevel} round ${roundIndex} never ran more than ${maxConcurrentActions} sessions at once ` +
+        `despite ${sessionsAlive} being connected`,
+      { concurrencyLevel, maxConcurrentActions, sessionsAlive },
+    );
+  }
+  if (maxLiveSessions > concurrencyLevel) {
+    log(
+      `c${concurrencyLevel} round ${roundIndex} saw ${maxLiveSessions} live sessions, more than the level's ${concurrencyLevel}: ` +
+        `another level's sessions were still alive`,
+      { concurrencyLevel, maxLiveSessions },
+    );
+  }
 
   return { round, harnessFailure };
 }
@@ -788,6 +867,11 @@ function summarizeRoundForPlatform(round: RoundResult): Record<string, JsonValue
     releaseMs: Math.round(round.releaseMs),
     totalMs: Math.round(round.totalMs),
     aggregateActionsPerSecond: Math.round(round.aggregateActionsPerSecond * 100) / 100,
+    // The measured peak, so a level that never reached its own session count is
+    // visible on the platform record rather than only in the artifacts.
+    ...(round.maxConcurrentActions !== undefined ? { maxConcurrentActions: round.maxConcurrentActions } : {}),
+    ...(round.maxLiveSessions !== undefined ? { maxLiveSessions: round.maxLiveSessions } : {}),
+    ...(round.loopsPerSession !== undefined ? { loopsPerSession: round.loopsPerSession } : {}),
     ...(round.actionTimedOut ? { actionTimedOut: true } : {}),
     ...(round.createTimedOut ? { createTimedOut: true } : {}),
     ...(round.roundFailed ? { roundFailed: true } : {}),

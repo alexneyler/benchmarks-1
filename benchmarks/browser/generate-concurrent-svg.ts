@@ -22,6 +22,7 @@ import {
 import {
   computeConcurrentCompositeScores,
   sortConcurrentByCompositeScore,
+  supportedP95,
 } from './concurrent-scoring.js';
 import { ensureCapacityFields } from './concurrent-capacity.js';
 
@@ -183,8 +184,8 @@ function generateLeaderboardSVG(
   <text class="table-header" x="${cols.provider}" y="${tableTop + 28}">Provider</text>
   <text class="table-header" x="${cols.score}" y="${tableTop + 28}">Score</text>
   <text class="table-header" x="${cols.create}" y="${tableTop + 28}">Create (med)</text>
-  <text class="table-header" x="${cols.task}" y="${tableTop + 28}">Task (med)</text>
-  <text class="table-header" x="${cols.taskP95}" y="${tableTop + 28}">Task (p95)</text>
+  <text class="table-header" x="${cols.task}" y="${tableTop + 28}">Loop (med)</text>
+  <text class="table-header" x="${cols.taskP95}" y="${tableTop + 28}">Loop (p95)</text>
   <text class="table-header" x="${cols.screenshot}" y="${tableTop + 28}">Screenshot</text>
   <text class="table-header" x="${cols.aps}" y="${tableTop + 28}">Per-sess APS</text>
   <text class="table-header" x="${cols.alive}" y="${tableTop + 28}">Alive</text>
@@ -195,8 +196,10 @@ function generateLeaderboardSVG(
     const y = tableTop + tableHeaderHeight + (i * rowHeight) + 30;
     const rank = i + 1;
     const createMed = r.summary.createMs.median;
-    const taskMed = r.summary.taskMs.median;
-    const taskP95 = r.summary.taskMs.p95;
+    // Per-loop, the unit that compares across levels.
+    const loop = r.summary.loopMs;
+    const taskMed = loop?.median ?? null;
+    const taskP95 = loop ? supportedP95(loop) : null;
     const screenshotMed = r.summary.perActionType.screenshot?.median ?? 0;
     const perSessionAps = r.summary.perSessionActionsPerSecond.median;
     const aliveMed = r.summary.sessionsAlive.median;
@@ -207,7 +210,8 @@ function generateLeaderboardSVG(
     for (const round of r.rounds) {
       for (const session of round.sessions) {
         totalSessions++;
-        if (!session.error && session.actionsCompleted === 10) fullSuccess++;
+        const attempted = session.actions.length;
+        if (!session.error && attempted > 0 && session.actionsCompleted === attempted) fullSuccess++;
       }
     }
     const allFailed = fullSuccess === 0;
@@ -244,8 +248,8 @@ function generateLeaderboardSVG(
   <text class="row provider" x="${cols.provider}" y="${y}">${formatProviderName(r.provider)}</text>
   <text class="row total" x="${cols.score}" y="${y}">${score}</text>
   <text class="row total ${speedClass}" x="${cols.create}" y="${y}">${hideLatency ? '--' : formatSeconds(createMed)}</text>
-  <text class="row" x="${cols.task}" y="${y}">${hideLatency ? '--' : formatSeconds(taskMed)}</text>
-  <text class="row" x="${cols.taskP95}" y="${y}">${hideLatency ? '--' : formatSeconds(taskP95)}</text>
+  <text class="row" x="${cols.task}" y="${y}">${hideLatency || taskMed === null ? '--' : formatSeconds(taskMed)}</text>
+  <text class="row" x="${cols.taskP95}" y="${y}">${hideLatency || taskP95 === null ? '--' : formatSeconds(taskP95)}</text>
   <text class="row" x="${cols.screenshot}" y="${y}">${hideLatency ? '--' : formatMs(screenshotMed)}</text>
   <text class="row ${speedClass}" x="${cols.aps}" y="${y}">${hideLatency ? '--' : perSessionAps.toFixed(2) + '/s'}</text>
   <text class="row" x="${cols.alive}" y="${y}">${sustained}/${r.concurrencyLevel}${r.quotaLimited ? ' *' : ''}</text>

@@ -38,7 +38,11 @@ import {
   sortThroughputByCompositeScore,
 } from '../browser/throughput-scoring.js';
 import { computeAIGatewayCompositeScores, sortAIGatewayByCompositeScore } from '../ai-gateway/scoring.js';
-import { computeConcurrentCompositeScores, sortConcurrentByCompositeScore } from '../browser/concurrent-scoring.js';
+import {
+  computeConcurrentCompositeScores,
+  sortConcurrentByCompositeScore,
+  supportedP95,
+} from '../browser/concurrent-scoring.js';
 import { printResultsTable, writeResultsJson } from '../sandbox/table.js';
 import type { BenchmarkResult } from '../sandbox/types.js';
 import type { StorageBenchmarkResult } from '../storage/types.js';
@@ -804,7 +808,7 @@ async function mainBrowserConcurrent() {
     console.log(`  BROWSER CONCURRENT BENCHMARK RESULTS (c${concurrencyLevel})`);
     console.log('='.repeat(120));
     console.log(
-      ['Provider', 'Score', 'Create', 'Task', 'Task (p95)', 'Screenshot', 'APS/sess', 'Alive', 'Success']
+      ['Provider', 'Score', 'Create', 'Loop', 'Loop (p95)', 'Screenshot', 'APS/sess', 'Peak', 'Success']
         .map((h, i) => h.padEnd([14, 8, 10, 10, 10, 12, 10, 8, 10][i]))
         .join(' | '),
     );
@@ -815,15 +819,32 @@ async function mainBrowserConcurrent() {
       // while most of the load was refused describe a smaller experiment.
       const hideLatency = r.latencyRepresentative === false;
       const createMed = hideLatency ? '--' : `${(r.summary.createMs.median / 1000).toFixed(2)}s`;
-      const taskMed = hideLatency ? '--' : `${(r.summary.taskMs.median / 1000).toFixed(2)}s`;
-      const taskP95 = hideLatency ? '--' : `${(r.summary.taskMs.p95 / 1000).toFixed(2)}s`;
+      // Per-loop: one session's ten actions while the level's sessions run
+      // together. taskMs covers a level's whole action phase, and levels differ
+      // in how many loops that is.
+      // No fallback to taskMs here: presenting a whole action phase under a
+      // per-loop heading would relabel the number rather than report it.
+      const loop = r.summary.loopMs;
+      const taskMed = hideLatency || !loop ? '--' : `${(loop.median / 1000).toFixed(2)}s`;
+      const p95 = loop ? supportedP95(loop) : null;
+      // Dashed rather than repeated: below the sample gate the p95 is the median.
+      const taskP95 = hideLatency || p95 === null ? '--' : `${(p95 / 1000).toFixed(2)}s`;
       const screenshotMed = hideLatency
         ? '--'
         : `${Math.round(r.summary.perActionType.screenshot?.median ?? 0)}ms`;
       const aps = hideLatency ? '--' : r.summary.perSessionActionsPerSecond.median.toFixed(2);
-      const sustained = r.concurrencyAchieved !== undefined
-        ? Math.round(r.concurrencyAchieved)
-        : r.summary.sessionsAlive.median;
+      // Measured peak simultaneity where the rounds recorded it, so the column
+      // says how many sessions actually ran together rather than how many
+      // survived. Falls back for artifacts written before the counter existed.
+      const measuredPeak = r.rounds.reduce(
+        (max, round) => Math.max(max, round.maxConcurrentActions ?? 0),
+        0,
+      );
+      const sustained = measuredPeak > 0
+        ? measuredPeak
+        : r.concurrencyAchieved !== undefined
+          ? Math.round(r.concurrencyAchieved)
+          : r.summary.sessionsAlive.median;
       const alive = `${sustained}/${r.concurrencyLevel}${r.quotaLimited ? '*' : ''}`;
       let totalSessions = 0, fullSuccess = 0;
       for (const round of r.rounds) {
