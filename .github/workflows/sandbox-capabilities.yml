@@ -27,14 +27,14 @@ concurrency:
   group: sandbox-capabilities
   cancel-in-progress: true
 
-permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
+permissions: {}
 
 jobs:
   bench:
     name: Capabilities ${{ matrix.provider }}
+    permissions:
+      contents: read
+      id-token: write
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
     # runs-on: self-hosted
     timeout-minutes: 30
@@ -124,15 +124,20 @@ jobs:
             tensorlake) KEYS='TENSORLAKE_API_KEY' ;;
             upstash) KEYS='UPSTASH_BOX_API_KEY' ;;
             vercel) KEYS='VERCEL_TOKEN|VERCEL_TEAM_ID|VERCEL_PROJECT_ID' ;;
+          *) KEYS='' ;;
           esac
-          KEYS="${KEYS}|BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY"
+          if [ -n "$KEYS" ]; then
+            KEYS="BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY|${KEYS}"
+          else
+            KEYS='BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY'
+          fi
           . benchmarks/scripts/load-vault-secrets.sh "$KEYS"
 
           RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/sandbox/capabilities.bench.ts \
-            --provider ${{ matrix.provider }} \
-            --iterations ${{ github.event.inputs.iterations || '1' }} \
-            --concurrency ${{ github.event.inputs.concurrency || '1' }} \
+          pnpm exec -- tsx packages/benchsdk-runner/dist/bin.js run benchmarks/sandbox/capabilities.bench.ts \
+            --provider '${{ matrix.provider }}' \
+            --iterations '${{ github.event.inputs.iterations || '1' }}' \
+            --concurrency '${{ github.event.inputs.concurrency || '1' }}' \
             --run-key "$RUN_KEY"
       - name: Upload results
         if: always() && env.SHOULD_RUN == 'true'
@@ -149,6 +154,9 @@ jobs:
     # runs-on: self-hosted
     needs: bench
     if: always()
+    permissions:
+      contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -167,7 +175,7 @@ jobs:
           path: artifacts/
           pattern: results-capabilities-*
       - name: Merge results
-        run: npx tsx benchmarks/src/merge-results.ts --input artifacts
+        run: pnpm exec -- tsx benchmarks/src/merge-results.ts --input artifacts
       - name: Write GitHub Step Summary
         uses: actions/github-script@v7
         with:
