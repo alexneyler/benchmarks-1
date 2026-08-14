@@ -1,8 +1,6 @@
 name: Sandbox Capabilities Matrix
 
 on:
-  schedule:
-    - cron: '0 10 * * 1' # Weekly on Monday at 10am UTC / 5am CDT
   workflow_dispatch:
     inputs:
       provider:
@@ -74,16 +72,18 @@ jobs:
           - upstash
           - vercel
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         if: env.SHOULD_RUN == 'true'
-      - uses: pnpm/action-setup@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         if: env.SHOULD_RUN == 'true'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         if: env.SHOULD_RUN == 'true'
         with:
           node-version: 24
           cache: 'pnpm'
-      - uses: namespacelabs/nscloud-setup@v0
+      - uses: namespacelabs/nscloud-setup@df198f982fcecfb8264bea3f1274b56a61b6dfdc # v0.0.12
         if: env.SHOULD_RUN == 'true'
       - name: Install dependencies
         if: env.SHOULD_RUN == 'true'
@@ -94,42 +94,43 @@ jobs:
       - name: Run capabilities benchmark
         if: env.SHOULD_RUN == 'true'
         run: |
+          COMMON_KEYS='BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY'
           case '${{ matrix.provider }}' in
-            archil) KEYS='ARCHIL_API_KEY|ARCHIL_REGION|ARCHIL_DISK_ID' ;;
-            arker) KEYS='ARKER_API_KEY' ;;
-            beam) KEYS='BEAM_TOKEN|BEAM_WORKSPACE_ID' ;;
-            blaxel) KEYS='BL_API_KEY|BL_WORKSPACE' ;;
-            cloud-run) KEYS='CLOUD_RUN_SANDBOX_URL|CLOUD_RUN_SANDBOX_SECRET' ;;
-            cloudflare) KEYS='CLOUDFLARE_SANDBOX_URL|CLOUDFLARE_SANDBOX_SECRET' ;;
-            codesandbox) KEYS='CSB_API_KEY' ;;
-            createos) KEYS='CREATEOS_SANDBOX_API_KEY' ;;
-            daytona) KEYS='DAYTONA_API_KEY' ;;
-            declaw) KEYS='DECLAW_API_KEY' ;;
-            e2b) KEYS='E2B_API_KEY' ;;
-            hopx) KEYS='HOPX_API_KEY' ;;
-            isorun) KEYS='ISORUN_API_KEY' ;;
-            lightning) KEYS='LIGHTNING_API_KEY' ;;
-            modal) KEYS='MODAL_TOKEN_ID|MODAL_TOKEN_SECRET' ;;
-            mosaic) KEYS='MOSAIC_API_URL|MOSAIC_API_TOKEN' ;;
-            namespace) KEYS='NSC_TOKEN' ;;
-            northflank) KEYS='NORTHFLANK_TOKEN|NORTHFLANK_PROJECT_ID' ;;
-            opencomputer) KEYS='OPENCOMPUTER_API_KEY|OPENCOMPUTER_API_URL' ;;
-            runloop) KEYS='RUNLOOP_API_KEY' ;;
-            run-cloud) KEYS='RUN_CLOUD_API_KEY' ;;
-            sandbox0) KEYS='SANDBOX0_TOKEN' ;;
-            sail) KEYS='SAIL_API_KEY' ;;
-            sprites) KEYS='SPRITES_TOKEN' ;;
-            superserve) KEYS='SUPERSERVE_API_KEY' ;;
-            tenki) KEYS='TENKI_API_KEY' ;;
-            tensorlake) KEYS='TENSORLAKE_API_KEY' ;;
-            upstash) KEYS='UPSTASH_BOX_API_KEY' ;;
-            vercel) KEYS='VERCEL_TOKEN|VERCEL_TEAM_ID|VERCEL_PROJECT_ID' ;;
-          *) KEYS='' ;;
+            archil) PROVIDER_KEYS='ARCHIL_API_KEY|ARCHIL_REGION|ARCHIL_DISK_ID' ;;
+            arker) PROVIDER_KEYS='ARKER_API_KEY' ;;
+            beam) PROVIDER_KEYS='BEAM_TOKEN|BEAM_WORKSPACE_ID' ;;
+            blaxel) PROVIDER_KEYS='BL_API_KEY|BL_WORKSPACE' ;;
+            cloud-run) PROVIDER_KEYS='CLOUD_RUN_SANDBOX_URL|CLOUD_RUN_SANDBOX_SECRET' ;;
+            cloudflare) PROVIDER_KEYS='CLOUDFLARE_SANDBOX_URL|CLOUDFLARE_SANDBOX_SECRET' ;;
+            codesandbox) PROVIDER_KEYS='CSB_API_KEY' ;;
+            createos) PROVIDER_KEYS='CREATEOS_SANDBOX_API_KEY' ;;
+            daytona) PROVIDER_KEYS='DAYTONA_API_KEY' ;;
+            declaw) PROVIDER_KEYS='DECLAW_API_KEY' ;;
+            e2b) PROVIDER_KEYS='E2B_API_KEY' ;;
+            hopx) PROVIDER_KEYS='HOPX_API_KEY' ;;
+            isorun) PROVIDER_KEYS='ISORUN_API_KEY' ;;
+            lightning) PROVIDER_KEYS='LIGHTNING_API_KEY' ;;
+            modal) PROVIDER_KEYS='MODAL_TOKEN_ID|MODAL_TOKEN_SECRET' ;;
+            mosaic) PROVIDER_KEYS='MOSAIC_API_URL|MOSAIC_API_TOKEN' ;;
+            namespace) PROVIDER_KEYS='NSC_TOKEN' ;;
+            northflank) PROVIDER_KEYS='NORTHFLANK_TOKEN|NORTHFLANK_PROJECT_ID' ;;
+            opencomputer) PROVIDER_KEYS='OPENCOMPUTER_API_KEY|OPENCOMPUTER_API_URL' ;;
+            runloop) PROVIDER_KEYS='RUNLOOP_API_KEY' ;;
+            run-cloud) PROVIDER_KEYS='RUN_CLOUD_API_KEY' ;;
+            sandbox0) PROVIDER_KEYS='SANDBOX0_TOKEN' ;;
+            sail) PROVIDER_KEYS='SAIL_API_KEY' ;;
+            sprites) PROVIDER_KEYS='SPRITES_TOKEN' ;;
+            superserve) PROVIDER_KEYS='SUPERSERVE_API_KEY' ;;
+            tenki) PROVIDER_KEYS='TENKI_API_KEY' ;;
+            tensorlake) PROVIDER_KEYS='TENSORLAKE_API_KEY' ;;
+            upstash) PROVIDER_KEYS='UPSTASH_BOX_API_KEY' ;;
+            vercel) PROVIDER_KEYS='VERCEL_TOKEN|VERCEL_TEAM_ID|VERCEL_PROJECT_ID' ;;
+            *) PROVIDER_KEYS='' ;;
           esac
-          if [ -n "$KEYS" ]; then
-            KEYS="BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY|${KEYS}"
+          if [ -n "$PROVIDER_KEYS" ]; then
+            KEYS="^(${COMMON_KEYS}|${PROVIDER_KEYS})="
           else
-            KEYS='BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY'
+            KEYS="^(${COMMON_KEYS})="
           fi
           . benchmarks/scripts/load-vault-secrets.sh "$KEYS"
 
@@ -141,7 +142,7 @@ jobs:
             --run-key "$RUN_KEY"
       - name: Upload results
         if: always() && env.SHOULD_RUN == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: results-capabilities-${{ matrix.provider }}
           path: results/
@@ -158,26 +159,28 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
           cache: 'pnpm'
-      - uses: namespacelabs/nscloud-setup@v0
+      - uses: namespacelabs/nscloud-setup@df198f982fcecfb8264bea3f1274b56a61b6dfdc # v0.0.12
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Download all results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: artifacts/
           pattern: results-capabilities-*
       - name: Merge results
+        continue-on-error: true
         run: pnpm exec -- tsx benchmarks/src/merge-results.ts --input artifacts
       - name: Write GitHub Step Summary
-        uses: actions/github-script@v7
+        if: always()
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           script: |
             const fs = require('fs');
@@ -233,6 +236,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p results/sandbox-capabilities
           git add results/sandbox-capabilities/
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "chore: update sandbox capabilities results [skip ci]"
