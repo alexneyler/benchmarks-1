@@ -56,13 +56,24 @@ jobs:
           MIN_LINKS=5
           urls=()
           for i in $(seq 1 "$count"); do
+            # Reset per slot. Both are read after the attempt loop, and a slot
+            # that never reached the counting step would otherwise be judged on
+            # the previous slot's numbers.
+            url=''
+            links=0
             for attempt in 1 2 3 4 5; do
-              url=$(curl -sL -A 'ComputeSDK-Benchmark' -o /dev/null -w '%{url_effective}' \
+              resolved=$(curl -sL -A 'ComputeSDK-Benchmark' -o /dev/null -w '%{url_effective}' \
                 'https://en.wikipedia.org/wiki/Special:Random')
-              if [ -z "$url" ] || [[ "$url" == *"Special:Random"* ]]; then
-                url='https://en.wikipedia.org/wiki/Special:Random'
-                break
+              # Retry rather than give up: this is a transient redirect failure,
+              # which is what the attempt loop is for. Never put Special:Random
+              # itself in the list — each provider's browser would resolve it to
+              # a different article, so the slot would be neither validated nor
+              # shared, and a shared page set is the point of resolving up front.
+              if [ -z "$resolved" ] || [[ "$resolved" == *"Special:Random"* ]]; then
+                echo "Slot $i attempt $attempt: could not resolve a concrete article"
+                continue
               fi
+              url="$resolved"
               html=$(curl -sL -A 'ComputeSDK-Benchmark' "$url")
               # Content area only, and namespaced links (Help:, File:, wikt:)
               # dropped the same way isArticleLink drops them. All three href
@@ -70,17 +81,23 @@ jobs:
               # absolute and ./-relative links while the page chrome uses
               # /wiki/ — matching only the last form counts zero links on even
               # a large article.
+              # || true keeps a zero-match page from failing the step if this
+              # ever runs under pipefail, where the empty grep would abort it.
               links=$(printf '%s' "$html" \
                 | sed -n '/id="mw-content-text"/,$p' \
                 | grep -oP 'href="(\./|/wiki/|https://en\.wikipedia\.org/wiki/)[^"#:]+"' \
-                | sort -u | wc -l)
+                | sort -u | wc -l || true)
               if [ "$links" -ge "$MIN_LINKS" ]; then
                 break
               fi
               echo "Rejected $url: $links in-content article links, need $MIN_LINKS"
             done
+            if [ -z "$url" ]; then
+              echo "::error::Slot $i: could not resolve an article in 5 attempts"
+              exit 1
+            fi
             if [ "$links" -lt "$MIN_LINKS" ]; then
-              echo "::warning::Using $url after $attempt attempts: only $links in-content article links"
+              echo "::warning::Slot $i using $url: only $links in-content article links"
             fi
             urls+=("$url")
           done
