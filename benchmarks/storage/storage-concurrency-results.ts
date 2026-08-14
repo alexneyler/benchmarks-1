@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import type { BenchmarkRunOutcome } from '@benchsdk/runner';
-import type { StorageProviderConfig } from './types.js';
+import { scoreStorageConcurrencyProvider } from './storage-concurrency-scoring.js';
 
 export const STORAGE_CONCURRENCY_RESULTS_DIR = path.resolve('results/storage-concurrency');
 export const STORAGE_CONCURRENCY_RESULTS_PATH = path.join(
@@ -34,6 +34,9 @@ export interface StorageConcurrencyCellResult {
 export interface StorageConcurrencyProviderResult {
   provider: string;
   cells: StorageConcurrencyCellResult[];
+  compositeScore: number;
+  successRate: number;
+  validCellRate: number;
 }
 
 export interface StorageConcurrencyResults {
@@ -58,13 +61,16 @@ function isCellResult(value: unknown): value is StorageConcurrencyCellResult {
 export function writeStorageConcurrencyResults(
   outcome: BenchmarkRunOutcome,
 ): void {
-  const results: StorageConcurrencyProviderResult[] = outcome.participants.map((participant) => ({
-    provider: participant.participant,
-    cells: participant.records.flatMap((record) => {
+  const results: StorageConcurrencyProviderResult[] = outcome.participants.map((participant) => {
+    const result = {
+      provider: participant.participant,
+      cells: participant.records.flatMap((record) => {
         const data = record.data;
         return isCellResult(data) ? [data] : [];
       }),
-  }));
+    };
+    return { ...result, ...scoreStorageConcurrencyProvider(result) };
+  });
 
   const output: StorageConcurrencyResults = {
     version: '1.0',
@@ -81,11 +87,4 @@ export function writeStorageConcurrencyResults(
   fs.mkdirSync(STORAGE_CONCURRENCY_RESULTS_DIR, { recursive: true });
   fs.writeFileSync(STORAGE_CONCURRENCY_RESULTS_PATH, `${JSON.stringify(output, null, 2)}\n`);
   console.log(`Storage concurrency results written to ${STORAGE_CONCURRENCY_RESULTS_PATH}`);
-}
-
-export function providerConfigForResult(
-  provider: string,
-  providers: StorageProviderConfig[],
-): StorageProviderConfig | undefined {
-  return providers.find((candidate) => candidate.name === provider);
 }

@@ -41,11 +41,31 @@ const rows = data.results.flatMap((provider) =>
   })),
 );
 
+const summaries = [...data.results]
+  .sort((a, b) => b.compositeScore - a.compositeScore)
+  .map((provider) => ({
+    ...provider,
+    displayName: providerName(provider.provider),
+    peakThroughput: Math.max(...provider.cells.map((cell) => cell.throughputOpsPerSecond), 0),
+  }));
+
 const markdown = [
   '# Storage Concurrency Results',
   '',
   `Run: \`${data.runId}\`  `,
   `Generated: ${data.timestamp}`,
+  '',
+  '## Provider comparison',
+  '',
+  '| Rank | Provider | Composite score | Success rate | Valid cells | Peak throughput (ops/s) |',
+  '|---:|---|---:|---:|---:|---:|',
+  ...summaries.map((provider, index) =>
+    `| ${index + 1} | ${provider.displayName} | ${provider.compositeScore.toFixed(2)} | ${(provider.successRate * 100).toFixed(1)}% | ${(provider.validCellRate * 100).toFixed(1)}% | ${provider.peakThroughput.toFixed(1)} |`,
+  ),
+  '',
+  'Scores combine throughput (45%), p50 latency (20%), p95 latency (20%), and p99 latency (15%) per cell, then apply success-rate penalties.',
+  '',
+  '## Cell details',
   '',
   '| Provider | Cell | Throughput (ops/s) | p50 (ms) | p95 (ms) | p99 (ms) | Success | Valid |',
   '|---|---|---:|---:|---:|---:|---:|:---:|',
@@ -61,16 +81,15 @@ fs.writeFileSync(path.join(root, 'storage-concurrency.md'), `${markdown}\n`);
 const width = 1200;
 const rowHeight = 28;
 const headerHeight = 70;
-const chartHeight = Math.max(180, rows.length * rowHeight + 60);
-const maxThroughput = Math.max(...rows.map((row) => row.throughputOpsPerSecond), 1);
+const chartHeight = Math.max(180, summaries.length * rowHeight + 90);
 const barWidth = 700;
-const chartRows = rows.map((row, index) => {
+const chartRows = summaries.map((row, index) => {
   const y = headerHeight + index * rowHeight;
-  const widthValue = Math.max(1, (row.throughputOpsPerSecond / maxThroughput) * barWidth);
+  const widthValue = Math.max(1, (row.compositeScore / 100) * barWidth);
   return `
-  <text x="12" y="${y + 18}" class="label">${escapeXml(`${row.provider} ${row.phase}`)}</text>
-  <rect x="390" y="${y + 4}" width="${widthValue.toFixed(1)}" height="18" class="${row.valid ? 'bar' : 'invalid'}"/>
-  <text x="${Math.min(1100, 400 + widthValue + 8)}" y="${y + 18}" class="value">${row.throughputOpsPerSecond.toFixed(1)} ops/s</text>`;
+  <text x="12" y="${y + 18}" class="label">${escapeXml(row.displayName)}</text>
+  <rect x="390" y="${y + 4}" width="${widthValue.toFixed(1)}" height="18" class="${row.validCellRate === 1 ? 'bar' : 'invalid'}"/>
+  <text x="${Math.min(1100, 400 + widthValue + 8)}" y="${y + 18}" class="value">${row.compositeScore.toFixed(2)}</text>`;
 }).join('');
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${chartHeight}" viewBox="0 0 ${width} ${chartHeight}">
@@ -83,7 +102,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${
 .invalid { fill: #cf222e; }
 </style>
 <rect width="100%" height="100%" fill="white"/>
-<text x="12" y="30" class="title">Storage Concurrency Throughput</text>
+<text x="12" y="30" class="title">Storage Concurrency Composite Score</text>
 <text x="12" y="50" class="subtitle">Run ${escapeXml(data.runId)} · higher is better</text>
 ${chartRows}
 </svg>`;

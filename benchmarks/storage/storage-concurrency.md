@@ -60,3 +60,8 @@ class, a `valid` flag, and the observed maximum active request count. The first
 The workflow collects all provider cells into one `latest.json` artifact and
 generates `storage-concurrency.md` plus `storage-concurrency.svg` for the
 comparison.
+
+The composite score is 0–100 and is computed from each provider's cells:
+throughput (45%), p50 latency (20%), p95 latency (20%), and p99 latency (15%).
+Scores use fixed absolute ceilings and are multiplied by success rate, so
+invalid or failing cells reduce the provider score.
