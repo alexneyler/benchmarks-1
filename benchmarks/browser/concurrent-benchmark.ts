@@ -241,7 +241,12 @@ export function emptySummary(): ConcurrentStats {
   };
 }
 
-function roundStats(s: ConcurrentStatsTriple): ConcurrentStatsTriple {
+function roundStats(s: ConcurrentStatsTriple | undefined): ConcurrentStatsTriple {
+  // An artifact written before a stat existed deserializes without it, and the
+  // merge step reads whatever the providers uploaded, so a mix of old and new
+  // results has to serialize rather than crash on the missing field. Zero
+  // samples, so the percentile gates withhold it downstream.
+  if (!s) return { median: 0, p95: 0, p99: 0, samples: 0 };
   return {
     median: round(s.median),
     p95: round(s.p95),

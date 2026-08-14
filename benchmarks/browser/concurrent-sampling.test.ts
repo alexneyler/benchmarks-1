@@ -12,10 +12,12 @@ import {
   shouldStartLoop,
   summarizeRounds,
 } from './concurrent-benchmark.js';
-import { supportedP95 } from './concurrent-scoring.js';
+import { computeSweepScore, supportedP95 } from './concurrent-scoring.js';
 import {
   ACTIONS_PER_LOOP,
+  CONCURRENCY_LEVELS,
   LOOPS_PER_LEVEL,
+  SWEEP_WEIGHTS,
   MIN_SAMPLES_FOR_P95,
   actionsPerSession,
   type ActionResult,
@@ -195,6 +197,51 @@ check('a p95 at the gate is reported', () => {
   const summary = summarizeRounds([round(sessions, sessions.length)]);
   assert.equal(summary.loopMs.samples, MIN_SAMPLES_FOR_P95);
   assert.notEqual(supportedP95(summary.loopMs), null);
+});
+
+console.log('\nSweep score');
+
+check('the weights cover every level and sum to 1', () => {
+  const total = CONCURRENCY_LEVELS.reduce((sum, level) => sum + SWEEP_WEIGHTS[level], 0);
+  assert.equal(CONCURRENCY_LEVELS.every((level) => SWEEP_WEIGHTS[level] > 0), true);
+  assert.ok(Math.abs(total - 1) < 1e-9, `weights sum to ${total}`);
+});
+
+check('c25 and c50 carry most of the score', () => {
+  assert.ok(SWEEP_WEIGHTS[25] + SWEEP_WEIGHTS[50] >= 0.7);
+  // Monotonic, so a harder level is never worth less than an easier one.
+  for (let i = 1; i < CONCURRENCY_LEVELS.length; i++) {
+    assert.ok(SWEEP_WEIGHTS[CONCURRENCY_LEVELS[i]!] > SWEEP_WEIGHTS[CONCURRENCY_LEVELS[i - 1]!]);
+  }
+});
+
+check('a perfect score at every level is 100', () => {
+  const all = new Map(CONCURRENCY_LEVELS.map((level) => [level, 100]));
+  assert.equal(computeSweepScore(all), 100);
+});
+
+check('a missing level costs its weight instead of being renormalised away', () => {
+  const noFifty = new Map<number, number | undefined>(
+    CONCURRENCY_LEVELS.filter((level) => level !== 50).map((level) => [level, 100]),
+  );
+  // Renormalising over the four levels that ran would score this 100.
+  assert.equal(computeSweepScore(noFifty), 60);
+});
+
+check('an explicit zero and an absent level cost the same', () => {
+  const zeroed = new Map<number, number | undefined>(
+    CONCURRENCY_LEVELS.map((level) => [level, level === 50 ? 0 : 100]),
+  );
+  const absent = new Map<number, number | undefined>(
+    CONCURRENCY_LEVELS.filter((level) => level !== 50).map((level) => [level, 100]),
+  );
+  assert.equal(computeSweepScore(zeroed), computeSweepScore(absent));
+});
+
+check('holding up beats being quick then collapsing', () => {
+  const collapses = new Map<number, number | undefined>([[1, 95], [5, 95], [10, 90], [25, 30], [50, 10]]);
+  const holds = new Map<number, number | undefined>([[1, 70], [5, 70], [10, 70], [25, 70], [50, 70]]);
+  assert.ok(computeSweepScore(holds) > computeSweepScore(collapses));
 });
 
 console.log(failures === 0 ? '\nall checks passed' : `\n${failures} check(s) failed`);

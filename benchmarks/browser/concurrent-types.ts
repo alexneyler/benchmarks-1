@@ -65,6 +65,24 @@ export const LEVEL_ACTION_BUDGET_MS = (() => {
 })();
 
 /**
+ * How much each level contributes to the sweep score.
+ *
+ * Weighted toward the levels that actually stress a provider: c25 and c50 carry
+ * 70% between them, while the cheap levels still count for something, since a
+ * provider that is slow at c1 is slow everywhere. Equal weighting ranked a
+ * provider capped at 10 sessions fifth of seven on the strength of cells that
+ * barely test anything, and put a provider that degrades at c50 ahead of one
+ * that holds.
+ */
+export const SWEEP_WEIGHTS: Record<ConcurrencyLevel, number> = {
+  1: 0.05,
+  5: 0.10,
+  10: 0.15,
+  25: 0.30,
+  50: 0.40,
+};
+
+/**
  * Samples a percentile needs before it means anything. Below the p95 gate the
  * value is indistinguishable from the median, so reporting it claims knowledge
  * the run does not have.

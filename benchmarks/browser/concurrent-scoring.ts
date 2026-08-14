@@ -1,6 +1,8 @@
 import { analyzeCapacity } from './concurrent-capacity.js';
 import {
+  CONCURRENCY_LEVELS,
   MIN_SAMPLES_FOR_P95,
+  SWEEP_WEIGHTS,
   type ConcurrentBenchmarkResult,
   type ConcurrentStatsTriple,
 } from './concurrent-types.js';
@@ -34,6 +36,23 @@ function scoreThroughput(actionsPerSecond: number): number {
 function scoreLatency(valueMs: number): number {
   if (!Number.isFinite(valueMs)) return 0;
   return Math.max(0, 100 * (1 - valueMs / LATENCY_CEILING_MS));
+}
+
+/**
+ * One score per provider across the whole sweep, weighted by SWEEP_WEIGHTS.
+ *
+ * A level with no result scores zero and keeps its weight. Renormalising over
+ * the levels that did run would mean failing at c50 removes the hardest test
+ * from the denominator, so a provider capped at 25 sessions would be scored as
+ * though 25 were all it was ever asked for. Not running a level has to cost its
+ * weight.
+ */
+export function computeSweepScore(scoreByLevel: Map<number, number | undefined>): number {
+  let total = 0;
+  for (const level of CONCURRENCY_LEVELS) {
+    total += SWEEP_WEIGHTS[level] * (scoreByLevel.get(level) ?? 0);
+  }
+  return Math.round(total * 100) / 100;
 }
 
 /**
