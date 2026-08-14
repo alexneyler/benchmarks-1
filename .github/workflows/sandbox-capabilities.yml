@@ -95,9 +95,13 @@ jobs:
         run: rm -rf results/
       - name: Run capabilities benchmark
         if: env.SHOULD_RUN == 'true'
+        env:
+          ITERATIONS: ${{ github.event.inputs.iterations || '1' }}
+          CONCURRENCY: ${{ github.event.inputs.concurrency || '1' }}
+          PROVIDER: ${{ matrix.provider }}
         run: |
           COMMON_KEYS='BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY'
-          case '${{ matrix.provider }}' in
+          case "$PROVIDER" in
             archil) PROVIDER_KEYS='ARCHIL_API_KEY|ARCHIL_REGION|ARCHIL_DISK_ID' ;;
             arker) PROVIDER_KEYS='ARKER_API_KEY' ;;
             beam) PROVIDER_KEYS='BEAM_TOKEN|BEAM_WORKSPACE_ID' ;;
@@ -138,9 +142,9 @@ jobs:
 
           RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           pnpm exec -- tsx packages/benchsdk-runner/dist/bin.js run benchmarks/sandbox/capabilities.bench.ts \
-            --provider '${{ matrix.provider }}' \
-            --iterations '${{ github.event.inputs.iterations || '1' }}' \
-            --concurrency '${{ github.event.inputs.concurrency || '1' }}' \
+            --provider "$PROVIDER" \
+            --iterations "$ITERATIONS" \
+            --concurrency "$CONCURRENCY" \
             --run-key "$RUN_KEY"
       - name: Upload results
         if: always() && env.SHOULD_RUN == 'true'
