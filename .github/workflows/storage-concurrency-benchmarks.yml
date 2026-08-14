@@ -103,16 +103,27 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Download combined results
         uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: storage-concurrency-results
           path: artifacts/storage-concurrency/
       - name: Generate comparison report
         run: |
+          if [ ! -f artifacts/storage-concurrency/latest.json ]; then
+            echo 'No storage concurrency results found; skipping report.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if [ ! -f benchmarks/storage/report-storage-concurrency.ts ] \
+            || ! grep -q '"report:storage-concurrency"' package.json; then
+            echo 'Storage concurrency report generator is not present on this ref; skipping report.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           mkdir -p results/storage-concurrency
           cp artifacts/storage-concurrency/latest.json results/storage-concurrency/latest.json
           pnpm report:storage-concurrency
           cat storage-concurrency.md >> "$GITHUB_STEP_SUMMARY"
       - name: Upload comparison report
+        if: hashFiles('storage-concurrency.md', 'storage-concurrency.svg') != ''
         uses: actions/upload-artifact@v4
         with:
           name: storage-concurrency-report
