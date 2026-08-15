@@ -14,6 +14,8 @@
  *     under the same conditions. Driven manually via one `BenchmarkReporter`
  *     per participant.
  */
+import { execSync } from 'node:child_process';
+import os from 'node:os';
 import {
   BenchmarkReporter,
   createBenchmarkClient,
@@ -21,6 +23,7 @@ import {
   selectParticipants,
 } from '@benchsdk/client';
 import { NoAvailableParticipantsError } from './no-available-participants.js';
+import { higherIsBetter, lowerIsBetter, score } from './scoring.js';
 import type {
   BaseParticipant,
   BenchmarkClient,
@@ -493,8 +496,45 @@ export async function runBenchmark<T extends BaseParticipant>(
     participants: participantRecords,
     config: resolved,
   };
+  if (config.onScore) {
+    try {
+      const spec = await config.onScore(lowerIsBetter, higherIsBetter);
+      const scored = score(outcome, spec);
+      const run = {
+        gitSha: process.env.GITHUB_SHA ?? getGitSha(),
+        gitRef: process.env.GITHUB_REF_NAME ?? process.env.GITHUB_REF ?? getGitRef(),
+        triggeredBy: process.env.GITHUB_EVENT_NAME ?? 'manual',
+        nodeVersion: process.version,
+        platform: os.platform(),
+        arch: os.arch(),
+      };
+      await client.submitRunSummary(config.benchmarkSlug, runId, { run, results: scored });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn(`[benchsdk-runner] failed to submit run summary: ${message}`);
+    }
+  }
   if (config.onComplete) await config.onComplete(outcome);
   return outcome;
+}
+
+function getGitSha(): string | undefined {
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA;
+  try {
+    return execSync('git rev-parse HEAD', { encoding: 'utf8', stdio: 'pipe' }).trim();
+  } catch {
+    return undefined;
+  }
+}
+
+function getGitRef(): string | undefined {
+  if (process.env.GITHUB_REF_NAME) return process.env.GITHUB_REF_NAME;
+  if (process.env.GITHUB_REF) return process.env.GITHUB_REF;
+  try {
+    return execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8', stdio: 'pipe' }).trim();
+  } catch {
+    return undefined;
+  }
 }
 
 /**

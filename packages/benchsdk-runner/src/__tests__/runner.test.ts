@@ -172,12 +172,13 @@ describe('runBenchmark', () => {
     process.env.E2B_API_KEY = 'x';
     process.env.MODAL_TOKEN = 'y';
     process.env.BENCHMARKS_PLATFORM_API_KEY = 'test-key';
-    calls = { upsertBenchmark: [], createRun: [], planWorkers: [], upsertParticipant: [], getRun: [], runWorker: [], taskData: [] };
+    calls = { upsertBenchmark: [], createRun: [], planWorkers: [], upsertParticipant: [], getRun: [], runWorker: [], taskData: [], submitRunSummary: [] };
     fakeClient = {
       upsertBenchmark: vi.fn(async (...a: any[]) => { calls.upsertBenchmark.push(a); return {}; }),
       createRun: vi.fn(async (...a: any[]) => { calls.createRun.push(a); return { run: { id: 'run-1' }, participants: [] }; }),
       planWorkers: vi.fn(async (...a: any[]) => { calls.planWorkers.push(a); return []; }),
       upsertParticipant: vi.fn(async (...a: any[]) => { calls.upsertParticipant.push(a); return {}; }),
+      submitRunSummary: vi.fn(async (...a: any[]) => { calls.submitRunSummary.push(a); }),
       getRun: vi.fn(async (slug: string, runId: string) => {
         calls.getRun.push([slug, runId]);
         return { id: runId, totalTasks: 3, participantSized: runId === 'run-open' };
@@ -274,6 +275,49 @@ describe('runBenchmark', () => {
     expect(onComplete).toHaveBeenCalledTimes(1);
     expect(onComplete).toHaveBeenCalledWith(outcome);
     expect(outcome.config).toMatchObject({ iterations: 2, concurrency: 1 });
+  });
+
+  it('calls config.onScore and submits a run summary before onComplete', async () => {
+    const onScore = vi.fn((lowerIsBetter) => ({
+      metrics: [lowerIsBetter('ttiMs', { unit: 'ms', ceiling: 1000, weights: { median: 1, p95: 0, p99: 0 } })],
+    }));
+    const onComplete = vi.fn();
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 's',
+      benchmarkName: 'n',
+      iterations: 2,
+      concurrency: 1,
+      participants: [participants[0]],
+      onScore,
+      onComplete,
+    };
+
+    const outcome = await runBenchmark(config, defineTask(async () => ({ data: { ttiMs: 100 } })), []);
+
+    expect(onScore).toHaveBeenCalledTimes(1);
+    expect(onScore).toHaveBeenCalledWith(expect.any(Function), expect.any(Function));
+    expect(calls.submitRunSummary).toHaveLength(1);
+    expect(calls.submitRunSummary[0][0]).toBe('s');
+    expect(calls.submitRunSummary[0][1]).toBe('run-1');
+    expect(calls.submitRunSummary[0][2]).toMatchObject({
+      run: expect.objectContaining({
+        gitSha: expect.any(String),
+        nodeVersion: expect.any(String),
+        platform: expect.any(String),
+        arch: expect.any(String),
+      }),
+      results: expect.arrayContaining([
+        expect.objectContaining({
+          provider: 'e2b',
+          metrics: expect.arrayContaining([expect.objectContaining({ name: 'ttiMs', unit: 'ms' })]),
+          compositeScore: expect.any(Number),
+          successRate: expect.any(Number),
+          skipped: false,
+        }),
+      ]),
+    });
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    expect(onComplete).toHaveBeenCalledWith(outcome);
   });
 
   it('applies CLI overrides over config', async () => {

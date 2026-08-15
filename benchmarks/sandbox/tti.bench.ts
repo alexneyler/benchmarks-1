@@ -39,6 +39,15 @@ export const config = defineBenchmarkConfig({
   iterations: 2,
   concurrency: 1,
   participants: providers,
+  onScore: (lowerIsBetter) => ({
+    metrics: [
+      lowerIsBetter('ttiMs', {
+        unit: 'ms',
+        ceiling: 10000,
+        weights: { median: 0.60, p95: 0.25, p99: 0.15 },
+      }),
+    ],
+  }),
   // Legacy JSON labels a burst run 'concurrent' (see merge-results /
   // generate-svg) — that's the shape carrying the wall-clock/ramp fields. The
   // `results/` directory name predates this file and is kept verbatim so the

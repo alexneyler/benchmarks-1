@@ -46,6 +46,14 @@ export const config = defineBenchmarkConfig({
   iterations: 2,
   concurrency: 1,
   participants: storageProviders,
+  onScore: (lowerIsBetter, higherIsBetter) => ({
+    dimensions: { file_size: fileSizeLabel },
+    metrics: [
+      lowerIsBetter('uploadMs', { unit: 'ms', ceiling: 30000, weights: { median: 0.25, p95: 0.10, p99: 0.05 } }),
+      lowerIsBetter('downloadMs', { unit: 'ms', ceiling: 30000, weights: { median: 0.35, p95: 0.15, p99: 0.05 } }),
+      higherIsBetter('throughputMbps', { unit: 'mbps', floor: 1, ceiling: 1000, weights: { median: 0.05, p95: 0, p99: 0 } }),
+    ],
+  }),
   onComplete: (outcome) =>
     writeStorageLegacyResults(outcome.participants, {
       resultsDir: path.resolve(__dirname, `../../results/storage/${fileSizeLabel.toLowerCase()}`),
