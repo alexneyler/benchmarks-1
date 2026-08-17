@@ -48,8 +48,8 @@ const participants: StorageProviderConfig[] = storageProviders.map((p) => {
 });
 
 export const config = defineBenchmarkConfig({
-  benchmarkSlug: 'snapshot-fork',
-  benchmarkName: 'Storage Snapshot/Fork',
+  benchmarkSlug: `snapshot-fork${process.env.DAILY_BENCH_SLUG ? `-${process.env.DAILY_BENCH_SLUG}` : ''}`,
+  benchmarkName: `Storage Snapshot/Fork${process.env.DAILY_BENCH_NAME ? ` - ${process.env.DAILY_BENCH_NAME}` : ''}`,
   iterations: 2,
   concurrency: 1,
   participants,
