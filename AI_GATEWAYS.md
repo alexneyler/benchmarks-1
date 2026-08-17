@@ -127,7 +127,7 @@ pnpm run bench:ai-gateway -- --iterations 20
 npx tsx benchmarks/ai-gateway/ai-gateway.bench.ts --ai-gateway-iterations-cold 20 --ai-gateway-iterations-warm 0
 ```
 
-Required environment variables (`benchmarks/.env.example`): `OPENROUTER_API_KEY`, `VERCEL_AI_GATEWAY_API_KEY`, `LLM_GATEWAY_API_KEY`, `PYDANTIC_AI_GATEWAY_API_KEY`, `CONCENTRATE_AI_GATEWAY_API_KEY`, `CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID` + `CLOUDFLARE_AI_GATEWAY_GATEWAY_ID` (+ optional `CLOUDFLARE_AI_GATEWAY_TOKEN` if the gateway has Authenticated Gateway enabled), `ANTHROPIC_API_KEY` (shared by Cloudflare's passthrough and the direct baseline). Missing credentials cause that gateway to be reported as `SKIPPED` rather than failing the run.
+Required environment variables (`benchmarks/.env.example`): `OPENROUTER_API_KEY`, `VERCEL_AI_GATEWAY_API_KEY`, `LLM_GATEWAY_API_KEY`, `PYDANTIC_AI_GATEWAY_API_KEY`, `CONCENTRATE_AI_GATEWAY_API_KEY`, `CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID`, `CLOUDFLARE_AI_GATEWAY_GATEWAY_ID`, `CLOUDFLARE_AI_GATEWAY_TOKEN`, and `ANTHROPIC_API_KEY` (shared by Cloudflare's passthrough and the direct baseline). Missing credentials cause that gateway to be reported as `SKIPPED` rather than failing the run.
 
 ## Output
 

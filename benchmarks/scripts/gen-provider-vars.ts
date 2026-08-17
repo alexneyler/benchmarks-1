@@ -1,8 +1,8 @@
 /**
  * Generate benchmarks/scripts/provider-vars.json: the authoritative map of
  * which env vars each provider benchmark needs, read straight from the
- * `requiredEnvVars` and `optionalEnvVars` fields on every provider config
- * (the single source of truth in benchmarks/{mode}/providers.ts).
+ * `requiredEnvVars` field on every provider config (the single source of truth
+ * in benchmarks/{mode}/providers.ts).
  *
  * Each workflow's Load+Run step grep's this manifest by env-var name to keep
  * the per-job envdef (and thus the secrets the runner requests) scoped to
@@ -22,12 +22,7 @@ import { storageProviders } from '../storage/providers.js';
 import { providers as scaleProviders } from '../scale/providers.js';
 import { providers as aiGatewayProviders } from '../ai-gateway/providers.js';
 
-type Cfg = {
-  name: string;
-  requiredEnvVars?: string[];
-  optionalEnvVars?: string[];
-  snapshotFork?: { requiredEnvVars?: string[] };
-};
+type Cfg = { name: string; requiredEnvVars?: string[]; snapshotFork?: { requiredEnvVars?: string[] } };
 
 const modes: Record<string, Cfg[]> = {
   sandbox: sandboxProviders as Cfg[],
@@ -42,10 +37,8 @@ const manifest: Record<string, Record<string, string[]>> = {};
 for (const [mode, configs] of Object.entries(modes)) {
   manifest[mode] = {};
   for (const c of configs) {
-    // De-dupe and keep declared order (required vars first, then optional).
-    manifest[mode][c.name] = [
-      ...new Set([...(c.requiredEnvVars ?? []), ...(c.optionalEnvVars ?? [])]),
-    ];
+    // De-dupe and keep declared order.
+    manifest[mode][c.name] = [...new Set(c.requiredEnvVars ?? [])];
   }
 }
 

@@ -73,8 +73,12 @@ export const providers: AIGatewayProviderConfig[] = [
     // Direct Anthropic passthrough (not routed through another gateway), so
     // this measures Cloudflare's own overhead in isolation.
     name: 'cloudflare-ai-gateway',
-    requiredEnvVars: ['CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID', 'CLOUDFLARE_AI_GATEWAY_GATEWAY_ID', 'ANTHROPIC_API_KEY'],
-    optionalEnvVars: ['CLOUDFLARE_AI_GATEWAY_TOKEN'],
+    requiredEnvVars: [
+      'CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID',
+      'CLOUDFLARE_AI_GATEWAY_GATEWAY_ID',
+      'CLOUDFLARE_AI_GATEWAY_TOKEN',
+      'ANTHROPIC_API_KEY',
+    ],
     wireFormat: 'anthropic',
     model: 'claude-haiku-4-5-20251001',
     host: 'gateway.ai.cloudflare.com',
