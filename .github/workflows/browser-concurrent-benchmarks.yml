@@ -170,7 +170,8 @@ jobs:
           npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/browser/browser-concurrent.bench.ts \
             --provider ${{ matrix.provider }} \
             --levels "$LEVELS" \
-            --run-key "$RUN_KEY"
+            --run-key "$RUN_KEY" \
+            ${{ github.event_name == 'push' && '--no-ingest' || '' }}
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4

@@ -65,11 +65,18 @@ export interface CliArgs {
   groupBy?: GroupBy;
   /** Participant names from `--provider a,b` (repeatable). */
   providers?: string[];
+  /** When true, run locally and do not ingest/report to the platform. */
+  noIngest?: boolean;
 }
 
 // Matches @benchsdk/client's DEFAULT_BASE_URL origin. `resolvePlatform()`
 // appends `/api/v1`. Override for local development via BENCHMARKS_PLATFORM_URL.
 const DEFAULT_PLATFORM_URL = 'https://platform.computesdk.com';
+
+function isEnvNoIngest(): boolean {
+  const v = process.env.BENCHSDK_NO_INGEST;
+  return v === '1' || v?.toLowerCase() === 'true';
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -251,11 +258,18 @@ export function parseCliArgs(argv: string[]): CliArgs {
         i = nextIndex;
         break;
       }
+      case '--no-ingest':
+      case '--dry-run':
+        args.noIngest = true;
+        break;
       default:
         break;
     }
   }
 
+  if (!args.noIngest && isEnvNoIngest()) {
+    args.noIngest = true;
+  }
   return args;
 }
 
@@ -417,13 +431,19 @@ export async function runBenchmark<T extends BaseParticipant>(
   argv: string[] = [],
 ): Promise<BenchmarkRunOutcome> {
   const args = parseCliArgs(argv);
+  const noIngest = args.noIngest ?? isEnvNoIngest();
   const shaped = applyShape(fileConfig, resolveShape(fileConfig, args.shape));
   const config = applyIdentityOverrides(shaped, args);
   const resolved = mergeConfig(config, args);
   const available = resolveParticipants(config, resolved);
 
-  const { baseUrl, apiKey } = resolvePlatform();
-  const client = createBenchmarkClient({ baseUrl, apiKey });
+  let baseUrl = '';
+  let apiKey = '';
+  let client: BenchmarkClient | null = null;
+  if (!noIngest) {
+    ({ baseUrl, apiKey } = resolvePlatform());
+    client = createBenchmarkClient({ baseUrl, apiKey });
+  }
 
   const schedule = buildSchedule(config, resolved.iterations, task);
   const totalTasks = schedule.length;
@@ -431,6 +451,9 @@ export async function runBenchmark<T extends BaseParticipant>(
   const concurrencyLabel = resolved.groupBy === 'round' ? 'n/a (round mode)' : String(resolved.concurrency);
   console.log(`${config.benchmarkName} (self-contained)`);
   console.log(`Date: ${new Date().toISOString()}`);
+  if (noIngest) {
+    console.log('Dry run: no platform ingest or reporting.\n');
+  }
   console.log(
     `Knobs: iterations=${totalTasks}, concurrency=${concurrencyLabel}, ` +
       `staggerDelayMs=${resolved.staggerDelayMs}, groupBy=${resolved.groupBy}\n`,
@@ -445,58 +468,64 @@ export async function runBenchmark<T extends BaseParticipant>(
     args.name !== undefined ||
     !args.benchmark ||
     args.benchmark === fileConfig.benchmarkSlug;
-  if (identityIsOurs) {
-    await client.upsertBenchmark(config.benchmarkSlug, {
-      name: config.benchmarkName,
-    });
-  }
 
   let runId: string;
   let dashboardUrl: string;
-  if (args.runKey) {
-    // Shared run: get-or-created by key, so sibling processes (one per provider)
-    // converge on one run. Opened participant-sized — register only the
-    // providers this process runs and let each sibling register its own, so the
-    // run lists exactly who's benchmarked and each brings its own task count.
-    const { run, organizationSlug } = await client.createRun(config.benchmarkSlug, {
-      runKey: args.runKey,
-    });
-    runId = run.id;
-    dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
-    for (const participant of available) {
-      await client.upsertParticipant(config.benchmarkSlug, runId, participant.name, { totalTasks });
-    }
-    console.log(`Shared run (key "${args.runKey}"): ${run.name} (${runId})`);
-    console.log(`View at: ${dashboardUrl}\n`);
+  if (noIngest) {
+    runId = 'no-ingest';
+    dashboardUrl = '';
   } else {
-    const { run, organizationSlug } = await client.createRun(config.benchmarkSlug, {
-      totalTasks,
-      workerCount: 1,
-      participants: available.map((p) => p.name),
-    });
-    runId = run.id;
-    dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
-    console.log(`Run created: ${run.name} (${runId})`);
-    console.log(`View at: ${dashboardUrl}\n`);
+    if (identityIsOurs) {
+      await client!.upsertBenchmark(config.benchmarkSlug, {
+        name: config.benchmarkName,
+      });
+    }
+
+    if (args.runKey) {
+      // Shared run: get-or-created by key, so sibling processes (one per provider)
+      // converge on one run. Opened participant-sized — register only the
+      // providers this process runs and let each sibling register its own, so the
+      // run lists exactly who's benchmarked and each brings its own task count.
+      const { run, organizationSlug } = await client!.createRun(config.benchmarkSlug, {
+        runKey: args.runKey,
+      });
+      runId = run.id;
+      dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
+      for (const participant of available) {
+        await client!.upsertParticipant(config.benchmarkSlug, runId, participant.name, { totalTasks });
+      }
+      console.log(`Shared run (key "${args.runKey}"): ${run.name} (${runId})`);
+      console.log(`View at: ${dashboardUrl}\n`);
+    } else {
+      const { run, organizationSlug } = await client!.createRun(config.benchmarkSlug, {
+        totalTasks,
+        workerCount: 1,
+        participants: available.map((p) => p.name),
+      });
+      runId = run.id;
+      dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
+      console.log(`Run created: ${run.name} (${runId})`);
+      console.log(`View at: ${dashboardUrl}\n`);
+    }
   }
 
   const onResult = defaultOnResult;
 
   let participantRecords: ParticipantRecords[];
   if (resolved.groupBy === 'round') {
-    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, runId, baseUrl, apiKey, onResult);
+    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, runId, baseUrl, apiKey, onResult, noIngest);
   } else {
     participantRecords = await runGroupedByParticipant(config, schedule, available, resolved, client, runId, onResult);
   }
 
-  console.log(`All done. View at: ${dashboardUrl}`);
+  console.log(`All done. ${noIngest ? 'No platform run created.' : `View at: ${dashboardUrl}`}`);
   const outcome: BenchmarkRunOutcome = {
     runId,
     dashboardUrl,
     participants: participantRecords,
     config: resolved,
   };
-  if (config.onScore) {
+  if (client && config.onScore) {
     try {
       const spec = await config.onScore(lowerIsBetter, higherIsBetter);
       const scored = score(outcome, spec);
@@ -549,7 +578,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
   schedule: Slot<T>[],
   available: T[],
   resolved: ResolvedRunConfig,
-  client: BenchmarkClient,
+  client: BenchmarkClient | null,
   runId: string,
   onResult: OnResult,
 ): Promise<ParticipantRecords[]> {
@@ -558,6 +587,41 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
     console.log(`${'='.repeat(70)}`);
     console.log(`  Participant: ${participant.name}`);
     console.log('='.repeat(70));
+
+    // When running without platform ingest, execute the schedule locally.
+    if (!client) {
+      const records: TaskResultRecord[] = [];
+      let rampStartMs: number | undefined;
+      let nextIndex = 0;
+      const logBuffer = new LogBuffer();
+
+      const runSlot = async (scheduleIndex: number) => {
+        if (resolved.staggerDelayMs > 0) {
+          rampStartMs ??= Date.now();
+          const waitMs = rampStartMs + scheduleIndex * resolved.staggerDelayMs - Date.now();
+          if (waitMs > 0) await sleep(waitMs);
+        }
+        const slot = schedule[scheduleIndex];
+        const record = await runTaskRecord(slot.task, participant, scheduleIndex, scheduleIndex, slot.phase, logBuffer);
+        onResult(record, { iterations: schedule.length, participant: participant.name });
+        records.push(record);
+      };
+
+      const worker = async () => {
+        while (nextIndex < schedule.length) {
+          const index = nextIndex++;
+          await runSlot(index);
+        }
+      };
+
+      await Promise.all(Array.from({ length: resolved.concurrency }, () => worker()));
+      records.sort((a, b) => a.taskIndex - b.taskIndex);
+
+      const ok = records.filter((r) => r.status === 'success').length;
+      console.log(`  Done: ${ok}/${records.length} succeeded.\n`);
+      participantRecords.push({ participant: participant.name, records });
+      continue;
+    }
 
     // Anchors the ramp to the worker's start, so a pool narrower than the task
     // count can't inflate launch offsets: a task whose slot frees after its
@@ -623,11 +687,12 @@ async function runGroupedByRound<T extends BaseParticipant>(
   schedule: Slot<T>[],
   available: T[],
   resolved: ResolvedRunConfig,
-  client: BenchmarkClient,
+  client: BenchmarkClient | null,
   runId: string,
   baseUrl: string,
   apiKey: string,
   onResult: OnResult,
+  noIngest: boolean = false,
 ): Promise<ParticipantRecords[]> {
   const reporters = new Map<string, BenchmarkReporter | null>();
   const logBuffers = new Map<string, LogBuffer>();
@@ -637,6 +702,10 @@ async function runGroupedByRound<T extends BaseParticipant>(
   for (const participant of available) {
     logBuffers.set(participant.name, new LogBuffer());
     failed.set(participant.name, false);
+    if (noIngest || !client) {
+      reporters.set(participant.name, null);
+      continue;
+    }
     // One worker per participant drives every round sequentially. The platform
     // reads `targetConcurrency` as tasks-per-worker, so it must be the full
     // schedule length — otherwise only one task is planned and every record
