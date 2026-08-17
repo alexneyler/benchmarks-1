@@ -147,13 +147,13 @@ export const config = defineBenchmarkConfig({
       lowerIsBetter('coldE2eMs', {
         unit: 'ms',
         ceiling: 20000,
-        value: (record) => ((record.data?.phase as string | undefined) === 'cold' && typeof record.latencyMs === 'number' ? record.latencyMs : undefined),
+        value: (record) => ((record.data?.mode as string | undefined) === 'cold' && typeof record.latencyMs === 'number' ? record.latencyMs : undefined),
         weights: { median: 0.30, p95: 0.15, p99: 0 },
       }),
       lowerIsBetter('warmTtftMs', {
         unit: 'ms',
         ceiling: 20000,
-        value: (record) => ((record.data?.phase as string | undefined) === 'warm' && typeof record.latencyMs === 'number' ? record.latencyMs : undefined),
+        value: (record) => ((record.data?.mode as string | undefined) === 'warm' && typeof record.latencyMs === 'number' ? record.latencyMs : undefined),
         weights: { median: 0.30, p95: 0.15, p99: 0 },
       }),
       higherIsBetter('outputTokensPerSec', {
