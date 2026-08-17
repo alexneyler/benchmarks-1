@@ -1,8 +1,8 @@
 /**
  * Generate benchmarks/scripts/provider-vars.json: the authoritative map of
  * which env vars each provider benchmark needs, read straight from the
- * `requiredEnvVars` field on every provider config (the single source of
- * truth in benchmarks/{mode}/providers.ts).
+ * `requiredEnvVars` field on every provider config (the single source of truth
+ * in benchmarks/{mode}/providers.ts).
  *
  * Each workflow's Load+Run step grep's this manifest by env-var name to keep
  * the per-job envdef (and thus the secrets the runner requests) scoped to
