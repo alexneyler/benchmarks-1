@@ -36,8 +36,8 @@ const timeout = 600_000;
 const destroyTimeoutMs = 15_000;
 
 export const config = defineBenchmarkConfig({
-  benchmarkSlug: 'sandbox-dax',
-  benchmarkName: 'Sandbox Dax',
+  benchmarkSlug: `sandbox-dax${process.env.DAILY_BENCH_SLUG ?? ''}`,
+  benchmarkName: `Sandbox Dax${process.env.DAILY_BENCH_NAME ?? ''}`,
   iterations: 3,
   concurrency: 1,
   groupBy: 'round',

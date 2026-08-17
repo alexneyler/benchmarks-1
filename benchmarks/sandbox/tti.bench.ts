@@ -34,8 +34,8 @@ const COMMAND_TIMEOUT_MS = 30_000;
 const DESTROY_TIMEOUT_MS = 15_000;
 
 export const config = defineBenchmarkConfig({
-  benchmarkSlug: 'sandbox-tti',
-  benchmarkName: 'Sandbox TTI (Burst)',
+  benchmarkSlug: `sandbox-tti${process.env.DAILY_BENCH_SLUG ?? ''}`,
+  benchmarkName: `Sandbox TTI (Burst)${process.env.DAILY_BENCH_NAME ?? ''}`,
   iterations: 2,
   concurrency: 1,
   participants: providers,
