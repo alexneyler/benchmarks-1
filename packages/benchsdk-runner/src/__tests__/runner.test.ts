@@ -95,6 +95,21 @@ describe('parseCliArgs', () => {
   it('returns empty object for no args', () => {
     expect(parseCliArgs([])).toEqual({});
   });
+
+  it('parses --no-ingest and --dry-run', () => {
+    expect(parseCliArgs(['--no-ingest'])).toEqual({ noIngest: true });
+    expect(parseCliArgs(['--dry-run'])).toEqual({ noIngest: true });
+  });
+
+  it('honors BENCHSDK_NO_INGEST=1', () => {
+    process.env.BENCHSDK_NO_INGEST = '1';
+    try {
+      expect(parseCliArgs([])).toEqual({ noIngest: true });
+      expect(parseCliArgs(['--iterations', '5'])).toEqual({ noIngest: true, iterations: 5 });
+    } finally {
+      delete process.env.BENCHSDK_NO_INGEST;
+    }
+  });
 });
 
 describe('mergeConfig', () => {
@@ -225,6 +240,7 @@ describe('runBenchmark', () => {
     delete process.env.E2B_API_KEY;
     delete process.env.MODAL_TOKEN;
     delete process.env.BENCHMARKS_PLATFORM_API_KEY;
+    delete process.env.BENCHSDK_NO_INGEST;
   });
 
   it('drives upsert -> createRun -> planWorkers/runWorker per available participant', async () => {
@@ -933,6 +949,71 @@ describe('runBenchmark', () => {
       expect(task).toHaveBeenCalled();
       const stepOptions = (outcome.participants[0].records[0] as any).steps?.[0]?.options;
       expect(stepOptions).toMatchObject({ timeoutMs: 1000, stepConcurrency: 3 });
+    });
+  });
+
+  describe('no-ingest mode', () => {
+    it('skips all platform calls in participant mode', async () => {
+      const task = vi.fn(async () => ({ data: { ok: true } }));
+      const config: BenchmarkConfig<typeof participants[number]> = {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        iterations: 3,
+        concurrency: 2,
+        participants: [participants[0]],
+      };
+
+      const outcome = await runBenchmark(config, defineTask(task), ['--no-ingest']);
+
+      expect(createBenchmarkClient).not.toHaveBeenCalled();
+      expect(fakeClient.upsertBenchmark).not.toHaveBeenCalled();
+      expect(fakeClient.createRun).not.toHaveBeenCalled();
+      expect(fakeClient.runWorker).not.toHaveBeenCalled();
+      expect(fakeClient.submitRunSummary).not.toHaveBeenCalled();
+      expect(outcome.runId).toBe('no-ingest');
+      expect(outcome.dashboardUrl).toBe('');
+      expect(outcome.participants).toHaveLength(1);
+      expect(outcome.participants[0].records).toHaveLength(3);
+      expect(outcome.participants[0].records.every((r) => r.status === 'success')).toBe(true);
+    });
+
+    it('skips all platform calls in round mode', async () => {
+      const task = vi.fn(async () => ({ data: { ok: true } }));
+      const config: BenchmarkConfig<typeof participants[number]> = {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        iterations: 2,
+        groupBy: 'round',
+        participants: [participants[0]],
+      };
+
+      const outcome = await runBenchmark(config, defineTask(task), ['--no-ingest']);
+
+      expect(createBenchmarkClient).not.toHaveBeenCalled();
+      expect(fakeClient.upsertBenchmark).not.toHaveBeenCalled();
+      expect(fakeClient.createRun).not.toHaveBeenCalled();
+      expect(fakeClient.planWorkers).not.toHaveBeenCalled();
+      expect(reporterClaim).not.toHaveBeenCalled();
+      expect(fakeClient.submitRunSummary).not.toHaveBeenCalled();
+      expect(outcome.runId).toBe('no-ingest');
+      expect(outcome.participants[0].records).toHaveLength(2);
+    });
+
+    it('honors BENCHSDK_NO_INGEST=1 without a CLI flag', async () => {
+      process.env.BENCHSDK_NO_INGEST = '1';
+      const task = vi.fn(async () => ({}));
+      const config: BenchmarkConfig<typeof participants[number]> = {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        iterations: 2,
+        participants: [participants[0]],
+      };
+
+      const outcome = await runBenchmark(config, defineTask(task), []);
+
+      expect(createBenchmarkClient).not.toHaveBeenCalled();
+      expect(fakeClient.createRun).not.toHaveBeenCalled();
+      expect(outcome.runId).toBe('no-ingest');
     });
   });
 });

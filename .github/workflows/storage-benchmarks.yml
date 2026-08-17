@@ -32,7 +32,7 @@ on:
           - 10MB
           - 16MB
       dry_run:
-        description: 'Run without committing results'
+        description: 'Run without ingesting or committing results'
         required: false
         default: false
         type: boolean
@@ -97,7 +97,8 @@ jobs:
             --file-size $FILE_SIZE \
             --concurrency ${{ (github.event_name == 'schedule' && '16') || (github.event_name == 'push' && '8') || github.event.inputs.storage_concurrency || '1' }} \
             --iterations ${{ (github.event_name == 'schedule' && '110') || (github.event_name == 'push' && '10') || github.event.inputs.iterations || '100' }} \
-            --run-key "$RUN_KEY"
+            --run-key "$RUN_KEY" \
+            ${{ (github.event_name == 'push' || github.event.inputs.dry_run == 'true') && '--no-ingest' || '' }}
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4

@@ -32,7 +32,7 @@ on:
           - concentrate-ai-gateway
           - anthropic-direct
       dry_run:
-        description: 'Run without committing results'
+        description: 'Run without ingesting or committing results'
         required: false
         default: false
         type: boolean
@@ -87,7 +87,8 @@ jobs:
             PROVIDER_FLAG="--provider ${{ github.event.inputs.provider }}"
           fi
           npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts $PROVIDER_FLAG \
-            --iterations ${{ (github.event_name == 'push' && '10') || github.event.inputs.iterations || '10' }}
+            --iterations ${{ (github.event_name == 'push' && '10') || github.event.inputs.iterations || '10' }} \
+            ${{ (github.event_name == 'push' || github.event.inputs.dry_run == 'true') && '--no-ingest' || '' }}
       - run: pnpm run generate-ai-gateway-svg
       - name: Upload results and SVG as artifacts
         if: always()
