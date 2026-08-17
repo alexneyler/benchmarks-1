@@ -25,7 +25,7 @@ on:
         required: false
         default: ''
       dry_run:
-        description: 'Run without committing results'
+        description: 'Run without ingesting or committing results'
         required: false
         default: false
         type: boolean
@@ -126,7 +126,7 @@ jobs:
             --iterations ${{ github.event.inputs.iterations || (github.event_name == 'push' && '10') || '100' }} \
             --run-key "$RUN_KEY" \
             --concurrency ${{ github.event.inputs.concurrency || (github.event_name == 'push' && '10') || '100' }} \
-            ${{ github.event_name == 'push' && '--no-ingest' || '' }}
+            ${{ (github.event_name == 'push' || github.event.inputs.dry_run == 'true') && '--no-ingest' || '' }}
       - name: Upload results
         if: always() && env.SHOULD_RUN == 'true'
         uses: actions/upload-artifact@v4

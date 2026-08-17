@@ -171,7 +171,7 @@ jobs:
             --provider ${{ matrix.provider }} \
             --levels "$LEVELS" \
             --run-key "$RUN_KEY" \
-            ${{ github.event_name == 'push' && '--no-ingest' || '' }}
+            ${{ (github.event_name == 'push' || github.event.inputs.dry_run == 'true') && '--no-ingest' || '' }}
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
