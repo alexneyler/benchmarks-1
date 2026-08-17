@@ -137,8 +137,8 @@ if (phases.length === 0) {
 }
 
 export const config = defineBenchmarkConfig({
-  benchmarkSlug: `ai-gateway-latency${process.env.DAILY_BENCH_SLUG ?? ''}`,
-  benchmarkName: `AI Gateway Latency${process.env.DAILY_BENCH_NAME ?? ''}`,
+  benchmarkSlug: `ai-gateway-latency${process.env.DAILY_BENCH_SLUG ? `-${process.env.DAILY_BENCH_SLUG}` : ''}`,
+  benchmarkName: `AI Gateway Latency${process.env.DAILY_BENCH_NAME ? ` - ${process.env.DAILY_BENCH_NAME}` : ''}`,
   phases,
   groupBy: 'round',
   participants: providers,
