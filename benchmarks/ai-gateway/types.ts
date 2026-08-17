@@ -5,6 +5,11 @@ export interface AIGatewayProviderConfig {
   name: string;
   /** Environment variables that must all be set to run this benchmark */
   requiredEnvVars: string[];
+  /**
+   * Optional environment variables that the provider will use when present
+   * (e.g. an authenticated gateway token). Loaded into CI but not required.
+   */
+  optionalEnvVars?: string[];
   /** Request/response wire format this gateway speaks */
   wireFormat: AIGatewayWireFormat;
   /** Model id to request, in this gateway's own catalog naming convention */
