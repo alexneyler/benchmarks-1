@@ -27,7 +27,7 @@ on:
       iterations:
         description: 'Cold + warm iterations per gateway'
         required: false
-        default: '20'
+        default: '30'
       provider:
         description: 'Gateway to run (leave empty for that family''s full roster, round-robin). Provider slugs are family-specific (e.g. anthropic-direct vs. openai-direct) — only meaningful when Family above is set to one specific family, not All.'
         required: false
