@@ -478,6 +478,7 @@ export async function runBenchmark<T extends BaseParticipant>(
     if (identityIsOurs) {
       await client!.upsertBenchmark(config.benchmarkSlug, {
         name: config.benchmarkName,
+        ...(config.display ? { config: { display: config.display as unknown as JsonObject } } : {}),
       });
     }
 
