@@ -67,25 +67,25 @@ jobs:
           - slug: anthropic
             label: Anthropic
             benchScript: benchmarks/ai-gateway/ai-gateway.bench.ts
-            resultsDir: ai-gateway
+            resultsDir: ai-gateway-latency/anthropic
             svgScript: generate-ai-gateway-svg
             svgFile: ai-gateway.svg
           - slug: openai
             label: OpenAI
             benchScript: benchmarks/ai-gateway/ai-gateway-openai.bench.ts
-            resultsDir: ai-gateway-openai
+            resultsDir: ai-gateway-latency/openai
             svgScript: generate-ai-gateway-openai-svg
             svgFile: ai-gateway-openai.svg
           - slug: gemini
             label: Gemini
             benchScript: benchmarks/ai-gateway/ai-gateway-gemini.bench.ts
-            resultsDir: ai-gateway-gemini
+            resultsDir: ai-gateway-latency/gemini
             svgScript: generate-ai-gateway-gemini-svg
             svgFile: ai-gateway-gemini.svg
           - slug: kimi
             label: Kimi
             benchScript: benchmarks/ai-gateway/ai-gateway-kimi.bench.ts
-            resultsDir: ai-gateway-kimi
+            resultsDir: ai-gateway-latency/kimi
             svgScript: generate-ai-gateway-kimi-svg
             svgFile: ai-gateway-kimi.svg
     # Manual runs can scope to one family via the `family` input; push/schedule

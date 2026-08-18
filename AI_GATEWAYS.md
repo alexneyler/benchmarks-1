@@ -77,7 +77,7 @@ A gateway that's itself proxied through a second gateway would have that second 
 
 ## OpenAI family benchmark
 
-`ai-gateway-openai.bench.ts` + `providers-openai.ts` run the same harness (same task, phases, prompt, scoring, request configuration — see `shared-task.ts`) with every participant routed to OpenAI's `gpt-4.1-mini` instead of Anthropic's Claude Haiku 4.5. It has its own no-gateway `openai-direct` control (OpenAI's own Responses API, `/v1/responses`) and its own results directory (`results/ai-gateway-openai/`) — see [Running it](#running-it).
+`ai-gateway-openai.bench.ts` + `providers-openai.ts` run the same harness (same task, phases, prompt, scoring, request configuration — see `shared-task.ts`) with every participant routed to OpenAI's `gpt-4.1-mini` instead of Anthropic's Claude Haiku 4.5. It has its own no-gateway `openai-direct` control (OpenAI's own Responses API, `/v1/responses`) and its own results directory (`results/ai-gateway-latency/openai/`) — see [Running it](#running-it).
 
 **Every participant in this family uses the OpenAI Responses API**, not Chat Completions — deliberately, not incidentally. The policy: use a gateway's Responses passthrough if it has one (Responses is OpenAI's own format, so proxying it natively adds no translation layer — the same reasoning that picked `/v1/messages` over the OpenAI-compatible route for the Anthropic family's Cloudflare/Pydantic/LLM Gateway/Vercel entries), fall back to Chat Completions only where no Responses route is documented. Every gateway checked here turned out to have one, so the fallback case never actually triggers in this family — worth revisiting this table if a future gateway addition doesn't have a Responses route.
 
@@ -98,7 +98,7 @@ Full rationale for each entry lives in `providers-openai.ts`'s per-provider comm
 
 ## Gemini family benchmark
 
-`ai-gateway-gemini.bench.ts` + `providers-gemini.ts` run the same harness (same task, phases, prompt, scoring, request configuration — see `shared-task.ts`) with participants routed to Google's `gemini-3.6-flash` instead of Anthropic's Claude Haiku 4.5. It has its own no-gateway `gemini-direct` control (Google's native `streamGenerateContent` endpoint) and its own results directory (`results/ai-gateway-gemini/`) — see [Running it](#running-it).
+`ai-gateway-gemini.bench.ts` + `providers-gemini.ts` run the same harness (same task, phases, prompt, scoring, request configuration — see `shared-task.ts`) with participants routed to Google's `gemini-3.6-flash` instead of Anthropic's Claude Haiku 4.5. It has its own no-gateway `gemini-direct` control (Google's native `streamGenerateContent` endpoint) and its own results directory (`results/ai-gateway-latency/gemini/`) — see [Running it](#running-it).
 
 **Only one gateway here gets the native `wireFormat: 'gemini'` treatment: Cloudflare AI Gateway.** Unlike the OpenAI family, where every gateway turned out to have a native Responses passthrough, none of OpenRouter, Vercel AI Gateway, LLM Gateway, or Concentrate AI show any documented native Gemini passthrough (in contrast to their confirmed native Anthropic Messages / OpenAI Responses routes used elsewhere in this repo) — each is built around one normalized endpoint across its whole catalog instead. Those four route through that OpenAI-compatible `/chat/completions` surface, translating Gemini's real response into that shape; this is a genuine translation layer, not a shortcut — the least-translated option actually available for those gateways.
 
@@ -118,7 +118,7 @@ Full rationale for each entry lives in `providers-gemini.ts`'s per-provider comm
 
 ## Kimi family benchmark
 
-`ai-gateway-kimi.bench.ts` + `providers-kimi.ts` run the same task, phases, and scoring as the other families, with participants routed to Moonshot's `kimi-k3` instead of Anthropic's Claude Haiku 4.5. It has its own no-gateway `kimi-direct` control and its own results directory (`results/ai-gateway-kimi/`) — see [Running it](#running-it). `kimi-k3` is Moonshot's only current flagship model (no fast/lite tier as of this writing) and runs with reasoning locked to "always on," which — confirmed live — forces real request-configuration and measurement exceptions on top of the model swap:
+`ai-gateway-kimi.bench.ts` + `providers-kimi.ts` run the same task, phases, and scoring as the other families, with participants routed to Moonshot's `kimi-k3` instead of Anthropic's Claude Haiku 4.5. It has its own no-gateway `kimi-direct` control and its own results directory (`results/ai-gateway-latency/kimi/`) — see [Running it](#running-it). `kimi-k3` is Moonshot's only current flagship model (no fast/lite tier as of this writing) and runs with reasoning locked to "always on," which — confirmed live — forces real request-configuration and measurement exceptions on top of the model swap:
 
 - **`temperature` is omitted entirely**, not set to 0: `kimi-k3` rejects any value except 1 outright (`"invalid temperature: only 1 is allowed for this model"`), confirmed against Moonshot's own API directly.
 - **`max_tokens: 2000`, not 200**: reasoning tokens count against this budget. One live test consumed 688 of 802 total completion tokens on reasoning alone; at 200, the entire budget was exhausted by reasoning with zero visible output (`finish_reason: "length"`, no content deltas at all).
@@ -249,7 +249,7 @@ Required environment variables (`benchmarks/.env.example`): `OPENROUTER_API_KEY`
 
 ## Output
 
-Each family writes to its own results directory: the Anthropic family to `results/ai-gateway/YYYY-MM-DD.json` (copied to `results/ai-gateway/latest.json`), the OpenAI family to `results/ai-gateway-openai/...`, the Gemini family to `results/ai-gateway-gemini/...`, the Kimi family to `results/ai-gateway-kimi/...`. Every iteration's phase timings, token counts, resolved provider (for OpenRouter/Vercel AI Gateway, see above), and receipt headers are preserved in full — enough to trace any specific measured request back to its provider-side request ID.
+Each family writes to its own results directory under `results/ai-gateway-latency/`: the Anthropic family to `results/ai-gateway-latency/anthropic/YYYY-MM-DD.json` (copied to `results/ai-gateway-latency/anthropic/latest.json`), the OpenAI family to `results/ai-gateway-latency/openai/...`, the Gemini family to `results/ai-gateway-latency/gemini/...`, the Kimi family to `results/ai-gateway-latency/kimi/...`. Every iteration's phase timings, token counts, resolved provider (for OpenRouter/Vercel AI Gateway, see above), and receipt headers are preserved in full — enough to trace any specific measured request back to its provider-side request ID.
 
 ```bash
 pnpm run generate-ai-gateway-svg          # Anthropic family -> ai-gateway.svg
