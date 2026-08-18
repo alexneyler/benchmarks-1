@@ -33,8 +33,8 @@ import { providers } from './providers-kimi.js';
 import { buildAIGatewayFamily } from './task.js';
 
 export const { config, task } = buildAIGatewayFamily({
-  benchmarkSlug: 'ai-gateway-kimi',
-  benchmarkName: 'AI Gateway Benchmark — Kimi',
+  benchmarkSlug: 'ai-gateway-latency-kimi',
+  benchmarkName: 'AI Gateway Latency - Kimi',
   providers,
   resultsDirName: 'ai-gateway-kimi',
   maxTokens: 2000,

@@ -15,8 +15,8 @@ import { providers } from './providers-openai.js';
 import { buildAIGatewayFamily } from './task.js';
 
 export const { config, task } = buildAIGatewayFamily({
-  benchmarkSlug: 'ai-gateway-openai',
-  benchmarkName: 'AI Gateway Benchmark — OpenAI',
+  benchmarkSlug: 'ai-gateway-latency-openai',
+  benchmarkName: 'AI Gateway Latency - OpenAI',
   providers,
   resultsDirName: 'ai-gateway-openai',
 });

@@ -13,24 +13,25 @@ on:
     - cron: '0 6 * * 5' # Weekly on Friday at 6am UTC
   workflow_dispatch:
     inputs:
+      family:
+        description: 'Family to run (leave as All for every target-model family)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - anthropic
+          - openai
+          - gemini
+          - kimi
       iterations:
         description: 'Cold + warm iterations per gateway'
         required: false
         default: '20'
       provider:
-        description: 'Gateway to run (leave empty for all seven, round-robin)'
+        description: 'Gateway to run (leave empty for that family''s full roster, round-robin). Provider slugs are family-specific (e.g. anthropic-direct vs. openai-direct) — only meaningful when Family above is set to one specific family, not All.'
         required: false
         default: ''
-        type: choice
-        options:
-          - ''
-          - openrouter
-          - vercel-ai-gateway
-          - cloudflare-ai-gateway
-          - llmgateway
-          - pydantic-ai-gateway
-          - concentrate-ai-gateway
-          - anthropic-direct
       dry_run:
         description: 'Run without ingesting or committing results'
         required: false
@@ -47,13 +48,48 @@ permissions:
 
 jobs:
   bench:
-    name: AI Gateway Benchmark
+    name: AI Gateway Benchmark (${{ matrix.family.slug }})
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
-    # Deliberately a single job, not a matrix-per-provider like the other
-    # benchmark workflows: the round-robin methodology (see AI_GATEWAYS.md)
-    # requires every gateway to run interleaved within the same process.
-    # Splitting gateways into separate matrix jobs would silently degrade
-    # "round-robin" into plain per-gateway iteration, defeating the point.
+    # Matrixed by *family* (target model), not by gateway provider — each leg
+    # below still runs as a single job internally. The round-robin methodology
+    # (see AI_GATEWAYS.md) requires every gateway within one family to run
+    # interleaved in the same process; splitting gateways into their own matrix
+    # jobs would silently degrade "round-robin" into plain per-gateway
+    # iteration, defeating the point. Splitting by family is unrelated to that
+    # constraint — each family already round-robins its own roster
+    # independently, so four parallel single-family legs are exactly as fair
+    # as four sequential ones, just faster.
+    strategy:
+      fail-fast: false
+      matrix:
+        family:
+          - slug: anthropic
+            label: Anthropic
+            benchScript: benchmarks/ai-gateway/ai-gateway.bench.ts
+            resultsDir: ai-gateway
+            svgScript: generate-ai-gateway-svg
+            svgFile: ai-gateway.svg
+          - slug: openai
+            label: OpenAI
+            benchScript: benchmarks/ai-gateway/ai-gateway-openai.bench.ts
+            resultsDir: ai-gateway-openai
+            svgScript: generate-ai-gateway-openai-svg
+            svgFile: ai-gateway-openai.svg
+          - slug: gemini
+            label: Gemini
+            benchScript: benchmarks/ai-gateway/ai-gateway-gemini.bench.ts
+            resultsDir: ai-gateway-gemini
+            svgScript: generate-ai-gateway-gemini-svg
+            svgFile: ai-gateway-gemini.svg
+          - slug: kimi
+            label: Kimi
+            benchScript: benchmarks/ai-gateway/ai-gateway-kimi.bench.ts
+            resultsDir: ai-gateway-kimi
+            svgScript: generate-ai-gateway-kimi-svg
+            svgFile: ai-gateway-kimi.svg
+    # Manual runs can scope to one family via the `family` input; push/schedule
+    # triggers always run all four.
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.family == 'all' || github.event.inputs.family == '' || github.event.inputs.family == matrix.family.slug
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -73,27 +109,27 @@ jobs:
             pnpm install --frozen-lockfile
           fi
       - name: Run AI gateway benchmark
-        # Single job (no matrix); the round-robin methodology (see AI_GATEWAYS.md)
-        # tests every gateway inside one process, so we load the union of all
-        # ai-gateway providers' vars — not every mode's vars.
+        # Union of every family's vars is loaded regardless of which family
+        # this leg runs — harmless (each family's script only reads its own),
+        # and keeps this step identical across matrix legs.
         run: |
-          . benchmarks/scripts/load-vault-secrets.sh '^(ANTHROPIC_API_KEY|CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID|CLOUDFLARE_AI_GATEWAY_GATEWAY_ID|CLOUDFLARE_AI_GATEWAY_TOKEN|LLM_GATEWAY_API_KEY|OPENROUTER_API_KEY|PYDANTIC_AI_GATEWAY_API_KEY|VERCEL_AI_GATEWAY_API_KEY|CONCENTRATE_AI_GATEWAY_API_KEY|COMPUTESDK_ADMIN_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
+          . benchmarks/scripts/load-vault-secrets.sh '^(ANTHROPIC_API_KEY|OPENAI_API_KEY|GEMINI_API_KEY|KIMI_API_KEY|CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID|CLOUDFLARE_AI_GATEWAY_GATEWAY_ID|CLOUDFLARE_AI_GATEWAY_TOKEN|LLM_GATEWAY_API_KEY|OPENROUTER_API_KEY|PYDANTIC_AI_GATEWAY_API_KEY|VERCEL_AI_GATEWAY_API_KEY|CONCENTRATE_AI_GATEWAY_API_KEY|COMPUTESDK_ADMIN_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
 
           PROVIDER_FLAG=""
           if [ -n "${{ github.event.inputs.provider }}" ]; then
             PROVIDER_FLAG="--provider ${{ github.event.inputs.provider }}"
           fi
-          npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts $PROVIDER_FLAG \
+          npx tsx packages/benchsdk-runner/dist/bin.js run ${{ matrix.family.benchScript }} $PROVIDER_FLAG \
             --iterations ${{ (github.event_name == 'push' && '10') || github.event.inputs.iterations || '10' }}
-      - run: pnpm run generate-ai-gateway-svg
+      - run: pnpm run ${{ matrix.family.svgScript }}
       - name: Upload results and SVG as artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ai-gateway-results
+          name: ai-gateway-results-${{ matrix.family.slug }}
           path: |
-            results/ai-gateway/
-            ai-gateway.svg
+            results/${{ matrix.family.resultsDir }}/
+            ${{ matrix.family.svgFile }}
           if-no-files-found: ignore
           retention-days: 7
       - name: Post results to merged PR
@@ -105,9 +141,11 @@ jobs:
             const fs = require('fs');
             const path = require('path');
 
+            const familyLabel = '${{ matrix.family.label }}';
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const latestPath = path.join('results', 'ai-gateway', 'latest.json');
-            let body = '## AI Gateway Benchmark Results\n\n';
+            const latestPath = path.join('results', '${{ matrix.family.resultsDir }}', 'latest.json');
+            const marker = `## AI Gateway Benchmark Results — ${familyLabel}`;
+            let body = `${marker}\n\n`;
             let hasResults = false;
 
             const nameFor = {
@@ -118,6 +156,9 @@ jobs:
               'pydantic-ai-gateway': 'Pydantic AI Gateway',
               'concentrate-ai-gateway': 'Concentrate AI',
               'anthropic-direct': 'Anthropic (direct)',
+              'openai-direct': 'OpenAI (direct)',
+              'gemini-direct': 'Gemini (direct)',
+              'kimi-direct': 'Kimi (direct)',
             };
 
             if (fs.existsSync(latestPath)) {
@@ -175,7 +216,10 @@ jobs:
               return;
             }
 
-            const marker = '## AI Gateway Benchmark Results';
+            // Each family posts its own comment (matched by its own marker) —
+            // matrix legs run concurrently, so upserting into one shared
+            // comment across parallel jobs isn't race-safe. Four distinct
+            // per-family comments are.
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -205,13 +249,15 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ai-gateway.svg results/ai-gateway/
+          git add ${{ matrix.family.svgFile }} results/${{ matrix.family.resultsDir }}/
           git diff --cached --quiet && echo "No changes to commit" && exit 0
-          git commit -m "chore: update ai gateway benchmark results [skip ci]"
+          git commit -m "chore: update ${{ matrix.family.label }} ai gateway benchmark results [skip ci]"
 
           # Remote master can advance during the run (concurrent benchmark
-          # workflows push to master too), so a plain push fails non-fast-forward.
-          # Rebase onto the latest remote and retry a few times before giving up.
+          # workflows push to master too — including this workflow's other
+          # matrix legs, which touch disjoint files but still contend for the
+          # same branch tip). A plain push fails non-fast-forward, so rebase
+          # onto the latest remote and retry a few times before giving up.
           branch="${GITHUB_REF#refs/heads/}"
           for attempt in 1 2 3 4 5; do
             git fetch origin "${branch}"

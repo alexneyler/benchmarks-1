@@ -31,8 +31,8 @@ import { providers } from './providers.js';
 import { buildAIGatewayFamily } from './task.js';
 
 export const { config, task } = buildAIGatewayFamily({
-  benchmarkSlug: 'ai-gateway',
-  benchmarkName: 'AI Gateway Benchmark',
+  benchmarkSlug: 'ai-gateway-latency-anthropic',
+  benchmarkName: 'AI Gateway Latency - Anthropic',
   providers,
   resultsDirName: 'ai-gateway',
 });

@@ -15,8 +15,8 @@ import { providers } from './providers-gemini.js';
 import { buildAIGatewayFamily } from './task.js';
 
 export const { config, task } = buildAIGatewayFamily({
-  benchmarkSlug: 'ai-gateway-gemini',
-  benchmarkName: 'AI Gateway Benchmark — Gemini',
+  benchmarkSlug: 'ai-gateway-latency-gemini',
+  benchmarkName: 'AI Gateway Latency - Gemini',
   providers,
   resultsDirName: 'ai-gateway-gemini',
 });
