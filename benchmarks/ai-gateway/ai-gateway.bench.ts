@@ -77,7 +77,7 @@ export const config = defineBenchmarkConfig({
   }),
   onComplete: (outcome) =>
     writeAIGatewayLegacyResults(outcome.participants, {
-      resultsDir: path.resolve(__dirname, '../../results/ai-gateway'),
+      resultsDir: path.resolve(__dirname, '../../results/ai-gateway-latency/anthropic'),
       providers,
     }),
 });

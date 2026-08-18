@@ -60,7 +60,7 @@ export const config = defineBenchmarkConfig({
   }),
   onComplete: (outcome) =>
     writeAIGatewayLegacyResults(outcome.participants, {
-      resultsDir: path.resolve(__dirname, '../../results/ai-gateway-openai'),
+      resultsDir: path.resolve(__dirname, '../../results/ai-gateway-latency/openai'),
       providers,
     }),
 });

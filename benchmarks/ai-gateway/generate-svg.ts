@@ -213,7 +213,7 @@ function main() {
   // `--dir` selects which results/<dir>/latest.json to read — defaults to
   // the original Anthropic-family benchmark so the existing
   // `generate-ai-gateway-svg` script's output is unchanged.
-  const dirName = argFlag(argv, '--dir', 'ai-gateway');
+  const dirName = argFlag(argv, '--dir', 'ai-gateway-latency/anthropic');
   const title = argFlag(argv, '--title', 'AI Gateway Benchmarks');
   const subtitle = argFlag(
     argv,

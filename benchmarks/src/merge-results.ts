@@ -20,7 +20,10 @@
  *
  * With --mode ai-gateway, merges AI gateway benchmark results: deduplicates
  * by provider, computes AI-gateway-specific composite scores, and writes
- * combined files to results/ai-gateway/latest.json.
+ * combined files to results/ai-gateway-latency/anthropic/latest.json.
+ * Anthropic-family only — predates the multi-family (OpenAI/Gemini/Kimi)
+ * split, which runs as one round-robin job per family rather than a
+ * per-provider matrix, so it never goes through this merge path.
  */
 import fs from 'fs';
 import path from 'path';
@@ -723,7 +726,7 @@ async function mainAIGateway() {
   // Write combined results
   const { writeAIGatewayResultsJson } = await import('../ai-gateway/benchmark.js');
   const timestamp = new Date().toISOString().slice(0, 10);
-  const resultsDir = path.resolve(ROOT, 'results/ai-gateway');
+  const resultsDir = path.resolve(ROOT, 'results/ai-gateway-latency/anthropic');
   fs.mkdirSync(resultsDir, { recursive: true });
 
   const outPath = path.join(resultsDir, `${timestamp}.json`);
