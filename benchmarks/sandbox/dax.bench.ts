@@ -36,9 +36,8 @@ const timeout = 600_000;
 const destroyTimeoutMs = 15_000;
 
 export const config = defineBenchmarkConfig({
-  benchmarkSlug: 'sandbox-dax-local',
-  benchmarkName: 'Dax sandbox benchmark (local)',
-  benchmarkKind: 'sandbox',
+  benchmarkSlug: `sandbox-dax${process.env.DAILY_BENCH_SLUG ? `-${process.env.DAILY_BENCH_SLUG}` : ''}`,
+  benchmarkName: `Sandbox Dax${process.env.DAILY_BENCH_NAME ? ` - ${process.env.DAILY_BENCH_NAME}` : ''}`,
   iterations: 3,
   concurrency: 1,
   groupBy: 'round',
@@ -58,6 +57,7 @@ export const config = defineBenchmarkConfig({
 // Note: lightning is sized via LIGHTNING_INSTANCE_TYPE=cpu-8 (8 vCPU / 16 GiB), applied on
 // the provider factory in providers.ts — the SDK ignores an instanceType passed to create().
 const DAX_RESOURCE_OPTIONS: Record<string, Record<string, any>> = {
+  arker:        { templateId: 'ubuntu-full-8' },           // 8 vCPU / 16 GiB golden
   modal:        { cpu: 4, cpuLimit: 4, memoryMiB: 16384 }, // Modal: 1 core = 2 vCPUs, so 4 cores = 8 vCPUs
   tenki:        { cpuCores: 8, memoryMb: 16384, diskSizeGb: 20 }, // default disk cannot hold the OpenCode install
   tensorlake:   { cpus: 8, memoryMb: 16384 },
@@ -65,16 +65,30 @@ const DAX_RESOURCE_OPTIONS: Record<string, Record<string, any>> = {
   runloop:      { launch_parameters: { resource_size_request: 'CUSTOM_SIZE', custom_cpu_cores: 8, custom_gb_memory: 16 } },
   upstash:      { size: 'large' },                          // large = 8 cores, 16 GB
   vercel:       { resources: { vcpus: 8 } },               // no memory control
-  blaxel:       { memory: 16384 },                          // CPU derived: cores = memory_MB / 2048 = 8
+  blaxel:       {
+    memory: 16384,                                          // CPU derived: cores = memory_MB / 2048 = 8
+    timeout: 900_000,                                       // Server-side TTL backstop if client cleanup cannot run
+    volumes: [
+      {
+        name: 'dax-root',
+        type: 'ephemeral',
+        sizeMb: 8192,
+        mountPath: '/',                                     // Keep the writable root off RAM
+      },
+    ],
+  },
   beam:         { cpu: 8, memory: 16384 },                   // cpu = cores, memory = MiB
   codesandbox:  { vmTier: VMTier.Small },                  // Small = 8 CPU, 16 GiB
-  daytona:      { resources: { cpu: 8, memory: 16 } },     // memory in GiB; requires image-based creation (see providers.ts)
   northflank:   { deploymentPlan: process.env.NORTHFLANK_DEPLOYMENT_PLAN || 'nf-compute-50', ephemeralStorageSize: 5120 },  // 5 GiB ephemeral storage
   declaw:       { templateId: 'node-large' },              // node-large template: 8 vCPU / 16 GiB RAM / 8 GiB disk
   superserve:   { templateId: 'node22-8cpu-16gb' },           // 8 vCPU / 16 GiB template built in the pre-step
   createos:     { shape: 's-8vcpu-16gb', ephemeralDiskMb: 61440 }, // 8 vCPU, 16 GiB RAM, 60 GiB disk
   opencomputer: { cpuCount: 4, memoryMB: 16384, timeout: 600_000 },
-  sandbox0:    { memory: 16384 },  // Sandbox0 exposes only `memory`
+  mosaic:       { vcpus: 8, memoryMb: 16384 },
+  // Sandbox0 exposes only memory. Override the 128 MiB TTI size;
+  // getSandboxOptionsWithResources preserves hardTtl from providers.ts.
+  sandbox0:     { memory: 16384 },
+  sail:         { size: 'l' },
 };
 
 function getSandboxOptionsWithResources(providerName: string, baseOptions?: Record<string, any>): Record<string, any> {

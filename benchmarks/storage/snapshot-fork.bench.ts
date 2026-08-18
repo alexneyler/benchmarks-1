@@ -48,12 +48,21 @@ const participants: StorageProviderConfig[] = storageProviders.map((p) => {
 });
 
 export const config = defineBenchmarkConfig({
-  benchmarkSlug: 'snapshot-fork-local',
-  benchmarkName: 'Snapshot/Fork (local)',
-  benchmarkKind: 'storage',
+  benchmarkSlug: `snapshot-fork${process.env.DAILY_BENCH_SLUG ? `-${process.env.DAILY_BENCH_SLUG}` : ''}`,
+  benchmarkName: `Storage Snapshot/Fork${process.env.DAILY_BENCH_NAME ? ` - ${process.env.DAILY_BENCH_NAME}` : ''}`,
   iterations: 2,
   concurrency: 1,
   participants,
+  onScore: (lowerIsBetter) => ({
+    dimensions: { dataset },
+    success: (record) => record.status === 'success' && record.data?.verified === true,
+    metrics: [
+      lowerIsBetter('snapshotCreateMs', { unit: 'ms', ceiling: 60000, weights: { median: 0.40, p95: 0, p99: 0 } }),
+      lowerIsBetter('forkFromSnapshotMs', { unit: 'ms', ceiling: 60000, weights: { median: 0.35, p95: 0, p99: 0 } }),
+      lowerIsBetter('forkFromLiveMs', { unit: 'ms', ceiling: 60000, weights: { median: 0.15, p95: 0, p99: 0 } }),
+      lowerIsBetter('forkFirstReadMs', { unit: 'ms', ceiling: 60000, weights: { median: 0.10, p95: 0, p99: 0 } }),
+    ],
+  }),
   onComplete: (outcome) =>
     writeSnapshotForkLegacyResults(outcome.participants, {
       resultsDir: path.resolve(__dirname, `../../results/snapshot-fork/${dataset}`),

@@ -19,6 +19,10 @@
  *   burst       { iterations: N, concurrency: N }
  *   staggered   { iterations: N, concurrency: N, staggerDelayMs: 200 }
  *
+ * A benchmark can name these variants up front via `shapes`, so one file backs
+ * several platform benchmarks (`bench run <file> --shape burst`) without
+ * restating each one's slug/name in scripts and CI.
+ *
  * A task is comprised of steps, declared via `ctx.step` inside a task function
  * — it supports closures, conditionals and try/finally, so values (a created
  * sandbox, say) flow naturally between steps. A task that declares no steps is
@@ -33,9 +37,27 @@ import type {
   TaskResultRecord,
   TaskStepRecord,
 } from '@benchsdk/client';
+import type { HigherIsBetter, LowerIsBetter, ScoringSpec } from './scoring.js';
 
 /** How tasks are ordered across participants. */
 export type GroupBy = 'participant' | 'round';
+
+/**
+ * A named variant of a benchmark, selected with `--shape <name>`. A shape
+ * carries only the parts that make it a distinct *benchmark* — its platform
+ * identity plus any stable distinguishing knob (e.g. staggered's delay). The
+ * scale knobs that vary per environment (`--iterations`, `--concurrency`) stay
+ * on the invocation, so a shape never sets a value only to have the CLI
+ * override it.
+ */
+export interface BenchmarkShape {
+  /** Platform slug this shape reports under (e.g. 'sandbox-tti'). */
+  slug: string;
+  /** Display name shown on the platform; defaults to the slug. */
+  name?: string;
+  /** Default stagger delay (ms) for this shape; overridable with `--stagger-delay-ms`. */
+  staggerDelayMs?: number;
+}
 
 /**
  * What a task returns: whatever it measured itself. This replaces the
@@ -54,6 +76,14 @@ export interface TaskResult {
   steps?: TaskStepRecord[];
   /** Task-owned overall latency; overrides framework wall-clock (round mode only). */
   latencyMs?: number;
+}
+
+/** Options for a single `ctx.step` invocation. */
+export interface TaskStepOptions extends Omit<DefineStepOptions, 'concurrency' | 'stepConcurrency'> {
+  /** Per-iteration timeout in milliseconds. If an invocation exceeds this, it is aborted and a `step_timeout` TaskError is thrown. */
+  timeoutMs?: number;
+  /** Number of times to invoke `fn` in parallel. Defaults to 1. When greater than 1, the step returns an array of results. */
+  concurrency?: number;
 }
 
 /**
@@ -83,9 +113,15 @@ export interface TaskContext<T extends BaseParticipant = BaseParticipant> {
   phase?: string;
   /**
    * Runs `fn` as a named platform step. Mirrors `@benchsdk/client`'s
-   * `RunWorkerContext.step`; supports closures and try/finally.
+   * `RunWorkerContext.step`; supports closures and try/finally. A `concurrency`
+   * greater than 1 invokes `fn` that many times in parallel and returns an array.
+   * `timeoutMs` aborts any invocation that exceeds it with a `step_timeout` TaskError.
    */
-  step<R>(name: string, fn: () => Promise<R> | R, options?: DefineStepOptions): Promise<R>;
+  step<R, C extends number = 1>(
+    name: string,
+    fn: () => Promise<R> | R,
+    options?: TaskStepOptions & { concurrency?: C },
+  ): Promise<C extends 1 ? R : R[]>;
   /**
    * Attaches a JSON measurement to the platform. Inside a `step` it lands on
    * that step's data; at task top-level it lands on the task record's data.
@@ -132,6 +168,7 @@ export interface ResolvedRunConfig {
  */
 export interface BenchmarkRunOutcome {
   runId: string;
+  /** Link to this run on the platform dashboard. */
   dashboardUrl: string;
   participants: ParticipantRecords[];
   config: ResolvedRunConfig;
@@ -146,14 +183,20 @@ export interface BenchmarkRunOutcome {
 export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
   /**
    * Stable platform slug for this benchmark (e.g. 'sandbox-tti-local').
-   * Overridable per run with `--slug`, so one entrypoint can report under
-   * several benchmarks.
+   * Selectable per run with `--shape` (or overridable with `--benchmark`), so
+   * one entrypoint can report under several benchmarks.
    */
   benchmarkSlug: string;
   /** Human-readable name shown on the platform. Overridable with `--name`. */
   benchmarkName: string;
-  /** Optional platform benchmark kind (e.g. 'sandbox'). */
-  benchmarkKind?: string;
+  /**
+   * Named variants of this benchmark, selected with `--shape <name>`. Each
+   * shape swaps in its own platform identity (and optional stable knob) while
+   * reusing the same task and participants, so one bench file can back several
+   * platform benchmarks without duplicating the slug/name triple across
+   * package scripts and CI.
+   */
+  shapes?: Record<string, BenchmarkShape>;
   /**
    * Total tasks to run per participant. Default: 1. Mutually exclusive with
    * `phases` — when `phases` is set, total iterations = sum of phase iterations.
@@ -182,6 +225,12 @@ export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
   defaultProviders?: string[];
   /** The participants this benchmark can run against. `--provider` selects a subset by name. */
   participants: T[];
+  /**
+   * Run-level scoring hook, called once with `lowerIsBetter` and `higherIsBetter`
+   * primitives after the outcome is assembled but before `onComplete`. Use it to
+   * define how the run should be scored and reported to the platform.
+   */
+  onScore?: (lowerIsBetter: LowerIsBetter, higherIsBetter: HigherIsBetter) => ScoringSpec | Promise<ScoringSpec>;
   /**
    * Run-level completion hook, called once with the full outcome after every
    * participant finishes. Use it for aggregate output (legacy JSON/SVG
@@ -233,6 +282,19 @@ export function defineBenchmarkConfig<T extends BaseParticipant = BaseParticipan
   }
   if (config.groupBy !== undefined && config.groupBy !== 'participant' && config.groupBy !== 'round') {
     throw new Error(`groupBy must be 'participant' or 'round' (got ${config.groupBy})`);
+  }
+  if (config.shapes !== undefined) {
+    for (const [shapeName, shape] of Object.entries(config.shapes)) {
+      if (!shape.slug || !/^[a-z0-9][a-z0-9-]*$/.test(shape.slug)) {
+        throw new Error(`shape '${shapeName}' needs a lowercase slug (got ${JSON.stringify(shape.slug)})`);
+      }
+      if (shape.name !== undefined && (typeof shape.name !== 'string' || shape.name.trim() === '')) {
+        throw new Error(`shape '${shapeName}' name must be a non-empty string`);
+      }
+      if (shape.staggerDelayMs !== undefined && (!Number.isFinite(shape.staggerDelayMs) || shape.staggerDelayMs < 0)) {
+        throw new Error(`shape '${shapeName}' staggerDelayMs must be a number >= 0 (got ${shape.staggerDelayMs})`);
+      }
+    }
   }
   return config;
 }

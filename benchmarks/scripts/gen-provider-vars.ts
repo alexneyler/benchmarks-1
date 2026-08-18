@@ -1,8 +1,8 @@
 /**
  * Generate benchmarks/scripts/provider-vars.json: the authoritative map of
  * which env vars each provider benchmark needs, read straight from the
- * `requiredEnvVars` field on every provider config (the single source of
- * truth in benchmarks/{mode}/providers.ts).
+ * `requiredEnvVars` field on every provider config (the single source of truth
+ * in benchmarks/{mode}/providers.ts).
  *
  * Each workflow's Load+Run step grep's this manifest by env-var name to keep
  * the per-job envdef (and thus the secrets the runner requests) scoped to
@@ -21,6 +21,9 @@ import { throughputProviders } from '../browser/throughput-providers.js';
 import { storageProviders } from '../storage/providers.js';
 import { providers as scaleProviders } from '../scale/providers.js';
 import { providers as aiGatewayProviders } from '../ai-gateway/providers.js';
+import { providers as aiGatewayOpenaiProviders } from '../ai-gateway/providers-openai.js';
+import { providers as aiGatewayGeminiProviders } from '../ai-gateway/providers-gemini.js';
+import { providers as aiGatewayKimiProviders } from '../ai-gateway/providers-kimi.js';
 
 type Cfg = { name: string; requiredEnvVars?: string[]; snapshotFork?: { requiredEnvVars?: string[] } };
 
@@ -31,6 +34,9 @@ const modes: Record<string, Cfg[]> = {
   storage: storageProviders as Cfg[],
   scale: scaleProviders as Cfg[],
   'ai-gateway': aiGatewayProviders as Cfg[],
+  'ai-gateway-openai': aiGatewayOpenaiProviders as Cfg[],
+  'ai-gateway-gemini': aiGatewayGeminiProviders as Cfg[],
+  'ai-gateway-kimi': aiGatewayKimiProviders as Cfg[],
 };
 
 const manifest: Record<string, Record<string, string[]>> = {};

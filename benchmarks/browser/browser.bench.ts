@@ -21,12 +21,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const browserTimeoutMs = browserProviders.reduce((max, p) => Math.max(max, p.timeout ?? 120_000), 0) || 120_000;
 
 export const config = defineBenchmarkConfig({
-  benchmarkSlug: 'browser-local',
-  benchmarkName: 'Browser (local)',
-  benchmarkKind: 'browser',
+  benchmarkSlug: `browser-lifecycle${process.env.DAILY_BENCH_SLUG ? `-${process.env.DAILY_BENCH_SLUG}` : ''}`,
+  benchmarkName: `Browser Lifecycle${process.env.DAILY_BENCH_NAME ? ` - ${process.env.DAILY_BENCH_NAME}` : ''}`,
   iterations: 2,
   concurrency: 1,
   participants: browserProviders,
+  onScore: (lowerIsBetter) => ({
+    metrics: [
+      lowerIsBetter('totalMs', { unit: 'ms', ceiling: 10000, weights: { median: 0.40, p95: 0.20, p99: 0.10 } }),
+      lowerIsBetter('createMs', { unit: 'ms', ceiling: 10000, weights: { median: 0.30, p95: 0, p99: 0 } }),
+    ],
+  }),
   onComplete: (outcome) =>
     writeBrowserLegacyResults(outcome.participants, {
       resultsDir: path.resolve(__dirname, '../../results/browser'),

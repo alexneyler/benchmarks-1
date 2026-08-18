@@ -49,15 +49,23 @@ describe('parseCliArgs', () => {
     expect(parseCliArgs(['--group-by=participant'])).toEqual({ groupBy: 'participant' });
   });
 
-  it('parses --slug and --name', () => {
-    expect(parseCliArgs(['--slug', 'sandbox-burst-local'])).toEqual({ slug: 'sandbox-burst-local' });
-    expect(parseCliArgs(['--slug=sandbox-tti-local'])).toEqual({ slug: 'sandbox-tti-local' });
+  it('parses --benchmark (and its --slug alias) and --name', () => {
+    expect(parseCliArgs(['--benchmark', 'sandbox-burst-local'])).toEqual({ benchmark: 'sandbox-burst-local' });
+    expect(parseCliArgs(['--benchmark=sandbox-tti-local'])).toEqual({ benchmark: 'sandbox-tti-local' });
+    expect(parseCliArgs(['--slug', 'sandbox-burst-local'])).toEqual({ benchmark: 'sandbox-burst-local' });
     expect(parseCliArgs(['--name', 'Sandbox burst TTI'])).toEqual({ name: 'Sandbox burst TTI' });
     expect(() => parseCliArgs(['--name', ' '])).toThrow('--name');
   });
 
-  it('throws on a non-slug --slug', () => {
-    expect(() => parseCliArgs(['--slug', 'Sandbox TTI'])).toThrow('--slug');
+  it('parses --shape and --run-key', () => {
+    expect(parseCliArgs(['--shape', 'burst'])).toEqual({ shape: 'burst' });
+    expect(parseCliArgs(['--run-key=ci-123'])).toEqual({ runKey: 'ci-123' });
+    expect(() => parseCliArgs(['--shape', ''])).toThrow('--shape');
+    expect(() => parseCliArgs(['--run-key', ''])).toThrow('--run-key');
+  });
+
+  it('throws on a non-slug --benchmark', () => {
+    expect(() => parseCliArgs(['--benchmark', 'Sandbox TTI'])).toThrow('--benchmark');
     expect(() => parseCliArgs(['--slug', ''])).toThrow('--slug');
   });
 
@@ -86,6 +94,21 @@ describe('parseCliArgs', () => {
 
   it('returns empty object for no args', () => {
     expect(parseCliArgs([])).toEqual({});
+  });
+
+  it('parses --no-ingest and --dry-run', () => {
+    expect(parseCliArgs(['--no-ingest'])).toEqual({ noIngest: true });
+    expect(parseCliArgs(['--dry-run'])).toEqual({ noIngest: true });
+  });
+
+  it('honors BENCHSDK_NO_INGEST=1', () => {
+    process.env.BENCHSDK_NO_INGEST = '1';
+    try {
+      expect(parseCliArgs([])).toEqual({ noIngest: true });
+      expect(parseCliArgs(['--iterations', '5'])).toEqual({ noIngest: true, iterations: 5 });
+    } finally {
+      delete process.env.BENCHSDK_NO_INGEST;
+    }
   });
 });
 
@@ -164,14 +187,20 @@ describe('runBenchmark', () => {
     process.env.E2B_API_KEY = 'x';
     process.env.MODAL_TOKEN = 'y';
     process.env.BENCHMARKS_PLATFORM_API_KEY = 'test-key';
-    calls = { upsertBenchmark: [], createRun: [], planWorkers: [], runWorker: [], taskData: [] };
+    calls = { upsertBenchmark: [], createRun: [], planWorkers: [], upsertParticipant: [], getRun: [], runWorker: [], taskData: [], submitRunSummary: [] };
     fakeClient = {
       upsertBenchmark: vi.fn(async (...a: any[]) => { calls.upsertBenchmark.push(a); return {}; }),
       createRun: vi.fn(async (...a: any[]) => { calls.createRun.push(a); return { run: { id: 'run-1' }, participants: [] }; }),
       planWorkers: vi.fn(async (...a: any[]) => { calls.planWorkers.push(a); return []; }),
+      upsertParticipant: vi.fn(async (...a: any[]) => { calls.upsertParticipant.push(a); return {}; }),
+      submitRunSummary: vi.fn(async (...a: any[]) => { calls.submitRunSummary.push(a); }),
+      getRun: vi.fn(async (slug: string, runId: string) => {
+        calls.getRun.push([slug, runId]);
+        return { id: runId, totalTasks: 3, participantSized: runId === 'run-open' };
+      }),
       runWorker: vi.fn(async (opts: any) => {
         calls.runWorker.push(opts);
-        const total = calls.createRun[0]?.[1]?.totalTasks ?? 1;
+        const total = calls.createRun[0]?.[1]?.totalTasks ?? calls.upsertParticipant[0]?.[3]?.totalTasks ?? 1;
         // The platform hands out globally-indexed task ranges; `taskRangeStart`
         // lets a test exercise a worker whose range doesn't start at 0.
         const start = taskRangeStart;
@@ -179,19 +208,25 @@ describe('runBenchmark', () => {
         const records: any[] = [];
         for (let ti = start; ti < start + total; ti++) {
           // Mirror the real client worker: `measure` merges into the record's
-          // data alongside whatever the task returns.
+          // data alongside whatever the task returns. `step` records options
+          // so participant-mode option forwarding can be asserted.
           const measures: Record<string, unknown> = {};
+          const steps: any[] = [];
           const ctx = {
             taskIndex: ti,
             assignment,
-            step: async (_n: string, fn: any) => fn(),
+            step: async (_n: string, fn: any, options: any) => {
+              const value = await fn();
+              steps.push({ name: _n, options });
+              return value;
+            },
             measure: (d: Record<string, unknown>) => Object.assign(measures, d),
             log: () => {},
           };
           const returned = await opts.task(ctx);
           calls.taskData.push(returned);
           const data = { ...measures, ...(returned ?? {}) };
-          const rec = { taskIndex: ti, status: 'success', data };
+          const rec = { taskIndex: ti, status: 'success', data, steps };
           opts.onResult?.(rec);
           records.push(rec);
         }
@@ -205,6 +240,7 @@ describe('runBenchmark', () => {
     delete process.env.E2B_API_KEY;
     delete process.env.MODAL_TOKEN;
     delete process.env.BENCHMARKS_PLATFORM_API_KEY;
+    delete process.env.BENCHSDK_NO_INGEST;
   });
 
   it('drives upsert -> createRun -> planWorkers/runWorker per available participant', async () => {
@@ -212,7 +248,6 @@ describe('runBenchmark', () => {
     const config: BenchmarkConfig<typeof participants[number]> = {
       benchmarkSlug: 'sandbox-tti-local',
       benchmarkName: 'Sandbox TTI',
-      benchmarkKind: 'sandbox',
       iterations: 3,
       concurrency: 1,
       participants,
@@ -226,7 +261,7 @@ describe('runBenchmark', () => {
     expect(outcome.participants[1].records).toHaveLength(3);
 
     expect(calls.upsertBenchmark[0][0]).toBe('sandbox-tti-local');
-    expect(calls.upsertBenchmark[0][1]).toMatchObject({ name: 'Sandbox TTI', kind: 'sandbox' });
+    expect(calls.upsertBenchmark[0][1]).toMatchObject({ name: 'Sandbox TTI' });
     expect(calls.createRun[0][1]).toMatchObject({ totalTasks: 3, workerCount: 1, participants: ['e2b', 'modal'] });
     expect(calls.planWorkers).toHaveLength(2);
     expect(calls.runWorker).toHaveLength(2);
@@ -256,6 +291,99 @@ describe('runBenchmark', () => {
     expect(onComplete).toHaveBeenCalledTimes(1);
     expect(onComplete).toHaveBeenCalledWith(outcome);
     expect(outcome.config).toMatchObject({ iterations: 2, concurrency: 1 });
+  });
+
+  it('calls config.onScore and submits a run summary before onComplete', async () => {
+    const onScore = vi.fn((lowerIsBetter) => ({
+      metrics: [lowerIsBetter('ttiMs', { unit: 'ms', ceiling: 1000, weights: { median: 1, p95: 0, p99: 0 } })],
+    }));
+    const onComplete = vi.fn();
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 's',
+      benchmarkName: 'n',
+      iterations: 2,
+      concurrency: 1,
+      participants: [participants[0]],
+      onScore,
+      onComplete,
+    };
+
+    const outcome = await runBenchmark(config, defineTask(async () => ({ data: { ttiMs: 100 } })), []);
+
+    expect(onScore).toHaveBeenCalledTimes(1);
+    expect(onScore).toHaveBeenCalledWith(expect.any(Function), expect.any(Function));
+    expect(calls.submitRunSummary).toHaveLength(1);
+    expect(calls.submitRunSummary[0][0]).toBe('s');
+    expect(calls.submitRunSummary[0][1]).toBe('run-1');
+    expect(calls.submitRunSummary[0][2]).toMatchObject({
+      run: expect.objectContaining({
+        gitSha: expect.any(String),
+        nodeVersion: expect.any(String),
+        platform: expect.any(String),
+        arch: expect.any(String),
+      }),
+      results: expect.arrayContaining([
+        expect.objectContaining({
+          provider: 'e2b',
+          metrics: expect.arrayContaining([expect.objectContaining({ name: 'ttiMs', unit: 'ms' })]),
+          compositeScore: expect.any(Number),
+          successRate: expect.any(Number),
+          skipped: false,
+        }),
+      ]),
+    });
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    expect(onComplete).toHaveBeenCalledWith(outcome);
+  });
+
+  it('propagates a ScoringSpecError from a misconfigured onScore instead of swallowing it as a warning', async () => {
+    // weights sum to 0.5, not 1.0 — an authoring bug in onScore, not a
+    // transient submit failure, so runBenchmark must reject rather than warn
+    // and continue to onComplete.
+    const onScore = vi.fn((lowerIsBetter) => ({
+      metrics: [lowerIsBetter('ttiMs', { unit: 'ms', ceiling: 1000, weights: { median: 0.5, p95: 0, p99: 0 } })],
+    }));
+    const onComplete = vi.fn();
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 's',
+      benchmarkName: 'n',
+      iterations: 2,
+      concurrency: 1,
+      participants: [participants[0]],
+      onScore,
+      onComplete,
+    };
+
+    await expect(
+      runBenchmark(config, defineTask(async () => ({ data: { ttiMs: 100 } })), []),
+    ).rejects.toThrow('Scoring spec weights sum to');
+    expect(calls.submitRunSummary).toHaveLength(0);
+    expect(onComplete).not.toHaveBeenCalled();
+  });
+
+  it('still warns and continues when submitRunSummary itself fails (not a scoring config bug)', async () => {
+    fakeClient.submitRunSummary = vi.fn(async () => {
+      throw new Error('network blip');
+    });
+    const onScore = vi.fn((lowerIsBetter) => ({
+      metrics: [lowerIsBetter('ttiMs', { unit: 'ms', ceiling: 1000, weights: { median: 1, p95: 0, p99: 0 } })],
+    }));
+    const onComplete = vi.fn();
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 's',
+      benchmarkName: 'n',
+      iterations: 2,
+      concurrency: 1,
+      participants: [participants[0]],
+      onScore,
+      onComplete,
+    };
+
+    const outcome = await runBenchmark(config, defineTask(async () => ({ data: { ttiMs: 100 } })), []);
+
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    expect(onComplete).toHaveBeenCalledWith(outcome);
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('network blip'));
   });
 
   it('applies CLI overrides over config', async () => {
@@ -292,6 +420,84 @@ describe('runBenchmark', () => {
     expect(calls.upsertBenchmark[0][0]).toBe('sandbox-burst-local');
     expect(calls.upsertBenchmark[0][1]).toMatchObject({ name: 'Sandbox burst TTI' });
     expect(calls.createRun[0][0]).toBe('sandbox-burst-local');
+  });
+
+  it('shares a run by --run-key: get-or-creates it keyed, then registers only its own participant', async () => {
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 'sandbox-tti-local',
+      benchmarkName: 'Sandbox TTI',
+      iterations: 2,
+      participants: [participants[0]],
+    };
+
+    const outcome = await runBenchmark(config, defineTask(async () => ({})), ['--run-key', 'ci-123', '--provider', 'e2b']);
+
+    // The benchmark is still materialized from the file identity.
+    expect(calls.upsertBenchmark[0][0]).toBe('sandbox-tti-local');
+    // One keyed get-or-create, carrying the key and no size/participant list.
+    expect(calls.createRun).toHaveLength(1);
+    expect(calls.createRun[0][1]).toMatchObject({ runKey: 'ci-123' });
+    expect(calls.createRun[0][1].totalTasks).toBeUndefined();
+    expect(calls.createRun[0][1].participants).toBeUndefined();
+    // Registers only the provider it runs, sized to its own iteration count.
+    expect(calls.upsertParticipant[0].slice(0, 3)).toEqual(['sandbox-tti-local', 'run-1', 'e2b']);
+    expect(calls.upsertParticipant[0][3]).toMatchObject({ totalTasks: 2 });
+    expect(calls.runWorker[0]).toMatchObject({ runId: 'run-1' });
+    expect(outcome.runId).toBe('run-1');
+    expect(outcome.participants[0].records).toHaveLength(2);
+  });
+
+  it('does not rename a benchmark it was merely retargeted at', async () => {
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 'sandbox-tti-local',
+      benchmarkName: 'Sandbox TTI',
+      iterations: 1,
+      participants: [participants[0]],
+    };
+
+    await runBenchmark(config, defineTask(async () => ({})), ['--benchmark', 'sandbox-burst-local']);
+    expect(calls.upsertBenchmark).toEqual([]);
+
+    await runBenchmark(config, defineTask(async () => ({})), [
+      '--benchmark',
+      'sandbox-burst-local',
+      '--name',
+      'Sandbox burst TTI',
+    ]);
+    expect(calls.upsertBenchmark[0]).toEqual(['sandbox-burst-local', { name: 'Sandbox burst TTI' }]);
+  });
+
+  it('selects a declared shape by --shape, reporting under its slug and name', async () => {
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 'sandbox-tti-local',
+      benchmarkName: 'Sandbox TTI',
+      iterations: 1,
+      participants: [participants[0]],
+      shapes: {
+        staggered: { slug: 'sandbox-staggered-local', name: 'Sandbox staggered TTI', staggerDelayMs: 200 },
+      },
+    };
+
+    const outcome = await runBenchmark(config, defineTask(async () => ({})), ['--shape', 'staggered']);
+
+    expect(calls.upsertBenchmark[0][0]).toBe('sandbox-staggered-local');
+    expect(calls.upsertBenchmark[0][1]).toMatchObject({ name: 'Sandbox staggered TTI' });
+    expect(calls.createRun[0][0]).toBe('sandbox-staggered-local');
+    // The shape's stable knob applies; scale knobs stay defaulted/overridable.
+    expect(outcome.config.staggerDelayMs).toBe(200);
+  });
+
+  it('rejects an unknown --shape, listing the declared ones', async () => {
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 'sandbox-tti-local',
+      benchmarkName: 'Sandbox TTI',
+      participants: [participants[0]],
+      shapes: { burst: { slug: 'sandbox-burst-local' } },
+    };
+
+    await expect(
+      runBenchmark(config, defineTask(async () => ({})), ['--shape', 'nope']),
+    ).rejects.toThrow('Known shapes: burst');
   });
 
   it('throws NoAvailableParticipantsError, listing the skips, when no participant has its env vars set', async () => {
@@ -616,5 +822,248 @@ describe('runBenchmark', () => {
     expect(recorded.e2b[0].status).toBe('error');
     expect(recorded.e2b[0].errorCode).toBe('probe_failed');
     expect(recorded.e2b[0].data).toEqual({ mode: 'cold' });
+  });
+
+  describe('ctx.step options', () => {
+    const setupRoundReporter = (recorded: TaskResultRecord[]) =>
+      reporterClaim.mockImplementation(async () => ({
+        taskIndexStart: 0,
+        recordResult: (r: TaskResultRecord) => recorded.push(r),
+        uploadArtifact: async () => ({}),
+        setProgress: () => {},
+        heartbeat: async () => {},
+        finish: async () => {},
+      }));
+
+    it('runs a step with timeoutMs that completes normally', async () => {
+      const recorded: TaskResultRecord[] = [];
+      setupRoundReporter(recorded);
+
+      const task = vi.fn(async (ctx: any) => {
+        const value = await ctx.step('fast', () => 'ok', { timeoutMs: 1000 });
+        expect(value).toBe('ok');
+        return {};
+      });
+
+      await runBenchmark(
+        { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'round', participants: [participants[0]] },
+        defineTask(task),
+        [],
+      );
+
+      const step = recorded[0].steps?.find((s) => s.name === 'fast');
+      expect(step?.status).toBe('success');
+      expect(step?.timeoutMs).toBe(1000);
+      expect(step?.errorCode).toBeUndefined();
+    });
+
+    it('times out a step with timeoutMs and records step_timeout', async () => {
+      const recorded: TaskResultRecord[] = [];
+      setupRoundReporter(recorded);
+
+      let caught: unknown;
+      const task = vi.fn(async (ctx: any) => {
+        try {
+          await ctx.step('slow', () => new Promise((resolve) => setTimeout(resolve, 5000)), { timeoutMs: 10 });
+        } catch (error) {
+          caught = error;
+        }
+        return {};
+      });
+
+      await runBenchmark(
+        { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'round', participants: [participants[0]] },
+        defineTask(task),
+        [],
+      );
+
+      expect(caught).toBeInstanceOf(TaskError);
+      expect((caught as TaskError).code).toBe('step_timeout');
+      const step = recorded[0].steps?.find((s) => s.name === 'slow');
+      expect(step?.status).toBe('error');
+      expect(step?.errorCode).toBe('step_timeout');
+      expect(step?.timeoutMs).toBe(10);
+    });
+
+    it('runs a step with concurrency > 1 and returns an array of results', async () => {
+      const recorded: TaskResultRecord[] = [];
+      setupRoundReporter(recorded);
+
+      const task = vi.fn(async (ctx: any) => {
+        const results = await ctx.step('parallel', () => 42, { concurrency: 3 });
+        expect(results).toEqual([42, 42, 42]);
+        return {};
+      });
+
+      await runBenchmark(
+        { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'round', participants: [participants[0]] },
+        defineTask(task),
+        [],
+      );
+
+      const step = recorded[0].steps?.find((s) => s.name === 'parallel');
+      expect(step?.status).toBe('success');
+      expect(step?.concurrency).toBe(3);
+    });
+
+    it('fails a step with concurrency > 1 when one invocation fails', async () => {
+      const recorded: TaskResultRecord[] = [];
+      setupRoundReporter(recorded);
+
+      let calls = 0;
+      let caught: unknown;
+      const task = vi.fn(async (ctx: any) => {
+        try {
+          await ctx.step(
+            'parallel',
+            () => {
+              const index = calls++;
+              if (index === 1) throw new TaskError('boom', { code: 'invocation_failed' });
+              return index;
+            },
+            { concurrency: 3 },
+          );
+        } catch (error) {
+          caught = error;
+        }
+        return {};
+      });
+
+      await runBenchmark(
+        { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'round', participants: [participants[0]] },
+        defineTask(task),
+        [],
+      );
+
+      expect(caught).toBeInstanceOf(TaskError);
+      expect((caught as TaskError).code).toBe('invocation_failed');
+      const step = recorded[0].steps?.find((s) => s.name === 'parallel');
+      expect(step?.status).toBe('error');
+      expect(step?.concurrency).toBe(3);
+      expect(step?.errorCode).toBe('invocation_failed');
+    });
+
+    it('handles a parallel step where a later invocation rejects while an earlier one is still pending', async () => {
+      const recorded: TaskResultRecord[] = [];
+      setupRoundReporter(recorded);
+
+      let calls = 0;
+      let caught: unknown;
+      const task = vi.fn(async (ctx: any) => {
+        try {
+          await ctx.step(
+            'parallel',
+            () => {
+              const index = calls++;
+              if (index === 1) {
+                return new Promise((_, reject) =>
+                  setTimeout(() => reject(new TaskError('boom', { code: 'invocation_failed' })), 5),
+                );
+              }
+              return new Promise((resolve) => setTimeout(() => resolve(index), 50));
+            },
+            { concurrency: 3 },
+          );
+        } catch (error) {
+          caught = error;
+        }
+        return {};
+      });
+
+      await runBenchmark(
+        { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'round', participants: [participants[0]] },
+        defineTask(task),
+        [],
+      );
+
+      expect(caught).toBeInstanceOf(TaskError);
+      expect((caught as TaskError).code).toBe('invocation_failed');
+      const step = recorded[0].steps?.find((s) => s.name === 'parallel');
+      expect(step?.status).toBe('error');
+      expect(step?.concurrency).toBe(3);
+      expect(step?.errorCode).toBe('invocation_failed');
+    });
+
+    it('forwards timeoutMs and concurrency to the platform worker step in participant mode', async () => {
+      const task = vi.fn(async (ctx: any) => {
+        await ctx.step('par', () => 'ok', { concurrency: 3, timeoutMs: 1000 });
+        return {};
+      });
+
+      const outcome = await runBenchmark(
+        { benchmarkSlug: 's', benchmarkName: 'n', iterations: 1, groupBy: 'participant', participants: [participants[0]] },
+        defineTask(task),
+        [],
+      );
+
+      expect(task).toHaveBeenCalled();
+      const stepOptions = (outcome.participants[0].records[0] as any).steps?.[0]?.options;
+      expect(stepOptions).toMatchObject({ timeoutMs: 1000, stepConcurrency: 3 });
+    });
+  });
+
+  describe('no-ingest mode', () => {
+    it('skips all platform calls in participant mode', async () => {
+      const task = vi.fn(async () => ({ data: { ok: true } }));
+      const config: BenchmarkConfig<typeof participants[number]> = {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        iterations: 3,
+        concurrency: 2,
+        participants: [participants[0]],
+      };
+
+      const outcome = await runBenchmark(config, defineTask(task), ['--no-ingest']);
+
+      expect(createBenchmarkClient).not.toHaveBeenCalled();
+      expect(fakeClient.upsertBenchmark).not.toHaveBeenCalled();
+      expect(fakeClient.createRun).not.toHaveBeenCalled();
+      expect(fakeClient.runWorker).not.toHaveBeenCalled();
+      expect(fakeClient.submitRunSummary).not.toHaveBeenCalled();
+      expect(outcome.runId).toBe('no-ingest');
+      expect(outcome.dashboardUrl).toBe('');
+      expect(outcome.participants).toHaveLength(1);
+      expect(outcome.participants[0].records).toHaveLength(3);
+      expect(outcome.participants[0].records.every((r) => r.status === 'success')).toBe(true);
+    });
+
+    it('skips all platform calls in round mode', async () => {
+      const task = vi.fn(async () => ({ data: { ok: true } }));
+      const config: BenchmarkConfig<typeof participants[number]> = {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        iterations: 2,
+        groupBy: 'round',
+        participants: [participants[0]],
+      };
+
+      const outcome = await runBenchmark(config, defineTask(task), ['--no-ingest']);
+
+      expect(createBenchmarkClient).not.toHaveBeenCalled();
+      expect(fakeClient.upsertBenchmark).not.toHaveBeenCalled();
+      expect(fakeClient.createRun).not.toHaveBeenCalled();
+      expect(fakeClient.planWorkers).not.toHaveBeenCalled();
+      expect(reporterClaim).not.toHaveBeenCalled();
+      expect(fakeClient.submitRunSummary).not.toHaveBeenCalled();
+      expect(outcome.runId).toBe('no-ingest');
+      expect(outcome.participants[0].records).toHaveLength(2);
+    });
+
+    it('honors BENCHSDK_NO_INGEST=1 without a CLI flag', async () => {
+      process.env.BENCHSDK_NO_INGEST = '1';
+      const task = vi.fn(async () => ({}));
+      const config: BenchmarkConfig<typeof participants[number]> = {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        iterations: 2,
+        participants: [participants[0]],
+      };
+
+      const outcome = await runBenchmark(config, defineTask(task), []);
+
+      expect(createBenchmarkClient).not.toHaveBeenCalled();
+      expect(fakeClient.createRun).not.toHaveBeenCalled();
+      expect(outcome.runId).toBe('no-ingest');
+    });
   });
 });

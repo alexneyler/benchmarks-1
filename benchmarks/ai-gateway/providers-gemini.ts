@@ -89,7 +89,12 @@ export const providers: AIGatewayProviderConfig[] = [
     // array. Request body shape and auth (`x-goog-api-key`, optionally
     // alongside `cf-aig-authorization`) both confirmed in the same docs.
     name: 'cloudflare-ai-gateway',
-    requiredEnvVars: ['CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID', 'CLOUDFLARE_AI_GATEWAY_GATEWAY_ID', 'GEMINI_API_KEY'],
+    requiredEnvVars: [
+      'CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID',
+      'CLOUDFLARE_AI_GATEWAY_GATEWAY_ID',
+      'CLOUDFLARE_AI_GATEWAY_TOKEN',
+      'GEMINI_API_KEY',
+    ],
     wireFormat: 'gemini',
     model: 'gemini-3.6-flash',
     host: 'gateway.ai.cloudflare.com',

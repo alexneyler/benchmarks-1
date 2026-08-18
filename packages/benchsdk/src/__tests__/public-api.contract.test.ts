@@ -35,6 +35,11 @@ import type {
   BenchmarkRunImportsSummary,
   BenchmarkRunImportItem,
   BenchmarkRunResults,
+  BenchmarkRunSummaryInput,
+  BenchmarkRunSummaryMetric,
+  BenchmarkRunSummaryResult,
+  BenchmarkRunSummaryRunMetadata,
+  BenchmarkRunSummaryScalar,
   BenchmarkRunStatus,
   BenchmarkRunTaskResults,
   BenchmarkRunTaskResultsInput,
@@ -118,6 +123,11 @@ type _PublicTypeSurface = [
   BenchmarkRunImportsSummary,
   BenchmarkRunImportItem,
   BenchmarkRunResults,
+  BenchmarkRunSummaryInput,
+  BenchmarkRunSummaryMetric,
+  BenchmarkRunSummaryResult,
+  BenchmarkRunSummaryRunMetadata,
+  BenchmarkRunSummaryScalar,
   BenchmarkRunStatus,
   BenchmarkRunTaskResults,
   BenchmarkRunTaskResultsInput,
@@ -259,7 +269,7 @@ const workerResource = () => ({ id: 'worker_1', benchmarkId: 'bench_1', runId: '
 const lifecycleResponse = () => ({ worker: { id: 'worker_1' }, attempt: { id: 'attempt_1' } });
 
 const overviewResponse = () => ({
-  benchmark: { id: 'bench_1', slug: 'scale', name: 'Scale', kind: 'scale' },
+  benchmark: { id: 'bench_1', slug: 'scale', name: 'Scale' },
   generatedAt: new Date().toISOString(),
   analytics: { status: 'complete', query: 'available' },
   items: [{
@@ -309,6 +319,7 @@ function handler(url: string, method: string): Response {
   if (path.startsWith('/benchmarks/scale/runs/run_1/results/tasks') && method === 'GET') return jsonResponse(taskResultsResponse());
   if (path.startsWith('/benchmarks/scale/runs/run_1/results/timeline') && method === 'GET') return jsonResponse(timelineResponse());
   if (path === '/benchmarks/scale/runs/run_1/results/imports' && method === 'GET') return jsonResponse(importsResponse());
+  if (path === '/benchmarks/scale/runs/run_1/summary' && method === 'POST') return jsonResponse({});
   throw new Error(`unexpected request: ${method} ${url}`);
 }
 
@@ -406,7 +417,7 @@ describe('transport layer', () => {
   it('VAL-SDK-006: sets Content-Type: application/json on all requests', async () => {
     const { calls } = await capture((c) => Promise.all([
       c.getBenchmark('scale'),
-      c.upsertBenchmark('scale', { name: 'Scale', kind: 'scale' }),
+      c.upsertBenchmark('scale', { name: 'Scale' }),
     ]));
     for (const call of calls) {
       expect(call.headers['Content-Type']).toBe('application/json');
@@ -449,7 +460,7 @@ describe('transport layer', () => {
 // ---------------------------------------------------------------------------
 describe('client method URL paths and response unwrapping', () => {
   it('VAL-SDK-011: upsertBenchmark PUT /benchmarks/{slug} → data.benchmark', async () => {
-    const { calls, result } = await capture((c) => c.upsertBenchmark('scale', { name: 'Scale', kind: 'scale' }));
+    const { calls, result } = await capture((c) => c.upsertBenchmark('scale', { name: 'Scale' }));
     expect(`${calls[0].method} ${calls[0].url}`).toBe(`PUT ${BASE}/benchmarks/scale`);
     expect(result).toMatchObject({ slug: 'scale' });
   });
@@ -964,7 +975,7 @@ describe('runWorker lifecycle and task execution', () => {
     for (let i = 1; i < samples.length; i++) {
       expect(samples[i - 1].active).toBeGreaterThanOrEqual(samples[i].active);
     }
-    expect(calls.at(-1)!.url).toContain('/complete');
+    expect(calls.some((c) => c.url.includes('/complete'))).toBe(true);
   });
 
   it('VAL-SDK-055: fails the worker when any task fails', async () => {
@@ -975,8 +986,10 @@ describe('runWorker lifecycle and task execution', () => {
       task: async ({ step }) => { await step('create', () => { throw new TypeError('boom'); }, { readiness: 'internal' }); },
     });
     expect(result.records[0]).toMatchObject({ status: 'error', errorCode: 'TypeError' });
-    expect(calls.at(-1)!.url).toContain('/fail');
-    expect(calls.at(-1)!.body).toMatchObject({ errorMessage: 'One or more tasks failed' });
+    const failCall = calls.find((c) => c.url.includes('/fail'));
+    expect(failCall).toBeDefined();
+    expect(failCall!.url).toContain('/fail');
+    expect(failCall!.body).toMatchObject({ errorMessage: 'One or more tasks failed' });
   });
 
   it('VAL-SDK-056: completes the worker when all tasks succeed', async () => {
@@ -1387,7 +1400,7 @@ describe('public API surface and type exports', () => {
     'BenchmarkResultsOverview', 'BenchmarkResultsOverviewAnalytics', 'BenchmarkResultsOverviewInput',
     'BenchmarkResultsOverviewRun', 'BenchmarkResultSummary', 'BenchmarkRun', 'BenchmarkRunImports',
     'BenchmarkRunAnalyticsSummary', 'BenchmarkRunImportsSummary', 'BenchmarkRunImportItem', 'BenchmarkRunResults',
-    'BenchmarkRunStatus', 'BenchmarkRunTaskResults', 'BenchmarkRunTaskResultsInput', 'BenchmarkRunTimeline',
+    'BenchmarkRunStatus', 'BenchmarkRunSummaryInput', 'BenchmarkRunSummaryMetric', 'BenchmarkRunSummaryResult', 'BenchmarkRunSummaryRunMetadata', 'BenchmarkRunSummaryScalar', 'BenchmarkRunTaskResults', 'BenchmarkRunTaskResultsInput', 'BenchmarkRunTimeline',
     'BenchmarkRunTimelineInput', 'BenchmarkRunWorker', 'BenchmarkStepResultSummary', 'BenchmarkTaskBucket',
     'BenchmarkWorkerAttempt', 'BenchmarkWorkerStatus', 'ClaimWorkerInput', 'CreateWorkerArtifactInput',
     'CreateWorkerArtifactResponse', 'CreateRunInput', 'DefineStepOptions',
@@ -1488,7 +1501,7 @@ describe('public API surface and type exports', () => {
 describe('cross-area HTTP invariants', () => {
   it('VAL-CROSS-001: HTTP URL paths are byte-identical for every client method', async () => {
     const { calls } = await capture(async (c) => {
-      await c.upsertBenchmark('scale', { name: 'Scale', kind: 'scale' });
+      await c.upsertBenchmark('scale', { name: 'Scale' });
       await c.getBenchmark('scale');
       await c.updateBenchmark('scale', { name: 'x' });
       await c.listBenchmarks();
@@ -1518,6 +1531,7 @@ describe('cross-area HTTP invariants', () => {
       await c.getRunTaskResults('scale', 'run_1', { bucketSize: 10, failureLimit: 2 });
       await c.getRunTimeline('scale', 'run_1', { bucketMs: 1000 });
       await c.getRunImports('scale', 'run_1');
+      await c.submitRunSummary('scale', 'run_1', { run: {}, results: [] });
     });
     expect(calls.map((call) => `${call.method} ${call.url}`)).toEqual([
       `PUT ${BASE}/benchmarks/scale`,
@@ -1550,6 +1564,7 @@ describe('cross-area HTTP invariants', () => {
       `GET ${BASE}/benchmarks/scale/runs/run_1/results/tasks?bucketSize=10&failureLimit=2`,
       `GET ${BASE}/benchmarks/scale/runs/run_1/results/timeline?bucketMs=1000`,
       `GET ${BASE}/benchmarks/scale/runs/run_1/results/imports`,
+      `POST ${BASE}/benchmarks/scale/runs/run_1/summary`,
     ]);
   });
 

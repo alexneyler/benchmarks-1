@@ -5,6 +5,9 @@
       "ARCHIL_REGION",
       "ARCHIL_DISK_ID"
     ],
+    "arker": [
+      "ARKER_API_KEY"
+    ],
     "beam": [
       "BEAM_TOKEN",
       "BEAM_WORKSPACE_ID"
@@ -49,6 +52,10 @@
       "MODAL_TOKEN_ID",
       "MODAL_TOKEN_SECRET"
     ],
+    "mosaic": [
+      "MOSAIC_API_URL",
+      "MOSAIC_API_TOKEN"
+    ],
     "namespace": [
       "NSC_TOKEN"
     ],
@@ -63,8 +70,14 @@
     "runloop": [
       "RUNLOOP_API_KEY"
     ],
+    "run-cloud": [
+      "RUN_CLOUD_API_KEY"
+    ],
     "sandbox0": [
       "SANDBOX0_TOKEN"
+    ],
+    "sail": [
+      "SAIL_API_KEY"
     ],
     "sprites": [
       "SPRITES_TOKEN"
@@ -174,6 +187,18 @@
       "TENSORLAKE_ORGANIZATION_ID",
       "TENSORLAKE_PROJECT_ID",
       "TENSORLAKE_FILESYSTEM"
+    ],
+    "archil": [
+      "ARCHIL_S3_ACCESS_KEY_ID",
+      "ARCHIL_S3_SECRET_ACCESS_KEY",
+      "ARCHIL_BUCKET",
+      "ARCHIL_REGION"
+    ],
+    "neon": [
+      "NEON_BUCKET",
+      "NEON_ENDPOINT",
+      "NEON_ACCESS_KEY_ID",
+      "NEON_SECRET_ACCESS_KEY"
     ]
   },
   "scale": {
@@ -215,6 +240,7 @@
     "cloudflare-ai-gateway": [
       "CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID",
       "CLOUDFLARE_AI_GATEWAY_GATEWAY_ID",
+      "CLOUDFLARE_AI_GATEWAY_TOKEN",
       "ANTHROPIC_API_KEY"
     ],
     "llmgateway": [
@@ -228,6 +254,77 @@
     ],
     "anthropic-direct": [
       "ANTHROPIC_API_KEY"
+    ]
+  },
+  "ai-gateway-openai": {
+    "openrouter": [
+      "OPENROUTER_API_KEY"
+    ],
+    "vercel-ai-gateway": [
+      "VERCEL_AI_GATEWAY_API_KEY"
+    ],
+    "cloudflare-ai-gateway": [
+      "CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID",
+      "CLOUDFLARE_AI_GATEWAY_GATEWAY_ID",
+      "CLOUDFLARE_AI_GATEWAY_TOKEN",
+      "OPENAI_API_KEY"
+    ],
+    "llmgateway": [
+      "LLM_GATEWAY_API_KEY"
+    ],
+    "pydantic-ai-gateway": [
+      "PYDANTIC_AI_GATEWAY_API_KEY"
+    ],
+    "concentrate-ai-gateway": [
+      "CONCENTRATE_AI_GATEWAY_API_KEY"
+    ],
+    "openai-direct": [
+      "OPENAI_API_KEY"
+    ]
+  },
+  "ai-gateway-gemini": {
+    "openrouter": [
+      "OPENROUTER_API_KEY"
+    ],
+    "vercel-ai-gateway": [
+      "VERCEL_AI_GATEWAY_API_KEY"
+    ],
+    "cloudflare-ai-gateway": [
+      "CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID",
+      "CLOUDFLARE_AI_GATEWAY_GATEWAY_ID",
+      "CLOUDFLARE_AI_GATEWAY_TOKEN",
+      "GEMINI_API_KEY"
+    ],
+    "llmgateway": [
+      "LLM_GATEWAY_API_KEY"
+    ],
+    "concentrate-ai-gateway": [
+      "CONCENTRATE_AI_GATEWAY_API_KEY"
+    ],
+    "gemini-direct": [
+      "GEMINI_API_KEY"
+    ]
+  },
+  "ai-gateway-kimi": {
+    "openrouter": [
+      "OPENROUTER_API_KEY"
+    ],
+    "vercel-ai-gateway": [
+      "VERCEL_AI_GATEWAY_API_KEY"
+    ],
+    "cloudflare-ai-gateway": [
+      "CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID",
+      "CLOUDFLARE_AI_GATEWAY_GATEWAY_ID",
+      "CLOUDFLARE_AI_GATEWAY_TOKEN"
+    ],
+    "llmgateway": [
+      "LLM_GATEWAY_API_KEY"
+    ],
+    "concentrate-ai-gateway": [
+      "CONCENTRATE_AI_GATEWAY_API_KEY"
+    ],
+    "kimi-direct": [
+      "KIMI_API_KEY"
     ]
   },
   "snapshot-fork": {
@@ -279,6 +376,18 @@
       "TENSORLAKE_ORGANIZATION_ID",
       "TENSORLAKE_PROJECT_ID",
       "TENSORLAKE_FILESYSTEM"
+    ],
+    "archil": [
+      "ARCHIL_S3_ACCESS_KEY_ID",
+      "ARCHIL_S3_SECRET_ACCESS_KEY",
+      "ARCHIL_BUCKET",
+      "ARCHIL_REGION"
+    ],
+    "neon": [
+      "NEON_BUCKET",
+      "NEON_ENDPOINT",
+      "NEON_ACCESS_KEY_ID",
+      "NEON_SECRET_ACCESS_KEY"
     ]
   }
 }

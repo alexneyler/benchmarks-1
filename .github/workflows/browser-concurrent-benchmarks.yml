@@ -1,0 +1,242 @@
+name: Browser Concurrency Benchmark
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'benchmarks/browser/*concurrent*'
+      - 'benchmarks/browser/concurrent-*'
+      - 'benchmarks/src/util/**'
+      - 'benchmarks/src/merge-results.ts'
+      - 'package.json'
+  schedule:
+    - cron: '0 4 * * 1' # Weekly on Monday at 04:00 UTC (offset from other browser benchmarks)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run without ingesting or committing results'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: browser-concurrent-benchmarks
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  setup:
+    name: Resolve target pages
+    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    permissions:
+      contents: read
+    outputs:
+      urls: ${{ steps.pick.outputs.urls }}
+    steps:
+      - name: Resolve one shared random article per round
+        id: pick
+        run: |
+          # Resolve concrete articles up front so every provider benchmarks
+          # against the same pages. One session takes one URL, so 50 covers a
+          # full c50 round and every provider sees the same page mix.
+          count=${{ github.event_name == 'push' && '5' || '50' }}
+
+          # Accept a page only if it offers what the action loop needs: several
+          # distinct article links inside #mw-content-text, which is where the
+          # loop's selector looks and where it clicks.
+          #
+          # The old check grepped the whole document for any /wiki/ link, so a
+          # page whose only qualifying links sat in the chrome (navigation,
+          # sidebar, footer) passed and then stalled in the browser. In run
+          # 31626532250 two of the fifty articles did exactly that, timing out
+          # waitForSelector or click at 30s for every provider alike, capping
+          # success at 96% and setting a 63s task p95 that had nothing to do
+          # with concurrency.
+          MIN_LINKS=5
+          urls=()
+          for i in $(seq 1 "$count"); do
+            # Reset per slot. Both are read after the attempt loop, and a slot
+            # that never reached the counting step would otherwise be judged on
+            # the previous slot's numbers.
+            url=''
+            links=0
+            for attempt in 1 2 3 4 5; do
+              resolved=$(curl -sL -A 'ComputeSDK-Benchmark' -o /dev/null -w '%{url_effective}' \
+                'https://en.wikipedia.org/wiki/Special:Random')
+              # Retry rather than give up: this is a transient redirect failure,
+              # which is what the attempt loop is for. Never put Special:Random
+              # itself in the list — each provider's browser would resolve it to
+              # a different article, so the slot would be neither validated nor
+              # shared, and a shared page set is the point of resolving up front.
+              if [ -z "$resolved" ] || [[ "$resolved" == *"Special:Random"* ]]; then
+                echo "Slot $i attempt $attempt: could not resolve a concrete article"
+                continue
+              fi
+              url="$resolved"
+              html=$(curl -sL -A 'ComputeSDK-Benchmark' "$url")
+              # Content area only, and namespaced links (Help:, File:, wikt:)
+              # dropped the same way isArticleLink drops them. All three href
+              # forms are accepted because the content area is served with
+              # absolute and ./-relative links while the page chrome uses
+              # /wiki/ — matching only the last form counts zero links on even
+              # a large article.
+              # || true keeps a zero-match page from failing the step if this
+              # ever runs under pipefail, where the empty grep would abort it.
+              links=$(printf '%s' "$html" \
+                | sed -n '/id="mw-content-text"/,$p' \
+                | grep -oP 'href="(\./|/wiki/|https://en\.wikipedia\.org/wiki/)[^"#:]+"' \
+                | sort -u | wc -l || true)
+              if [ "$links" -ge "$MIN_LINKS" ]; then
+                break
+              fi
+              echo "Rejected $url: $links in-content article links, need $MIN_LINKS"
+            done
+            if [ -z "$url" ]; then
+              echo "::error::Slot $i: could not resolve an article in 5 attempts"
+              exit 1
+            fi
+            if [ "$links" -lt "$MIN_LINKS" ]; then
+              echo "::warning::Slot $i using $url: only $links in-content article links"
+            fi
+            urls+=("$url")
+          done
+          {
+            echo "urls<<URLS_EOF"
+            printf '%s\n' "${urls[@]}"
+            echo "URLS_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Resolved ${#urls[@]} shared article URLs for all providers"
+
+  bench:
+    name: Bench ${{ matrix.provider }}
+    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    permissions:
+      contents: read
+      id-token: write
+    needs: setup
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        # Only the provider is a matrix dimension. Concurrency levels run
+        # sequentially inside the job, see the benchmark step for why.
+        provider:
+          - browserbase
+          - browseruse
+          - hyperbrowser
+          - kernel
+          - notte
+          - steel
+          - tilion
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - uses: namespacelabs/nscloud-setup@v0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Clear stale results from checkout
+        run: rm -rf results/browser-concurrent/
+      - name: Run browser concurrent benchmark
+        env:
+          THROUGHPUT_URLS: ${{ needs.setup.outputs.urls }}
+        run: |
+          . benchmarks/scripts/load-vault-secrets.sh '^(BROWSERBASE_API_KEY|BROWSERBASE_PROJECT_ID|BROWSER_USE_API_KEY|HYPERBROWSER_API_KEY|KERNEL_API_KEY|NOTTE_API_KEY|STEEL_API_KEY|TILION_API_KEY|TILION_BASE_URL|COMPUTESDK_ADMIN_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
+
+          # One invocation covers the whole sweep: the benchmark runs one task
+          # per concurrency level, and --levels picks which levels run (the
+          # rounds at each level are fixed in the benchmark). Levels therefore
+          # run one after another in a single process, never as parallel matrix
+          # jobs: parallel level jobs put every level's sessions on the same
+          # provider account at once, so c1 would measure its baseline while
+          # 5 + 10 + 25 + 50 sibling sessions were live and every level's
+          # numbers would depend on overlap.
+          if [ "${{ github.event_name }}" = "push" ]; then
+            LEVELS="1,5"             # smoke test: cheapest two levels
+            export CONCURRENT_LEVEL_COOLDOWN_MS=10000
+          else
+            LEVELS="1,5,10,25,50"
+            export CONCURRENT_LEVEL_COOLDOWN_MS=60000
+          fi
+
+          # One platform run for the whole sweep. Each level is a phase within
+          # the run rather than part of the run key, so every level lands in the
+          # same run and each provider registers exactly once.
+          RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/browser/browser-concurrent.bench.ts \
+            --provider ${{ matrix.provider }} \
+            --levels "$LEVELS" \
+            --run-key "$RUN_KEY" \
+            ${{ (github.event_name == 'push' || github.event.inputs.dry_run == 'true') && '--no-ingest' || '' }}
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-concurrent-results-${{ matrix.provider }}
+          path: results/browser-concurrent/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  collect:
+    name: Collect Results
+    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    permissions:
+      contents: write
+      pull-requests: write
+    needs: bench
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - uses: namespacelabs/nscloud-setup@v0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          pattern: browser-concurrent-results-*
+      - name: Merge results
+        run: npx tsx benchmarks/src/merge-results.ts --input artifacts --mode browser-concurrent
+      - run: pnpm run generate-browser-concurrent-svg
+      - name: Upload SVG as artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-concurrent-benchmark-svg
+          path: |
+            browser-concurrent.svg
+            browser-concurrent-degradation.svg
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Commit and push
+        if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.event.inputs.dry_run != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add browser-concurrent.svg browser-concurrent-degradation.svg results/browser-concurrent/
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "chore: update browser concurrent benchmark results [skip ci]"
+
+          branch="${GITHUB_REF#refs/heads/}"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "${branch}"
+            git rebase --autostash "origin/${branch}" || { git rebase --abort; exit 1; }
+            if git push origin "HEAD:${branch}"; then
+              echo "Pushed on attempt ${attempt}"
+              exit 0
+            fi
+            echo "Push rejected (attempt ${attempt}); will rebase and retry"
+          done
+          echo "Failed to push after multiple attempts" >&2
+          exit 1

@@ -4,6 +4,7 @@ export type {
   BenchmarkTask,
   TaskContext,
   TaskResult,
+  TaskStepOptions,
   Phase,
   GroupBy,
   ParticipantRecords,
@@ -14,3 +15,5 @@ export { NoAvailableParticipantsError } from './no-available-participants.js';
 export { runBenchmark, parseCliArgs, mergeConfig } from './runner.js';
 export type { CliArgs } from './runner.js';
 export { run, runBenchmarkFile } from './cli.js';
+export { score, lowerIsBetter, higherIsBetter, validateScoringSpec, ScoringSpecError } from './scoring.js';
+export type { ScoringSpec, MetricScoring, BenchmarkScoreResult } from './scoring.js';

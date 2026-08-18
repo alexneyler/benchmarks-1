@@ -10,7 +10,7 @@ on:
       - 'package.json'
       - '.github/workflows/ai-gateway-benchmarks.yml'
   schedule:
-    - cron: '0 6 * * 5' # Weekly on Friday at 6am UTC
+    - cron: '0 9 * * 5' # Weekly on Friday at 9am UTC (4am CDT)
   workflow_dispatch:
     inputs:
       family:
@@ -45,6 +45,7 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 jobs:
   bench:
@@ -101,6 +102,7 @@ jobs:
         with:
           node-version: 24
           cache: 'pnpm'
+      - uses: namespacelabs/nscloud-setup@v0
       - name: Install dependencies
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
@@ -120,7 +122,8 @@ jobs:
             PROVIDER_FLAG="--provider ${{ github.event.inputs.provider }}"
           fi
           npx tsx packages/benchsdk-runner/dist/bin.js run ${{ matrix.family.benchScript }} $PROVIDER_FLAG \
-            --iterations ${{ (github.event_name == 'push' && '10') || github.event.inputs.iterations || '10' }}
+            --iterations ${{ (github.event_name == 'push' && '10') || github.event.inputs.iterations || '10' }} \
+            ${{ (github.event_name == 'push' || github.event.inputs.dry_run == 'true') && '--no-ingest' || '' }}
       - run: pnpm run ${{ matrix.family.svgScript }}
       - name: Upload results and SVG as artifacts
         if: always()

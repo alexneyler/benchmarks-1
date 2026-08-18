@@ -14,6 +14,8 @@
  *     under the same conditions. Driven manually via one `BenchmarkReporter`
  *     per participant.
  */
+import { execSync } from 'node:child_process';
+import os from 'node:os';
 import {
   BenchmarkReporter,
   createBenchmarkClient,
@@ -21,10 +23,11 @@ import {
   selectParticipants,
 } from '@benchsdk/client';
 import { NoAvailableParticipantsError } from './no-available-participants.js';
+import { higherIsBetter, lowerIsBetter, score, ScoringSpecError } from './scoring.js';
 import type {
   BaseParticipant,
   BenchmarkClient,
-  BenchmarkRun,
+  DefineStepOptions,
   JsonObject,
   RunWorkerContext,
   TaskResultRecord,
@@ -34,29 +37,46 @@ import { TaskError } from './bench-config.js';
 import type {
   BenchmarkConfig,
   BenchmarkRunOutcome,
+  BenchmarkShape,
   BenchmarkTask,
   GroupBy,
   ParticipantRecords,
   ResolvedRunConfig,
   TaskContext,
   TaskResult,
+  TaskStepOptions,
 } from './bench-config.js';
 import { LogBuffer } from './log-buffer.js';
 
 export interface CliArgs {
-  slug?: string;
+  /** Which platform benchmark to report as (`--benchmark`, aka the benchmark slug). */
+  benchmark?: string;
   name?: string;
+  /** Named variant from the bench file's `shapes` (`--shape`), swapping in its identity. */
+  shape?: string;
+  /**
+   * Idempotency key (`--run-key`): sibling processes passing the same key share
+   * one run (get-or-created), instead of each opening its own.
+   */
+  runKey?: string;
   iterations?: number;
   concurrency?: number;
   staggerDelayMs?: number;
   groupBy?: GroupBy;
   /** Participant names from `--provider a,b` (repeatable). */
   providers?: string[];
+  /** When true, run locally and do not ingest/report to the platform. */
+  noIngest?: boolean;
 }
 
 // Matches @benchsdk/client's DEFAULT_BASE_URL origin. `resolvePlatform()`
 // appends `/api/v1`. Override for local development via BENCHMARKS_PLATFORM_URL.
 const DEFAULT_PLATFORM_URL = 'https://platform.computesdk.com';
+
+function isEnvNoIngest(): boolean {
+  const v = process.env.BENCHSDK_NO_INGEST;
+  return v === '1' || v?.toLowerCase() === 'true';
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -64,6 +84,80 @@ function sleep(ms: number): Promise<void> {
 
 function getErrorCode(error: unknown): string {
   return error instanceof Error && error.name ? error.name : 'ERROR';
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, name: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new TaskError(`Step "${name}" timed out after ${ms}ms`, { code: 'step_timeout' })),
+      ms,
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
+async function runStepInvocations<R>(
+  name: string,
+  fn: () => Promise<R> | R,
+  options: TaskStepOptions | undefined,
+): Promise<R | R[]> {
+  const requestedConcurrency = options?.concurrency;
+  if (requestedConcurrency !== undefined && (!Number.isInteger(requestedConcurrency) || requestedConcurrency < 1)) {
+    throw new Error(`step "${name}" concurrency must be an integer >= 1 (got ${requestedConcurrency})`);
+  }
+  const timeoutMs = options?.timeoutMs;
+  if (timeoutMs !== undefined && (!Number.isFinite(timeoutMs) || timeoutMs < 0)) {
+    throw new Error(`step "${name}" timeoutMs must be a number >= 0 (got ${timeoutMs})`);
+  }
+
+  const count = requestedConcurrency ?? 1;
+  const invocations = Array.from({ length: count }, () => {
+    const promise = Promise.resolve().then(() => fn());
+    if (timeoutMs === undefined) return promise;
+    return withTimeout(promise, timeoutMs, name);
+  });
+
+  if (count === 1) {
+    return invocations[0];
+  }
+
+  const outcomes = await Promise.allSettled(invocations);
+  const results: R[] = [];
+  let firstError: unknown;
+  for (const outcome of outcomes) {
+    if (outcome.status === 'fulfilled') {
+      results.push(outcome.value);
+    } else if (firstError === undefined) {
+      firstError = outcome.reason;
+    }
+  }
+  if (firstError !== undefined) throw firstError;
+  return results;
+}
+
+async function runStepWithClient<R, C extends number = 1>(
+  clientStep: RunWorkerContext['step'],
+  name: string,
+  fn: () => Promise<R> | R,
+  options?: TaskStepOptions & { concurrency?: C },
+): Promise<C extends 1 ? R : R[]> {
+  const { concurrency: runnerConcurrency, timeoutMs, ...clientOptions } = options ?? {};
+  const clientStepOptions: DefineStepOptions = {
+    ...clientOptions,
+    timeoutMs,
+    stepConcurrency: runnerConcurrency,
+  };
+  const result = await clientStep(name, () => runStepInvocations(name, fn, options), clientStepOptions);
+  return result as C extends 1 ? R : R[];
 }
 
 /**
@@ -98,12 +192,14 @@ export function parseCliArgs(argv: string[]): CliArgs {
     const arg = argv[i];
     const name = arg.includes('=') ? arg.slice(0, arg.indexOf('=')) : arg;
     switch (name) {
-      case '--slug': {
+      // `--slug` is the pre-`--benchmark` spelling, kept working for existing scripts.
+      case '--slug':
+      case '--benchmark': {
         const { value, nextIndex } = readValue(arg, i);
         if (!/^[a-z0-9][a-z0-9-]*$/.test(value)) {
-          throw new Error(`--slug expects a lowercase slug (got "${value}")`);
+          throw new Error(`${name} expects a lowercase benchmark slug (got "${value}")`);
         }
-        args.slug = value;
+        args.benchmark = value;
         i = nextIndex;
         break;
       }
@@ -111,6 +207,20 @@ export function parseCliArgs(argv: string[]): CliArgs {
         const { value, nextIndex } = readValue(arg, i);
         if (value.trim() === '') throw new Error('--name expects a value');
         args.name = value;
+        i = nextIndex;
+        break;
+      }
+      case '--shape': {
+        const { value, nextIndex } = readValue(arg, i);
+        if (value.trim() === '') throw new Error('--shape expects a value');
+        args.shape = value;
+        i = nextIndex;
+        break;
+      }
+      case '--run-key': {
+        const { value, nextIndex } = readValue(arg, i);
+        if (value.trim() === '') throw new Error('--run-key expects a value');
+        args.runKey = value;
         i = nextIndex;
         break;
       }
@@ -148,11 +258,18 @@ export function parseCliArgs(argv: string[]): CliArgs {
         i = nextIndex;
         break;
       }
+      case '--no-ingest':
+      case '--dry-run':
+        args.noIngest = true;
+        break;
       default:
         break;
     }
   }
 
+  if (!args.noIngest && isEnvNoIngest()) {
+    args.noIngest = true;
+  }
   return args;
 }
 
@@ -234,10 +351,79 @@ function resolvePlatform(): { baseUrl: string; apiKey: string } {
 }
 
 /**
- * Runs `config`'s `task` against `participants`. Selects participants by
+ * Resolves `--shape <name>` against the config's declared `shapes`. Throws with
+ * the known names if the shape is unknown, so a typo fails loudly instead of
+ * silently running the base benchmark.
+ */
+function resolveShape<T extends BaseParticipant>(
+  config: BenchmarkConfig<T>,
+  shapeName: string | undefined,
+): BenchmarkShape | undefined {
+  if (!shapeName) return undefined;
+  const shape = config.shapes?.[shapeName];
+  if (!shape) {
+    const known = Object.keys(config.shapes ?? {});
+    throw new Error(
+      known.length > 0
+        ? `Unknown --shape "${shapeName}". Known shapes: ${known.join(', ')}.`
+        : `Unknown --shape "${shapeName}": this benchmark declares no shapes.`,
+    );
+  }
+  return shape;
+}
+
+/**
+ * Swaps a shape's identity (and its stable knob) into the config. Only the
+ * parts that make it a distinct benchmark move here; scale knobs stay on the
+ * CLI, so `mergeConfig` still lets `--concurrency`/`--iterations` win.
+ */
+function applyShape<T extends BaseParticipant>(
+  config: BenchmarkConfig<T>,
+  shape: BenchmarkShape | undefined,
+): BenchmarkConfig<T> {
+  if (!shape) return config;
+  return {
+    ...config,
+    benchmarkSlug: shape.slug,
+    benchmarkName: shape.name ?? shape.slug,
+    ...(shape.staggerDelayMs !== undefined ? { staggerDelayMs: shape.staggerDelayMs } : {}),
+  };
+}
+
+/** Applies the `--benchmark`/`--name` overrides, so one entrypoint can report under several benchmarks. */
+function applyIdentityOverrides<T extends BaseParticipant>(
+  fileConfig: BenchmarkConfig<T>,
+  args: CliArgs,
+): BenchmarkConfig<T> {
+  return {
+    ...fileConfig,
+    ...(args.benchmark ? { benchmarkSlug: args.benchmark } : {}),
+    ...(args.name ? { benchmarkName: args.name } : {}),
+  };
+}
+
+function dashboardUrlFor(baseUrl: string, organizationSlug: string, benchmarkSlug: string, runId: string): string {
+  return `${baseUrl.replace(/\/api\/v1\/?$/, '')}/${organizationSlug}/benchmarks/${benchmarkSlug}/runs/${runId}`;
+}
+
+/** The participants a run covers: `--provider` selection, minus any whose env vars are unset. */
+function resolveParticipants<T extends BaseParticipant>(config: BenchmarkConfig<T>, resolved: ResolvedRunConfig): T[] {
+  const { available, skipped } = filterParticipantsByEnv(selectParticipants(config.participants, resolved.providers));
+  for (const s of skipped) {
+    console.log(`Skipping ${s.name}: missing ${s.missing.join(', ')}`);
+  }
+  if (available.length === 0) throw new NoAvailableParticipantsError(skipped);
+  return available;
+}
+
+/**
+ * Runs `config`'s `task` against its participants. Selects participants by
  * `--provider` (if given), env-gates them, then drives them per the resolved
- * `groupBy`. `--slug`/`--name` retarget the whole run at a different platform
- * benchmark, so one entrypoint can report under several slugs.
+ * `groupBy`. `--shape` swaps in a declared variant's identity; `--benchmark`/
+ * `--name` retarget the run at a different platform benchmark, so one entrypoint
+ * can report under several slugs. With `--run-key`, sibling processes (e.g. one
+ * CI job per provider) get-or-create one shared run and each registers only its
+ * own participants.
  */
 export async function runBenchmark<T extends BaseParticipant>(
   fileConfig: BenchmarkConfig<T>,
@@ -245,71 +431,143 @@ export async function runBenchmark<T extends BaseParticipant>(
   argv: string[] = [],
 ): Promise<BenchmarkRunOutcome> {
   const args = parseCliArgs(argv);
-  const config = {
-    ...fileConfig,
-    ...(args.slug ? { benchmarkSlug: args.slug } : {}),
-    ...(args.name ? { benchmarkName: args.name } : {}),
-  };
+  const noIngest = args.noIngest ?? isEnvNoIngest();
+  const shaped = applyShape(fileConfig, resolveShape(fileConfig, args.shape));
+  const config = applyIdentityOverrides(shaped, args);
   const resolved = mergeConfig(config, args);
+  const available = resolveParticipants(config, resolved);
+
+  let baseUrl = '';
+  let apiKey = '';
+  let client: BenchmarkClient | null = null;
+  if (!noIngest) {
+    ({ baseUrl, apiKey } = resolvePlatform());
+    client = createBenchmarkClient({ baseUrl, apiKey });
+  }
+
   const schedule = buildSchedule(config, resolved.iterations, task);
   const totalTasks = schedule.length;
-
-  const selected = selectParticipants(config.participants, resolved.providers);
-  const { available, skipped } = filterParticipantsByEnv(selected);
-
-  for (const s of skipped) {
-    console.log(`Skipping ${s.name}: missing ${s.missing.join(', ')}`);
-  }
-
-  if (available.length === 0) {
-    throw new NoAvailableParticipantsError(skipped);
-  }
-
-  const { baseUrl, apiKey } = resolvePlatform();
-  const client = createBenchmarkClient({ baseUrl, apiKey });
 
   const concurrencyLabel = resolved.groupBy === 'round' ? 'n/a (round mode)' : String(resolved.concurrency);
   console.log(`${config.benchmarkName} (self-contained)`);
   console.log(`Date: ${new Date().toISOString()}`);
+  if (noIngest) {
+    console.log('Dry run: no platform ingest or reporting.\n');
+  }
   console.log(
     `Knobs: iterations=${totalTasks}, concurrency=${concurrencyLabel}, ` +
       `staggerDelayMs=${resolved.staggerDelayMs}, groupBy=${resolved.groupBy}\n`,
   );
 
-  await client.upsertBenchmark(config.benchmarkSlug, {
-    name: config.benchmarkName,
-    ...(config.benchmarkKind ? { kind: config.benchmarkKind } : {}),
-  });
+  // Declaratively materialize the benchmark from the file/shape identity, which
+  // is authoritative (its name lives in the file). A bare `--benchmark X` only
+  // *retargets* reporting at a benchmark this file doesn't name, so we don't
+  // upsert it — that would rename it to the file's own name.
+  const identityIsOurs =
+    args.shape !== undefined ||
+    args.name !== undefined ||
+    !args.benchmark ||
+    args.benchmark === fileConfig.benchmarkSlug;
 
-  const { run, organizationSlug } = await client.createRun(config.benchmarkSlug, {
-    name: `${config.benchmarkSlug} — ${totalTasks} iterations, concurrency ${resolved.concurrency}`,
-    totalTasks,
-    workerCount: 1,
-    participants: available.map((p) => p.name),
-  });
+  let runId: string;
+  let dashboardUrl: string;
+  if (noIngest) {
+    runId = 'no-ingest';
+    dashboardUrl = '';
+  } else {
+    if (identityIsOurs) {
+      await client!.upsertBenchmark(config.benchmarkSlug, {
+        name: config.benchmarkName,
+      });
+    }
 
-  const dashboardUrl = `${baseUrl.replace(/\/api\/v1\/?$/, '')}/${organizationSlug}/benchmarks/${config.benchmarkSlug}/runs/${run.id}`;
-  console.log(`Run created: ${run.id}`);
-  console.log(`View at: ${dashboardUrl}\n`);
+    if (args.runKey) {
+      // Shared run: get-or-created by key, so sibling processes (one per provider)
+      // converge on one run. Opened participant-sized — register only the
+      // providers this process runs and let each sibling register its own, so the
+      // run lists exactly who's benchmarked and each brings its own task count.
+      const { run, organizationSlug } = await client!.createRun(config.benchmarkSlug, {
+        runKey: args.runKey,
+      });
+      runId = run.id;
+      dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
+      for (const participant of available) {
+        await client!.upsertParticipant(config.benchmarkSlug, runId, participant.name, { totalTasks });
+      }
+      console.log(`Shared run (key "${args.runKey}"): ${run.name} (${runId})`);
+      console.log(`View at: ${dashboardUrl}\n`);
+    } else {
+      const { run, organizationSlug } = await client!.createRun(config.benchmarkSlug, {
+        totalTasks,
+        workerCount: 1,
+        participants: available.map((p) => p.name),
+      });
+      runId = run.id;
+      dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
+      console.log(`Run created: ${run.name} (${runId})`);
+      console.log(`View at: ${dashboardUrl}\n`);
+    }
+  }
 
   const onResult = defaultOnResult;
 
   let participantRecords: ParticipantRecords[];
   if (resolved.groupBy === 'round') {
-    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, run, baseUrl, apiKey, onResult);
+    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, runId, baseUrl, apiKey, onResult, noIngest);
   } else {
-    participantRecords = await runGroupedByParticipant(config, schedule, available, resolved, client, run, onResult);
+    participantRecords = await runGroupedByParticipant(config, schedule, available, resolved, client, runId, onResult);
   }
 
-  console.log(`All done. View at: ${dashboardUrl}`);
+  console.log(`All done. ${noIngest ? 'No platform run created.' : `View at: ${dashboardUrl}`}`);
   const outcome: BenchmarkRunOutcome = {
-    runId: run.id,
+    runId,
     dashboardUrl,
     participants: participantRecords,
     config: resolved,
   };
+  if (client && config.onScore) {
+    try {
+      const spec = await config.onScore(lowerIsBetter, higherIsBetter);
+      const scored = score(outcome, spec);
+      const run = {
+        gitSha: process.env.GITHUB_SHA ?? getGitSha(),
+        gitRef: process.env.GITHUB_REF_NAME ?? process.env.GITHUB_REF ?? getGitRef(),
+        triggeredBy: process.env.GITHUB_EVENT_NAME ?? 'manual',
+        nodeVersion: process.version,
+        platform: os.platform(),
+        arch: os.arch(),
+      };
+      await client.submitRunSummary(config.benchmarkSlug, runId, { run, results: scored });
+    } catch (err) {
+      // A ScoringSpecError means onScore itself is misconfigured (e.g. metric
+      // weights don't sum to 1.0) — an authoring bug, not a transient submit
+      // failure, so it must fail the run rather than degrade to a warning.
+      if (err instanceof ScoringSpecError) throw err;
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn(`[benchsdk-runner] failed to submit run summary: ${message}`);
+    }
+  }
   if (config.onComplete) await config.onComplete(outcome);
   return outcome;
+}
+
+function getGitSha(): string | undefined {
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA;
+  try {
+    return execSync('git rev-parse HEAD', { encoding: 'utf8', stdio: 'pipe' }).trim();
+  } catch {
+    return undefined;
+  }
+}
+
+function getGitRef(): string | undefined {
+  if (process.env.GITHUB_REF_NAME) return process.env.GITHUB_REF_NAME;
+  if (process.env.GITHUB_REF) return process.env.GITHUB_REF;
+  try {
+    return execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8', stdio: 'pipe' }).trim();
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -324,8 +582,8 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
   schedule: Slot<T>[],
   available: T[],
   resolved: ResolvedRunConfig,
-  client: BenchmarkClient,
-  run: BenchmarkRun,
+  client: BenchmarkClient | null,
+  runId: string,
   onResult: OnResult,
 ): Promise<ParticipantRecords[]> {
   const participantRecords: ParticipantRecords[] = [];
@@ -334,15 +592,50 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
     console.log(`  Participant: ${participant.name}`);
     console.log('='.repeat(70));
 
+    // When running without platform ingest, execute the schedule locally.
+    if (!client) {
+      const records: TaskResultRecord[] = [];
+      let rampStartMs: number | undefined;
+      let nextIndex = 0;
+      const logBuffer = new LogBuffer();
+
+      const runSlot = async (scheduleIndex: number) => {
+        if (resolved.staggerDelayMs > 0) {
+          rampStartMs ??= Date.now();
+          const waitMs = rampStartMs + scheduleIndex * resolved.staggerDelayMs - Date.now();
+          if (waitMs > 0) await sleep(waitMs);
+        }
+        const slot = schedule[scheduleIndex];
+        const record = await runTaskRecord(slot.task, participant, scheduleIndex, scheduleIndex, slot.phase, logBuffer);
+        onResult(record, { iterations: schedule.length, participant: participant.name });
+        records.push(record);
+      };
+
+      const worker = async () => {
+        while (nextIndex < schedule.length) {
+          const index = nextIndex++;
+          await runSlot(index);
+        }
+      };
+
+      await Promise.all(Array.from({ length: resolved.concurrency }, () => worker()));
+      records.sort((a, b) => a.taskIndex - b.taskIndex);
+
+      const ok = records.filter((r) => r.status === 'success').length;
+      console.log(`  Done: ${ok}/${records.length} succeeded.\n`);
+      participantRecords.push({ participant: participant.name, records });
+      continue;
+    }
+
     // Anchors the ramp to the worker's start, so a pool narrower than the task
     // count can't inflate launch offsets: a task whose slot frees after its
     // scheduled launch time starts immediately instead of sleeping index*delay.
     let rampStartMs: number | undefined;
-    await client.planWorkers(config.benchmarkSlug, run.id, participant.name);
+    await client.planWorkers(config.benchmarkSlug, runId, participant.name);
 
     const result = await client.runWorker({
       benchmarkSlug: config.benchmarkSlug,
-      runId: run.id,
+      runId: runId,
       participantSlug: participant.name,
       concurrency: resolved.concurrency,
       task: async (ctx: RunWorkerContext) => {
@@ -356,12 +649,14 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
         }
         const slot = schedule[scheduleIndex];
         // The client owns step timing, `measure` attribution, and worker-log
-        // upload; the runner just threads them onto the task context.
+        // upload; the runner just threads them onto the task context. The runner
+        // wraps `ctx.step` so per-step `timeoutMs` and `concurrency` work in
+        // participant mode as well.
         const taskResult = await slot.task({
           participant,
           taskIndex: scheduleIndex,
           phase: slot.phase,
-          step: ctx.step,
+          step: (name, fn, options) => runStepWithClient(ctx.step, name, fn, options),
           measure: ctx.measure,
           log: ctx.log,
         });
@@ -372,7 +667,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
     });
 
     if (!result.assignment) {
-      console.error(`  No pending worker to claim for run ${run.id} — it may already be fully claimed.`);
+      console.error(`  No pending worker to claim for run ${runId} — it may already be fully claimed.`);
       participantRecords.push({ participant: participant.name, records: result.records ?? [] });
       continue;
     }
@@ -396,11 +691,12 @@ async function runGroupedByRound<T extends BaseParticipant>(
   schedule: Slot<T>[],
   available: T[],
   resolved: ResolvedRunConfig,
-  client: BenchmarkClient,
-  run: BenchmarkRun,
+  client: BenchmarkClient | null,
+  runId: string,
   baseUrl: string,
   apiKey: string,
   onResult: OnResult,
+  noIngest: boolean = false,
 ): Promise<ParticipantRecords[]> {
   const reporters = new Map<string, BenchmarkReporter | null>();
   const logBuffers = new Map<string, LogBuffer>();
@@ -410,11 +706,15 @@ async function runGroupedByRound<T extends BaseParticipant>(
   for (const participant of available) {
     logBuffers.set(participant.name, new LogBuffer());
     failed.set(participant.name, false);
+    if (noIngest || !client) {
+      reporters.set(participant.name, null);
+      continue;
+    }
     // One worker per participant drives every round sequentially. The platform
     // reads `targetConcurrency` as tasks-per-worker, so it must be the full
     // schedule length — otherwise only one task is planned and every record
     // past the first falls outside the worker's task range.
-    await client.planWorkers(config.benchmarkSlug, run.id, participant.name, {
+    await client.planWorkers(config.benchmarkSlug, runId, participant.name, {
       workerCount: 1,
       targetConcurrency: schedule.length,
     });
@@ -424,7 +724,7 @@ async function runGroupedByRound<T extends BaseParticipant>(
         baseUrl,
         apiKey,
         benchmarkSlug: config.benchmarkSlug,
-        runId: run.id,
+        runId: runId,
         participantSlug: participant.name,
         processKind: 'process',
         processKey: process.env.HOSTNAME ?? 'local',
@@ -530,7 +830,11 @@ async function runTaskRecord<T extends BaseParticipant>(
     participant,
     taskIndex: scheduleIndex,
     phase,
-    async step(name, fn) {
+    async step<R, C extends number = 1>(
+      name: string,
+      fn: () => Promise<R> | R,
+      options?: TaskStepOptions & { concurrency?: C },
+    ): Promise<C extends 1 ? R : R[]> {
       const stepStartedAtMs = Date.now();
       const stepRecord: TaskStepRecord = {
         name,
@@ -539,15 +843,17 @@ async function runTaskRecord<T extends BaseParticipant>(
         completedAt: new Date(stepStartedAtMs).toISOString(),
         latencyMs: 0,
       };
+      if (options?.concurrency !== undefined) stepRecord.concurrency = options.concurrency;
+      if (options?.timeoutMs !== undefined) stepRecord.timeoutMs = options.timeoutMs;
       const previousStep = activeStep;
       activeStep = stepRecord;
       try {
-        const result = await fn();
+        const result = await runStepInvocations<R>(name, fn, options);
         logBuffer.step(taskIndex, name, {});
-        return result;
+        return result as C extends 1 ? R : R[];
       } catch (error) {
         stepRecord.status = 'error';
-        stepRecord.errorCode = getErrorCode(error);
+        stepRecord.errorCode = error instanceof TaskError ? error.code ?? error.name : getErrorCode(error);
         logBuffer.step(taskIndex, name, { error: error instanceof Error ? error.message : String(error) });
         throw error;
       } finally {

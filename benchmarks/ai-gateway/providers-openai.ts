@@ -88,7 +88,12 @@ export const providers: AIGatewayProviderConfig[] = [
     // Each provider's passthrough convention has to be checked individually;
     // it isn't uniform across them.
     name: 'cloudflare-ai-gateway',
-    requiredEnvVars: ['CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID', 'CLOUDFLARE_AI_GATEWAY_GATEWAY_ID', 'OPENAI_API_KEY'],
+    requiredEnvVars: [
+      'CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID',
+      'CLOUDFLARE_AI_GATEWAY_GATEWAY_ID',
+      'CLOUDFLARE_AI_GATEWAY_TOKEN',
+      'OPENAI_API_KEY',
+    ],
     wireFormat: 'responses',
     model: 'gpt-4.1-mini',
     host: 'gateway.ai.cloudflare.com',

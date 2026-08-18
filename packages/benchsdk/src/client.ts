@@ -10,6 +10,7 @@ import type {
   BenchmarkResultsOverviewInput,
   BenchmarkRunImports,
   BenchmarkRunResults,
+  BenchmarkRunSummaryInput,
   BenchmarkRunTaskResults,
   BenchmarkRunTaskResultsInput,
   BenchmarkRunTimeline,
@@ -49,6 +50,7 @@ const DEFAULT_READY_POLL_INTERVAL_MS = 1000;
 const MAX_TASK_RESULT_RECORDS = 5000;
 const MAX_TASK_RECORD_STEPS = 100;
 const MAX_HEARTBEAT_CONCURRENCY_SAMPLES = 20;
+const MAX_WORKER_LOG_LINES = 100_000;
 
 export class BenchmarkApiError extends Error {
   constructor(
@@ -83,6 +85,9 @@ function getApiKey(input?: string): string | undefined {
 }
 
 function getErrorCode(error: unknown): string {
+  if (error instanceof Error && 'code' in error && typeof (error as { code: unknown }).code === 'string' && (error as { code: string }).code) {
+    return (error as { code: string }).code;
+  }
   if (error instanceof Error && error.name) return error.name;
   return 'ERROR';
 }
@@ -493,6 +498,14 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
       );
     },
 
+    async submitRunSummary(benchmarkSlug, runId, input) {
+      await request(
+        'POST',
+        `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/summary`,
+        input as unknown as JsonObject,
+      );
+    },
+
     async runWorker(options: RunWorkerOptions): Promise<RunWorkerResult> {
       if (options.concurrency !== undefined) validatePositiveInteger('concurrency', options.concurrency);
       if (options.batchSize !== undefined) validateBatchSize(options.batchSize);
@@ -623,9 +636,20 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
       }, options.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS);
       resultFlush.unref?.();
 
-      // Accumulated across the worker's tasks via `ctx.log`, uploaded once as a
-      // worker log artifact when the worker finishes.
+      // Accumulated across the worker's tasks via `ctx.step` and `ctx.log`,
+      // uploaded once as a worker log artifact when the worker finishes.
       const workerLogLines: string[] = [];
+      let workerLogTruncated = false;
+      function appendWorkerLog(line: string): void {
+        if (workerLogLines.length >= MAX_WORKER_LOG_LINES) {
+          if (!workerLogTruncated) {
+            workerLogTruncated = true;
+            workerLogLines.push('... (worker log truncated)');
+          }
+          return;
+        }
+        workerLogLines.push(line);
+      }
 
       async function runFinishHook(status: 'success' | 'error'): Promise<void> {
         await options.onFinish?.({
@@ -685,7 +709,7 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
 
           function log(message: string, meta?: JsonObject): void {
             const suffix = meta && Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : '';
-            workerLogLines.push(`${new Date().toISOString()} [task ${taskIndex}] ${message}${suffix}`);
+            appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] ${message}${suffix}`);
           }
 
           async function step<T>(name: string, fn: () => Promise<T> | T, stepOptions: DefineStepOptions = {}): Promise<T> {
@@ -697,6 +721,8 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
               completedAt: new Date().toISOString(),
               latencyMs: 0,
             };
+            if (stepOptions.timeoutMs !== undefined) stepRecord.timeoutMs = stepOptions.timeoutMs;
+            if (stepOptions.stepConcurrency !== undefined) stepRecord.concurrency = stepOptions.stepConcurrency;
 
             const shouldReportConcurrency = stepOptions.reportConcurrency ?? true;
             if (shouldReportConcurrency) {
@@ -713,10 +739,14 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
               if (stepOptions.readiness === 'poll') {
                 await waitForStepReady(name, stepOptions);
               }
-              return await fn();
+              const value = await fn();
+              appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] ${name}`);
+              return value;
             } catch (error) {
               stepRecord.status = 'error';
               stepRecord.errorCode = getErrorCode(error);
+              appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] ${name}`);
+              appendWorkerLog(`  error: ${error instanceof Error ? error.message : String(error)}`);
               throw error;
             } finally {
               activeStep = previousStep;

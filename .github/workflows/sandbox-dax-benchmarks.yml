@@ -8,10 +8,12 @@ on:
       - 'benchmarks/sandbox/providers.ts'
       - 'benchmarks/src/merge-results.ts'
       - 'benchmarks/scripts/dax-benchmark.sh'
+      - 'benchmarks/sandbox/generate-dax-svg.ts'
+      - 'dax.svg'
       - 'package.json'
       - '.github/workflows/sandbox-dax-benchmarks.yml'
   schedule:
-    - cron: '0 0 * * 5' # Weekly on Friday at midnight UTC
+    - cron: '30 13 * * 5' # Weekly on Friday at 1:30pm UTC (8:30am CDT, offset from TTI to avoid provider contention)
   workflow_dispatch:
     inputs:
       iterations:
@@ -35,17 +37,20 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 jobs:
   dax:
     name: Dax ${{ matrix.provider }}
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    # runs-on: self-hosted
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         provider:
           - archil
+          - arker
           - beam
           - blaxel
           - cloud-run
@@ -59,10 +64,13 @@ jobs:
           - isorun
           - lightning
           - modal
+          - mosaic
           - namespace
           - northflank
           - opencomputer
+          - run-cloud
           - runloop
+          - sail
           - sandbox0
           - superserve
           - tenki
@@ -76,6 +84,7 @@ jobs:
         with:
           node-version: 24
           cache: 'pnpm'
+      - uses: namespacelabs/nscloud-setup@v0
       - name: Install dependencies
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
@@ -103,12 +112,26 @@ jobs:
       - name: Run dax benchmark
         env:
           LIGHTNING_INSTANCE_TYPE: cpu-8 # 8 vCPU / 16 GiB, matching the standardized dax profile
+          ARKER_PLATFORMS: graviton4 # dax only; elsewhere Arker picks the platform automatically
         run: |
-          . benchmarks/scripts/load-vault-secrets.sh '^(ARCHIL_API_KEY|ARCHIL_REGION|ARCHIL_DISK_ID|BEAM_TOKEN|BEAM_WORKSPACE_ID|BL_API_KEY|BL_WORKSPACE|CLOUD_RUN_SANDBOX_URL|CLOUD_RUN_SANDBOX_SECRET|CLOUDFLARE_SANDBOX_URL|CLOUDFLARE_SANDBOX_SECRET|CSB_API_KEY|CREATEOS_SANDBOX_API_KEY|DAYTONA_API_KEY|DECLAW_API_KEY|E2B_API_KEY|HOPX_API_KEY|ISORUN_API_KEY|LIGHTNING_API_KEY|MODAL_TOKEN_ID|MODAL_TOKEN_SECRET|NSC_TOKEN|NORTHFLANK_TOKEN|NORTHFLANK_PROJECT_ID|OPENCOMPUTER_API_KEY|OPENCOMPUTER_API_URL|RUNLOOP_API_KEY|SANDBOX0_TOKEN|SPRITES_TOKEN|SUPERSERVE_API_KEY|TENKI_API_KEY|TENSORLAKE_API_KEY|UPSTASH_BOX_API_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID|VERCEL_PROJECT_ID|COMPUTESDK_ADMIN_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
+          . benchmarks/scripts/load-vault-secrets.sh '^(ARCHIL_API_KEY|ARCHIL_REGION|ARCHIL_DISK_ID|ARKER_API_KEY|BEAM_TOKEN|BEAM_WORKSPACE_ID|BL_API_KEY|BL_WORKSPACE|BL_DAX_API_KEY|BL_DAX_WORKSPACE|CLOUD_RUN_SANDBOX_URL|CLOUD_RUN_SANDBOX_SECRET|CLOUDFLARE_SANDBOX_URL|CLOUDFLARE_SANDBOX_SECRET|CSB_API_KEY|CREATEOS_SANDBOX_API_KEY|DAYTONA_API_KEY|DECLAW_API_KEY|E2B_API_KEY|HOPX_API_KEY|ISORUN_API_KEY|LIGHTNING_API_KEY|MODAL_TOKEN_ID|MODAL_TOKEN_SECRET|MOSAIC_API_URL|MOSAIC_API_TOKEN|NSC_TOKEN|NORTHFLANK_TOKEN|NORTHFLANK_PROJECT_ID|OPENCOMPUTER_API_KEY|OPENCOMPUTER_API_URL|RUN_CLOUD_API_KEY|RUNLOOP_API_KEY|SAIL_API_KEY|SANDBOX0_TOKEN|SPRITES_TOKEN|SUPERSERVE_API_KEY|TENKI_API_KEY|TENSORLAKE_API_KEY|UPSTASH_BOX_API_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID|VERCEL_PROJECT_ID|COMPUTESDK_ADMIN_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
 
+          # If dedicated DAX Blaxel credentials are provisioned, route them to the
+          # standard names that providers.ts expects, so no provider fork is needed.
+          if [ -n "${BL_DAX_API_KEY:-}" ] && [ -n "${BL_DAX_WORKSPACE:-}" ]; then
+            export BL_API_KEY="$BL_DAX_API_KEY"
+            export BL_WORKSPACE="$BL_DAX_WORKSPACE"
+            unset BL_DAX_API_KEY BL_DAX_WORKSPACE
+          fi
+
+          # All matrix jobs for this workflow run share a single platform run. The
+          # attempt number is included so re-runs do not rejoin completed runs.
+          RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/sandbox/dax.bench.ts \
             --provider ${{ matrix.provider }} \
-            --iterations ${{ github.event.inputs.iterations || '1' }}
+            --iterations ${{ github.event.inputs.iterations || '1' }} \
+            --run-key "$RUN_KEY" \
+            ${{ (github.event_name == 'push' || github.event.inputs.dry_run == 'true') && '--no-ingest' || '' }}
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
@@ -121,6 +144,7 @@ jobs:
   collect:
     name: Collect Dax Results
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    # runs-on: self-hosted
     needs: dax
     if: always()
     steps:
@@ -132,6 +156,7 @@ jobs:
         with:
           node-version: 24
           cache: 'pnpm'
+      - uses: namespacelabs/nscloud-setup@v0
       - name: Install dependencies
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
@@ -146,12 +171,13 @@ jobs:
           pattern: results-*
       - name: Merge results
         run: npx tsx benchmarks/src/merge-results.ts --input artifacts
-      - name: Ingest results to platform
-        if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
-        continue-on-error: true
+      - name: Generate DAX SVG
         run: |
-          . benchmarks/scripts/load-vault-secrets.sh '^(INGEST_URL|INGEST_SECRET)'
-          npx tsx benchmarks/src/ingest.ts --type sandbox
+          if [ -f results/sandbox-dax/latest.json ]; then
+            pnpm run generate-dax-svg
+          else
+            echo "No DAX results found; skipping chart"
+          fi
       - name: Post results to merged PR
         if: github.event_name == 'push'
         continue-on-error: true
@@ -245,7 +271,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add results/sandbox-dax/
+          git add results/sandbox-dax/ dax.svg
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "chore: update dax benchmark results [skip ci]"
 

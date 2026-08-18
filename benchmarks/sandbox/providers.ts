@@ -1,4 +1,5 @@
 import { archil } from '@computesdk/archil';
+import { arker } from '@computesdk/arker';
 import { beam } from '@computesdk/beam';
 import { blaxel } from '@computesdk/blaxel';
 import { codesandbox } from '@computesdk/codesandbox';
@@ -14,13 +15,16 @@ import { isorun } from '@computesdk/isorun';
 // import { lelantos } from '@computesdk/lelantos';
 import { lightning } from '@computesdk/lightning';
 import { modal } from '@computesdk/modal';
+import { mosaic } from '@computesdk/mosaic';
 import { namespace } from '@computesdk/namespace';
 import { northflank } from '@computesdk/northflank';
 import { opencomputer } from '@computesdk/opencomputer';
 // import { quilt } from '@computesdk/quilt';
 // import { railway } from '@computesdk/railway';
+import { runCloud } from '@computesdk/run-cloud';
 import { runloop } from '@computesdk/runloop';
 import { sandbox0 } from '@computesdk/sandbox0';
+import { sail } from '@computesdk/sail';
 import { sprites } from '@computesdk/sprites';
 import { superserve } from '@computesdk/superserve';
 import { tenki } from '@computesdk/tenki';
@@ -42,6 +46,14 @@ export const providers: ProviderConfig[] = [
     requiredEnvVars: ['ARCHIL_API_KEY', 'ARCHIL_REGION', 'ARCHIL_DISK_ID'],
     createCompute: () => archil({ apiKey: process.env.ARCHIL_API_KEY!, region: process.env.ARCHIL_REGION! }),
     sandboxOptions: { diskId: process.env.ARCHIL_DISK_ID! }
+  },
+  {
+    // Arker sizes via `platforms` on the factory, not sandbox.create(), so like
+    // lightning it is set from the dax workflow env (ARKER_PLATFORMS=graviton4).
+    name: 'arker',
+    requiredEnvVars: ['ARKER_API_KEY'],
+    createCompute: () => arker({ apiKey: process.env.ARKER_API_KEY! }),
+    sandboxOptions: { templateId: 'ubuntu-small' },
   },
   {
     // Activated in daily + PR benchmarks once BEAM_TOKEN / BEAM_WORKSPACE_ID secrets landed.
@@ -89,7 +101,7 @@ export const providers: ProviderConfig[] = [
     name: 'daytona',
     requiredEnvVars: ['DAYTONA_API_KEY'],
     createCompute: () => daytona({ apiKey: process.env.DAYTONA_API_KEY! }),
-    sandboxOptions: { autoStopInterval: 15, autoDeleteInterval: 0, image: 'node:22' },
+    sandboxOptions: { autoStopInterval: 15, autoDeleteInterval: 0, snapshotId: 'daytona-8cpu-16gb' },
   },
   {
     name: 'declaw',
@@ -137,6 +149,15 @@ export const providers: ProviderConfig[] = [
     createCompute: () => modal({ tokenId: process.env.MODAL_TOKEN_ID!, tokenSecret: process.env.MODAL_TOKEN_SECRET!, scalableSandboxes: true }),
   },
   {
+    name: 'mosaic',
+    requiredEnvVars: ['MOSAIC_API_URL', 'MOSAIC_API_TOKEN'],
+    createCompute: () => mosaic({
+      baseUrl: process.env.MOSAIC_API_URL!,
+      apiKey: process.env.MOSAIC_API_TOKEN!,
+    }),
+    sandboxOptions: { templateId: 'node-20' },
+  },
+  {
     name: 'namespace',
     requiredEnvVars: ['NSC_TOKEN'],
     createCompute: () =>
@@ -181,9 +202,24 @@ export const providers: ProviderConfig[] = [
     createCompute: () => runloop({ apiKey: process.env.RUNLOOP_API_KEY! }),
   },
   {
+    name: 'run-cloud',
+    requiredEnvVars: ['RUN_CLOUD_API_KEY'],
+    createCompute: () => runCloud({ apiKey: process.env.RUN_CLOUD_API_KEY! }),
+    sandboxOptions: { templateId: 'runcloud/agent-base' },
+  },
+  {
     name: 'sandbox0',
     requiredEnvVars: ['SANDBOX0_TOKEN'],
     createCompute: () => sandbox0({ token: process.env.SANDBOX0_TOKEN! }),
+    // TTI modes (sequential, staggered, and burst) use 128 MiB for Sandbox0.
+    // DAX overrides memory to 16 GiB while preserving this hard TTL.
+    // Outlive the 10-minute DAX timeout without leaving a zombie sandbox if cleanup cannot run.
+    sandboxOptions: { memory: 128, hardTtl: 900 },
+  },
+  {
+    name: 'sail',
+    requiredEnvVars: ['SAIL_API_KEY'],
+    createCompute: () => sail({ apiKey: process.env.SAIL_API_KEY! }),
   },
   {
     name: 'sprites',

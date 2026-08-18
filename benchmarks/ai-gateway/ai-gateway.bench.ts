@@ -17,22 +17,69 @@
  * (coldE2eMs / ttftMs) is returned as `TaskResult.latencyMs` rather than
  * letting the framework stamp wall-clock time.
  *
- * The phase/task/CLI-flag machinery is shared across every AI-gateway family
- * benchmark (see `task.ts`); this file only supplies the Anthropic-routed
- * `providers` list and this family's own benchmark identity. See
- * `ai-gateway-openai.bench.ts` for the OpenAI-routed sibling.
+ * The probe task and CLI iteration-flag parsing are shared across every
+ * AI-gateway family benchmark (see `shared-task.ts`); this file supplies the
+ * Anthropic-routed `providers` list plus this family's own benchmark
+ * identity, scoring, and legacy-results output. See `ai-gateway-openai.bench.ts`
+ * for the OpenAI-routed sibling.
  *
  * Run:
  *   bench run benchmarks/ai-gateway/ai-gateway.bench.ts
  *   bench run benchmarks/ai-gateway/ai-gateway.bench.ts --provider openrouter
  */
 import '../src/env.js';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';
 import { providers } from './providers.js';
-import { buildAIGatewayFamily } from './task.js';
+import { writeAIGatewayLegacyResults } from './legacy-results.js';
+import { makeAIGatewayTask, resolveAIGatewayPhases } from './shared-task.js';
 
-export const { config, task } = buildAIGatewayFamily({
-  benchmarkSlug: 'ai-gateway-latency-anthropic',
-  benchmarkName: 'AI Gateway Latency - Anthropic',
-  providers,
-  resultsDirName: 'ai-gateway',
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const MAX_TOKENS = 200;
+const TIMEOUT_MS = 45_000;
+
+const phases = resolveAIGatewayPhases(process.argv.slice(2));
+if (phases.length === 0) {
+  console.log('Both phases are zeroed — nothing to run.');
+  process.exit(0);
+}
+
+export const config = defineBenchmarkConfig({
+  benchmarkSlug: `ai-gateway-latency-anthropic${process.env.DAILY_BENCH_SLUG ? `-${process.env.DAILY_BENCH_SLUG}` : ''}`,
+  benchmarkName: `AI Gateway Latency - Anthropic${process.env.DAILY_BENCH_NAME ? ` - ${process.env.DAILY_BENCH_NAME}` : ''}`,
+  phases,
+  groupBy: 'round',
+  participants: providers,
+  onScore: (lowerIsBetter, higherIsBetter) => ({
+    metrics: [
+      lowerIsBetter('coldE2eMs', {
+        unit: 'ms',
+        ceiling: 20000,
+        value: (record) => ((record.data?.phase as string | undefined) === 'cold' && typeof record.latencyMs === 'number' ? record.latencyMs : undefined),
+        weights: { median: 0.30, p95: 0.15, p99: 0 },
+      }),
+      lowerIsBetter('warmTtftMs', {
+        unit: 'ms',
+        ceiling: 20000,
+        value: (record) => ((record.data?.phase as string | undefined) === 'warm' && typeof record.latencyMs === 'number' ? record.latencyMs : undefined),
+        weights: { median: 0.30, p95: 0.15, p99: 0 },
+      }),
+      higherIsBetter('outputTokensPerSec', {
+        unit: 'tokens/sec',
+        floor: 5,
+        ceiling: 200,
+        value: (record) => (typeof record.data?.outputTokensPerSec === 'number' ? record.data.outputTokensPerSec : undefined),
+        weights: { median: 0.10, p95: 0, p99: 0 },
+      }),
+    ],
+  }),
+  onComplete: (outcome) =>
+    writeAIGatewayLegacyResults(outcome.participants, {
+      resultsDir: path.resolve(__dirname, '../../results/ai-gateway'),
+      providers,
+    }),
 });
+
+export const task = defineTask(makeAIGatewayTask(MAX_TOKENS, TIMEOUT_MS));

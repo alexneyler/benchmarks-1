@@ -14,7 +14,6 @@ export interface BenchmarkResource {
   id: string;
   slug: string;
   name: string;
-  kind?: string | null;
   status?: string;
   config?: JsonObject;
   defaultRunConfig?: JsonObject;
@@ -28,7 +27,11 @@ export interface BenchmarkRun {
   benchmarkId: string;
   name?: string | null;
   status: BenchmarkRunStatus | string;
+  /** Idempotency key: runs created with the same key (per org + benchmark) are the same run. */
+  runKey?: string | null;
   totalTasks: number;
+  /** The run declared no size: `totalTasks` is the sum of what its participants declare. */
+  participantSized?: boolean;
   workerCount: number;
   config?: JsonObject;
   createdAt?: string;
@@ -100,7 +103,6 @@ export interface BenchmarkAssignment {
 
 export interface UpsertBenchmarkInput {
   name: string;
-  kind?: string;
   status?: string;
   config?: JsonObject;
   defaultRunConfig?: JsonObject;
@@ -108,22 +110,25 @@ export interface UpsertBenchmarkInput {
 
 export interface UpdateBenchmarkInput {
   name?: string;
-  kind?: string;
   status?: string;
   config?: JsonObject;
   defaultRunConfig?: JsonObject;
 }
 
 export interface CreateRunInput {
-  name?: string;
-  totalTasks: number;
-  workerCount: number;
+  /**
+   * Idempotency key for get-or-create: sibling callers passing the same key
+   * (per org + benchmark) converge on one run instead of each opening its own.
+   */
+  runKey?: string;
+  /** Omit to open a participant-sized run: each participant declares its own size when it registers. */
+  totalTasks?: number;
+  workerCount?: number;
   participants?: string[];
   config?: JsonObject;
 }
 
 export interface UpdateRunInput {
-  name?: string;
   status?: BenchmarkRunStatus;
   config?: JsonObject;
 }
@@ -178,6 +183,10 @@ export interface TaskStepRecord {
   latencyMs?: number;
   errorCode?: string | null;
   data?: JsonObject;
+  /** Number of parallel invocations requested for this step. */
+  concurrency?: number;
+  /** Per-iteration timeout in milliseconds applied to this step. */
+  timeoutMs?: number;
 }
 
 export interface SendTaskResultsInput {
@@ -311,14 +320,14 @@ export interface BenchmarkResultsOverviewRun {
 }
 
 export interface BenchmarkResultsOverview {
-  benchmark: Pick<BenchmarkResource, 'id' | 'slug' | 'name' | 'kind'>;
+  benchmark: Pick<BenchmarkResource, 'id' | 'slug' | 'name'>;
   generatedAt: string;
   analytics: BenchmarkResultsOverviewAnalytics;
   items: BenchmarkResultsOverviewRun[];
 }
 
 export interface BenchmarkRunResults {
-  benchmark: Pick<BenchmarkResource, 'id' | 'slug' | 'name' | 'kind'>;
+  benchmark: Pick<BenchmarkResource, 'id' | 'slug' | 'name'>;
   run: Pick<BenchmarkRun, 'id' | 'status' | 'totalTasks' | 'workerCount'>;
   generatedAt: string;
   overall: BenchmarkResultSummary;
@@ -546,6 +555,10 @@ export interface DefineStepOptions {
   reportConcurrency?: boolean;
   /** Per-worker target for this step. Defaults to worker concurrency/assignment target. */
   concurrency?: number;
+  /** Number of parallel invocations the step function should run internally. Used by the runner to record step-level concurrency. */
+  stepConcurrency?: number;
+  /** Per-invocation timeout in milliseconds for this step. Used by the runner to record step-level timeout metadata. */
+  timeoutMs?: number;
   /** Readiness coordination mode. Defaults to internal. */
   readiness?: 'poll' | 'internal';
   /** Poll interval while waiting for readiness. Defaults to 1000ms. */
@@ -582,6 +595,46 @@ export interface RunWorkerOptions {
   /** Runs once after final result flush and before worker completion/failure is reported. */
   onFinish?: (context: WorkerFinishContext) => Promise<void> | void;
   task: TaskFunction;
+}
+
+export interface BenchmarkRunSummaryMetric {
+  name: string;
+  unit: string;
+  median: number;
+  p95: number;
+  p99: number;
+}
+
+export interface BenchmarkRunSummaryScalar {
+  name: string;
+  value: number;
+  unit: string;
+}
+
+export interface BenchmarkRunSummaryResult {
+  provider: string;
+  dimensions?: Record<string, unknown>;
+  metrics: BenchmarkRunSummaryMetric[];
+  scalars?: BenchmarkRunSummaryScalar[];
+  compositeScore: number;
+  successRate: number;
+  scoringVersion?: string | null;
+  skipped: boolean;
+  skipReason?: string | null;
+}
+
+export interface BenchmarkRunSummaryRunMetadata {
+  gitSha?: string;
+  gitRef?: string;
+  triggeredBy?: string;
+  nodeVersion?: string;
+  platform?: string;
+  arch?: string;
+}
+
+export interface BenchmarkRunSummaryInput {
+  run: BenchmarkRunSummaryRunMetadata;
+  results: BenchmarkRunSummaryResult[];
 }
 
 export interface BenchmarkClient {
@@ -688,5 +741,6 @@ export interface BenchmarkClient {
     input?: BenchmarkRunTimelineInput,
   ): Promise<BenchmarkRunTimeline>;
   getRunImports(benchmarkSlug: string, runId: string): Promise<BenchmarkRunImports>;
+  submitRunSummary(benchmarkSlug: string, runId: string, input: BenchmarkRunSummaryInput): Promise<void>;
   runWorker(options: RunWorkerOptions): Promise<RunWorkerResult>;
 }
