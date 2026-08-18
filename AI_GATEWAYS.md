@@ -1,6 +1,13 @@
 # AI Gateway Benchmark
 
-This document describes the **AI gateway benchmark** — a phase-by-phase latency, throughput, and reliability comparison of OpenRouter, Vercel AI Gateway, Cloudflare AI Gateway, LLM Gateway, Pydantic AI Gateway, and Concentrate AI, measured against a direct-to-Anthropic baseline.
+This document describes the **AI gateway benchmark** — a phase-by-phase latency, throughput, and reliability comparison of OpenRouter, Vercel AI Gateway, Cloudflare AI Gateway, LLM Gateway, Pydantic AI Gateway, and Concentrate AI. It's organized as one **family benchmark per target provider**, all built on the same shared task plumbing (`shared-task.ts`, `phase-probe.ts`, scoring) so every family uses an identical prompt, phase methodology, and scoring formula — only the target provider (and therefore the model and each gateway's routing syntax) changes between them:
+
+- **Anthropic family** (`ai-gateway.bench.ts` + `providers.ts`) — every gateway routed to Claude Haiku 4.5, measured against a direct-to-Anthropic baseline. This is the original benchmark and the one with the deepest "confirmed live" verification (see [Every gateway is hit directly](#every-gateway-is-hit-directly--no-gateway-is-proxied-through-another) below).
+- **OpenAI family** (`ai-gateway-openai.bench.ts` + `providers-openai.ts`) — the same six gateways routed to `gpt-4.1-mini` instead, measured against a direct-to-OpenAI baseline. See [OpenAI family benchmark](#openai-family-benchmark).
+- **Gemini family** (`ai-gateway-gemini.bench.ts` + `providers-gemini.ts`) — five gateways (Pydantic excluded — see below) routed to `gemini-3.6-flash`, measured against a direct-to-Gemini baseline. See [Gemini family benchmark](#gemini-family-benchmark).
+- **Kimi family** (`ai-gateway-kimi.bench.ts` + `providers-kimi.ts`) — five gateways (Pydantic excluded — see below) routed to `kimi-k3`, measured against a direct-to-Moonshot baseline. See [Kimi family benchmark](#kimi-family-benchmark).
+
+A result from one family is **not** directly comparable to the same gateway's result in another family — different target provider means a different underlying model and (for some gateways) a different routing path, so a difference in numbers can't be attributed to the gateway alone the way it can within a single family.
 
 > **Where this runs**: scheduled and dispatched runs execute in GitHub Actions on [Namespace](https://namespace.so) runners (`namespace-profile-default`), physically placed in **Northern Virginia, US**. This is a single fixed vantage point, not a global or multi-region measurement — every number in this benchmark reflects network conditions from that one location. Confirmed two ways: Namespace's own runner-instance panel reports "Placement: Northern Virginia, US" for this profile, and independently, `cf-ray` receipts captured in real runs include `IAD` — the airport code Cloudflare uses for its Ashburn/Northern Virginia edge datacenter, exactly consistent with a client physically nearby. See [Vantage-point dependent](#limitations) in Limitations for what this does and doesn't mean for the results.
 
@@ -20,7 +27,7 @@ For each gateway, every probe request is one of two kinds:
 Every probe (cold or warm) also records:
 
 - **Output tokens generated** and **tokens/sec** (output tokens divided by the full wall-clock time from request start to stream end, so buffering/batching cannot inflate the rate)
-- **Success/error** — any non-2xx response, a timeout, or a completed stream with zero content tokens observed counts as a failure for that iteration
+- **Success/error** — any non-2xx response, a timeout, or a completed stream with zero content tokens observed counts as a failure for that iteration. A request can return HTTP 200 and a validly-terminated stream while still failing server-side, with the real reason buried in an `event: error`/`response.failed` SSE payload rather than the HTTP status — `phase-probe.ts` scans the buffer for that error message on failure and includes it in the logged/stored error rather than only the generic "no content token observed," so a failure like that is diagnosable from the log line itself.
 - **Receipt headers** (`x-vercel-id`, `cf-ray`, `x-request-id`, `anthropic-request-id`, etc.) captured from the response, for tracing a specific measured request back to the provider's own logs if a number is disputed
 
 ### Cold-phase breakdown
@@ -44,17 +51,21 @@ Only `ttfbMs` and `ttftMs` apply — there is no `dnsMs`/`tcpMs`/`tlsMs`/`coldE2
 
 ## Request configuration (identical across every gateway)
 
-- **Model**: Claude Haiku 4.5 for all seven participants — `anthropic/claude-haiku-4.5` via OpenRouter's and Vercel AI Gateway's catalog alias, `anthropic/claude-haiku-4-5` via LLM Gateway's provider-pinned catalog naming, `anthropic/claude-haiku-4-5-20251001` via Concentrate AI's provider-prefixed naming, `claude-haiku-4-5-20251001` via Cloudflare's, Anthropic's own, and Pydantic AI Gateway's native model ID (Pydantic proxies Anthropic's native API as-is, no gateway-specific model prefix). Same underlying model, addressed the way each API expects it to be addressed.
-- **Prompt**: `"Write a two-sentence description of how distributed systems handle partial failures."` — identical for every request, cold or warm, every gateway.
-- **`max_tokens`**: 200. **`temperature`**: 0. **`stream`**: true (required for TTFT; also used for token-count extraction via `stream_options.include_usage` on the OpenAI-compatible path).
+- **Model**: Claude Haiku 4.5 for the seven Anthropic-family gateway-overhead participants — `anthropic/claude-haiku-4.5` via OpenRouter's and Vercel AI Gateway's catalog alias, `anthropic/claude-haiku-4-5` via LLM Gateway's provider-pinned catalog naming, `anthropic/claude-haiku-4-5-20251001` via Concentrate AI's provider-prefixed naming, `claude-haiku-4-5-20251001` via Cloudflare's, Anthropic's own, and Pydantic AI Gateway's native model ID (Pydantic proxies Anthropic's native API as-is, no gateway-specific model prefix). Same underlying model, addressed the way each API expects it to be addressed. The OpenAI family uses `gpt-4.1-mini` instead — see [OpenAI family benchmark](#openai-family-benchmark); the Gemini family uses `gemini-3.6-flash` — see [Gemini family benchmark](#gemini-family-benchmark); the Kimi family uses `kimi-k3` — see [Kimi family benchmark](#kimi-family-benchmark).
+- **Prompt**: `"Write a two-sentence description of how distributed systems handle partial failures."` — identical for every request, cold or warm, every participant in every family.
+- **`max_tokens`**: 200. **`temperature`**: 0. Identical across all three families. **`stream`**: true (required for TTFT; also used for token-count extraction via `stream_options.include_usage` on the OpenAI-compatible path).
 - **Timeout**: 45 seconds per request.
 
-Two wire formats are in play, handled explicitly per gateway (`AIGatewayProviderConfig.wireFormat` in `benchmarks/ai-gateway/types.ts`):
+Four wire formats are in play, handled explicitly per participant (`AIGatewayProviderConfig.wireFormat` in `benchmarks/ai-gateway/types.ts`):
 
-- **`openai`** (OpenRouter, Vercel AI Gateway, LLM Gateway) — OpenAI-compatible `/chat/completions` shape, `Authorization: Bearer <key>`.
+- **`openai`** (every participant in the Kimi family; OpenRouter, Vercel AI Gateway, LLM Gateway, and Concentrate AI in the Gemini family; OpenRouter, Vercel AI Gateway, LLM Gateway in the Anthropic family) — OpenAI-compatible `/chat/completions` shape, `Authorization: Bearer <key>`. Kimi's own API is itself natively OpenAI-Chat-Completions-shaped (Moonshot's own design, not a third-party compatibility shim), so this format is a no-translation-layer native route for the entire Kimi family, including `kimi-direct` — the one family where every participant gets this benefit. For the Gemini family's four participants using this format, it genuinely is a translation layer — see [Gemini family benchmark](#gemini-family-benchmark) for why no native alternative was available.
 - **`anthropic`** (Cloudflare AI Gateway, Anthropic direct, Pydantic AI Gateway, Concentrate AI) — Anthropic's native `/v1/messages` shape. Auth header varies within this group: Cloudflare and Anthropic direct use `x-api-key` + `anthropic-version`; Pydantic AI Gateway and Concentrate AI use `Authorization: Bearer <key>` + `anthropic-version` instead — for Pydantic this was confirmed directly against a real request (its own auth failures return a same-shaped 401 regardless of which of the two header styles is wrong, so this took a few rounds of live testing to pin down precisely). Concentrate AI's `/v1/messages/` endpoint is documented as an "Anthropic Messages API compatibility endpoint" in its published OpenAPI spec (`concentrate.ai/docs/api-reference/openapi.json`), but has **not** been confirmed against a real successful response — see the note in `providers.ts` and in Limitations below.
+- **`responses`** (Concentrate AI and OpenAI direct in the Anthropic family; every single participant in the OpenAI family — see [OpenAI family benchmark](#openai-family-benchmark)) — OpenAI's Responses API shape: flat `input` string instead of a `messages` array, `max_output_tokens` instead of `max_tokens`. For OpenAI direct this is the format's origin, called directly — OpenAI's current flagship endpoint (rather than the older Chat Completions surface). The OpenAI family's participants all use it for the same reason: every gateway checked turned out to have a Responses passthrough, so `openai`/Chat Completions never ends up needed there.
+- **`gemini`** (Gemini direct, and Cloudflare AI Gateway in the Gemini family) — Google's native `streamGenerateContent` shape: `contents[].parts[].text` instead of `messages`, `generationConfig.maxOutputTokens` instead of `max_tokens`, model id baked into the URL path rather than the request body, streaming selected by the `:streamGenerateContent` path segment (not a body flag), token counts read from `usageMetadata.candidatesTokenCount`.
 
-TTFT detection is format-agnostic by design: a single regex (`"(?:content|text)"\s*:\s*"[^"]`) matches OpenAI's `delta.content` and Anthropic's `delta.text` fields alike, so the first-token timestamp doesn't depend on fully parsing every SSE event on the hot path. Token counts are extracted the same lightweight way (regex over the raw buffer, not a full SSE/JSON parser) — see Limitations.
+TTFT detection is **per-wire-format**, not one shared pattern (`contentRegexFor` in `phase-probe.ts`): `openai` matches only `delta.content`, `anthropic` and `gemini` match `text` (`content_block_delta`'s `delta.text` and `parts[].text` respectively), `responses` matches the flat `delta` string. A single shared regex matching all of `content`/`text`/`delta` was used here previously, on the reasoning that no format's real content field shares a name with another format's — that held until Kimi K3 via OpenRouter and Vercel, confirmed live: both stream a `reasoning_details` array alongside the real answer, and each entry looks like `{"type":"reasoning.text","text":"…"}` — a genuine `"text":"…"` match, just on invisible reasoning, not the answer. The shared regex fired on that first reasoning token, so OpenRouter and Vercel's Kimi-family TTFT briefly measured "time to first reasoning token" (reported as low as 1.8s) while every other participant in that family correctly measured "time to first visible token" (20-40s) — a real correctness bug, caught by how anomalous the numbers looked next to a model with reasoning locked "always on." Restricting each format to only its genuine content field name removes the collision entirely, not just for Kimi — for any `openai`-format participant that might stream a similarly-shaped reasoning trace in the future.
+
+That fix's default is "first visible token." A participant can deliberately opt back into "first reasoning token" via `AIGatewayProviderConfig.reasoningCountsAsFirstToken` — every entry in the Kimi family does, since `kimi-k3` runs with reasoning locked "always on," and "time to first visible token" for a model like that measures however long it chooses to deliberate rather than gateway/network responsiveness; "time to first reasoning token" is the closer proxy, and it's what every non-reasoning participant's TTFT already amounts to (reasoning and visible content start at the same moment when there's no separate reasoning phase). Confirmed live across all six Kimi-family participants: exactly two reasoning-field conventions exist — `reasoning_content` (Moonshot direct, Cloudflare) and `reasoning` (OpenRouter, Vercel, LLM Gateway, Concentrate) — both handled explicitly rather than assumed to match. One side effect worth knowing: `outputTokensPerSec` is computed over the time *after* `ttftMs`, so with `ttftMs` now marking the start of generation instead of a point deep into it, the Kimi family's tokens/sec reflects throughput across the whole reasoning-plus-answer stream, not just the visible portion the other families measure — not comparable across families for that reason, on top of the model differences already noted throughout this document. Token counts are extracted the same lightweight way (regex over the raw buffer, not a full SSE/JSON parser) — see Limitations.
 
 Knowing when the stream has fully ended (needed for `ttfbMs`/`totalMs` and to safely reuse a warm connection) is handled by Node's own HTTP parser (`res.on('end')`), which understands `Content-Length` and chunked-transfer framing generically for any spec-compliant response. This differs from the reference implementation, which reads raw socket bytes and has to recognize completion itself via hand-matched byte sequences (`data: [DONE]`, `"type":"message_stop"`, the chunked terminator `\r\n0\r\n\r\n`) — a reasonable approach when working with raw sockets in Python, but one that has to be kept in sync with each gateway's exact stream-termination convention. Delegating that to Node's HTTP parser avoids needing to enumerate termination formats per gateway at all.
 
@@ -64,11 +75,83 @@ This is the single most important fairness property of this benchmark, worth sta
 
 A gateway that's itself proxied through a second gateway would have that second hop's latency baked into its numbers, misattributed to the outer gateway. That's not happening here — every participant's number reflects that gateway's own overhead only.
 
+## OpenAI family benchmark
+
+`ai-gateway-openai.bench.ts` + `providers-openai.ts` run the same harness (same task, phases, prompt, scoring, request configuration — see `shared-task.ts`) with every participant routed to OpenAI's `gpt-4.1-mini` instead of Anthropic's Claude Haiku 4.5. It has its own no-gateway `openai-direct` control (OpenAI's own Responses API, `/v1/responses`) and its own results directory (`results/ai-gateway-latency/openai/`) — see [Running it](#running-it).
+
+**Every participant in this family uses the OpenAI Responses API**, not Chat Completions — deliberately, not incidentally. The policy: use a gateway's Responses passthrough if it has one (Responses is OpenAI's own format, so proxying it natively adds no translation layer — the same reasoning that picked `/v1/messages` over the OpenAI-compatible route for the Anthropic family's Cloudflare/Pydantic/LLM Gateway/Vercel entries), fall back to Chat Completions only where no Responses route is documented. Every gateway checked here turned out to have one, so the fallback case never actually triggers in this family — worth revisiting this table if a future gateway addition doesn't have a Responses route.
+
+An earlier pass of this file got two paths wrong by extrapolating one gateway's convention onto another instead of checking each gateway's own docs — Cloudflare's path turned out to drop the `v1` segment its Anthropic route keeps, and Pydantic's OpenAI route wasn't `/proxy/openai` at all. Every route below was re-verified directly against that gateway's own OpenAI-specific docs, and a follow-up pass specifically re-checked **streaming support** on each Responses passthrough — path correctness and streaming correctness are separate claims, and confirming one doesn't confirm the other:
+
+| Gateway | Model / routing | Path confidence | Streaming confidence |
+|---|---|---|---|
+| OpenRouter | `openai/gpt-4.1-mini` via `/api/v1/responses`, `provider: { order: ['openai'] }` | High — confirmed directly (openrouter.ai/docs/api_reference/responses/overview) | High — OpenRouter's own docs state streaming uses "native SSE passthrough (same event format as OpenAI)" for this endpoint specifically |
+| Vercel AI Gateway | `openai/gpt-4.1-mini` via `/v1/responses` | High — confirmed via Vercel's own changelog | High — same changelog explicitly lists streaming as supported |
+| Cloudflare AI Gateway | `gpt-4.1-mini` via `/v1/{account}/{gateway}/openai/responses` | High — confirmed directly against Cloudflare's own OpenAI provider docs, listed explicitly alongside the chat/completions path. Does **not** keep the `v1` segment the Anthropic path does — Cloudflare's framing is "replace `https://api.openai.com/v1` with the gateway prefix" wholesale, not uniform across providers | Unconfirmed for this specific endpoint — Cloudflare's own example requests for `/responses` only show non-streaming bodies (`model`+`input`, no `stream`); a general "AI Gateway supports streaming" statement exists platform-wide but isn't `/responses`-specific |
+| LLM Gateway | `openai/gpt-4.1-mini` via `/v1/responses` | High — LLM Gateway's own Codex CLI guide states outright "Codex CLI uses the OpenAI Responses API (`/v1/responses`)" against base URL `api.llmgateway.io/v1` | Unconfirmed — not mentioned in their Codex guide either way. **Separately**: that same guide documents a hard failure mode, `"The Responses API requires data retention to be enabled"`, unless the backing OpenAI org has "Retain All Data" turned on — mitigated by sending `store: false` on every Responses request (see `phase-probe.ts`), but if the failure persists it means this specific gateway forces its own `store` value regardless of what we send |
+| Pydantic AI Gateway | `gpt-4.1-mini` via `/proxy/openai-responses/responses` | High for the `/proxy/openai-responses` base (a dedicated Codex route, `wire_api = "responses"`, distinct from the unconfirmed `/proxy/openai` Vercel-AI-SDK integration point — verified with an exhaustive quote-check of every path on the page, no ambiguity left there). The `/responses` suffix is inferred from Codex's `wire_api="responses"` convention, corroborated by the identical confirmed pattern for LLM Gateway, not a literal curl example | Unconfirmed — no streaming example found; what was found (pydantic_ai's own streaming behavior) describes the Python framework's abstraction, not this raw HTTP passthrough |
+| Concentrate AI | `openai/gpt-4.1-mini` via `/v1/responses/` | High for the model syntax (confirmed on Concentrate's own model catalog) | Carries the same unconfirmed-against-a-real-response caveat this endpoint already has for the Anthropic entry (see `providers.ts`) |
+
+**Every Responses API request in this repo sets `store: false`** (`phase-probe.ts`) — these are one-shot probes with no need for OpenAI's default 30-day response retention, and it's the documented way to opt out of the data-retention requirement noted for LLM Gateway above rather than depend on an org-level setting this benchmark doesn't control.
+
+Full rationale for each entry lives in `providers-openai.ts`'s per-provider comments, matching the style already used in `providers.ts`.
+
+## Gemini family benchmark
+
+`ai-gateway-gemini.bench.ts` + `providers-gemini.ts` run the same harness (same task, phases, prompt, scoring, request configuration — see `shared-task.ts`) with participants routed to Google's `gemini-3.6-flash` instead of Anthropic's Claude Haiku 4.5. It has its own no-gateway `gemini-direct` control (Google's native `streamGenerateContent` endpoint) and its own results directory (`results/ai-gateway-latency/gemini/`) — see [Running it](#running-it).
+
+**Only one gateway here gets the native `wireFormat: 'gemini'` treatment: Cloudflare AI Gateway.** Unlike the OpenAI family, where every gateway turned out to have a native Responses passthrough, none of OpenRouter, Vercel AI Gateway, LLM Gateway, or Concentrate AI show any documented native Gemini passthrough (in contrast to their confirmed native Anthropic Messages / OpenAI Responses routes used elsewhere in this repo) — each is built around one normalized endpoint across its whole catalog instead. Those four route through that OpenAI-compatible `/chat/completions` surface, translating Gemini's real response into that shape; this is a genuine translation layer, not a shortcut — the least-translated option actually available for those gateways.
+
+**Pydantic AI Gateway is excluded from this family**, not just unconfirmed like it was before this family existed: Pydantic's own docs state its `gateway` provider mode for Google routes to **Vertex AI**, not the native Gemini API — a different serving stack than every other participant here (and than `gemini-direct` itself). Including it would measure Vertex's overhead, not this gateway's overhead on the same backend the rest of the family hits, so it's left out entirely rather than included with an asterisk.
+
+| Gateway | Model / routing | Confidence |
+|---|---|---|
+| OpenRouter | `google/gemini-3.6-flash` via `/api/v1/chat/completions`, `provider: { order: ['google'] }` | High — OpenRouter's provider/model catalog convention, same provider-order pinning mechanism confirmed for the Anthropic and OpenAI families |
+| Vercel AI Gateway | `google/gemini-3.6-flash` via `/v1/chat/completions` | High — confirmed `creator/model-name` convention; no native passthrough documented for Gemini specifically, unlike Vercel's confirmed Anthropic/OpenAI native routes |
+| Cloudflare AI Gateway | `gemini-3.6-flash` via `/v1/{account}/{gateway}/google-ai-studio/v1/models/gemini-3.6-flash:streamGenerateContent?alt=sse` | High — confirmed directly against Cloudflare's own `google-ai-studio` provider docs, which describe substituting the REST resource name (`generateContent`/`streamGenerateContent`) after the model id, same pattern as calling Google directly |
+| LLM Gateway | `google-ai-studio/gemini-3.6-flash` via `/v1/chat/completions` | Medium — provider-prefix convention inferred from LLM Gateway's own catalog URL structure (`llmgateway.io/models/gemini-3.6-flash/google-ai-studio`), not independently confirmed as the literal request-body pin string |
+| Concentrate AI | `google/gemini-3.6-flash` via `/v1/chat/completions/` | Lower — Concentrate's routing is litellm-based, and litellm's own convention for Google's API-key route is the abbreviation `gemini/` rather than `google/` (unprefixed ids default to Vertex AI per litellm's docs); Concentrate may or may not preserve that exact abbreviation for its own API. Worth confirming with a live request before trusting this entry specifically |
+
+Confirmed live (with real credentials): `gemini-direct`'s request reached Google's API successfully — the response was a 429 on exhausted prepayment credits, not a validation error, meaning the request shape (path, model id, body) was accepted as well-formed. Full content streaming wasn't verified beyond that point; re-run once the backing account has credits.
+
+Full rationale for each entry lives in `providers-gemini.ts`'s per-provider comments, matching the style already used in `providers.ts` and `providers-openai.ts`.
+
+## Kimi family benchmark
+
+`ai-gateway-kimi.bench.ts` + `providers-kimi.ts` run the same task, phases, and scoring as the other families, with participants routed to Moonshot's `kimi-k3` instead of Anthropic's Claude Haiku 4.5. It has its own no-gateway `kimi-direct` control and its own results directory (`results/ai-gateway-latency/kimi/`) — see [Running it](#running-it). `kimi-k3` is Moonshot's only current flagship model (no fast/lite tier as of this writing) and runs with reasoning locked to "always on," which — confirmed live — forces real request-configuration and measurement exceptions on top of the model swap:
+
+- **`temperature` is omitted entirely**, not set to 0: `kimi-k3` rejects any value except 1 outright (`"invalid temperature: only 1 is allowed for this model"`), confirmed against Moonshot's own API directly.
+- **`max_tokens: 2000`, not 200**: reasoning tokens count against this budget. One live test consumed 688 of 802 total completion tokens on reasoning alone; at 200, the entire budget was exhausted by reasoning with zero visible output (`finish_reason: "length"`, no content deltas at all).
+- **`timeoutMs: 90_000`, not 45s**: reasoning also costs wall-clock time before any visible content appears, independent of the token budget. One live warm-phase probe measured `ttft=21395ms`; a cold probe (DNS/TCP/TLS plus that same reasoning delay) timed out entirely at the default 45s. This is about total request completion time, not first-token time, so it stays necessary even after the next point.
+- **`reasoningCountsAsFirstToken: true` on every participant**: `ttftMs` measures time to the first *reasoning* token, not the first *visible* one — deliberately, not a bug this time (see [Request configuration](#request-configuration-identical-across-every-gateway) for the false-positive bug this same field distinction caught earlier, which is a different thing). "Time to first visible token" for an always-reasoning model measures however long it chooses to deliberate, not gateway/network responsiveness; "time to first reasoning token" is the closer proxy, and it's what every non-reasoning participant's TTFT already amounts to.
+
+Unlike the OpenAI family's GPT-5-mini situation, there's no non-reasoning Kimi tier to switch to instead, so all of these are permanent for this family, not temporary workarounds — see `AIGatewayProviderConfig.reasoningCountsAsFirstToken` in `types.ts`. None of this is a fairness problem: every participant in the family gets the identical exceptions, so a difference between two Kimi-family participants is still attributable to that gateway's own overhead. It does mean the Kimi family's `ttftMs` and `outputTokensPerSec` aren't directly comparable to the other three families' — see [Request configuration](#request-configuration-identical-across-every-gateway) for why.
+
+**Every participant uses `wireFormat: 'openai'`, and unlike the Gemini family, that's not a translation layer here.** Kimi's own native API is itself OpenAI-Chat-Completions-shaped (Moonshot's own design, not a third-party compatibility shim — confirmed by `kimi-direct` itself using this same format directly against Moonshot's API), so every gateway below reaches Moonshot without any format conversion. This is the one family where every single participant gets the no-translation-layer benefit.
+
+**One gateway is excluded**, for the same reason Pydantic was excluded from the Gemini family — a confirmed different backend, not just an unconfirmed one: **Pydantic AI Gateway**'s documented provider list (OpenAI, Anthropic, Vertex, Groq, Bedrock) has no Moonshot entry.
+
+**Cloudflare AI Gateway is included, despite an earlier version of this section excluding it** — that exclusion was based on incomplete research (only `@cf/moonshotai/kimi-k2.7-code`, a genuinely Cloudflare-hosted checkpoint via Workers AI, had been found). Cloudflare's Workers AI catalog also lists `moonshotai/kimi-k3` itself as a "Third-party" model (no `@cf/` prefix), reached through a newer unified endpoint — `api.cloudflare.com/client/v4/accounts/{account}/ai/v1/chat/completions`, not `gateway.ai.cloudflare.com/v1/{account}/{gateway}/{provider}/...` like every other family's Cloudflare entry. It's still the AI Gateway product, though, not a separate one: confirmed live, a third-party model request with no `cf-aig-gateway-id` header silently auto-routes through an auto-created "default" gateway instead of a named one, invisible in that named gateway's own dashboard/logs — so this entry sends `cf-aig-gateway-id: {CLOUDFLARE_AI_GATEWAY_GATEWAY_ID}` explicitly to land in the same named gateway every other family's Cloudflare entry uses. Cloudflare's own account credentials are the only auth required (no separate `KIMI_API_KEY` gets forwarded). Also confirmed live: a real streamed response, `reasoning_content` field shape matching `kimi-direct`'s own native format. Cloudflare's own docs don't clarify whether this reaches Moonshot's infrastructure directly or a reseller behind the scenes — the confirmed-live response shape is consistent with genuine Moonshot output, but that's the ceiling of what's actually verified.
+
+**Provider-order pinning matters more here than for any other family.** Kimi K3 is open-weight, so — unlike Anthropic's or OpenAI's closed models — multiple third-party infrastructure providers can serve it. Confirmed live evidence: Vercel's own changelog states K3 is served "from US-based providers... including Baseten and Fireworks," and LLM Gateway's catalog page lists six separate providers for this model. Every gateway below that supports pinning uses it.
+
+| Gateway | Model / routing | Confidence |
+|---|---|---|
+| OpenRouter | `moonshotai/kimi-k3` via `/api/v1/chat/completions`, `provider: { order: ['moonshotai'] }` | **Confirmed live** — also the gateway that surfaced a real TTFT-detection bug (see below): its Kimi responses stream `reasoning_details[].text` alongside the answer, which briefly false-triggered this benchmark's content-detection regex on the first reasoning token instead of the first visible one. Fixed in `phase-probe.ts`; re-verified live afterward |
+| Vercel AI Gateway | `moonshotai/kimi-k3` via `/v1/chat/completions`, `providerOptions.gateway.order: ['moonshotai']` | **Confirmed live** — hit the identical `reasoning_details[].text` false-positive as OpenRouter (confirmed live to have the exact same response shape); same fix, same re-verification |
+| Cloudflare AI Gateway | `moonshotai/kimi-k3` via `api.cloudflare.com/client/v4/accounts/{account}/ai/v1/chat/completions` | **Confirmed live** — a real streamed response |
+| LLM Gateway | `moonshot/kimi-k3` via `/v1/chat/completions` | High — confirmed directly on LLM Gateway's own model page. Note the provider slug is `moonshot`, not `moonshotai` as on OpenRouter/Vercel/Cloudflare — a real cross-gateway naming inconsistency, each verified independently rather than assumed to match |
+| Concentrate AI | `moonshot/kimi-k3` via `/v1/chat/completions/` | Lower — `kimi-k3` confirmed present in Concentrate's catalog, but the exact provider-prefixed pin string wasn't shown there; inferred from this gateway's established creator-prefix convention and litellm's canonical Moonshot slug (Concentrate's routing is litellm-based). Worth confirming with a live request before trusting this entry |
+
+`kimi-direct`, Cloudflare, OpenRouter, and Vercel are all confirmed live; LLM Gateway and Concentrate are docs-confirmed only — worth a smoke test across those two before trusting results. See [Request configuration](#request-configuration-identical-across-every-gateway) for the TTFT-detection bug OpenRouter and Vercel surfaced and how it was fixed.
+
+Full rationale for each entry lives in `providers-kimi.ts`'s per-provider comments, matching the style already used in `providers.ts`, `providers-openai.ts`, and `providers-gemini.ts`.
+
 ## How the runner behaves
 
 ### Round-robin across gateways — and what that does and doesn't mean
 
-Iterations run **round-robin across every active gateway**, not sequentially per gateway (`runAIGatewayBenchmarks` in `benchmarks/ai-gateway/benchmark.ts`):
+Iterations run **round-robin across every active participant**, not sequentially per participant (`groupBy: 'round'`, set in each family's own `defineBenchmarkConfig` call, identical across every family benchmark):
 
 ```
 round 1: openrouter → vercel-ai-gateway → cloudflare-ai-gateway → llmgateway → pydantic-ai-gateway → concentrate-ai-gateway → anthropic-direct
@@ -107,10 +190,11 @@ Cold E2E and warm TTFT are weighted equally (30% median + 15% p95 each) because 
 ## Running it
 
 ```bash
-# All seven gateways, default 10 cold + 10 warm iterations each
+# Anthropic family — all seven participants (six gateway-overhead + anthropic-direct),
+# default 10 cold + 10 warm iterations each
 pnpm run bench:ai-gateway
 
-# One gateway
+# One participant
 pnpm run bench:ai-gateway:openrouter
 pnpm run bench:ai-gateway:vercel
 pnpm run bench:ai-gateway:cloudflare
@@ -119,24 +203,61 @@ pnpm run bench:ai-gateway:pydantic
 pnpm run bench:ai-gateway:concentrate
 pnpm run bench:ai-gateway:anthropic
 
-# Custom iteration count (applies to both cold and warm)
+# OpenAI family — same six gateways + openai-direct, routed to gpt-4.1-mini instead
+pnpm run bench:ai-gateway-openai
+pnpm run bench:ai-gateway-openai:openrouter
+pnpm run bench:ai-gateway-openai:vercel
+pnpm run bench:ai-gateway-openai:cloudflare
+pnpm run bench:ai-gateway-openai:llmgateway
+pnpm run bench:ai-gateway-openai:pydantic
+pnpm run bench:ai-gateway-openai:concentrate
+pnpm run bench:ai-gateway-openai:direct
+
+# Gemini family — five gateways (no Pydantic — see Gemini family benchmark above)
+# + gemini-direct, routed to gemini-3.6-flash
+pnpm run bench:ai-gateway-gemini
+pnpm run bench:ai-gateway-gemini:openrouter
+pnpm run bench:ai-gateway-gemini:vercel
+pnpm run bench:ai-gateway-gemini:cloudflare
+pnpm run bench:ai-gateway-gemini:llmgateway
+pnpm run bench:ai-gateway-gemini:concentrate
+pnpm run bench:ai-gateway-gemini:direct
+
+# Kimi family — five gateways (no Pydantic — see Kimi family benchmark above)
+# + kimi-direct, routed to kimi-k3
+pnpm run bench:ai-gateway-kimi
+pnpm run bench:ai-gateway-kimi:openrouter
+pnpm run bench:ai-gateway-kimi:vercel
+pnpm run bench:ai-gateway-kimi:cloudflare
+pnpm run bench:ai-gateway-kimi:llmgateway
+pnpm run bench:ai-gateway-kimi:concentrate
+pnpm run bench:ai-gateway-kimi:direct
+
+# Custom iteration count (applies to both cold and warm) — works the same way for every family
 pnpm run bench:ai-gateway -- --iterations 20
+pnpm run bench:ai-gateway-openai -- --iterations 20
+pnpm run bench:ai-gateway-gemini -- --iterations 20
+pnpm run bench:ai-gateway-kimi -- --iterations 20
 
 # Asymmetric cold/warm split, or isolating one phase entirely
 # (a phase with 0 iterations is skipped)
 npx tsx benchmarks/ai-gateway/ai-gateway.bench.ts --ai-gateway-iterations-cold 20 --ai-gateway-iterations-warm 0
+npx tsx benchmarks/ai-gateway/ai-gateway-openai.bench.ts --ai-gateway-iterations-cold 20 --ai-gateway-iterations-warm 0
 ```
 
-Required environment variables (`benchmarks/.env.example`): `OPENROUTER_API_KEY`, `VERCEL_AI_GATEWAY_API_KEY`, `LLM_GATEWAY_API_KEY`, `PYDANTIC_AI_GATEWAY_API_KEY`, `CONCENTRATE_AI_GATEWAY_API_KEY`, `CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID`, `CLOUDFLARE_AI_GATEWAY_GATEWAY_ID`, `CLOUDFLARE_AI_GATEWAY_TOKEN`, and `ANTHROPIC_API_KEY` (shared by Cloudflare's passthrough and the direct baseline). Missing credentials cause that gateway to be reported as `SKIPPED` rather than failing the run.
+Required environment variables (`benchmarks/.env.example`): `OPENROUTER_API_KEY`, `VERCEL_AI_GATEWAY_API_KEY`, `LLM_GATEWAY_API_KEY`, `CONCENTRATE_AI_GATEWAY_API_KEY` are shared across all four families (same gateway accounts, just routed to a different target model each time). `CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID`, `CLOUDFLARE_AI_GATEWAY_GATEWAY_ID`, and `CLOUDFLARE_AI_GATEWAY_TOKEN` are all **required** by every family's Cloudflare entry (the Kimi family's entry uses a different Cloudflare endpoint than the other three, and is the only one where the token is the *sole* auth — no separate per-family key is forwarded there — but all four now require Authenticated Gateway mode, not just Kimi). `PYDANTIC_AI_GATEWAY_API_KEY` is used by the Anthropic and OpenAI families only — both the Gemini and Kimi families exclude Pydantic. `ANTHROPIC_API_KEY` is used by the Anthropic family (Cloudflare's passthrough + `anthropic-direct`); `OPENAI_API_KEY` by the OpenAI family (Cloudflare's passthrough + `openai-direct`); `GEMINI_API_KEY` by the Gemini family (Cloudflare's passthrough + `gemini-direct`); `KIMI_API_KEY` by the Kimi family (`kimi-direct` only — Cloudflare's Kimi entry doesn't need it). Missing credentials cause that participant to be reported as `SKIPPED` rather than failing the run.
 
 ## Output
 
-Results are written to `results/ai-gateway/YYYY-MM-DD.json` and copied to `results/ai-gateway/latest.json`. Every iteration's phase timings, token counts, resolved provider (for OpenRouter/Vercel AI Gateway, see above), and receipt headers are preserved in full — enough to trace any specific measured request back to its provider-side request ID.
+Each family writes to its own results directory under `results/ai-gateway-latency/`: the Anthropic family to `results/ai-gateway-latency/anthropic/YYYY-MM-DD.json` (copied to `results/ai-gateway-latency/anthropic/latest.json`), the OpenAI family to `results/ai-gateway-latency/openai/...`, the Gemini family to `results/ai-gateway-latency/gemini/...`, the Kimi family to `results/ai-gateway-latency/kimi/...`. Every iteration's phase timings, token counts, resolved provider (for OpenRouter/Vercel AI Gateway, see above), and receipt headers are preserved in full — enough to trace any specific measured request back to its provider-side request ID.
 
 ```bash
-pnpm run generate-ai-gateway-svg
+pnpm run generate-ai-gateway-svg          # Anthropic family -> ai-gateway.svg
+pnpm run generate-ai-gateway-openai-svg   # OpenAI family -> ai-gateway-openai.svg
+pnpm run generate-ai-gateway-gemini-svg   # Gemini family -> ai-gateway-gemini.svg
+pnpm run generate-ai-gateway-kimi-svg     # Kimi family -> ai-gateway-kimi.svg
 ```
-produces `ai-gateway.svg` — a ranked comparison table (score, cold E2E, warm TTFT, tokens/sec, success rate).
+Each produces a ranked comparison table (score, cold E2E, warm TTFT, tokens/sec, success rate) for its own family only — families are never combined into one table, consistent with results from different families not being directly comparable (see the top of this document).
 
 ## Comparison to the reference implementation
 

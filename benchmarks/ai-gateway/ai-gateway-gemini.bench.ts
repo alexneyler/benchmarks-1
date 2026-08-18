@@ -1,0 +1,68 @@
+/**
+ * AI Gateway benchmark — Gemini family. Same methodology, task, CLI flags,
+ * and request configuration as `ai-gateway.bench.ts` (see that file and
+ * `shared-task.ts` for the full fairness rationale) — the only difference is
+ * `providers-gemini.ts`, which routes gateways to Google's `gemini-3.6-flash`
+ * instead of Anthropic's Claude Haiku 4.5, plus its own no-gateway
+ * `gemini-direct` control.
+ *
+ * Run:
+ *   bench run benchmarks/ai-gateway/ai-gateway-gemini.bench.ts
+ *   bench run benchmarks/ai-gateway/ai-gateway-gemini.bench.ts --provider gemini-direct
+ */
+import '../src/env.js';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';
+import { providers } from './providers-gemini.js';
+import { writeAIGatewayLegacyResults } from './legacy-results.js';
+import { makeAIGatewayTask, resolveAIGatewayPhases } from './shared-task.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const MAX_TOKENS = 200;
+const TIMEOUT_MS = 45_000;
+
+const phases = resolveAIGatewayPhases(process.argv.slice(2));
+if (phases.length === 0) {
+  console.log('Both phases are zeroed — nothing to run.');
+  process.exit(0);
+}
+
+export const config = defineBenchmarkConfig({
+  benchmarkSlug: `ai-gateway-latency-gemini${process.env.DAILY_BENCH_SLUG ? `-${process.env.DAILY_BENCH_SLUG}` : ''}`,
+  benchmarkName: `AI Gateway Latency - Gemini${process.env.DAILY_BENCH_NAME ? ` - ${process.env.DAILY_BENCH_NAME}` : ''}`,
+  phases,
+  groupBy: 'round',
+  participants: providers,
+  onScore: (lowerIsBetter, higherIsBetter) => ({
+    metrics: [
+      lowerIsBetter('coldE2eMs', {
+        unit: 'ms',
+        ceiling: 20000,
+        value: (record) => ((record.data?.phase as string | undefined) === 'cold' && typeof record.latencyMs === 'number' ? record.latencyMs : undefined),
+        weights: { median: 0.30, p95: 0.15, p99: 0 },
+      }),
+      lowerIsBetter('warmTtftMs', {
+        unit: 'ms',
+        ceiling: 20000,
+        value: (record) => ((record.data?.phase as string | undefined) === 'warm' && typeof record.latencyMs === 'number' ? record.latencyMs : undefined),
+        weights: { median: 0.30, p95: 0.15, p99: 0 },
+      }),
+      higherIsBetter('outputTokensPerSec', {
+        unit: 'tokens/sec',
+        floor: 5,
+        ceiling: 200,
+        value: (record) => (typeof record.data?.outputTokensPerSec === 'number' ? record.data.outputTokensPerSec : undefined),
+        weights: { median: 0.10, p95: 0, p99: 0 },
+      }),
+    ],
+  }),
+  onComplete: (outcome) =>
+    writeAIGatewayLegacyResults(outcome.participants, {
+      resultsDir: path.resolve(__dirname, '../../results/ai-gateway-latency/gemini'),
+      providers,
+    }),
+});
+
+export const task = defineTask(makeAIGatewayTask(MAX_TOKENS, TIMEOUT_MS));

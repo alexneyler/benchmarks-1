@@ -6,13 +6,68 @@ import type { AIGatewayProviderConfig, AIGatewayWireFormat, PhaseProbeResult } f
 
 const RECEIPT_HEADERS = ['x-vercel-id', 'cf-ray', 'x-request-id', 'request-id', 'anthropic-request-id'];
 
-// Matches OpenAI's `delta.content`, Anthropic's `delta.text`, and the
-// Responses API's flat `"delta":"…"` string alike, so we can timestamp the
-// first content token without fully parsing every SSE event on the hot path.
-// Safe to share: in the OpenAI/Anthropic formats "delta" is always an object
-// (`"delta":{…}`), never followed directly by a quote, so the added
-// alternative can't false-match those.
-const CONTENT_RE = /"(?:content|text|delta)"\s*:\s*"[^"]/;
+/**
+ * Returns the regex that detects the first *visible* content token for a
+ * given wire format — deliberately per-format, not one shared pattern.
+ *
+ * A single shared `"(?:content|text|delta)"\s*:\s*"[^"]` regex was used
+ * here previously, on the reasoning that each format's real content field
+ * is never a bare string under any of the other names. That held for every
+ * format this benchmark exercised until Kimi K3 via OpenRouter/Vercel,
+ * confirmed live: both stream a `reasoning_details` array alongside the
+ * real `content` field, and each entry looks like
+ * `{"type":"reasoning.text","text":"…"}` — a genuine `"text":"…"` match,
+ * just on invisible reasoning, not the answer. The shared regex fired on
+ * that first reasoning token, so OpenRouter and Vercel's Kimi-family TTFT
+ * numbers were measuring "time to first reasoning token" while every other
+ * participant in that family measured "time to first visible token" — a
+ * real correctness bug, not just an unlucky benchmark run (confirmed by the
+ * reported numbers: 2s/8s vs. 24-38s for a model with reasoning locked
+ * "always on").
+ *
+ * Fix: only match the field name that's genuinely the answer content for
+ * *that* format, not every alternative used across all formats:
+ * - `openai`: `delta.content` only. Chat Completions never uses a bare
+ *   `"text"` or `"delta"` string for the real answer, so restricting to
+ *   `content` removes the `reasoning_details[].text` collision entirely —
+ *   not just for Kimi, for any `openai`-format participant that might
+ *   stream a similarly-shaped reasoning trace.
+ * - `anthropic`: `delta.text` (content_block_delta). Anthropic's extended
+ *   thinking blocks use `"thinking":"…"`, not `"text"`, so no equivalent
+ *   collision risk here.
+ * - `responses`: the flat `"delta":"…"` string (`response.output_text.
+ *   delta`). Note: if reasoning summaries were ever requested for a
+ *   `responses`-format participant, `response.reasoning_summary_text.delta`
+ *   events use this same field name and would reproduce the identical
+ *   false-positive risk — not currently triggered, since no participant in
+ *   this repo requests reasoning summaries, but worth knowing if that
+ *   changes.
+ * - `gemini`: `parts[].text` — Gemini's only real content field name, no
+ *   collision risk since Gemini has no equivalent nested reasoning-trace
+ *   shape in this benchmark's usage.
+ *
+ * `includeReasoning` deliberately widens the `openai` case back to also
+ * match reasoning content — used only when
+ * `AIGatewayProviderConfig.reasoningCountsAsFirstToken` is set (see that
+ * flag's doc comment in `types.ts` for the full rationale). Confirmed live
+ * across all six Kimi-family participants: exactly two reasoning-field
+ * conventions exist — `reasoning_content` (Moonshot direct, Cloudflare) and
+ * `reasoning` (OpenRouter, Vercel, LLM Gateway, Concentrate) — both handled
+ * here rather than assumed to match from one gateway to the next, the same
+ * live-verification discipline that caught the `reasoning_details[].text`
+ * bug above in the first place.
+ */
+function contentRegexFor(wireFormat: AIGatewayWireFormat, includeReasoning: boolean): RegExp {
+  if (wireFormat === 'openai') {
+    return includeReasoning
+      ? /"(?:content|reasoning|reasoning_content)"\s*:\s*"[^"]/
+      : /"content"\s*:\s*"[^"]/;
+  }
+  if (wireFormat === 'responses') return /"delta"\s*:\s*"[^"]/;
+  // 'anthropic' and 'gemini' both use "text" as their real content field,
+  // with no collision risk in either case (see rationale above).
+  return /"text"\s*:\s*"[^"]/;
+}
 
 function now(): number {
   return performance.now();
@@ -32,13 +87,41 @@ function buildRequestBody(config: AIGatewayProviderConfig, prompt: string, maxTo
   }
   if (config.wireFormat === 'responses') {
     // OpenAI Responses API shape: flat `input` string instead of a `messages`
-    // array, `max_output_tokens` instead of `max_tokens`.
+    // array, `max_output_tokens` instead of `max_tokens`. `store: false`
+    // opts out of the Responses API's default 30-day server-side retention
+    // (docs.openai.com — Responses defaults to `store: true`) — these are
+    // one-shot benchmark probes with no need for persisted state, and
+    // leaving the default on has a real failure mode: at least one gateway
+    // (LLM Gateway, per its own Codex integration docs) surfaces a hard
+    // error — "The Responses API requires data retention to be enabled" —
+    // unless the backing OpenAI org has "Retain All Data" turned on, which
+    // isn't something this benchmark controls. Setting `store: false`
+    // sidesteps that requirement entirely rather than depending on an
+    // account setting outside this repo.
+    //
+    // `temperature: 0` per the "identical request configuration" fairness
+    // principle in AI_GATEWAYS.md — this branch is shared by the Anthropic
+    // family's Concentrate entry (Claude Haiku) and every OpenAI-family
+    // entry (`gpt-4.1-mini`, per `providers-openai.ts`), and neither has a
+    // reason to deviate from it.
     return JSON.stringify({
       model: config.model,
       input: prompt,
       max_output_tokens: maxTokens,
       temperature: 0,
       stream: true,
+      store: false,
+      ...config.extraBody,
+    });
+  }
+  if (config.wireFormat === 'gemini') {
+    // Gemini's native generateContent shape: `contents[].parts[].text`
+    // instead of `messages`, `generationConfig.maxOutputTokens` instead of
+    // `max_tokens`. No `stream` body field — streaming is selected by the
+    // `:streamGenerateContent` path segment instead.
+    return JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: maxTokens, temperature: 0 },
       ...config.extraBody,
     });
   }
@@ -61,6 +144,13 @@ function extractOutputTokens(wireFormat: AIGatewayWireFormat, buf: string): numb
     const m = [...buf.matchAll(/"usage"\s*:\s*\{[^}]*"completion_tokens"\s*:\s*(\d+)/g)];
     return m.length > 0 ? Number(m[m.length - 1][1]) : undefined;
   }
+  if (wireFormat === 'gemini') {
+    // Gemini streams cumulative usage under `usageMetadata.candidatesTokenCount`
+    // on each chunk (mirroring Anthropic's message_start/message_delta
+    // pattern) — take the last match, same rationale as the openai branch above.
+    const m = [...buf.matchAll(/"usageMetadata"\s*:\s*\{[^}]*"candidatesTokenCount"\s*:\s*(\d+)/g)];
+    return m.length > 0 ? Number(m[m.length - 1][1]) : undefined;
+  }
   // Anthropic and the Responses API both stream cumulative usage under a
   // "usage" object keyed by "output_tokens" (Anthropic: message_start/
   // message_delta; Responses: response.completed's `response.usage`) — same
@@ -73,6 +163,23 @@ function extractOutputTokens(wireFormat: AIGatewayWireFormat, buf: string): numb
   // count.
   const matches = [...buf.matchAll(/"usage"\s*:\s*\{(?:[^{}]|\{[^{}]*\})*?"output_tokens"\s*:\s*(\d+)/g)];
   return matches.length > 0 ? Number(matches[matches.length - 1][1]) : undefined;
+}
+
+/**
+ * Cheap regex extraction of an API-reported error message from the raw SSE
+ * buffer, for a more useful failure log than "no content token observed"
+ * alone. A request can return HTTP 200 and a validly-terminated SSE stream
+ * while still failing server-side, with the real reason inside an
+ * `event: error` / `response.failed` payload rather than the HTTP status.
+ * Matches the common `{"error":{...,"message":"..."}}` shape shared by
+ * OpenAI (Chat Completions, Responses, and its own `event: error`/
+ * `response.failed` payloads), Anthropic, and Gemini error responses alike —
+ * not exhaustive, but strictly additive: if this finds nothing, the caller
+ * falls back to the original generic message exactly as before.
+ */
+function extractStreamErrorMessage(buf: string): string | undefined {
+  const matches = [...buf.matchAll(/"error"\s*:\s*\{(?:[^{}]|\{[^{}]*\})*?"message"\s*:\s*"([^"]*)"/g)];
+  return matches.length > 0 ? matches[matches.length - 1][1] : undefined;
 }
 
 function extractReceipts(headers: Record<string, string | string[] | undefined>): Record<string, string> {
@@ -103,6 +210,7 @@ function sendAndMeasure(
 ): Promise<RawProbeOutcome> {
   return withTimeout(new Promise<RawProbeOutcome>((resolve, reject) => {
     const start = now();
+    const contentRe = contentRegexFor(config.wireFormat, config.reasoningCountsAsFirstToken ?? false);
 
     const req = https.request({
       host: config.host,
@@ -134,7 +242,7 @@ function sendAndMeasure(
 
       res.on('data', (chunk: Buffer) => {
         buf += chunk.toString('utf8');
-        if (ttftMs === 0 && CONTENT_RE.test(buf)) {
+        if (ttftMs === 0 && contentRe.test(buf)) {
           ttftMs = now() - start;
         }
         outputTokens = extractOutputTokens(config.wireFormat, buf) ?? outputTokens;
@@ -142,7 +250,12 @@ function sendAndMeasure(
       });
       res.on('end', () => {
         if (ttftMs === 0) {
-          reject(new Error('Stream ended with no content token observed'));
+          const streamError = extractStreamErrorMessage(buf);
+          reject(new Error(
+            streamError
+              ? `Stream ended with no content token observed: ${streamError}`
+              : 'Stream ended with no content token observed',
+          ));
           return;
         }
         resolve({ ttfbMs, ttftMs, totalMs: now() - start, outputTokens, resolvedProvider, receipts });
