@@ -70,28 +70,33 @@ jobs:
             resultsDir: ai-gateway-latency/anthropic
             svgScript: generate-ai-gateway-svg
             svgFile: ai-gateway.svg
+            timeout: 60
           - slug: openai
             label: OpenAI
             benchScript: benchmarks/ai-gateway/ai-gateway-openai.bench.ts
             resultsDir: ai-gateway-latency/openai
             svgScript: generate-ai-gateway-openai-svg
             svgFile: ai-gateway-openai.svg
+            timeout: 60
           - slug: gemini
             label: Gemini
             benchScript: benchmarks/ai-gateway/ai-gateway-gemini.bench.ts
             resultsDir: ai-gateway-latency/gemini
             svgScript: generate-ai-gateway-gemini-svg
             svgFile: ai-gateway-gemini.svg
+            timeout: 60
           - slug: kimi
             label: Kimi
             benchScript: benchmarks/ai-gateway/ai-gateway-kimi.bench.ts
             resultsDir: ai-gateway-latency/kimi
             svgScript: generate-ai-gateway-kimi-svg
             svgFile: ai-gateway-kimi.svg
+            timeout: 150
+            iterations: 15
     # Manual runs can scope to one family via the `family` input; push/schedule
     # triggers always run all four.
     if: github.event_name != 'workflow_dispatch' || github.event.inputs.family == 'all' || github.event.inputs.family == '' || github.event.inputs.family == matrix.family.slug
-    timeout-minutes: 30
+    timeout-minutes: ${{ matrix.family.timeout }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -122,7 +127,7 @@ jobs:
             PROVIDER_FLAG="--provider ${{ github.event.inputs.provider }}"
           fi
           npx tsx packages/benchsdk-runner/dist/bin.js run ${{ matrix.family.benchScript }} $PROVIDER_FLAG \
-            --iterations ${{ (github.event_name == 'push' && '10') || github.event.inputs.iterations || '10' }} \
+            --iterations ${{ (github.event_name == 'push' || github.event_name == 'schedule') && '10' || matrix.family.iterations || github.event.inputs.iterations || '10' }} \
             ${{ (github.event_name == 'push' || github.event.inputs.dry_run == 'true') && '--no-ingest' || '' }}
       - run: pnpm run ${{ matrix.family.svgScript }}
       - name: Upload results and SVG as artifacts
