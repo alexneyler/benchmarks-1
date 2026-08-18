@@ -115,7 +115,7 @@ jobs:
         # this leg runs — harmless (each family's script only reads its own),
         # and keeps this step identical across matrix legs.
         run: |
-          . benchmarks/scripts/load-vault-secrets.sh '^(ANTHROPIC_API_KEY|OPENAI_API_KEY|GEMINI_API_KEY|KIMI_API_KEY|CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID|CLOUDFLARE_AI_GATEWAY_GATEWAY_ID|CLOUDFLARE_AI_GATEWAY_TOKEN|LLM_GATEWAY_API_KEY|OPENROUTER_API_KEY|PYDANTIC_AI_GATEWAY_API_KEY|VERCEL_AI_GATEWAY_API_KEY|CONCENTRATE_AI_GATEWAY_API_KEY|COMPUTESDK_ADMIN_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
+          . benchmarks/scripts/load-vault-secrets.sh '^(ANTHROPIC_API_KEY|OPENAI_API_KEY|GEMINI_API_KEY|KIMI_API_KEY|NOVITA_API_KEY|RAMP_ROUTER_API_KEY|NEON_AI_GATEWAY_BASE_URL|NEON_AI_GATEWAY_TOKEN|CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID|CLOUDFLARE_AI_GATEWAY_GATEWAY_ID|CLOUDFLARE_AI_GATEWAY_TOKEN|LLM_GATEWAY_API_KEY|OPENROUTER_API_KEY|PYDANTIC_AI_GATEWAY_API_KEY|VERCEL_AI_GATEWAY_API_KEY|CONCENTRATE_AI_GATEWAY_API_KEY|COMPUTESDK_ADMIN_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
 
           PROVIDER_FLAG=""
           if [ -n "${{ github.event.inputs.provider }}" ]; then
@@ -162,6 +162,9 @@ jobs:
               'openai-direct': 'OpenAI (direct)',
               'gemini-direct': 'Gemini (direct)',
               'kimi-direct': 'Kimi (direct)',
+              'novita': 'Novita',
+              'ramp': 'Ramp Router',
+              'neon': 'Neon AI Gateway',
             };
 
             if (fs.existsSync(latestPath)) {

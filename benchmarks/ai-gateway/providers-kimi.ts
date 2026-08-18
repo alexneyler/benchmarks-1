@@ -1,4 +1,5 @@
 import type { AIGatewayProviderConfig } from './types.js';
+import { newAIGateways, providersForFamily } from './provider-factory.js';
 
 /**
  * AI gateway benchmark configurations — Kimi family.
@@ -235,4 +236,5 @@ export const providers: AIGatewayProviderConfig[] = [
   },
   //
   // add gateways above
+  ...providersForFamily('kimi', newAIGateways),
 ];

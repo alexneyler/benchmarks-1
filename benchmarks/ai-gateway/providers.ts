@@ -1,4 +1,5 @@
 import type { AIGatewayProviderConfig } from './types.js';
+import { newAIGateways, providersForFamily } from './provider-factory.js';
 
 /**
  * AI gateway benchmark configurations.
@@ -176,4 +177,5 @@ export const providers: AIGatewayProviderConfig[] = [
   },
   //
   // add gateways above
+  ...providersForFamily('anthropic', newAIGateways),
 ];

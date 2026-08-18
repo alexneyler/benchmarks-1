@@ -254,6 +254,16 @@
     ],
     "anthropic-direct": [
       "ANTHROPIC_API_KEY"
+    ],
+    "novita": [
+      "NOVITA_API_KEY"
+    ],
+    "ramp": [
+      "RAMP_ROUTER_API_KEY"
+    ],
+    "neon": [
+      "NEON_AI_GATEWAY_BASE_URL",
+      "NEON_AI_GATEWAY_TOKEN"
     ]
   },
   "ai-gateway-openai": {
@@ -280,6 +290,16 @@
     ],
     "openai-direct": [
       "OPENAI_API_KEY"
+    ],
+    "novita": [
+      "NOVITA_API_KEY"
+    ],
+    "ramp": [
+      "RAMP_ROUTER_API_KEY"
+    ],
+    "neon": [
+      "NEON_AI_GATEWAY_BASE_URL",
+      "NEON_AI_GATEWAY_TOKEN"
     ]
   },
   "ai-gateway-gemini": {
@@ -303,6 +323,16 @@
     ],
     "gemini-direct": [
       "GEMINI_API_KEY"
+    ],
+    "novita": [
+      "NOVITA_API_KEY"
+    ],
+    "ramp": [
+      "RAMP_ROUTER_API_KEY"
+    ],
+    "neon": [
+      "NEON_AI_GATEWAY_BASE_URL",
+      "NEON_AI_GATEWAY_TOKEN"
     ]
   },
   "ai-gateway-kimi": {
@@ -325,6 +355,16 @@
     ],
     "kimi-direct": [
       "KIMI_API_KEY"
+    ],
+    "novita": [
+      "NOVITA_API_KEY"
+    ],
+    "ramp": [
+      "RAMP_ROUTER_API_KEY"
+    ],
+    "neon": [
+      "NEON_AI_GATEWAY_BASE_URL",
+      "NEON_AI_GATEWAY_TOKEN"
     ]
   },
   "snapshot-fork": {

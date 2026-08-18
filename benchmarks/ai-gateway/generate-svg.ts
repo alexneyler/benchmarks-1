@@ -25,6 +25,9 @@ function formatProviderName(s: string): string {
   if (s === 'openai-direct') return 'OpenAI (direct)';
   if (s === 'gemini-direct') return 'Gemini (direct)';
   if (s === 'kimi-direct') return 'Kimi (direct)';
+  if (s === 'novita') return 'Novita';
+  if (s === 'ramp') return 'Ramp Router';
+  if (s === 'neon') return 'Neon AI Gateway';
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
