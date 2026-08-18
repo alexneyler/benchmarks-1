@@ -23,7 +23,7 @@ import {
   selectParticipants,
 } from '@benchsdk/client';
 import { NoAvailableParticipantsError } from './no-available-participants.js';
-import { higherIsBetter, lowerIsBetter, score } from './scoring.js';
+import { higherIsBetter, lowerIsBetter, score, ScoringSpecError } from './scoring.js';
 import type {
   BaseParticipant,
   BenchmarkClient,
@@ -539,6 +539,10 @@ export async function runBenchmark<T extends BaseParticipant>(
       };
       await client.submitRunSummary(config.benchmarkSlug, runId, { run, results: scored });
     } catch (err) {
+      // A ScoringSpecError means onScore itself is misconfigured (e.g. metric
+      // weights don't sum to 1.0) — an authoring bug, not a transient submit
+      // failure, so it must fail the run rather than degrade to a warning.
+      if (err instanceof ScoringSpecError) throw err;
       const message = err instanceof Error ? err.message : String(err);
       console.warn(`[benchsdk-runner] failed to submit run summary: ${message}`);
     }

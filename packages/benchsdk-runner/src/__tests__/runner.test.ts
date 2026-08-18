@@ -336,6 +336,56 @@ describe('runBenchmark', () => {
     expect(onComplete).toHaveBeenCalledWith(outcome);
   });
 
+  it('propagates a ScoringSpecError from a misconfigured onScore instead of swallowing it as a warning', async () => {
+    // weights sum to 0.5, not 1.0 — an authoring bug in onScore, not a
+    // transient submit failure, so runBenchmark must reject rather than warn
+    // and continue to onComplete.
+    const onScore = vi.fn((lowerIsBetter) => ({
+      metrics: [lowerIsBetter('ttiMs', { unit: 'ms', ceiling: 1000, weights: { median: 0.5, p95: 0, p99: 0 } })],
+    }));
+    const onComplete = vi.fn();
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 's',
+      benchmarkName: 'n',
+      iterations: 2,
+      concurrency: 1,
+      participants: [participants[0]],
+      onScore,
+      onComplete,
+    };
+
+    await expect(
+      runBenchmark(config, defineTask(async () => ({ data: { ttiMs: 100 } })), []),
+    ).rejects.toThrow('Scoring spec weights sum to');
+    expect(calls.submitRunSummary).toHaveLength(0);
+    expect(onComplete).not.toHaveBeenCalled();
+  });
+
+  it('still warns and continues when submitRunSummary itself fails (not a scoring config bug)', async () => {
+    fakeClient.submitRunSummary = vi.fn(async () => {
+      throw new Error('network blip');
+    });
+    const onScore = vi.fn((lowerIsBetter) => ({
+      metrics: [lowerIsBetter('ttiMs', { unit: 'ms', ceiling: 1000, weights: { median: 1, p95: 0, p99: 0 } })],
+    }));
+    const onComplete = vi.fn();
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 's',
+      benchmarkName: 'n',
+      iterations: 2,
+      concurrency: 1,
+      participants: [participants[0]],
+      onScore,
+      onComplete,
+    };
+
+    const outcome = await runBenchmark(config, defineTask(async () => ({ data: { ttiMs: 100 } })), []);
+
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    expect(onComplete).toHaveBeenCalledWith(outcome);
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('network blip'));
+  });
+
   it('applies CLI overrides over config', async () => {
     const config: BenchmarkConfig<typeof participants[number]> = {
       benchmarkSlug: 's',

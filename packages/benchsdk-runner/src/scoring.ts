@@ -127,7 +127,46 @@ export const higherIsBetter: HigherIsBetter = (name, opts) => ({
   higherIsBetter: true,
 });
 
+const WEIGHT_SUM_TOLERANCE = 0.01;
+
+// Thrown by validateScoringSpec — a distinguishable type so runner.ts can
+// tell "this benchmark's onScore is misconfigured" (an authoring bug, must
+// fail the run) apart from transient submit/network failures (which should
+// keep degrading to a warning, per runner.ts's existing catch behavior).
+export class ScoringSpecError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ScoringSpecError';
+  }
+}
+
+// Each metric's weights.median + weights.p95 + weights.p99 is a share of the
+// overall 0-100 compositeScore — summed across every declared metric they
+// must total 1.0, or compositeScore silently drifts off its advertised
+// scale. Validated against spec.metrics as declared, not the post-sample-
+// filter scores in score()'s participant loop, since a metric with zero
+// samples for a given participant is legitimately excluded there — a
+// per-run runtime fact, not an authoring mistake.
+export function validateScoringSpec(spec: ScoringSpec): void {
+  const totalWeight = spec.metrics.reduce(
+    (sum, m) => sum + m.weights.median + m.weights.p95 + m.weights.p99,
+    0,
+  );
+  if (Math.abs(totalWeight - 1) > WEIGHT_SUM_TOLERANCE) {
+    const breakdown = spec.metrics
+      .map((m) => `${m.name}=${(m.weights.median + m.weights.p95 + m.weights.p99).toFixed(3)}`)
+      .join(', ');
+    throw new ScoringSpecError(
+      `Scoring spec weights sum to ${totalWeight.toFixed(3)}, expected 1.0 ` +
+      `(±${WEIGHT_SUM_TOLERANCE}). Each metric's weights.median + weights.p95 + weights.p99, ` +
+      `summed across every declared metric, must total 1.0 for compositeScore to stay a ` +
+      `meaningful 0-100 scale. Per-metric totals: ${breakdown || '(no metrics declared)'}`,
+    );
+  }
+}
+
 export function score(outcome: BenchmarkRunOutcome, spec: ScoringSpec): BenchmarkScoreResult[] {
+  validateScoringSpec(spec);
   const successFilter = spec.success ?? ((r: TaskResultRecord) => r.status === 'success');
   const dimensions = toJsonObject(spec.dimensions ?? {});
   const results: BenchmarkScoreResult[] = [];
