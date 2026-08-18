@@ -203,9 +203,7 @@
     "mosaic": [
       "MOSAIC_BUCKET",
       "MOSAIC_ACCESS_KEY_ID",
-      "MOSAIC_SECRET_ACCESS_KEY",
-      "MOSAIC_REGION",
-      "MOSAIC_ENDPOINT"
+      "MOSAIC_SECRET_ACCESS_KEY"
     ]
   },
   "scale": {
