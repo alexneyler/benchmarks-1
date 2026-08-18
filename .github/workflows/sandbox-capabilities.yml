@@ -57,6 +57,7 @@ jobs:
           - isorun
           - lightning
           - modal
+          - microsandbox
           - mosaic
           - namespace
           - northflank
@@ -115,6 +116,7 @@ jobs:
             isorun) PROVIDER_KEYS='ISORUN_API_KEY' ;;
             lightning) PROVIDER_KEYS='LIGHTNING_API_KEY' ;;
             modal) PROVIDER_KEYS='MODAL_TOKEN_ID|MODAL_TOKEN_SECRET' ;;
+            microsandbox) PROVIDER_KEYS='MSB_API_KEY' ;;
             mosaic) PROVIDER_KEYS='MOSAIC_API_URL|MOSAIC_API_TOKEN' ;;
             namespace) PROVIDER_KEYS='NSC_TOKEN' ;;
             northflank) PROVIDER_KEYS='NORTHFLANK_TOKEN|NORTHFLANK_PROJECT_ID' ;;
