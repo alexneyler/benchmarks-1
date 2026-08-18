@@ -5,7 +5,7 @@ import { newAIGateways, providersForFamily } from './provider-factory.js';
  * AI gateway benchmark configurations — OpenAI family.
  *
  * Same fairness methodology as `providers.ts` (the Anthropic family): every
- * gateway is hit directly with the same model — `gpt-4.1-mini` — so the
+ * gateway is hit directly with the same model — `gpt-5.4-mini` — so the
  * comparison is apples-to-apples, and `openai-direct` is the no-gateway
  * control. What differs is the target provider: every request here routes to
  * OpenAI instead of Anthropic, so this measures each gateway's overhead when
@@ -46,7 +46,7 @@ export const providers: AIGatewayProviderConfig[] = [
     name: 'openrouter',
     requiredEnvVars: ['OPENROUTER_API_KEY'],
     wireFormat: 'responses',
-    model: 'openai/gpt-4.1-mini',
+    model: 'openai/gpt-5.4-mini',
     host: 'openrouter.ai',
     path: '/api/v1/responses',
     buildHeaders: () => ({
@@ -67,7 +67,7 @@ export const providers: AIGatewayProviderConfig[] = [
     name: 'vercel-ai-gateway',
     requiredEnvVars: ['VERCEL_AI_GATEWAY_API_KEY'],
     wireFormat: 'responses',
-    model: 'openai/gpt-4.1-mini',
+    model: 'openai/gpt-5.4-mini',
     host: 'ai-gateway.vercel.sh',
     path: '/v1/responses',
     buildHeaders: () => ({
@@ -96,7 +96,7 @@ export const providers: AIGatewayProviderConfig[] = [
       'OPENAI_API_KEY',
     ],
     wireFormat: 'responses',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5.4-mini',
     host: 'gateway.ai.cloudflare.com',
     path: `/v1/${process.env.CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID}/${process.env.CLOUDFLARE_AI_GATEWAY_GATEWAY_ID}/openai/responses`,
     buildHeaders: () => ({
@@ -108,7 +108,7 @@ export const providers: AIGatewayProviderConfig[] = [
     // Confirmed via LLM Gateway's own Codex CLI integration guide
     // (llmgateway.io/guides/codex-cli), which states outright: "Codex CLI
     // uses the OpenAI Responses API (`/v1/responses`)" against a base URL of
-    // `https://api.llmgateway.io/v1`. `openai/gpt-4.1-mini` follows LLM
+    // `https://api.llmgateway.io/v1`. `openai/gpt-5.4-mini` follows LLM
     // Gateway's confirmed provider-pinning syntax (docs.llmgateway.io —
     // provider-prefix routing), demonstrated there for Chat Completions; NOT
     // independently re-confirmed for the Responses endpoint specifically,
@@ -116,7 +116,7 @@ export const providers: AIGatewayProviderConfig[] = [
     name: 'llmgateway',
     requiredEnvVars: ['LLM_GATEWAY_API_KEY'],
     wireFormat: 'responses',
-    model: 'openai/gpt-4.1-mini',
+    model: 'openai/gpt-5.4-mini',
     host: 'api.llmgateway.io',
     path: '/v1/responses',
     buildHeaders: () => ({
@@ -143,7 +143,7 @@ export const providers: AIGatewayProviderConfig[] = [
     name: 'pydantic-ai-gateway',
     requiredEnvVars: ['PYDANTIC_AI_GATEWAY_API_KEY'],
     wireFormat: 'responses',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5.4-mini',
     host: 'gateway-us.pydantic.dev',
     path: '/proxy/openai-responses/responses',
     buildHeaders: () => ({
@@ -151,7 +151,7 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
-    // `openai/gpt-4.1-mini` follows Concentrate's confirmed provider-prefix
+    // `openai/gpt-5.4-mini` follows Concentrate's confirmed provider-prefix
     // syntax (concentrate.ai/models — "openai/gpt-5.4" shown as the
     // provider-pinned form). Uses the same `/v1/responses/` endpoint as the
     // Anthropic entry; for OpenAI this is even less of a translation layer
@@ -162,7 +162,7 @@ export const providers: AIGatewayProviderConfig[] = [
     name: 'concentrate-ai-gateway',
     requiredEnvVars: ['CONCENTRATE_AI_GATEWAY_API_KEY'],
     wireFormat: 'responses',
-    model: 'openai/gpt-4.1-mini',
+    model: 'openai/gpt-5.4-mini',
     host: 'api.concentrate.ai',
     path: '/v1/responses/',
     buildHeaders: () => ({
@@ -176,7 +176,7 @@ export const providers: AIGatewayProviderConfig[] = [
     name: 'openai-direct',
     requiredEnvVars: ['OPENAI_API_KEY'],
     wireFormat: 'responses',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5.4-mini',
     host: 'api.openai.com',
     path: '/v1/responses',
     buildHeaders: () => ({

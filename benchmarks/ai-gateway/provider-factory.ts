@@ -48,7 +48,7 @@ export interface AIGatewayDefinition {
  * catalog aliases are confirmed. */
 const FAMILY_MODELS: Record<AIGatewayFamily, string> = {
   anthropic: 'claude-haiku-4-5-20251001',
-  openai: 'gpt-4.1-mini',
+  openai: 'gpt-5.4-mini',
   gemini: 'gemini-3.6-flash',
   kimi: 'kimi-k3',
 };
@@ -119,7 +119,7 @@ export const newAIGateways: AIGatewayDefinition[] = [
     }),
     families: {
       kimi: {
-        model: FAMILY_MODELS.kimi,
+        model: 'moonshotai/kimi-k3',
         extraBody: { temperature: undefined },
         reasoningCountsAsFirstToken: true,
       },
@@ -135,8 +135,11 @@ export const newAIGateways: AIGatewayDefinition[] = [
       Authorization: `Bearer ${process.env.RAMP_ROUTER_API_KEY}`,
     }),
     families: {
+      openai: {
+        model: 'openai:gpt-5.4-mini',
+      },
       kimi: {
-        model: FAMILY_MODELS.kimi,
+        model: 'fireworks:accounts/fireworks/models/kimi-k3',
         extraBody: { temperature: undefined },
         // Ramp uses the OpenAI Responses wire format, for which
         // reasoningCountsAsFirstToken is not currently supported (see phase-probe.ts).
@@ -153,6 +156,15 @@ export const newAIGateways: AIGatewayDefinition[] = [
       Authorization: `Bearer ${process.env.NEON_AI_GATEWAY_TOKEN}`,
     }),
     families: {
+      anthropic: {
+        model: 'claude-haiku-4-5',
+      },
+      openai: {
+        model: 'gpt-5-4-mini',
+      },
+      gemini: {
+        model: 'gemini-3-6-flash',
+      },
       kimi: {
         model: FAMILY_MODELS.kimi,
         extraBody: { temperature: undefined },
