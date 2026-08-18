@@ -48,8 +48,31 @@ permissions:
   id-token: write
 
 jobs:
+  matrix:
+    name: Build family matrix
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.set.outputs.include }}
+    steps:
+      - id: set
+        run: |
+          family='${{ github.event.inputs.family }}'
+          all='[
+            {"slug":"anthropic","label":"Anthropic","benchScript":"benchmarks/ai-gateway/ai-gateway.bench.ts","resultsDir":"ai-gateway-latency/anthropic","svgScript":"generate-ai-gateway-svg","svgFile":"ai-gateway.svg","timeout":60},
+            {"slug":"openai","label":"OpenAI","benchScript":"benchmarks/ai-gateway/ai-gateway-openai.bench.ts","resultsDir":"ai-gateway-latency/openai","svgScript":"generate-ai-gateway-openai-svg","svgFile":"ai-gateway-openai.svg","timeout":60},
+            {"slug":"gemini","label":"Gemini","benchScript":"benchmarks/ai-gateway/ai-gateway-gemini.bench.ts","resultsDir":"ai-gateway-latency/gemini","svgScript":"generate-ai-gateway-gemini-svg","svgFile":"ai-gateway-gemini.svg","timeout":60},
+            {"slug":"kimi","label":"Kimi","benchScript":"benchmarks/ai-gateway/ai-gateway-kimi.bench.ts","resultsDir":"ai-gateway-latency/kimi","svgScript":"generate-ai-gateway-kimi-svg","svgFile":"ai-gateway-kimi.svg","timeout":150,"iterations":15}
+          ]'
+          if [ "$family" = "all" ] || [ "$family" = "" ]; then
+            include="$all"
+          else
+            include=$(printf '%s\n' "$all" | python3 -c 'import sys,json; f=sys.argv[1]; data=json.load(sys.stdin); print(json.dumps([x for x in data if x["slug"]==f]))' "$family")
+          fi
+          echo "include=$include" >> "$GITHUB_OUTPUT"
+
   bench:
     name: AI Gateway Benchmark (${{ matrix.family.slug }})
+    needs: matrix
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
     # Matrixed by *family* (target model), not by gateway provider — each leg
     # below still runs as a single job internally. The round-robin methodology
@@ -63,39 +86,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        family:
-          - slug: anthropic
-            label: Anthropic
-            benchScript: benchmarks/ai-gateway/ai-gateway.bench.ts
-            resultsDir: ai-gateway-latency/anthropic
-            svgScript: generate-ai-gateway-svg
-            svgFile: ai-gateway.svg
-            timeout: 60
-          - slug: openai
-            label: OpenAI
-            benchScript: benchmarks/ai-gateway/ai-gateway-openai.bench.ts
-            resultsDir: ai-gateway-latency/openai
-            svgScript: generate-ai-gateway-openai-svg
-            svgFile: ai-gateway-openai.svg
-            timeout: 60
-          - slug: gemini
-            label: Gemini
-            benchScript: benchmarks/ai-gateway/ai-gateway-gemini.bench.ts
-            resultsDir: ai-gateway-latency/gemini
-            svgScript: generate-ai-gateway-gemini-svg
-            svgFile: ai-gateway-gemini.svg
-            timeout: 60
-          - slug: kimi
-            label: Kimi
-            benchScript: benchmarks/ai-gateway/ai-gateway-kimi.bench.ts
-            resultsDir: ai-gateway-latency/kimi
-            svgScript: generate-ai-gateway-kimi-svg
-            svgFile: ai-gateway-kimi.svg
-            timeout: 150
-            iterations: 15
-    # Manual runs can scope to one family via the `family` input; push/schedule
-    # triggers always run all four.
-    if: github.event_name != 'workflow_dispatch' || github.event.inputs.family == 'all' || github.event.inputs.family == '' || github.event.inputs.family == matrix.family.slug
+        include: ${{ fromJson(needs.matrix.outputs.include) }}
+    # The include matrix is already filtered to the selected family for
+    # workflow_dispatch, so no per-leg if is needed.
     timeout-minutes: ${{ matrix.family.timeout }}
     steps:
       - uses: actions/checkout@v4
