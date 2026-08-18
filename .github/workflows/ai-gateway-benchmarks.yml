@@ -32,6 +32,16 @@ on:
         description: 'Gateway to run (leave empty for that family''s full roster, round-robin). Provider slugs are family-specific (e.g. anthropic-direct vs. openai-direct) — only meaningful when Family above is set to one specific family, not All.'
         required: false
         default: ''
+        type: choice
+        options:
+          - ''
+          - openrouter
+          - vercel-ai-gateway
+          - cloudflare-ai-gateway
+          - llmgateway
+          - pydantic-ai-gateway
+          - concentrate-ai-gateway
+          - anthropic-direct
       dry_run:
         description: 'Run without ingesting or committing results'
         required: false
@@ -48,31 +58,8 @@ permissions:
   id-token: write
 
 jobs:
-  matrix:
-    name: Build family matrix
-    runs-on: ubuntu-latest
-    outputs:
-      include: ${{ steps.set.outputs.include }}
-    steps:
-      - id: set
-        run: |
-          family='${{ github.event.inputs.family }}'
-          all='[
-            {"slug":"anthropic","label":"Anthropic","benchScript":"benchmarks/ai-gateway/ai-gateway.bench.ts","resultsDir":"ai-gateway-latency/anthropic","svgScript":"generate-ai-gateway-svg","svgFile":"ai-gateway.svg","timeout":60},
-            {"slug":"openai","label":"OpenAI","benchScript":"benchmarks/ai-gateway/ai-gateway-openai.bench.ts","resultsDir":"ai-gateway-latency/openai","svgScript":"generate-ai-gateway-openai-svg","svgFile":"ai-gateway-openai.svg","timeout":60},
-            {"slug":"gemini","label":"Gemini","benchScript":"benchmarks/ai-gateway/ai-gateway-gemini.bench.ts","resultsDir":"ai-gateway-latency/gemini","svgScript":"generate-ai-gateway-gemini-svg","svgFile":"ai-gateway-gemini.svg","timeout":60},
-            {"slug":"kimi","label":"Kimi","benchScript":"benchmarks/ai-gateway/ai-gateway-kimi.bench.ts","resultsDir":"ai-gateway-latency/kimi","svgScript":"generate-ai-gateway-kimi-svg","svgFile":"ai-gateway-kimi.svg","timeout":150,"iterations":15}
-          ]'
-          if [ "$family" = "all" ] || [ "$family" = "" ]; then
-            include="$all"
-          else
-            include=$(printf '%s\n' "$all" | python3 -c 'import sys,json; f=sys.argv[1]; data=json.load(sys.stdin); print(json.dumps([x for x in data if x["slug"]==f]))' "$family")
-          fi
-          echo "include=$include" >> "$GITHUB_OUTPUT"
-
   bench:
     name: AI Gateway Benchmark (${{ matrix.family.slug }})
-    needs: matrix
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
     # Matrixed by *family* (target model), not by gateway provider — each leg
     # below still runs as a single job internally. The round-robin methodology
@@ -86,9 +73,38 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.matrix.outputs.include) }}
-    # The include matrix is already filtered to the selected family for
-    # workflow_dispatch, so no per-leg if is needed.
+        family:
+          - slug: anthropic
+            label: Anthropic
+            benchScript: benchmarks/ai-gateway/ai-gateway.bench.ts
+            resultsDir: ai-gateway-latency/anthropic
+            svgScript: generate-ai-gateway-svg
+            svgFile: ai-gateway.svg
+            timeout: 60
+          - slug: openai
+            label: OpenAI
+            benchScript: benchmarks/ai-gateway/ai-gateway-openai.bench.ts
+            resultsDir: ai-gateway-latency/openai
+            svgScript: generate-ai-gateway-openai-svg
+            svgFile: ai-gateway-openai.svg
+            timeout: 60
+          - slug: gemini
+            label: Gemini
+            benchScript: benchmarks/ai-gateway/ai-gateway-gemini.bench.ts
+            resultsDir: ai-gateway-latency/gemini
+            svgScript: generate-ai-gateway-gemini-svg
+            svgFile: ai-gateway-gemini.svg
+            timeout: 60
+          - slug: kimi
+            label: Kimi
+            benchScript: benchmarks/ai-gateway/ai-gateway-kimi.bench.ts
+            resultsDir: ai-gateway-latency/kimi
+            svgScript: generate-ai-gateway-kimi-svg
+            svgFile: ai-gateway-kimi.svg
+            timeout: 150
+            iterations: 15
+    # Manual runs can scope to one family via the `family` input; push/schedule
+    # triggers always run all four.
     timeout-minutes: ${{ matrix.family.timeout }}
     steps:
       - uses: actions/checkout@v4
@@ -109,22 +125,38 @@ jobs:
             pnpm install --frozen-lockfile
           fi
       - name: Run AI gateway benchmark
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.family == 'all' || github.event.inputs.family == '' || github.event.inputs.family == matrix.family.slug
         # Union of every family's vars is loaded regardless of which family
         # this leg runs — harmless (each family's script only reads its own),
         # and keeps this step identical across matrix legs.
+        env:
+          PROVIDER: ${{ github.event.inputs.provider }}
+          INPUT_ITERATIONS: ${{ github.event.inputs.iterations }}
+          FAMILY_ITERATIONS: ${{ matrix.family.iterations }}
         run: |
           . benchmarks/scripts/load-vault-secrets.sh '^(ANTHROPIC_API_KEY|OPENAI_API_KEY|GEMINI_API_KEY|KIMI_API_KEY|NOVITA_API_KEY|RAMP_ROUTER_API_KEY|NEON_AI_GATEWAY_BASE_URL|NEON_AI_GATEWAY_TOKEN|CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID|CLOUDFLARE_AI_GATEWAY_GATEWAY_ID|CLOUDFLARE_AI_GATEWAY_TOKEN|LLM_GATEWAY_API_KEY|OPENROUTER_API_KEY|PYDANTIC_AI_GATEWAY_API_KEY|VERCEL_AI_GATEWAY_API_KEY|CONCENTRATE_AI_GATEWAY_API_KEY|COMPUTESDK_ADMIN_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
 
-          PROVIDER_FLAG=""
-          if [ -n "${{ github.event.inputs.provider }}" ]; then
-            PROVIDER_FLAG="--provider ${{ github.event.inputs.provider }}"
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_name }}" = "schedule" ]; then
+            ITERATIONS="10"
+          elif [ -n "$FAMILY_ITERATIONS" ]; then
+            ITERATIONS="$FAMILY_ITERATIONS"
+          elif [ -n "$INPUT_ITERATIONS" ]; then
+            ITERATIONS="$INPUT_ITERATIONS"
+          else
+            ITERATIONS="10"
           fi
-          npx tsx packages/benchsdk-runner/dist/bin.js run ${{ matrix.family.benchScript }} $PROVIDER_FLAG \
-            --iterations ${{ (github.event_name == 'push' || github.event_name == 'schedule') && '10' || matrix.family.iterations || github.event.inputs.iterations || '10' }} \
+
+          provider_args=()
+          if [ -n "$PROVIDER" ]; then
+            provider_args=(--provider "$PROVIDER")
+          fi
+          npx tsx packages/benchsdk-runner/dist/bin.js run "${{ matrix.family.benchScript }}" "${provider_args[@]}" \
+            --iterations "$ITERATIONS" \
             ${{ (github.event_name == 'push' || github.event.inputs.dry_run == 'true') && '--no-ingest' || '' }}
       - run: pnpm run ${{ matrix.family.svgScript }}
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.family == 'all' || github.event.inputs.family == '' || github.event.inputs.family == matrix.family.slug
       - name: Upload results and SVG as artifacts
-        if: always()
+        if: always() && (github.event_name != 'workflow_dispatch' || github.event.inputs.family == 'all' || github.event.inputs.family == '' || github.event.inputs.family == matrix.family.slug)
         uses: actions/upload-artifact@v4
         with:
           name: ai-gateway-results-${{ matrix.family.slug }}
@@ -249,7 +281,7 @@ jobs:
               });
             }
       - name: Commit and push
-        if: github.event_name != 'push' && github.event.inputs.dry_run != 'true'
+        if: github.event_name != 'push' && github.event.inputs.dry_run != 'true' && (github.event_name != 'workflow_dispatch' || github.event.inputs.family == 'all' || github.event.inputs.family == '' || github.event.inputs.family == matrix.family.slug)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
