@@ -10,6 +10,8 @@
  *
  * Run with a subset:
  *   bench run benchmarks/examples/01-multiple-providers.bench.ts --iterations 5 --provider alpha,beta
+ *
+ * Add `--no-ingest` to run without a platform endpoint or API key.
  */
 import '../src/env.js';
 import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';

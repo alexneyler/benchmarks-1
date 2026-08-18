@@ -11,6 +11,8 @@
  *
  * Run with:
  *   bench run benchmarks/examples/00-hello-world.bench.ts --iterations 3
+ *
+ * Add `--no-ingest` to run without a platform endpoint or API key.
  */
 import '../src/env.js';
 import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';

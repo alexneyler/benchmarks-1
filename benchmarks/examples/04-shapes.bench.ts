@@ -11,6 +11,8 @@
  *
  * Run the thorough variant:
  *   bench run benchmarks/examples/04-shapes.bench.ts --shape thorough --iterations 10 --concurrency 3
+ *
+ * Add `--no-ingest` to run without a platform endpoint or API key.
  */
 import '../src/env.js';
 import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';

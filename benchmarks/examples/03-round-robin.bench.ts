@@ -8,6 +8,8 @@
  *
  * Run with:
  *   bench run benchmarks/examples/03-round-robin.bench.ts --iterations 4 --concurrency 1 --group-by round
+ *
+ * Add `--no-ingest` to run without a platform endpoint or API key.
  */
 import '../src/env.js';
 import { defineBenchmarkConfig, defineTask } from '@benchsdk/runner';

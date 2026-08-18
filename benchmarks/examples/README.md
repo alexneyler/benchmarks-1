@@ -1,6 +1,6 @@
 # benchSDK Examples
 
-These examples are self-contained, runnable demonstrations of the benchSDK. They use a tiny `NoopParticipant` helper that simulates a sandbox provider, so no cloud credentials are required — but they still need a benchmarks platform endpoint to report results.
+These examples are self-contained, runnable demonstrations of the benchSDK. They use a tiny `NoopParticipant` helper that simulates a sandbox provider, so no cloud credentials are required.
 
 ## Prerequisites
 
@@ -10,7 +10,29 @@ Build the local packages first (the CLI is not pre-built in the repo):
 pnpm -r --filter "./packages/**" build
 ```
 
-Set the platform endpoint and API key. For a local platform:
+## Running an example
+
+```sh
+bench run benchmarks/examples/00-hello-world.bench.ts --iterations 3
+```
+
+Or with `tsx` directly:
+
+```sh
+pnpm tsx packages/benchsdk-runner/dist/bin.js run benchmarks/examples/00-hello-world.bench.ts --iterations 3
+```
+
+## Dry-run mode (no platform needed)
+
+Every example can be run without a benchmarks platform endpoint or API key by adding `--no-ingest` (or setting `BENCHSDK_NO_INGEST=true`):
+
+```sh
+bench run benchmarks/examples/00-hello-world.bench.ts --iterations 3 --no-ingest
+```
+
+In dry-run mode the runner executes the tasks locally, prints per-task results, and skips platform upload. This is useful for local development and CI smoke tests.
+
+To run against a real platform, set the endpoint and API key:
 
 ```sh
 export BENCHMARKS_PLATFORM_URL=http://localhost:3000
@@ -28,22 +50,12 @@ See `.agents/skills/local-platform-e2e/SKILL.md` for a full local stack setup.
 | `02-phases.bench.ts` | Ordered `phases` with per-phase iteration counts and `ctx.phase`. |
 | `03-round-robin.bench.ts` | `groupBy: 'round'` interleaving participant tasks. |
 | `04-shapes.bench.ts` | `shapes` for named benchmark variants selected with `--shape`. |
-
-## Running an example
-
-```sh
-bench run benchmarks/examples/00-hello-world.bench.ts --iterations 3
-```
-
-Or with `tsx` directly:
-
-```sh
-pnpm tsx packages/benchsdk-runner/dist/bin.js run benchmarks/examples/00-hello-world.bench.ts --iterations 3
-```
+| `05-step-options.bench.ts` | Per-step `concurrency` and `timeoutMs` for parallel step invocations. |
+| `06-scoring.bench.ts` | `onScore` and the exported `score` helper for weighted composite scoring. |
 
 ## What you should see
 
-For each example the CLI prints the resolved knobs, a run URL, per-participant progress, and per-task success/failure lines:
+For each example the CLI prints the resolved knobs, a run URL (unless `--no-ingest`), per-participant progress, and per-task success/failure lines:
 
 ```
 Examples: Hello World (self-contained)
@@ -63,6 +75,8 @@ View at: http://localhost:3000/org/.../benchmarks/examples-hello-world/runs/run-
 
 All done. View at: http://localhost:3000/org/.../benchmarks/examples-hello-world/runs/run-id
 ```
+
+With `--no-ingest` the output is the same except the run URL lines are replaced by `Dry run: no platform ingest or reporting.` and `All done. No platform run created.`.
 
 ## Files
 
