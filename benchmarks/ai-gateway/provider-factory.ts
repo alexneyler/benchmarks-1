@@ -15,13 +15,20 @@ export interface AIGatewayFamilyConfig {
   reasoningCountsAsFirstToken?: boolean;
 }
 
+export interface ResolvedHost {
+  /** Hostname to connect to over TLS. */
+  host: string;
+  /** URL pathname prefix (if any) to prepend to the request path. */
+  basePath?: string;
+}
+
 export interface AIGatewayDefinition {
   /** Provider slug used in benchmark results and CLI --provider filters. */
   name: string;
   /** Environment variables that must all be set to run this gateway. */
   requiredEnvVars: string[];
-  /** Hostname (or a resolver returning a hostname) for HTTPS requests. */
-  host: string | (() => string);
+  /** Hostname (or a resolver returning a hostname / resolved host + path prefix) for HTTPS requests. */
+  host: string | (() => string | ResolvedHost);
   /** Request/response wire format this gateway speaks by default. */
   defaultWireFormat: AIGatewayWireFormat;
   /** Request path for a chat/message completion by default. */
@@ -59,14 +66,17 @@ export function providersForFamily(
   return gateways.map((gateway) => {
     const familyConfig = gateway.families?.[family];
     const extraBody = { ...gateway.extraBody, ...familyConfig?.extraBody };
-    const host = typeof gateway.host === 'function' ? gateway.host() : gateway.host;
+    const hostOrResolved = typeof gateway.host === 'function' ? gateway.host() : gateway.host;
+    const host = typeof hostOrResolved === 'string' ? hostOrResolved : hostOrResolved.host;
+    const basePath = typeof hostOrResolved === 'string' ? '' : (hostOrResolved.basePath ?? '');
+    const path = basePath + (familyConfig?.path ?? gateway.defaultPath);
     return {
       name: gateway.name,
       requiredEnvVars: gateway.requiredEnvVars,
       wireFormat: familyConfig?.wireFormat ?? gateway.defaultWireFormat,
       model: familyConfig?.model ?? baseModel,
       host,
-      path: familyConfig?.path ?? gateway.defaultPath,
+      path,
       buildHeaders: gateway.buildHeaders,
       ...(Object.keys(extraBody).length > 0 ? { extraBody } : {}),
       ...(gateway.extractResolvedProvider ? { extractResolvedProvider: gateway.extractResolvedProvider } : {}),
@@ -75,13 +85,20 @@ export function providersForFamily(
   });
 }
 
-function resolveNeonHost(): string {
+function resolveNeonHost(): ResolvedHost {
   const base = process.env.NEON_AI_GATEWAY_BASE_URL;
-  if (!base || base.startsWith('your_')) return '';
+  if (!base || base.startsWith('your_')) {
+    // Keep a non-empty sentinel so the participant is still registered in the
+    // roster and requiredEnvVars remain visible, but a placeholder/missing base
+    // URL fails with a DNS error instead of silently routing to localhost.
+    return { host: 'neon-ai-gateway.invalid', basePath: '' };
+  }
   try {
-    return new URL(base).hostname;
+    const url = new URL(base);
+    const basePath = url.pathname.replace(/\/$/, '');
+    return { host: url.hostname, basePath };
   } catch {
-    return '';
+    return { host: 'neon-ai-gateway.invalid', basePath: '' };
   }
 }
 
@@ -121,7 +138,8 @@ export const newAIGateways: AIGatewayDefinition[] = [
       kimi: {
         model: FAMILY_MODELS.kimi,
         extraBody: { temperature: undefined },
-        reasoningCountsAsFirstToken: true,
+        // Ramp uses the OpenAI Responses wire format, for which
+        // reasoningCountsAsFirstToken is not currently supported (see phase-probe.ts).
       },
     },
   },
