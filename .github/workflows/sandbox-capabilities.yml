@@ -58,6 +58,7 @@ jobs:
           - lightning
           - modal
           - microsandbox
+          # - miosa
           - mosaic
           - namespace
           - northflank
@@ -117,6 +118,7 @@ jobs:
             lightning) PROVIDER_KEYS='LIGHTNING_API_KEY' ;;
             modal) PROVIDER_KEYS='MODAL_TOKEN_ID|MODAL_TOKEN_SECRET' ;;
             microsandbox) PROVIDER_KEYS='MSB_API_KEY' ;;
+            # miosa) PROVIDER_KEYS='MIOSA_API_KEY' ;;
             mosaic) PROVIDER_KEYS='MOSAIC_API_URL|MOSAIC_API_TOKEN' ;;
             namespace) PROVIDER_KEYS='NSC_TOKEN' ;;
             northflank) PROVIDER_KEYS='NORTHFLANK_TOKEN|NORTHFLANK_PROJECT_ID' ;;
