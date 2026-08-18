@@ -290,6 +290,51 @@ export const storageProviders: StorageProviderConfig[] = [
       }),
     },
   },
+  {
+    // Mosaic Object Storage is S3-compatible. The `@storagesdk/adapters/mosaic`
+    // adapter (storagesdk/storagesdk#77) is a thin wrapper over s3 with Mosaic's
+    // defaults baked in — endpoint, path-style addressing, and region 'auto'.
+    // It is merged but not yet published (latest @storagesdk/adapters is 0.11.0,
+    // which predates the adapter), so we configure s3 directly here. Swap to
+    // `import { mosaic } from '@storagesdk/adapters/mosaic'` once a version
+    // beyond 0.11.0 ships.
+    name: 'mosaic',
+    requiredEnvVars: ['MOSAIC_BUCKET', 'MOSAIC_ACCESS_KEY_ID', 'MOSAIC_SECRET_ACCESS_KEY'],
+    bucket: process.env.MOSAIC_BUCKET!,
+    createStorage: () => new Storage({
+      adapter: s3({
+        bucket: process.env.MOSAIC_BUCKET!,
+        region: process.env.MOSAIC_REGION || 'auto',
+        endpoint: process.env.MOSAIC_ENDPOINT || 'https://storage.mosaicos.com',
+        forcePathStyle: true,
+        credentials: {
+          accessKeyId: process.env.MOSAIC_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.MOSAIC_SECRET_ACCESS_KEY!,
+        },
+      }),
+    }),
+    fileSizes: [1 * 1024 * 1024, 4 * 1024 * 1024, 10 * 1024 * 1024, 16 * 1024 * 1024],
+    // Mosaic snapshots/forks are emulated as sibling buckets via CopyObject
+    // (S3-standard), so they need credentials with bucket create/delete
+    // permission. Self-serve accounts allow 10 buckets; set MOSAIC_SNAPSHOT_*
+    // vars to point snapshot/fork operations at a dedicated bucket/credential.
+    snapshotFork: {
+      requiredEnvVars: ['MOSAIC_BUCKET', 'MOSAIC_ACCESS_KEY_ID', 'MOSAIC_SECRET_ACCESS_KEY'],
+      bucket: process.env.MOSAIC_SNAPSHOT_BUCKET || process.env.MOSAIC_BUCKET!,
+      createStorage: () => new Storage({
+        adapter: s3({
+          bucket: process.env.MOSAIC_SNAPSHOT_BUCKET || process.env.MOSAIC_BUCKET!,
+          region: process.env.MOSAIC_SNAPSHOT_REGION || process.env.MOSAIC_REGION || 'auto',
+          endpoint: process.env.MOSAIC_SNAPSHOT_ENDPOINT || process.env.MOSAIC_ENDPOINT || 'https://storage.mosaicos.com',
+          forcePathStyle: true,
+          credentials: {
+            accessKeyId: process.env.MOSAIC_SNAPSHOT_ACCESS_KEY_ID || process.env.MOSAIC_ACCESS_KEY_ID!,
+            secretAccessKey: process.env.MOSAIC_SNAPSHOT_SECRET_ACCESS_KEY || process.env.MOSAIC_SECRET_ACCESS_KEY!,
+          },
+        }),
+      }),
+    },
+  },
   //
   // add providers above
 ];
