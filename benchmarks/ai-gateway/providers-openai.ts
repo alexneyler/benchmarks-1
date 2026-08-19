@@ -203,18 +203,16 @@ export const providers: AIGatewayProviderConfig[] = [
   },
   {
     // Netlify AI Gateway exposes a native OpenAI Responses API passthrough at
-    // `<base>/v1/responses`. The universal `NETLIFY_AI_GATEWAY_KEY` is not
-    // available outside Netlify's own compute, so this entry uses the
-    // provider-specific `OPENAI_API_KEY` and `OPENAI_BASE_URL` (with
-    // `NETLIFY_AI_GATEWAY_BASE_URL` as a fallback).
+    // `${NETLIFY_AI_GATEWAY_BASE_URL}/v1/responses` using `Authorization: Bearer
+    // <NETLIFY_AI_GATEWAY_KEY>`.
     name: 'netlify',
-    requiredEnvVars: ['OPENAI_API_KEY'],
+    requiredEnvVars: ['NETLIFY_AI_GATEWAY_BASE_URL', 'NETLIFY_AI_GATEWAY_KEY'],
     wireFormat: 'responses',
     model: 'gpt-5.4-mini',
-    host: resolveNetlifyHost('OPENAI_BASE_URL').host,
-    path: `${resolveNetlifyHost('OPENAI_BASE_URL').basePath}/v1/responses`,
+    host: resolveNetlifyHost().host,
+    path: `${resolveNetlifyHost().basePath}/v1/responses`,
     buildHeaders: () => ({
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer ${process.env.NETLIFY_AI_GATEWAY_KEY}`,
     }),
   },
   {

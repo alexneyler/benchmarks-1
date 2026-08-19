@@ -164,19 +164,16 @@ export const providers: AIGatewayProviderConfig[] = [
   },
   {
     // Netlify AI Gateway proxies Google's native `streamGenerateContent` API at
-    // `<base>/v1beta/models/<model>:streamGenerateContent` with `?alt=sse` and
-    // `x-goog-api-key` auth. The universal `NETLIFY_AI_GATEWAY_KEY` is not
-    // available outside Netlify's own compute, so this entry uses the
-    // provider-specific `GEMINI_API_KEY` and `GOOGLE_GEMINI_BASE_URL` (with
-    // `NETLIFY_AI_GATEWAY_BASE_URL` as a fallback).
+    // `${NETLIFY_AI_GATEWAY_BASE_URL}/v1beta/models/<model>:streamGenerateContent`
+    // with `?alt=sse` and `x-goog-api-key` auth.
     name: 'netlify',
-    requiredEnvVars: ['GEMINI_API_KEY'],
+    requiredEnvVars: ['NETLIFY_AI_GATEWAY_BASE_URL', 'NETLIFY_AI_GATEWAY_KEY'],
     wireFormat: 'gemini',
     model: 'gemini-3.6-flash',
-    host: resolveNetlifyHost('GOOGLE_GEMINI_BASE_URL').host,
-    path: `${resolveNetlifyHost('GOOGLE_GEMINI_BASE_URL').basePath}/v1beta/models/gemini-3.6-flash:streamGenerateContent?alt=sse`,
+    host: resolveNetlifyHost().host,
+    path: `${resolveNetlifyHost().basePath}/v1beta/models/gemini-3.6-flash:streamGenerateContent?alt=sse`,
     buildHeaders: () => ({
-      'x-goog-api-key': process.env.GEMINI_API_KEY || '',
+      'x-goog-api-key': process.env.NETLIFY_AI_GATEWAY_KEY || '',
     }),
   },
   {
