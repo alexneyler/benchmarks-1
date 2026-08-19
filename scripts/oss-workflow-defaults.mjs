@@ -67,9 +67,13 @@ export function resolveWorkflowDefaults(ossRoot, kind) {
 }
 
 if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) {
-  const root = process.argv[process.argv.indexOf('--root') + 1] || process.cwd();
-  const kind = process.argv[process.argv.indexOf('--kind') + 1];
-  const runMode = process.argv[process.argv.indexOf('--run-mode') + 1] || 'manual';
+  const flag = (name) => {
+    const i = process.argv.indexOf(name);
+    return i >= 0 ? process.argv[i + 1] : undefined;
+  };
+  const root = flag('--root') || process.cwd();
+  const kind = flag('--kind');
+  const runMode = flag('--run-mode') || 'manual';
   const defaults = resolveWorkflowDefaults(root, kind);
   process.stdout.write(`${defaults[runMode]}\n`);
 }

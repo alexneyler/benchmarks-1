@@ -56,7 +56,7 @@ on:
         required: false
         default: ''
       dry_run:
-        description: 'Run without ingesting or committing results'
+        description: 'Run without committing results'
         required: false
         default: false
         type: boolean
@@ -160,6 +160,7 @@ jobs:
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
     permissions:
       contents: read
+      id-token: write
     timeout-minutes: 90
     env:
       BENCH_KIND: ${{ matrix.kind }}
@@ -191,6 +192,7 @@ jobs:
       - name: Clear stale OSS results
         working-directory: oss
         run: rm -rf results/
+      - uses: namespacelabs/nscloud-setup@v0
       - name: Build vault key list from OSS provider manifest
         working-directory: oss
         run: |
@@ -208,25 +210,28 @@ jobs:
             jq -r --arg kind "$manifest_kind" --arg provider "$BENCH_PROVIDER" \
               '.[$kind][$provider][]?' \
               benchmarks/scripts/provider-vars.json
-          fi | sort -u > /tmp/oss-vault-keys
+          fi | sort -u | grep -v '^$' > /tmp/oss-vault-keys
           printf '%s\n' COMPUTESDK_ADMIN_API_KEY BENCHMARKS_PLATFORM_API_KEY >> /tmp/oss-vault-keys
+          # Build a grep-compatible regex for load-vault-secrets.sh
+          regex="^($(paste -sd'|' /tmp/oss-vault-keys))"
+          echo "VAULT_KEYS_REGEX=$regex" >> "$GITHUB_ENV"
       - name: Build E2B DAX template
         if: matrix.kind == 'dax' && matrix.provider == 'e2b'
         working-directory: oss
         run: |
-          . ../daily/benchmarks/scripts/load-vault-secrets.sh --keys-file /tmp/oss-vault-keys
+          . ../daily/benchmarks/scripts/load-vault-secrets.sh "$VAULT_KEYS_REGEX"
           npx tsx benchmarks/scripts/build-e2b-template.ts
       - name: Build Superserve DAX template
         if: matrix.kind == 'dax' && matrix.provider == 'superserve'
         working-directory: oss
         run: |
-          . ../daily/benchmarks/scripts/load-vault-secrets.sh --keys-file /tmp/oss-vault-keys
+          . ../daily/benchmarks/scripts/load-vault-secrets.sh "$VAULT_KEYS_REGEX"
           npx tsx benchmarks/scripts/build-superserve-template.ts
       - name: Resolve Northflank DAX plan
         if: matrix.kind == 'dax' && matrix.provider == 'northflank'
         working-directory: oss
         run: |
-          . ../daily/benchmarks/scripts/load-vault-secrets.sh --keys-file /tmp/oss-vault-keys
+          . ../daily/benchmarks/scripts/load-vault-secrets.sh "$VAULT_KEYS_REGEX"
           npx tsx benchmarks/scripts/find-northflank-plan.ts
       - name: Run benchmark
         working-directory: oss
@@ -239,8 +244,9 @@ jobs:
           THROUGHPUT_URLS: ${{ needs.throughput-pages.outputs.urls }}
           DAILY_BENCH_SLUG: 'weekly'
           DAILY_BENCH_NAME: 'Weekly'
+          NO_INGEST: ${{ (github.event_name == 'push' || github.event.inputs.dry_run == 'true') && '--no-ingest' || '' }}
         run: |
-          . ../daily/benchmarks/scripts/load-vault-secrets.sh --keys-file /tmp/oss-vault-keys
+          . ../daily/benchmarks/scripts/load-vault-secrets.sh "$VAULT_KEYS_REGEX"
 
           RUNNER=(npx tsx packages/benchsdk-runner/dist/bin.js run)
           # Matrix jobs for the same benchmark share one platform run. The
@@ -248,35 +254,32 @@ jobs:
           case "$BENCH_KIND" in
             sandbox)
               RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-              COMMON=(benchmarks/sandbox/tti.bench.ts --provider "$PROVIDER" --iterations "$ITERATIONS" --run-key "$RUN_KEY")
-              "${RUNNER[@]}" "${COMMON[@]}" &&
-              "${RUNNER[@]}" benchmarks/sandbox/tti.bench.ts --provider "$PROVIDER" --iterations "$ITERATIONS" --concurrency "$CONCURRENCY" --stagger-delay-ms 200 --slug sandbox-staggered-local --name 'Sandbox staggered TTI (local)' --run-key "$RUN_KEY" &&
-              "${RUNNER[@]}" benchmarks/sandbox/tti.bench.ts --provider "$PROVIDER" --iterations "$ITERATIONS" --concurrency "$CONCURRENCY" --slug sandbox-burst-local --name 'Sandbox burst TTI (local)' --run-key "$RUN_KEY"
+              "${RUNNER[@]}" benchmarks/sandbox/tti.bench.ts --provider "$PROVIDER" --iterations "$ITERATIONS" --concurrency "$CONCURRENCY" --run-key "$RUN_KEY" $NO_INGEST
               ;;
             dax)
               export LIGHTNING_INSTANCE_TYPE=cpu-8
               RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-              "${RUNNER[@]}" benchmarks/sandbox/dax.bench.ts --provider "$PROVIDER" --iterations "$ITERATIONS" --run-key "$RUN_KEY"
+              "${RUNNER[@]}" benchmarks/sandbox/dax.bench.ts --provider "$PROVIDER" --iterations "$ITERATIONS" --run-key "$RUN_KEY" $NO_INGEST
               ;;
             storage)
               RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${FILE_SIZE}"
-              "${RUNNER[@]}" benchmarks/storage/storage.bench.ts --provider "$PROVIDER" --file-size "$FILE_SIZE" --concurrency 16 --iterations "$ITERATIONS" --run-key "$RUN_KEY"
+              "${RUNNER[@]}" benchmarks/storage/storage.bench.ts --provider "$PROVIDER" --file-size "$FILE_SIZE" --concurrency 16 --iterations "$ITERATIONS" --run-key "$RUN_KEY" $NO_INGEST
               ;;
             snapshot-fork)
               RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-              "${RUNNER[@]}" benchmarks/storage/snapshot-fork.bench.ts --provider "$PROVIDER" --dataset small --iterations "$ITERATIONS" --run-key "$RUN_KEY"
+              "${RUNNER[@]}" benchmarks/storage/snapshot-fork.bench.ts --provider "$PROVIDER" --dataset small --iterations "$ITERATIONS" --run-key "$RUN_KEY" $NO_INGEST
               ;;
             browser)
               RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-              "${RUNNER[@]}" benchmarks/browser/browser.bench.ts --provider "$PROVIDER" --iterations "$ITERATIONS" --run-key "$RUN_KEY"
+              "${RUNNER[@]}" benchmarks/browser/browser.bench.ts --provider "$PROVIDER" --iterations "$ITERATIONS" --run-key "$RUN_KEY" $NO_INGEST
               ;;
             browser-throughput)
               RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-              "${RUNNER[@]}" benchmarks/browser/browser-throughput.bench.ts --provider "$PROVIDER" --iterations "$ITERATIONS" --run-key "$RUN_KEY"
+              "${RUNNER[@]}" benchmarks/browser/browser-throughput.bench.ts --provider "$PROVIDER" --iterations "$ITERATIONS" --run-key "$RUN_KEY" $NO_INGEST
               ;;
             ai-gateway)
               RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-              "${RUNNER[@]}" benchmarks/ai-gateway/ai-gateway.bench.ts --iterations "$ITERATIONS" --run-key "$RUN_KEY"
+              "${RUNNER[@]}" benchmarks/ai-gateway/ai-gateway.bench.ts --iterations "$ITERATIONS" --run-key "$RUN_KEY" $NO_INGEST
               ;;
           esac
       - name: Upload raw results
@@ -400,14 +403,14 @@ jobs:
               echo "No results found for $input; skipping chart"
             fi
           }
-          run_chart_if results/sequential_tti/latest.json pnpm run generate-svg
-          run_chart_if results/sequential_tti/latest.json pnpm run generate-pricing-svg
+          run_chart_if results/burst_tti/latest.json pnpm run generate-svg
+          run_chart_if results/burst_tti/latest.json pnpm run generate-pricing-svg
           run_chart_if results/sandbox-dax/latest.json pnpm run generate-dax-svg
           run_chart_if results/storage pnpm run generate-storage-svg
           run_chart_if results/snapshot-fork pnpm run generate-snapshot-fork-svg
           run_chart_if results/browser/latest.json pnpm run generate-browser-svg
           run_chart_if results/browser-throughput/latest.json pnpm run generate-browser-throughput-svg
-          run_chart_if results/ai-gateway/latest.json pnpm run generate-ai-gateway-svg
+          run_chart_if results/ai-gateway-latency/anthropic/latest.json pnpm run generate-ai-gateway-svg
       - name: Copy generated results into repository
         run: |
           copy_tree_if() {
@@ -443,11 +446,9 @@ jobs:
               copy_glob_if oss '*.svg' 'weekly-'
               ;;
             sandbox)
-              copy_tree_if oss/results/sequential_tti results-weekly/sequential_tti
-              copy_tree_if oss/results/staggered_tti results-weekly/staggered_tti
               copy_tree_if oss/results/burst_tti results-weekly/burst_tti
               copy_file_if oss/results.svg weekly-results.svg
-              copy_glob_if oss '*_tti.svg' 'weekly-'
+              copy_file_if oss/burst_tti.svg weekly-burst_tti.svg
               copy_file_if oss/pricing.svg weekly-pricing.svg
               ;;
             dax)
@@ -471,32 +472,11 @@ jobs:
               copy_file_if oss/browser-throughput.svg weekly-browser-throughput.svg
               ;;
             ai-gateway)
-              copy_tree_if oss/results/ai-gateway results-weekly/ai-gateway
+              copy_tree_if oss/results/ai-gateway-latency/anthropic results-weekly/ai-gateway-latency/anthropic
               copy_file_if oss/ai-gateway.svg weekly-ai-gateway.svg
               ;;
           esac
           printf '%s\n' "$OSS_SHA" > .oss-benchmark-revision-weekly
-      - name: Ingest results
-        if: github.event.inputs.dry_run != 'true'
-        continue-on-error: true
-        run: |
-          . benchmarks/scripts/load-vault-secrets.sh '^(INGEST_URL|INGEST_SECRET)'
-          case "$BENCHMARK_FILTER" in
-            all)
-              pnpm --dir oss exec tsx ../benchmarks/src/ingest.ts --type sandbox --dir results-weekly
-              pnpm --dir oss exec tsx ../benchmarks/src/ingest.ts --type storage --dir results-weekly
-              pnpm --dir oss exec tsx ../benchmarks/src/ingest.ts --type browser --dir results-weekly
-              ;;
-            sandbox|dax)
-              pnpm --dir oss exec tsx ../benchmarks/src/ingest.ts --type sandbox --dir results-weekly
-              ;;
-            storage)
-              pnpm --dir oss exec tsx ../benchmarks/src/ingest.ts --type storage --dir results-weekly
-              ;;
-            browser)
-              pnpm --dir oss exec tsx ../benchmarks/src/ingest.ts --type browser --dir results-weekly
-              ;;
-          esac
       - name: Commit and push weekly results
         if: github.event.inputs.dry_run != 'true'
         run: |
