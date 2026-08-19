@@ -1,4 +1,5 @@
 import type { AIGatewayProviderConfig } from './types.js';
+import { resolveNeonHost } from './neon-host.js';
 
 /**
  * AI gateway benchmark configurations — Kimi family.
@@ -10,11 +11,13 @@ import type { AIGatewayProviderConfig } from './types.js';
  * usual 200 (set in `ai-gateway-kimi.bench.ts`) — see the rationale in
  * `AIGatewayFamilyDef.maxTokens` in `task.ts`.
  *
- * Every entry here uses `wireFormat: 'openai'` — not a translation layer.
+ * Almost every entry uses `wireFormat: 'openai'` — not a translation layer.
  * Kimi's own native API is itself OpenAI-Chat-Completions-shaped (Moonshot's
  * own design, not a third-party compatibility shim, confirmed by
  * `kimi-direct` itself), so proxying it via an OpenAI-compatible surface
- * doesn't lose anything the way it would for Gemini.
+ * doesn't lose anything the way it would for Gemini. Ramp Router is the
+ * exception: it only exposes a Responses API, so it uses `wireFormat:
+ * 'responses'` with `/v1/responses`.
  *
  * Every entry also strips `temperature` via `extraBody: { temperature:
  * undefined }` — confirmed live against Moonshot's own API: `kimi-k3`
@@ -61,16 +64,17 @@ import type { AIGatewayProviderConfig } from './types.js';
  * `resolvedProvider` visibility-over-silence pattern, as the Anthropic
  * family's OpenRouter/Vercel entries.
  *
- * Every entry also sets `reasoningCountsAsFirstToken: true` (see that flag's
- * doc comment in `types.ts`) — for this family, `ttftMs` measures time to
- * the first *reasoning* token, not the first *visible* one, since `kimi-k3`
- * runs with reasoning locked "always on" and "time to first visible token"
- * would otherwise measure however long the model chooses to deliberate
- * rather than gateway/network responsiveness. Confirmed live across all six
- * participants here: exactly two reasoning-field conventions exist —
- * `reasoning_content` (Moonshot direct, Cloudflare) and `reasoning`
- * (OpenRouter, Vercel, LLM Gateway, Concentrate) — both handled by
- * `contentRegexFor` in `phase-probe.ts`.
+ * Every `openai`-format entry also sets `reasoningCountsAsFirstToken:
+ * true` (see that flag's doc comment in `types.ts`) — for this family,
+ * `ttftMs` measures time to the first *reasoning* token, not the first
+ * *visible* one, since `kimi-k3` runs with reasoning locked "always on" and
+ * "time to first visible token" would otherwise measure however long the
+ * model chooses to deliberate rather than gateway/network responsiveness.
+ * Confirmed live across all participants here: exactly two reasoning-field
+ * conventions exist — `reasoning_content` (Moonshot direct, Cloudflare) and
+ * `reasoning` (OpenRouter, Vercel, LLM Gateway, Concentrate, Novita, Neon) —
+ * both handled by `contentRegexFor` in `phase-probe.ts`. Ramp Router uses
+ * the Responses API, which does not expose reasoning tokens to this flag.
  *
  * Still worth a 1-iteration smoke test against real credentials before
  * fully trusting any of these — "confirmed against docs" isn't the same bar
@@ -204,6 +208,53 @@ export const providers: AIGatewayProviderConfig[] = [
     reasoningCountsAsFirstToken: true,
   },
   {
+    name: 'novita',
+    requiredEnvVars: ['NOVITA_API_KEY'],
+    wireFormat: 'openai',
+    model: 'moonshotai/kimi-k3',
+    host: 'api.novita.ai',
+    path: '/openai/v1/chat/completions',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NOVITA_API_KEY}`,
+    }),
+    extraBody: {
+      temperature: undefined,
+    },
+    reasoningCountsAsFirstToken: true,
+  },
+  {
+    name: 'ramp',
+    requiredEnvVars: ['RAMP_ROUTER_API_KEY'],
+    wireFormat: 'responses',
+    // Ramp's `model` field takes a bare `id` from GET /v1/models, not the
+    // `provider:provider-model` form used for the `models` fallback array
+    // (see router.ramp.com/docs/guides/choose-a-model).
+    model: 'accounts/fireworks/models/kimi-k3',
+    host: 'router-api.ramp.com',
+    path: '/v1/responses',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.RAMP_ROUTER_API_KEY}`,
+    }),
+    extraBody: {
+      temperature: undefined,
+    },
+  },
+  {
+    name: 'neon',
+    requiredEnvVars: ['NEON_AI_GATEWAY_BASE_URL', 'NEON_AI_GATEWAY_TOKEN'],
+    wireFormat: 'openai',
+    model: 'kimi-k3',
+    host: resolveNeonHost().host,
+    path: `${resolveNeonHost().basePath}/v1/chat/completions`,
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NEON_AI_GATEWAY_TOKEN}`,
+    }),
+    extraBody: {
+      temperature: undefined,
+    },
+    reasoningCountsAsFirstToken: true,
+  },
+  {
     // No-gateway baseline/control. Moonshot AI's Kimi API is itself
     // OpenAI-Chat-Completions-shaped (not a third-party compatibility shim —
     // that's Moonshot's own native API), so this is the most direct route
@@ -233,6 +284,4 @@ export const providers: AIGatewayProviderConfig[] = [
     },
     reasoningCountsAsFirstToken: true,
   },
-  //
-  // add gateways above
 ];

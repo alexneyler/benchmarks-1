@@ -1,4 +1,5 @@
 import type { AIGatewayProviderConfig } from './types.js';
+import { resolveNeonHost } from './neon-host.js';
 
 /**
  * AI gateway benchmark configurations.
@@ -162,6 +163,48 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    // Ramp Router exposes an OpenAI Responses-compatible API; the `model`
+    // field must be a bare `id` from the account's `GET /v1/models` catalog,
+    // not the upstream provider's public model name. For this key the
+    // Anthropic Haiku 4.5 entry is `claude-haiku-4-5`.
+    name: 'ramp',
+    requiredEnvVars: ['RAMP_ROUTER_API_KEY'],
+    wireFormat: 'responses',
+    model: 'claude-haiku-4-5',
+    host: 'router-api.ramp.com',
+    path: '/v1/responses',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.RAMP_ROUTER_API_KEY}`,
+    }),
+  },
+  {
+    name: 'neon',
+    requiredEnvVars: ['NEON_AI_GATEWAY_BASE_URL', 'NEON_AI_GATEWAY_TOKEN'],
+    wireFormat: 'anthropic',
+    model: 'claude-haiku-4-5',
+    host: resolveNeonHost().host,
+    path: `${resolveNeonHost().basePath}/anthropic/v1/messages`,
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NEON_AI_GATEWAY_TOKEN}`,
+      'anthropic-version': '2023-06-01',
+    }),
+  },
+  {
+    // ngrok AI Gateway proxies Anthropic's native Messages API directly at
+    // `/v1/messages` using the upstream's `x-api-key` + `anthropic-version`
+    // headers; the access key is the ngrok.ai gateway key itself.
+    name: 'ngrok',
+    requiredEnvVars: ['NGROK_AI_GATEWAY_API_KEY'],
+    wireFormat: 'anthropic',
+    model: 'claude-haiku-4-5',
+    host: 'gateway.ngrok.ai',
+    path: '/v1/messages',
+    buildHeaders: () => ({
+      'x-api-key': process.env.NGROK_AI_GATEWAY_API_KEY || '',
+      'anthropic-version': '2023-06-01',
+    }),
+  },
+  {
     // No-gateway baseline/control.
     name: 'anthropic-direct',
     requiredEnvVars: ['ANTHROPIC_API_KEY'],
@@ -174,6 +217,4 @@ export const providers: AIGatewayProviderConfig[] = [
       'anthropic-version': '2023-06-01',
     }),
   },
-  //
-  // add gateways above
 ];

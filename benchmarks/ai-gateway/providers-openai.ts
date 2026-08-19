@@ -1,10 +1,11 @@
 import type { AIGatewayProviderConfig } from './types.js';
+import { resolveNeonHost } from './neon-host.js';
 
 /**
  * AI gateway benchmark configurations — OpenAI family.
  *
  * Same fairness methodology as `providers.ts` (the Anthropic family): every
- * gateway is hit directly with the same model — `gpt-4.1-mini` — so the
+ * gateway is hit directly with the same model — `gpt-5.4-mini` — so the
  * comparison is apples-to-apples, and `openai-direct` is the no-gateway
  * control. What differs is the target provider: every request here routes to
  * OpenAI instead of Anthropic, so this measures each gateway's overhead when
@@ -14,15 +15,13 @@ import type { AIGatewayProviderConfig } from './types.js';
  *
  * Every route below was checked directly against that gateway's own
  * OpenAI-specific docs, not assumed by analogy with its Anthropic route or
- * with another gateway — an earlier pass of this file got two paths wrong by
- * doing exactly that (Cloudflare's path turned out to drop the `v1` segment
- * its Anthropic route keeps; Pydantic's OpenAI route isn't `/proxy/openai`
- * at all). Policy for this file: **use each gateway's OpenAI Responses API
- * passthrough if it has one, since that's the least-translated route
- * (Responses is OpenAI's own format, so a gateway proxying it natively adds
- * no translation layer); fall back to `/chat/completions` only where no
- * Responses passthrough is documented.** Every gateway below turned out to
- * have one.
+ * with another gateway — an earlier pass of this file got Cloudflare's path
+ * wrong by doing exactly that (it turned out to drop the `v1` segment its
+ * Anthropic route keeps). Policy for this file: **use each gateway's OpenAI
+ * Responses API passthrough if it has one, since that's the least-translated
+ * route (Responses is OpenAI's own format, so a gateway proxying it natively
+ * adds no translation layer); fall back to `/chat/completions` only where no
+ * Responses passthrough is documented.** Every gateway below uses one.
  *
  * Still worth a 1-iteration smoke test against real credentials before
  * fully trusting any of these — "confirmed against docs" isn't the same bar
@@ -45,7 +44,7 @@ export const providers: AIGatewayProviderConfig[] = [
     name: 'openrouter',
     requiredEnvVars: ['OPENROUTER_API_KEY'],
     wireFormat: 'responses',
-    model: 'openai/gpt-4.1-mini',
+    model: 'openai/gpt-5.4-mini',
     host: 'openrouter.ai',
     path: '/api/v1/responses',
     buildHeaders: () => ({
@@ -66,7 +65,7 @@ export const providers: AIGatewayProviderConfig[] = [
     name: 'vercel-ai-gateway',
     requiredEnvVars: ['VERCEL_AI_GATEWAY_API_KEY'],
     wireFormat: 'responses',
-    model: 'openai/gpt-4.1-mini',
+    model: 'openai/gpt-5.4-mini',
     host: 'ai-gateway.vercel.sh',
     path: '/v1/responses',
     buildHeaders: () => ({
@@ -95,7 +94,7 @@ export const providers: AIGatewayProviderConfig[] = [
       'OPENAI_API_KEY',
     ],
     wireFormat: 'responses',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5.4-mini',
     host: 'gateway.ai.cloudflare.com',
     path: `/v1/${process.env.CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID}/${process.env.CLOUDFLARE_AI_GATEWAY_GATEWAY_ID}/openai/responses`,
     buildHeaders: () => ({
@@ -107,7 +106,7 @@ export const providers: AIGatewayProviderConfig[] = [
     // Confirmed via LLM Gateway's own Codex CLI integration guide
     // (llmgateway.io/guides/codex-cli), which states outright: "Codex CLI
     // uses the OpenAI Responses API (`/v1/responses`)" against a base URL of
-    // `https://api.llmgateway.io/v1`. `openai/gpt-4.1-mini` follows LLM
+    // `https://api.llmgateway.io/v1`. `openai/gpt-5.4-mini` follows LLM
     // Gateway's confirmed provider-pinning syntax (docs.llmgateway.io —
     // provider-prefix routing), demonstrated there for Chat Completions; NOT
     // independently re-confirmed for the Responses endpoint specifically,
@@ -115,7 +114,7 @@ export const providers: AIGatewayProviderConfig[] = [
     name: 'llmgateway',
     requiredEnvVars: ['LLM_GATEWAY_API_KEY'],
     wireFormat: 'responses',
-    model: 'openai/gpt-4.1-mini',
+    model: 'openai/gpt-5.4-mini',
     host: 'api.llmgateway.io',
     path: '/v1/responses',
     buildHeaders: () => ({
@@ -123,34 +122,7 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
-    // NOT `/proxy/openai` — that path exists in Pydantic's docs too, but only
-    // as an unconfirmed Vercel-AI-SDK integration point with no documented
-    // full path. Pydantic documents two distinct, purpose-built routes
-    // instead (pydantic.dev/docs/ai/overview/gateway): `/proxy/chat/` for
-    // Chat Completions (shown with a concrete SDK example) and
-    // `/proxy/openai-responses` for the Responses API, shown in their own
-    // Codex config example: `base_url = "https://gateway-us.pydantic.dev/
-    // proxy/openai-responses"`, `wire_api = "responses"`. Codex's own
-    // wire_api="responses" convention appends `/responses` to whatever
-    // base_url it's given — confirmed to work exactly this way for LLM
-    // Gateway above (`.../v1` base + wire_api="responses" => `/v1/responses`
-    // per LLM Gateway's own docs), so the same append pattern applied here
-    // gives the path below. Not a literal curl example, but corroborated by
-    // an identical confirmed case elsewhere in this file, not a cross-
-    // gateway analogy. Auth follows the Anthropic entry's confirmed pattern:
-    // `Authorization: Bearer <gateway key>`, not a provider-specific header.
-    name: 'pydantic-ai-gateway',
-    requiredEnvVars: ['PYDANTIC_AI_GATEWAY_API_KEY'],
-    wireFormat: 'responses',
-    model: 'gpt-4.1-mini',
-    host: 'gateway-us.pydantic.dev',
-    path: '/proxy/openai-responses/responses',
-    buildHeaders: () => ({
-      Authorization: `Bearer ${process.env.PYDANTIC_AI_GATEWAY_API_KEY}`,
-    }),
-  },
-  {
-    // `openai/gpt-4.1-mini` follows Concentrate's confirmed provider-prefix
+    // `openai/gpt-5.4-mini` follows Concentrate's confirmed provider-prefix
     // syntax (concentrate.ai/models — "openai/gpt-5.4" shown as the
     // provider-pinned form). Uses the same `/v1/responses/` endpoint as the
     // Anthropic entry; for OpenAI this is even less of a translation layer
@@ -161,11 +133,85 @@ export const providers: AIGatewayProviderConfig[] = [
     name: 'concentrate-ai-gateway',
     requiredEnvVars: ['CONCENTRATE_AI_GATEWAY_API_KEY'],
     wireFormat: 'responses',
-    model: 'openai/gpt-4.1-mini',
+    model: 'openai/gpt-5.4-mini',
     host: 'api.concentrate.ai',
     path: '/v1/responses/',
     buildHeaders: () => ({
       Authorization: `Bearer ${process.env.CONCENTRATE_AI_GATEWAY_API_KEY}`,
+    }),
+  },
+  {
+    // Pydantic AI Gateway exposes two purpose-built proxy routes
+    // (pydantic.dev/docs/ai/overview/gateway): `/proxy/chat/` for Chat
+    // Completions and `/proxy/openai-responses` for the Responses API.
+    // We use the Responses route here to stay consistent with the rest of
+    // this file (every other entry uses Responses where available), and
+    // because it's OpenAI's own wire format — no translation layer.
+    //
+    // Path derivation: Pydantic's Codex config example sets
+    //   base_url = "https://gateway-us.pydantic.dev/proxy/openai-responses"
+    //   wire_api = "responses"
+    // and Codex appends `/responses` to that base URL, giving the full
+    // path `/proxy/openai-responses/responses`. (Not `/proxy/openai` —
+    // that path appears in Pydantic's docs but only as an unconfirmed
+    // Vercel-AI-SDK integration point with no documented full path.)
+    //
+    // Model id is unprefixed (`gpt-5.4-mini`, not `openai/gpt-5.4-mini`):
+    // Pydantic's proxy doesn't use the provider-prefix routing that LLM
+    // Gateway and Concentrate do — same as the Anthropic entry's
+    // unprefixed `claude-haiku-4-5-20251001` in providers.ts.
+    //
+    // Auth: `Authorization: Bearer <gateway key>` — confirmed live against
+    // the Anthropic route (see providers.ts). Not a provider-specific
+    // header. The org must have the Gateway activated in its Logfire
+    // settings first, or the key returns a 401 "Key not found".
+    name: 'pydantic-ai-gateway',
+    requiredEnvVars: ['PYDANTIC_AI_GATEWAY_API_KEY'],
+    wireFormat: 'responses',
+    model: 'gpt-5.4-mini',
+    host: 'gateway-us.pydantic.dev',
+    path: '/proxy/openai-responses/responses',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.PYDANTIC_AI_GATEWAY_API_KEY}`,
+    }),
+  },
+  {
+    name: 'ramp',
+    requiredEnvVars: ['RAMP_ROUTER_API_KEY'],
+    wireFormat: 'responses',
+    // Ramp's `model` field takes a bare `id` from GET /v1/models, not the
+    // `provider:provider-model` form used for the `models` fallback array
+    // (see router.ramp.com/docs/guides/choose-a-model).
+    model: 'gpt-5.4-mini',
+    host: 'router-api.ramp.com',
+    path: '/v1/responses',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.RAMP_ROUTER_API_KEY}`,
+    }),
+  },
+  {
+    name: 'neon',
+    requiredEnvVars: ['NEON_AI_GATEWAY_BASE_URL', 'NEON_AI_GATEWAY_TOKEN'],
+    wireFormat: 'responses',
+    model: 'gpt-5-4-mini',
+    host: resolveNeonHost().host,
+    path: `${resolveNeonHost().basePath}/openai/v1/responses`,
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NEON_AI_GATEWAY_TOKEN}`,
+    }),
+  },
+  {
+    // ngrok AI Gateway's Responses API passthrough. The SDKs page lists the
+    // Responses API as supported, so we keep the OpenAI-family convention of
+    // `/v1/responses` rather than falling back to `/v1/chat/completions`.
+    name: 'ngrok',
+    requiredEnvVars: ['NGROK_AI_GATEWAY_API_KEY'],
+    wireFormat: 'responses',
+    model: 'gpt-5.4-mini',
+    host: 'gateway.ngrok.ai',
+    path: '/v1/responses',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NGROK_AI_GATEWAY_API_KEY}`,
     }),
   },
   {
@@ -175,13 +221,11 @@ export const providers: AIGatewayProviderConfig[] = [
     name: 'openai-direct',
     requiredEnvVars: ['OPENAI_API_KEY'],
     wireFormat: 'responses',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5.4-mini',
     host: 'api.openai.com',
     path: '/v1/responses',
     buildHeaders: () => ({
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     }),
   },
-  //
-  // add gateways above
 ];

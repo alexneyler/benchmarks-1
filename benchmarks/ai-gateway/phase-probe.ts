@@ -102,7 +102,7 @@ function buildRequestBody(config: AIGatewayProviderConfig, prompt: string, maxTo
     // `temperature: 0` per the "identical request configuration" fairness
     // principle in AI_GATEWAYS.md — this branch is shared by the Anthropic
     // family's Concentrate entry (Claude Haiku) and every OpenAI-family
-    // entry (`gpt-4.1-mini`, per `providers-openai.ts`), and neither has a
+    // entry (`gpt-5.4-mini`, per `providers-openai.ts`), and neither has a
     // reason to deviate from it.
     return JSON.stringify({
       model: config.model,

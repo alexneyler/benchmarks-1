@@ -263,6 +263,16 @@
     "concentrate-ai-gateway": [
       "CONCENTRATE_AI_GATEWAY_API_KEY"
     ],
+    "ramp": [
+      "RAMP_ROUTER_API_KEY"
+    ],
+    "neon": [
+      "NEON_AI_GATEWAY_BASE_URL",
+      "NEON_AI_GATEWAY_TOKEN"
+    ],
+    "ngrok": [
+      "NGROK_AI_GATEWAY_API_KEY"
+    ],
     "anthropic-direct": [
       "ANTHROPIC_API_KEY"
     ]
@@ -283,11 +293,21 @@
     "llmgateway": [
       "LLM_GATEWAY_API_KEY"
     ],
+    "concentrate-ai-gateway": [
+      "CONCENTRATE_AI_GATEWAY_API_KEY"
+    ],
     "pydantic-ai-gateway": [
       "PYDANTIC_AI_GATEWAY_API_KEY"
     ],
-    "concentrate-ai-gateway": [
-      "CONCENTRATE_AI_GATEWAY_API_KEY"
+    "ramp": [
+      "RAMP_ROUTER_API_KEY"
+    ],
+    "neon": [
+      "NEON_AI_GATEWAY_BASE_URL",
+      "NEON_AI_GATEWAY_TOKEN"
+    ],
+    "ngrok": [
+      "NGROK_AI_GATEWAY_API_KEY"
     ],
     "openai-direct": [
       "OPENAI_API_KEY"
@@ -312,6 +332,13 @@
     "concentrate-ai-gateway": [
       "CONCENTRATE_AI_GATEWAY_API_KEY"
     ],
+    "neon": [
+      "NEON_AI_GATEWAY_BASE_URL",
+      "NEON_AI_GATEWAY_TOKEN"
+    ],
+    "ngrok": [
+      "NGROK_AI_GATEWAY_API_KEY"
+    ],
     "gemini-direct": [
       "GEMINI_API_KEY"
     ]
@@ -333,6 +360,16 @@
     ],
     "concentrate-ai-gateway": [
       "CONCENTRATE_AI_GATEWAY_API_KEY"
+    ],
+    "novita": [
+      "NOVITA_API_KEY"
+    ],
+    "ramp": [
+      "RAMP_ROUTER_API_KEY"
+    ],
+    "neon": [
+      "NEON_AI_GATEWAY_BASE_URL",
+      "NEON_AI_GATEWAY_TOKEN"
     ],
     "kimi-direct": [
       "KIMI_API_KEY"
@@ -403,9 +440,7 @@
     "mosaic": [
       "MOSAIC_BUCKET",
       "MOSAIC_ACCESS_KEY_ID",
-      "MOSAIC_SECRET_ACCESS_KEY",
-      "MOSAIC_REGION",
-      "MOSAIC_ENDPOINT"
+      "MOSAIC_SECRET_ACCESS_KEY"
     ]
   }
 }
