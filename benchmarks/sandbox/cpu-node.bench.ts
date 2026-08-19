@@ -53,9 +53,10 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
 
   const workload = result.iterations[0];
   if (!workload || workload.ok === false) {
-    throw new TaskError(workload?.error ?? 'cpu-node workload failed', {
+    const message = workload?.error ?? 'cpu-node workload failed';
+    throw new TaskError(message, {
       code: 'cpu_node_workload_failed',
-      data,
+      data: { ...result, errorMessage: message } as unknown as JsonObject,
     });
   }
 
