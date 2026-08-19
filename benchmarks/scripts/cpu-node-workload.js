@@ -124,21 +124,6 @@ function phase4(iters) {
 
 // ---- Driver --------------------------------------------------
 
-// Check if node binary is available before running. Some providers (e.g.
-// beam with runtime: 'node') may not have a separate `node` binary in PATH.
-const { spawnSync } = require('node:child_process');
-const nodeCheck = spawnSync('which', ['node'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-if (nodeCheck.status !== 0 || !nodeCheck.stdout.trim()) {
-  emitWorkloadResult({
-    ok: false,
-    suite: 'cpu-node',
-    reason: 'gap',
-    error: 'node binary not found in PATH',
-    meta: {},
-  });
-  process.exit(0);
-}
-
 const t0 = process.hrtime.bigint();
 
 const phase1_iters = Math.max(1, Math.floor(ITERATIONS / 4));

@@ -824,19 +824,39 @@ async function mainHpc() {
 
   // Group by suite directory (e.g. hpc_cpu_node, hpc_memory, ...).
   // Only pick up files whose parent dir starts with hpc_.
-  const bySuite: Record<string, { results: { result: GenericBenchmarkResult; fromSingleProvider: boolean }[] }> = {};
+  const bySuite: Record<
+    string,
+    {
+      version?: string;
+      timestamp?: string;
+      environment?: Record<string, unknown>;
+      config?: Record<string, unknown>;
+      results: { result: GenericBenchmarkResult; fromSingleProvider: boolean }[];
+    }
+  > = {};
 
   for (const file of jsonFiles) {
     const dirName = path.basename(path.dirname(file));
     if (!dirName.startsWith('hpc_') && !BENCHMARK_DIR_NAMES.has(dirName)) continue;
 
-    const raw = JSON.parse(fs.readFileSync(file, 'utf-8')) as { results?: GenericBenchmarkResult[] };
+    const raw = JSON.parse(fs.readFileSync(file, 'utf-8')) as {
+      version?: string;
+      timestamp?: string;
+      environment?: Record<string, unknown>;
+      config?: Record<string, unknown>;
+      results?: GenericBenchmarkResult[];
+    };
     if (!raw.results || raw.results.length === 0) continue;
 
     const fromSingleProvider = raw.results.length === 1;
     if (!bySuite[dirName]) bySuite[dirName] = { results: [] };
+    const suite = bySuite[dirName];
+    if (!suite.version && raw.version) suite.version = raw.version;
+    if (!suite.timestamp && raw.timestamp) suite.timestamp = raw.timestamp;
+    if (!suite.environment && raw.environment) suite.environment = raw.environment;
+    if (!suite.config && raw.config) suite.config = raw.config;
     for (const result of raw.results) {
-      bySuite[dirName].results.push({ result, fromSingleProvider });
+      suite.results.push({ result, fromSingleProvider });
     }
   }
 
@@ -847,7 +867,8 @@ async function mainHpc() {
   }
 
   for (const suiteDir of suiteDirs) {
-    const { results } = bySuite[suiteDir];
+    const suite = bySuite[suiteDir];
+    const { results } = suite;
 
     // Deduplicate by provider, preferring fresh single-provider files.
     const seen = new Map<string, { result: GenericBenchmarkResult; fromSingleProvider: boolean }>();
@@ -872,7 +893,10 @@ async function mainHpc() {
     fs.mkdirSync(resultsDir, { recursive: true });
 
     const output = {
-      date: timestamp,
+      version: suite.version ?? '1.0',
+      timestamp: new Date().toISOString(),
+      environment: suite.environment ?? {},
+      config: suite.config ?? {},
       results: deduped,
     };
 
