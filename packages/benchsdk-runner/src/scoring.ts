@@ -234,8 +234,12 @@ export function score(outcome: BenchmarkRunOutcome, spec: ScoringSpec): Benchmar
 }
 
 /** Builds a runtime {@link ScoringSpec} from a serializable {@link BenchmarkScoringConfig}. */
-export function scoringConfigToSpec(config: BenchmarkScoringConfig): ScoringSpec {
+export function scoringConfigToSpec(
+  config: BenchmarkScoringConfig,
+  dimensions?: Record<string, unknown>,
+): ScoringSpec {
   return {
+    ...(dimensions ? { dimensions: toJsonObject(dimensions) } : {}),
     metrics: config.metrics.map((metric) => ({
       name: metric.key,
       value: metric.key,

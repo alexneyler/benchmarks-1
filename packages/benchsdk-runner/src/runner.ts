@@ -534,7 +534,7 @@ export async function runBenchmark<T extends BaseParticipant>(
     try {
       const spec = config.onScore
         ? await config.onScore(lowerIsBetter, higherIsBetter)
-        : scoringConfigToSpec(config.scoring!);
+        : scoringConfigToSpec(config.scoring!, config.dimensions);
       const scored = score(outcome, spec);
       const run = {
         gitSha: process.env.GITHUB_SHA ?? getGitSha(),

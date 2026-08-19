@@ -226,6 +226,12 @@ export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
   /** The participants this benchmark can run against. `--provider` selects a subset by name. */
   participants: T[];
   /**
+   * Static run-level dimensions copied into the submitted summary (e.g.
+   * `{ file_size: '10MB' }`). Useful for distinguishing runs of the same
+   * benchmark that differ by an external parameter.
+   */
+  dimensions?: Record<string, unknown>;
+  /**
    * Run-level scoring hook, called once with `lowerIsBetter` and `higherIsBetter`
    * primitives after the outcome is assembled but before `onComplete`. Use it to
    * define how the run should be scored and reported to the platform.
@@ -352,6 +358,11 @@ export function defineBenchmarkConfig<T extends BaseParticipant = BaseParticipan
       if (shape.staggerDelayMs !== undefined && (!Number.isFinite(shape.staggerDelayMs) || shape.staggerDelayMs < 0)) {
         throw new Error(`shape '${shapeName}' staggerDelayMs must be a number >= 0 (got ${shape.staggerDelayMs})`);
       }
+    }
+  }
+  if (config.dimensions !== undefined) {
+    if (config.dimensions === null || typeof config.dimensions !== 'object' || Array.isArray(config.dimensions)) {
+      throw new Error('dimensions must be a plain object');
     }
   }
   if (config.scoring !== undefined) {
