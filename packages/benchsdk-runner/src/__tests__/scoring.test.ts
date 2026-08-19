@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { validateScoringSpec, ScoringSpecError, lowerIsBetter, higherIsBetter } from '../scoring';
+import { score, validateScoringSpec, ScoringSpecError, lowerIsBetter, higherIsBetter } from '../scoring';
 import type { ScoringSpec } from '../scoring';
+import type { BenchmarkRunOutcome } from '../bench-config';
+import type { TaskResultRecord } from '@benchsdk/api';
 
 describe('validateScoringSpec', () => {
   it('does not throw when declared weights sum to 1.0 across all metrics', () => {
@@ -57,5 +59,67 @@ describe('validateScoringSpec', () => {
   it('throws for no declared metrics (weights sum to 0)', () => {
     const spec: ScoringSpec = { metrics: [] };
     expect(() => validateScoringSpec(spec)).toThrow('(no metrics declared)');
+  });
+});
+
+describe('score with groupBy', () => {
+  const spec: ScoringSpec = {
+    groupBy: 'file_size',
+    metrics: [lowerIsBetter('uploadMs', { unit: 'ms', ceiling: 1000, weights: { median: 1, p95: 0, p99: 0 } })],
+  };
+
+  function record(taskIndex: number, status: string, data: Record<string, unknown>): TaskResultRecord {
+    return { taskIndex, status, data: data as TaskResultRecord['data'] };
+  }
+
+  it('emits one row per group value', () => {
+    const results = score(
+      {
+        participants: [
+          {
+            participant: 'aws-s3',
+            records: [
+              record(0, 'success', { file_size: '1MB', uploadMs: 100 }),
+              record(1, 'success', { file_size: '4MB', uploadMs: 400 }),
+            ],
+          },
+        ],
+      } as BenchmarkRunOutcome,
+      spec,
+    );
+
+    expect(results.map((r) => r.dimensions?.file_size)).toEqual(['1MB', '4MB']);
+    expect(results.every((r) => r.successRate === 1)).toBe(true);
+  });
+
+  it('counts a failure against its own group instead of a separate row', () => {
+    const results = score(
+      {
+        participants: [
+          {
+            participant: 'aws-s3',
+            records: [
+              record(0, 'success', { file_size: '1MB', uploadMs: 100 }),
+              record(1, 'error', { file_size: '1MB' }),
+            ],
+          },
+        ],
+      } as BenchmarkRunOutcome,
+      spec,
+    );
+
+    expect(results).toHaveLength(1);
+    expect(results[0].dimensions?.file_size).toBe('1MB');
+    expect(results[0].successRate).toBe(0.5);
+  });
+
+  it('keeps a participant with no records as a skipped row', () => {
+    const results = score(
+      { participants: [{ participant: 'aws-s3', records: [] }] } as BenchmarkRunOutcome,
+      spec,
+    );
+
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({ provider: 'aws-s3', skipped: true, successRate: 0 });
   });
 });

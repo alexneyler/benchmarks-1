@@ -31,7 +31,10 @@ const args = process.argv.slice(2);
 function getArgValues(argv: string[], flag: string): string[] | undefined {
   const idx = argv.indexOf(flag);
   if (idx === -1 || idx + 1 >= argv.length) return undefined;
-  return argv[idx + 1].split(',').map((s) => s.trim()).filter(Boolean);
+  const values = argv[idx + 1].split(',').map((s) => s.trim()).filter(Boolean);
+  // A flag that was passed but names no size is an invalid size, not an absent
+  // flag: keep the raw value so validation below rejects it by name.
+  return values.length > 0 ? values : [argv[idx + 1]];
 }
 const fileSizeArgs = getArgValues(args, '--file-size') ?? ['10MB'];
 for (const size of fileSizeArgs) {
@@ -102,6 +105,12 @@ export const task = defineTask<StorageProviderConfig>(async (ctx) => {
     storage = participant.createStorage();
     storageCache.set(participant.name, storage);
   }
+
+  // Measured up front rather than only returned: on failure the thrown data is
+  // not what lands on the record in participant mode, and the scoring spec
+  // groups by `file_size` — an untagged failure would form its own group and
+  // leave the real group looking fully successful.
+  measure({ file_size: fileSizeLabel, fileSizeBytes });
 
   const key = `benchmark-${Date.now()}-${randomId()}`;
   const testData = crypto.randomBytes(fileSizeBytes);

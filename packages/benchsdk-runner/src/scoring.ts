@@ -266,7 +266,9 @@ export function score(outcome: BenchmarkRunOutcome, spec: ScoringSpec): Benchmar
   const results: BenchmarkScoreResult[] = [];
 
   for (const { participant, records } of outcome.participants) {
-    const groups = spec.groupBy
+    // A participant that recorded nothing has no group to belong to, but it
+    // still has to appear in the summary as skipped rather than vanish from it.
+    const groups = spec.groupBy && records.length > 0
       ? groupRecordsByKey(records, spec.groupBy)
       : [{ value: undefined, records }];
 

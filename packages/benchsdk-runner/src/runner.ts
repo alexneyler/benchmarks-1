@@ -659,16 +659,26 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
         // upload; the runner just threads them onto the task context. The runner
         // wraps `ctx.step` so per-step `timeoutMs` and `concurrency` work in
         // participant mode as well.
-        const taskResult = await slot.task({
-          participant,
-          taskIndex: scheduleIndex,
-          phase: slot.phase,
-          step: (name, fn, options) => runStepWithClient(ctx.step, name, fn, options),
-          measure: ctx.measure,
-          log: ctx.log,
-        });
+        // Tagged before the task runs, not after: measures survive a thrown
+        // task, so a failed record still carries its phase and can be grouped
+        // (and filtered) alongside the successful records of that phase.
         if (slot.phase) ctx.measure({ phase: slot.phase });
-        return taskResult?.data;
+        try {
+          const taskResult = await slot.task({
+            participant,
+            taskIndex: scheduleIndex,
+            phase: slot.phase,
+            step: (name, fn, options) => runStepWithClient(ctx.step, name, fn, options),
+            measure: ctx.measure,
+            log: ctx.log,
+          });
+          return taskResult?.data;
+        } catch (error) {
+          // Mirrors the 'round' path: a TaskError's domain data is preserved on
+          // the failure record instead of being dropped for the error message.
+          if (error instanceof TaskError && error.data) ctx.measure(error.data);
+          throw error;
+        }
       },
       onResult: (record) => onResult(record, { iterations: schedule.length, participant: participant.name }),
     });

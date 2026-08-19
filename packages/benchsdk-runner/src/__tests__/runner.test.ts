@@ -552,6 +552,51 @@ describe('runBenchmark', () => {
     ]);
   });
 
+  it('participant mode: a failing task keeps its phase tag and TaskError data on the record', async () => {
+    // Mirrors the real worker's failure path: measures survive a thrown task,
+    // the task's return value does not.
+    runWorker.mockImplementation(async (_client: any, opts: any) => {
+      const assignment = { workerId: 'w1', taskRange: { start: 0, end: 0, count: 1 } };
+      const measures: Record<string, unknown> = {};
+      const ctx = {
+        taskIndex: 0,
+        assignment,
+        step: async (_n: string, fn: any) => fn(),
+        measure: (d: Record<string, unknown>) => Object.assign(measures, d),
+        log: () => {},
+      };
+      let status = 'success';
+      try {
+        await opts.task(ctx);
+      } catch {
+        status = 'error';
+      }
+      const rec = { taskIndex: 0, status, data: { ...measures } };
+      opts.onResult?.(rec);
+      return { assignment, records: [rec] };
+    });
+
+    const task = defineTask(async () => {
+      throw new TaskError('boom', { code: 'storage_error', data: { file_size: '1MB' } });
+    });
+
+    const outcome = await runBenchmark(
+      {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        phases: [{ name: '1MB', iterations: 1 }],
+        participants: [participants[0]],
+      },
+      task,
+      [],
+    );
+
+    expect(outcome.participants[0].records[0]).toMatchObject({
+      status: 'error',
+      data: { phase: '1MB', file_size: '1MB' },
+    });
+  });
+
   it('groupBy round: claims one reporter per participant, interleaves rounds, finishes each', async () => {
     const recorded: Record<string, TaskResultRecord[]> = { e2b: [], modal: [] };
     const finished: Record<string, boolean> = {};
