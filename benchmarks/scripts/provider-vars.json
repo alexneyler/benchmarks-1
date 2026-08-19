@@ -252,18 +252,12 @@
     "concentrate-ai-gateway": [
       "CONCENTRATE_AI_GATEWAY_API_KEY"
     ],
-    "anthropic-direct": [
-      "ANTHROPIC_API_KEY"
-    ],
-    "novita": [
-      "NOVITA_API_KEY"
-    ],
-    "ramp": [
-      "RAMP_ROUTER_API_KEY"
-    ],
     "neon": [
       "NEON_AI_GATEWAY_BASE_URL",
       "NEON_AI_GATEWAY_TOKEN"
+    ],
+    "anthropic-direct": [
+      "ANTHROPIC_API_KEY"
     ]
   },
   "ai-gateway-openai": {
@@ -282,17 +276,8 @@
     "llmgateway": [
       "LLM_GATEWAY_API_KEY"
     ],
-    "pydantic-ai-gateway": [
-      "PYDANTIC_AI_GATEWAY_API_KEY"
-    ],
     "concentrate-ai-gateway": [
       "CONCENTRATE_AI_GATEWAY_API_KEY"
-    ],
-    "openai-direct": [
-      "OPENAI_API_KEY"
-    ],
-    "novita": [
-      "NOVITA_API_KEY"
     ],
     "ramp": [
       "RAMP_ROUTER_API_KEY"
@@ -300,6 +285,9 @@
     "neon": [
       "NEON_AI_GATEWAY_BASE_URL",
       "NEON_AI_GATEWAY_TOKEN"
+    ],
+    "openai-direct": [
+      "OPENAI_API_KEY"
     ]
   },
   "ai-gateway-gemini": {
@@ -321,18 +309,12 @@
     "concentrate-ai-gateway": [
       "CONCENTRATE_AI_GATEWAY_API_KEY"
     ],
-    "gemini-direct": [
-      "GEMINI_API_KEY"
-    ],
-    "novita": [
-      "NOVITA_API_KEY"
-    ],
-    "ramp": [
-      "RAMP_ROUTER_API_KEY"
-    ],
     "neon": [
       "NEON_AI_GATEWAY_BASE_URL",
       "NEON_AI_GATEWAY_TOKEN"
+    ],
+    "gemini-direct": [
+      "GEMINI_API_KEY"
     ]
   },
   "ai-gateway-kimi": {
@@ -353,9 +335,6 @@
     "concentrate-ai-gateway": [
       "CONCENTRATE_AI_GATEWAY_API_KEY"
     ],
-    "kimi-direct": [
-      "KIMI_API_KEY"
-    ],
     "novita": [
       "NOVITA_API_KEY"
     ],
@@ -365,6 +344,9 @@
     "neon": [
       "NEON_AI_GATEWAY_BASE_URL",
       "NEON_AI_GATEWAY_TOKEN"
+    ],
+    "kimi-direct": [
+      "KIMI_API_KEY"
     ]
   },
   "snapshot-fork": {

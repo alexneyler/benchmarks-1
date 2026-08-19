@@ -1,5 +1,5 @@
 import type { AIGatewayProviderConfig } from './types.js';
-import { newAIGateways, providersForFamily } from './provider-factory.js';
+import { resolveNeonHost } from './neon-host.js';
 
 /**
  * AI gateway benchmark configurations — Gemini family.
@@ -150,6 +150,17 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    name: 'neon',
+    requiredEnvVars: ['NEON_AI_GATEWAY_BASE_URL', 'NEON_AI_GATEWAY_TOKEN'],
+    wireFormat: 'gemini',
+    model: 'gemini-3-6-flash',
+    host: resolveNeonHost().host,
+    path: `${resolveNeonHost().basePath}/gemini/v1beta/models/gemini-3-6-flash:streamGenerateContent?alt=sse`,
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NEON_AI_GATEWAY_TOKEN}`,
+    }),
+  },
+  {
     // No-gateway baseline/control. Gemini's native `streamGenerateContent`
     // endpoint (not the OpenAI-compatibility shim Google also exposes) —
     // `contents`/`parts` request shape, `usageMetadata.candidatesTokenCount`
@@ -166,7 +177,4 @@ export const providers: AIGatewayProviderConfig[] = [
       'x-goog-api-key': process.env.GEMINI_API_KEY || '',
     }),
   },
-  //
-  // add gateways above
-  ...providersForFamily('gemini', newAIGateways),
 ];

@@ -1,5 +1,5 @@
 import type { AIGatewayProviderConfig } from './types.js';
-import { newAIGateways, providersForFamily } from './provider-factory.js';
+import { resolveNeonHost } from './neon-host.js';
 
 /**
  * AI gateway benchmark configurations.
@@ -163,6 +163,18 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    name: 'neon',
+    requiredEnvVars: ['NEON_AI_GATEWAY_BASE_URL', 'NEON_AI_GATEWAY_TOKEN'],
+    wireFormat: 'anthropic',
+    model: 'claude-haiku-4-5',
+    host: resolveNeonHost().host,
+    path: `${resolveNeonHost().basePath}/anthropic/v1/messages`,
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NEON_AI_GATEWAY_TOKEN}`,
+      'anthropic-version': '2023-06-01',
+    }),
+  },
+  {
     // No-gateway baseline/control.
     name: 'anthropic-direct',
     requiredEnvVars: ['ANTHROPIC_API_KEY'],
@@ -175,7 +187,4 @@ export const providers: AIGatewayProviderConfig[] = [
       'anthropic-version': '2023-06-01',
     }),
   },
-  //
-  // add gateways above
-  ...providersForFamily('anthropic', newAIGateways),
 ];

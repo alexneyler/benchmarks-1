@@ -1,5 +1,5 @@
 import type { AIGatewayProviderConfig } from './types.js';
-import { newAIGateways, providersForFamily } from './provider-factory.js';
+import { resolveNeonHost } from './neon-host.js';
 
 /**
  * AI gateway benchmark configurations — OpenAI family.
@@ -15,13 +15,12 @@ import { newAIGateways, providersForFamily } from './provider-factory.js';
  *
  * Every route below was checked directly against that gateway's own
  * OpenAI-specific docs, not assumed by analogy with its Anthropic route or
- * with another gateway — an earlier pass of this file got two paths wrong by
- * doing exactly that (Cloudflare's path turned out to drop the `v1` segment
- * its Anthropic route keeps; Pydantic's OpenAI route isn't `/proxy/openai`
- * at all). Policy for this file: **use each gateway's OpenAI Responses API
- * passthrough if it has one, since that's the least-translated route
- * (Responses is OpenAI's own format, so a gateway proxying it natively adds
- * no translation layer); fall back to `/chat/completions` only where no
+ * with another gateway — an earlier pass of this file got Cloudflare's path
+ * wrong by doing exactly that (it turned out to drop the `v1` segment its
+ * Anthropic route keeps). Policy for this file: **use each gateway's OpenAI
+ * Responses API passthrough if it has one, since that's the least-translated
+ * route (Responses is OpenAI's own format, so a gateway proxying it natively
+ * adds no translation layer); fall back to `/chat/completions` only where no
  * Responses passthrough is documented.** Every gateway below turned out to
  * have one.
  *
@@ -124,33 +123,6 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
-    // NOT `/proxy/openai` — that path exists in Pydantic's docs too, but only
-    // as an unconfirmed Vercel-AI-SDK integration point with no documented
-    // full path. Pydantic documents two distinct, purpose-built routes
-    // instead (pydantic.dev/docs/ai/overview/gateway): `/proxy/chat/` for
-    // Chat Completions (shown with a concrete SDK example) and
-    // `/proxy/openai-responses` for the Responses API, shown in their own
-    // Codex config example: `base_url = "https://gateway-us.pydantic.dev/
-    // proxy/openai-responses"`, `wire_api = "responses"`. Codex's own
-    // wire_api="responses" convention appends `/responses` to whatever
-    // base_url it's given — confirmed to work exactly this way for LLM
-    // Gateway above (`.../v1` base + wire_api="responses" => `/v1/responses`
-    // per LLM Gateway's own docs), so the same append pattern applied here
-    // gives the path below. Not a literal curl example, but corroborated by
-    // an identical confirmed case elsewhere in this file, not a cross-
-    // gateway analogy. Auth follows the Anthropic entry's confirmed pattern:
-    // `Authorization: Bearer <gateway key>`, not a provider-specific header.
-    name: 'pydantic-ai-gateway',
-    requiredEnvVars: ['PYDANTIC_AI_GATEWAY_API_KEY'],
-    wireFormat: 'responses',
-    model: 'gpt-5.4-mini',
-    host: 'gateway-us.pydantic.dev',
-    path: '/proxy/openai-responses/responses',
-    buildHeaders: () => ({
-      Authorization: `Bearer ${process.env.PYDANTIC_AI_GATEWAY_API_KEY}`,
-    }),
-  },
-  {
     // `openai/gpt-5.4-mini` follows Concentrate's confirmed provider-prefix
     // syntax (concentrate.ai/models — "openai/gpt-5.4" shown as the
     // provider-pinned form). Uses the same `/v1/responses/` endpoint as the
@@ -170,6 +142,31 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    name: 'ramp',
+    requiredEnvVars: ['RAMP_ROUTER_API_KEY'],
+    wireFormat: 'responses',
+    // Ramp's `model` field takes a bare `id` from GET /v1/models, not the
+    // `provider:provider-model` form used for the `models` fallback array
+    // (see router.ramp.com/docs/guides/choose-a-model).
+    model: 'gpt-5.4-mini',
+    host: 'router-api.ramp.com',
+    path: '/v1/responses',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.RAMP_ROUTER_API_KEY}`,
+    }),
+  },
+  {
+    name: 'neon',
+    requiredEnvVars: ['NEON_AI_GATEWAY_BASE_URL', 'NEON_AI_GATEWAY_TOKEN'],
+    wireFormat: 'responses',
+    model: 'gpt-5-4-mini',
+    host: resolveNeonHost().host,
+    path: `${resolveNeonHost().basePath}/openai/v1/responses`,
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NEON_AI_GATEWAY_TOKEN}`,
+    }),
+  },
+  {
     // No-gateway baseline/control. OpenAI's own Responses API — its current
     // flagship endpoint (vs. the older Chat Completions surface) — is the
     // most direct route into OpenAI's own infrastructure.
@@ -183,7 +180,4 @@ export const providers: AIGatewayProviderConfig[] = [
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     }),
   },
-  //
-  // add gateways above
-  ...providersForFamily('openai', newAIGateways),
 ];
