@@ -161,13 +161,26 @@ describe('mergeConfig', () => {
     const phased: BenchmarkConfig = {
       benchmarkSlug: 's',
       benchmarkName: 'n',
-      phases: [{ name: 'cold', iterations: 3 }, { name: 'warm', iterations: 2 }],
+      phases: [{ name: '1MB', iterations: 2 }, { name: '16MB', iterations: 2 }],
       participants: [],
     };
-    expect(mergeConfig(phased, {})).toMatchObject({ iterations: 5, phaseIterations: undefined });
+    expect(mergeConfig(phased, {})).toMatchObject({ iterations: 4, phaseIterations: undefined });
     // Phases are the arms of one comparison, so the flag scales every arm
     // rather than being split between them.
     expect(mergeConfig(phased, { iterations: 10 })).toMatchObject({ iterations: 20, phaseIterations: 10 });
+  });
+
+  it('keeps individually sized phases over --iterations, with a warning', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const phased: BenchmarkConfig = {
+      benchmarkSlug: 's',
+      benchmarkName: 'n',
+      phases: [{ name: 'cold', iterations: 3 }, { name: 'warm', iterations: 2 }],
+      participants: [],
+    };
+    expect(mergeConfig(phased, { iterations: 99 })).toMatchObject({ iterations: 5, phaseIterations: undefined });
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 });
 

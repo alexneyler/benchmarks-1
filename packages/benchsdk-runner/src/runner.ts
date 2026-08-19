@@ -281,14 +281,20 @@ export function mergeConfig<T extends BaseParticipant>(
 ): ResolvedRunConfig {
   // `--iterations` applies per phase: phases are the arms of one comparison, so
   // scaling them equally keeps the arms comparable, where splitting a total
-  // between them would shrink each arm as arms are added.
-  const phaseCount = config.phases?.length;
-  const phaseIterations = phaseCount !== undefined ? args.iterations : undefined;
+  // between them would shrink each arm as arms are added. A benchmark that
+  // sizes its arms differently (cold probes more than warm) meant that
+  // difference, so its counts win over the flag.
+  const phases = config.phases;
+  const unevenPhases = phases !== undefined && phases.some((p) => p.iterations !== phases[0].iterations);
+  if (unevenPhases && args.iterations !== undefined) {
+    console.warn('--iterations is ignored because this benchmark sizes its phases individually.');
+  }
+  const phaseIterations = phases !== undefined && !unevenPhases ? args.iterations : undefined;
   const phaseTotal =
-    phaseCount !== undefined
+    phases !== undefined
       ? (phaseIterations !== undefined
-          ? phaseIterations * phaseCount
-          : config.phases!.reduce((sum, p) => sum + p.iterations, 0))
+          ? phaseIterations * phases.length
+          : phases.reduce((sum, p) => sum + p.iterations, 0))
       : undefined;
   const resolved: ResolvedRunConfig = {
     iterations: phaseTotal ?? args.iterations ?? config.iterations ?? 1,
