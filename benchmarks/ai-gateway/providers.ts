@@ -163,17 +163,6 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
-    name: 'novita',
-    requiredEnvVars: ['NOVITA_API_KEY'],
-    wireFormat: 'openai',
-    model: 'anthropic/claude-haiku-4.5',
-    host: 'api.novita.ai',
-    path: '/openai/v1/chat/completions',
-    buildHeaders: () => ({
-      Authorization: `Bearer ${process.env.NOVITA_API_KEY}`,
-    }),
-  },
-  {
     // Ramp Router exposes an OpenAI Responses-compatible API; the `model`
     // field must be a bare `id` from the account's `GET /v1/models` catalog,
     // not the upstream provider's public model name. For this key the

@@ -91,7 +91,6 @@
     "bench:ai-gateway:anthropic": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts --provider anthropic-direct",
     "bench:ai-gateway:neon": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts --provider neon",
     "bench:ai-gateway:ngrok": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts --provider ngrok",
-    "bench:ai-gateway:novita": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts --provider novita",
     "bench:ai-gateway:ramp": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway.bench.ts --provider ramp",
     "generate-ai-gateway-svg": "tsx benchmarks/ai-gateway/generate-svg.ts",
     "bench:ai-gateway-openai": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-openai.bench.ts",

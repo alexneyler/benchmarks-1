@@ -52,6 +52,12 @@
       "MODAL_TOKEN_ID",
       "MODAL_TOKEN_SECRET"
     ],
+    "microsandbox": [
+      "MSB_API_KEY"
+    ],
+    "miosa": [
+      "MIOSA_API_KEY"
+    ],
     "mosaic": [
       "MOSAIC_API_URL",
       "MOSAIC_API_TOKEN"
@@ -199,6 +205,11 @@
       "NEON_ENDPOINT",
       "NEON_ACCESS_KEY_ID",
       "NEON_SECRET_ACCESS_KEY"
+    ],
+    "mosaic": [
+      "MOSAIC_BUCKET",
+      "MOSAIC_ACCESS_KEY_ID",
+      "MOSAIC_SECRET_ACCESS_KEY"
     ]
   },
   "scale": {
@@ -251,9 +262,6 @@
     ],
     "concentrate-ai-gateway": [
       "CONCENTRATE_AI_GATEWAY_API_KEY"
-    ],
-    "novita": [
-      "NOVITA_API_KEY"
     ],
     "ramp": [
       "RAMP_ROUTER_API_KEY"
@@ -428,6 +436,11 @@
       "NEON_ENDPOINT",
       "NEON_ACCESS_KEY_ID",
       "NEON_SECRET_ACCESS_KEY"
+    ],
+    "mosaic": [
+      "MOSAIC_BUCKET",
+      "MOSAIC_ACCESS_KEY_ID",
+      "MOSAIC_SECRET_ACCESS_KEY"
     ]
   }
 }
