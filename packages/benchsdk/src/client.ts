@@ -6,10 +6,12 @@ export { BenchmarkApiError };
 
 export function createBenchmarkClient(config: BenchmarkClientConfig = {}): BenchmarkClient {
   const apiClient = createApiClient(config);
-  return {
+  function runWorkerWrapped(options: RunWorkerOptions): Promise<RunWorkerResult> {
+    return runWorker(client as any, options as unknown as any) as Promise<RunWorkerResult>;
+  }
+  const client = {
     ...apiClient,
-    runWorker(options: RunWorkerOptions): Promise<RunWorkerResult> {
-      return runWorker(apiClient, options as unknown as any) as Promise<RunWorkerResult>;
-    },
+    runWorker: runWorkerWrapped,
   } as BenchmarkClient;
+  return client;
 }
