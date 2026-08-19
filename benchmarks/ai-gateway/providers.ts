@@ -203,18 +203,19 @@ export const providers: AIGatewayProviderConfig[] = [
   },
   {
     // Netlify AI Gateway exposes a native Anthropic Messages API passthrough at
-    // `${NETLIFY_AI_GATEWAY_BASE_URL}/v1/messages` with the upstream's
-    // `x-api-key` + `anthropic-version` headers; the base URL is either a
-    // site-scoped `https://<site>/.netlify/ai` or the account-scoped
-    // `https://ai-gateway.netlify.com`.
+    // `<base>/v1/messages` with the upstream's `x-api-key` + `anthropic-version`
+    // headers. The universal `NETLIFY_AI_GATEWAY_KEY` is not available outside
+    // Netlify's own compute, so this entry uses the provider-specific
+    // `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` (with `NETLIFY_AI_GATEWAY_BASE_URL`
+    // as a fallback) so the benchmark can call Netlify from a Namespace runner.
     name: 'netlify',
-    requiredEnvVars: ['NETLIFY_AI_GATEWAY_BASE_URL', 'NETLIFY_AI_GATEWAY_KEY'],
+    requiredEnvVars: ['ANTHROPIC_API_KEY'],
     wireFormat: 'anthropic',
     model: 'claude-haiku-4-5',
-    host: resolveNetlifyHost().host,
-    path: `${resolveNetlifyHost().basePath}/v1/messages`,
+    host: resolveNetlifyHost('ANTHROPIC_BASE_URL').host,
+    path: `${resolveNetlifyHost('ANTHROPIC_BASE_URL').basePath}/v1/messages`,
     buildHeaders: () => ({
-      'x-api-key': process.env.NETLIFY_AI_GATEWAY_KEY || '',
+      'x-api-key': process.env.ANTHROPIC_API_KEY || '',
       'anthropic-version': '2023-06-01',
     }),
   },
