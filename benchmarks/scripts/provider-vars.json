@@ -285,6 +285,9 @@
     "concentrate-ai-gateway": [
       "CONCENTRATE_AI_GATEWAY_API_KEY"
     ],
+    "pydantic-ai-gateway": [
+      "PYDANTIC_AI_GATEWAY_API_KEY"
+    ],
     "novita": [
       "NOVITA_API_KEY"
     ],

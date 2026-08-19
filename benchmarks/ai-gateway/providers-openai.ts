@@ -143,6 +143,41 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    // Pydantic AI Gateway exposes two purpose-built proxy routes
+    // (pydantic.dev/docs/ai/overview/gateway): `/proxy/chat/` for Chat
+    // Completions and `/proxy/openai-responses` for the Responses API.
+    // We use the Responses route here to stay consistent with the rest of
+    // this file (every other entry uses Responses where available), and
+    // because it's OpenAI's own wire format — no translation layer.
+    //
+    // Path derivation: Pydantic's Codex config example sets
+    //   base_url = "https://gateway-us.pydantic.dev/proxy/openai-responses"
+    //   wire_api = "responses"
+    // and Codex appends `/responses` to that base URL, giving the full
+    // path `/proxy/openai-responses/responses`. (Not `/proxy/openai` —
+    // that path appears in Pydantic's docs but only as an unconfirmed
+    // Vercel-AI-SDK integration point with no documented full path.)
+    //
+    // Model id is unprefixed (`gpt-5.4-mini`, not `openai/gpt-5.4-mini`):
+    // Pydantic's proxy doesn't use the provider-prefix routing that LLM
+    // Gateway and Concentrate do — same as the Anthropic entry's
+    // unprefixed `claude-haiku-4-5-20251001` in providers.ts.
+    //
+    // Auth: `Authorization: Bearer <gateway key>` — confirmed live against
+    // the Anthropic route (see providers.ts). Not a provider-specific
+    // header. The org must have the Gateway activated in its Logfire
+    // settings first, or the key returns a 401 "Key not found".
+    name: 'pydantic-ai-gateway',
+    requiredEnvVars: ['PYDANTIC_AI_GATEWAY_API_KEY'],
+    wireFormat: 'responses',
+    model: 'gpt-5.4-mini',
+    host: 'gateway-us.pydantic.dev',
+    path: '/proxy/openai-responses/responses',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.PYDANTIC_AI_GATEWAY_API_KEY}`,
+    }),
+  },
+  {
     name: 'novita',
     requiredEnvVars: ['NOVITA_API_KEY'],
     wireFormat: 'openai',
