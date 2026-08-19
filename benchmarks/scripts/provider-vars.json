@@ -205,6 +205,11 @@
       "NEON_ENDPOINT",
       "NEON_ACCESS_KEY_ID",
       "NEON_SECRET_ACCESS_KEY"
+    ],
+    "mosaic": [
+      "MOSAIC_BUCKET",
+      "MOSAIC_ACCESS_KEY_ID",
+      "MOSAIC_SECRET_ACCESS_KEY"
     ]
   },
   "scale": {
@@ -394,6 +399,13 @@
       "NEON_ENDPOINT",
       "NEON_ACCESS_KEY_ID",
       "NEON_SECRET_ACCESS_KEY"
+    ],
+    "mosaic": [
+      "MOSAIC_BUCKET",
+      "MOSAIC_ACCESS_KEY_ID",
+      "MOSAIC_SECRET_ACCESS_KEY",
+      "MOSAIC_REGION",
+      "MOSAIC_ENDPOINT"
     ]
   }
 }
