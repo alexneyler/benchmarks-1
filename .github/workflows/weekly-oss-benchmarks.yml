@@ -65,8 +65,7 @@ concurrency:
   group: weekly-oss-benchmarks
   cancel-in-progress: false
 
-permissions:
-  contents: write
+permissions: {}
 
 env:
   OSS_REPOSITORY: computesdk/benchmarks
@@ -77,6 +76,8 @@ jobs:
   matrix:
     name: Discover OSS providers
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    permissions:
+      contents: read
     outputs:
       include: ${{ steps.matrix.outputs.include }}
       oss_sha: ${{ steps.oss_sha.outputs.sha }}
@@ -128,6 +129,7 @@ jobs:
     name: Resolve throughput pages
     needs: matrix
     runs-on: ubuntu-latest
+    permissions: {}
     outputs:
       urls: ${{ steps.pages.outputs.urls }}
     steps:
@@ -156,7 +158,13 @@ jobs:
     needs: [matrix, throughput-pages]
     if: needs.matrix.result == 'success'
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    permissions:
+      contents: read
     timeout-minutes: 90
+    env:
+      BENCH_KIND: ${{ matrix.kind }}
+      BENCH_PROVIDER: ${{ matrix.provider }}
+      BENCH_FILE_SIZE: ${{ matrix.fileSize }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.include) }}
@@ -186,18 +194,18 @@ jobs:
       - name: Build vault key list from OSS provider manifest
         working-directory: oss
         run: |
-          case "${{ matrix.kind }}" in
+          case "$BENCH_KIND" in
             dax) manifest_kind=sandbox ;;
             browser-throughput) manifest_kind=throughput ;;
-            *) manifest_kind="${{ matrix.kind }}" ;;
+            *) manifest_kind="$BENCH_KIND" ;;
           esac
 
-          if [ "${{ matrix.provider }}" = "all" ]; then
+          if [ "$BENCH_PROVIDER" = "all" ]; then
             jq -r --arg kind "$manifest_kind" \
               '.[$kind] | to_entries[] | .value[]?' \
               benchmarks/scripts/provider-vars.json
           else
-            jq -r --arg kind "$manifest_kind" --arg provider "${{ matrix.provider }}" \
+            jq -r --arg kind "$manifest_kind" --arg provider "$BENCH_PROVIDER" \
               '.[$kind][$provider][]?' \
               benchmarks/scripts/provider-vars.json
           fi | sort -u > /tmp/oss-vault-keys
@@ -237,7 +245,7 @@ jobs:
           RUNNER=(npx tsx packages/benchsdk-runner/dist/bin.js run)
           # Matrix jobs for the same benchmark share one platform run. The
           # attempt number is included so re-runs do not rejoin completed runs.
-          case "${{ matrix.kind }}" in
+          case "$BENCH_KIND" in
             sandbox)
               RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
               COMMON=(benchmarks/sandbox/tti.bench.ts --provider "$PROVIDER" --iterations "$ITERATIONS" --run-key "$RUN_KEY")
@@ -285,6 +293,11 @@ jobs:
     needs: [matrix, benchmark]
     if: always() && needs.matrix.result == 'success'
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    permissions:
+      contents: write
+    env:
+      BENCHMARK_FILTER: ${{ github.event.inputs.benchmark || 'all' }}
+      OSS_SHA: ${{ needs.matrix.outputs.oss_sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -345,7 +358,7 @@ jobs:
               echo "No results found for $input; skipping"
             fi
           }
-          case "${{ github.event.inputs.benchmark || 'all' }}" in
+          case "$BENCHMARK_FILTER" in
             all)
               run_merge artifacts/by-category/sandbox
               run_merge artifacts/by-category/dax
@@ -356,7 +369,7 @@ jobs:
               run_merge artifacts/by-category/ai-gateway --mode ai-gateway
               ;;
             sandbox|dax)
-              run_merge "artifacts/by-category/${{ github.event.inputs.benchmark || 'sandbox' }}"
+              run_merge "artifacts/by-category/$BENCHMARK_FILTER"
               ;;
             storage)
               run_merge artifacts/by-category/storage --mode storage
@@ -424,7 +437,7 @@ jobs:
               cp "$file" "./${prefix}$(basename "$file")"
             done
           }
-          case "${{ github.event.inputs.benchmark || 'all' }}" in
+          case "$BENCHMARK_FILTER" in
             all)
               copy_tree_if oss/results results-weekly
               copy_glob_if oss '*.svg' 'weekly-'
@@ -462,13 +475,13 @@ jobs:
               copy_file_if oss/ai-gateway.svg weekly-ai-gateway.svg
               ;;
           esac
-          printf '%s\n' "${{ needs.matrix.outputs.oss_sha }}" > .oss-benchmark-revision-weekly
+          printf '%s\n' "$OSS_SHA" > .oss-benchmark-revision-weekly
       - name: Ingest results
         if: github.event.inputs.dry_run != 'true'
         continue-on-error: true
         run: |
           . benchmarks/scripts/load-vault-secrets.sh '^(INGEST_URL|INGEST_SECRET)'
-          case "${{ github.event.inputs.benchmark || 'all' }}" in
+          case "$BENCHMARK_FILTER" in
             all)
               pnpm --dir oss exec tsx ../benchmarks/src/ingest.ts --type sandbox --dir results-weekly
               pnpm --dir oss exec tsx ../benchmarks/src/ingest.ts --type storage --dir results-weekly
