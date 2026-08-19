@@ -132,10 +132,12 @@ jobs:
     permissions: {}
     outputs:
       urls: ${{ steps.pages.outputs.urls }}
+    env:
+      THROUGHPUT_ITERATIONS: ${{ needs.matrix.outputs.throughput_iterations || '0' }}
     steps:
       - id: pages
         run: |
-          count=${{ needs.matrix.outputs.throughput_iterations || '0' }}
+          count="$THROUGHPUT_ITERATIONS"
           if [ "$count" -eq 0 ]; then
             echo 'urls<<URLS_EOF' >> "$GITHUB_OUTPUT"
             echo 'URLS_EOF' >> "$GITHUB_OUTPUT"
@@ -211,6 +213,9 @@ jobs:
               '.[$kind][$provider][]?' \
               benchmarks/scripts/provider-vars.json
           fi | sort -u | grep -v '^$' > /tmp/oss-vault-keys
+          if [ "$BENCH_KIND" = "dax" ]; then
+            printf '%s\n' BL_DAX_API_KEY BL_DAX_WORKSPACE >> /tmp/oss-vault-keys
+          fi
           printf '%s\n' COMPUTESDK_ADMIN_API_KEY BENCHMARKS_PLATFORM_API_KEY >> /tmp/oss-vault-keys
           # Build a grep-compatible regex for load-vault-secrets.sh
           regex="^($(paste -sd'|' /tmp/oss-vault-keys))"
@@ -258,6 +263,12 @@ jobs:
               ;;
             dax)
               export LIGHTNING_INSTANCE_TYPE=cpu-8
+              export ARKER_PLATFORMS=graviton4
+              if [ -n "${BL_DAX_API_KEY:-}" ] && [ -n "${BL_DAX_WORKSPACE:-}" ]; then
+                export BL_API_KEY="$BL_DAX_API_KEY"
+                export BL_WORKSPACE="$BL_DAX_WORKSPACE"
+                unset BL_DAX_API_KEY BL_DAX_WORKSPACE
+              fi
               RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
               "${RUNNER[@]}" benchmarks/sandbox/dax.bench.ts --provider "$PROVIDER" --iterations "$ITERATIONS" --run-key "$RUN_KEY" $NO_INGEST
               ;;
@@ -323,7 +334,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Clear checked-in OSS results
         working-directory: oss
-        run: rm -rf results artifacts
+        run: rm -rf results artifacts *.svg
       - name: Download raw results
         uses: actions/download-artifact@v4
         with:
