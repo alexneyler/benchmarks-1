@@ -175,10 +175,14 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    // Ramp Router exposes an OpenAI Responses-compatible API; the `model`
+    // field must be a bare `id` from the account's `GET /v1/models` catalog,
+    // not the upstream provider's public model name. For this key the
+    // Anthropic Haiku 4.5 entry is `claude-haiku-4-5`.
     name: 'ramp',
     requiredEnvVars: ['RAMP_ROUTER_API_KEY'],
     wireFormat: 'responses',
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-haiku-4-5',
     host: 'router-api.ramp.com',
     path: '/v1/responses',
     buildHeaders: () => ({
