@@ -1,4 +1,4 @@
-import type { JsonObject, TaskResultRecord } from '@benchsdk/client';
+import type { JsonObject, TaskResultRecord } from '@benchsdk/api';
 import type { BenchmarkRunOutcome } from './bench-config.js';
 
 export type MetricValue = string | ((record: TaskResultRecord) => number | number[] | undefined);

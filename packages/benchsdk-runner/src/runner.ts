@@ -7,7 +7,7 @@
  *
  * Two execution orderings, chosen by `groupBy`:
  *   'participant' (default) — each participant's tasks run to completion via
- *     `client.runWorker` (with its pooled concurrency + heartbeat reporting)
+ *     `runWorker(client, ...)` (with its pooled concurrency + heartbeat reporting)
  *     before the next participant starts.
  *   'round' — participants take turns: every participant runs its Nth task
  *     before anyone starts their (N+1)th, so all Nth tasks happen back-to-back
@@ -16,23 +16,24 @@
  */
 import { execSync } from 'node:child_process';
 import os from 'node:os';
+import { createBenchmarkClient } from '@benchsdk/api';
 import {
   BenchmarkReporter,
-  createBenchmarkClient,
   filterParticipantsByEnv,
+  runWorker,
   selectParticipants,
-} from '@benchsdk/client';
+} from '@benchsdk/worker';
 import { NoAvailableParticipantsError } from './no-available-participants.js';
 import { higherIsBetter, lowerIsBetter, score, ScoringSpecError } from './scoring.js';
 import type {
-  BaseParticipant,
   BenchmarkClient,
   DefineStepOptions,
   JsonObject,
   RunWorkerContext,
   TaskResultRecord,
   TaskStepRecord,
-} from '@benchsdk/client';
+} from '@benchsdk/api';
+import type { BaseParticipant } from '@benchsdk/worker';
 import { TaskError } from './bench-config.js';
 import type {
   BenchmarkConfig,
@@ -69,7 +70,7 @@ export interface CliArgs {
   noIngest?: boolean;
 }
 
-// Matches @benchsdk/client's DEFAULT_BASE_URL origin. `resolvePlatform()`
+// Matches @benchsdk/api's DEFAULT_BASE_URL origin. `resolvePlatform()`
 // appends `/api/v1`. Override for local development via BENCHMARKS_PLATFORM_URL.
 const DEFAULT_PLATFORM_URL = 'https://platform.computesdk.com';
 
@@ -571,7 +572,7 @@ function getGitRef(): string | undefined {
 }
 
 /**
- * 'participant' ordering: one `client.runWorker` per participant, in turn.
+ * 'participant' ordering: one `runWorker` call per participant, in turn.
  * `staggerDelayMs` here launches task N at `workerStart + N * staggerDelayMs`
  * (vs. round mode's fixed delay between rounds — intentionally different).
  * `TaskResult.steps`/`latencyMs` are ignored in this path: the platform
@@ -633,7 +634,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
     let rampStartMs: number | undefined;
     await client.planWorkers(config.benchmarkSlug, runId, participant.name);
 
-    const result = await client.runWorker({
+    const result = await runWorker(client, {
       benchmarkSlug: config.benchmarkSlug,
       runId: runId,
       participantSlug: participant.name,
@@ -683,7 +684,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
 /**
  * 'round' ordering: claim one `BenchmarkReporter` per participant up front,
  * then loop rounds, running one task per participant per round and streaming
- * each result to its reporter. Steps are built manually (no `client.runWorker`
+ * each result to its reporter. Steps are built manually (no `runWorker`
  * to own them) via a shim that mirrors the platform's record shape.
  */
 async function runGroupedByRound<T extends BaseParticipant>(

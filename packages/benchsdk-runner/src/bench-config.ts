@@ -31,12 +31,12 @@
  * recorded.
  */
 import type {
-  BaseParticipant,
   DefineStepOptions,
   JsonObject,
   TaskResultRecord,
   TaskStepRecord,
-} from '@benchsdk/client';
+} from '@benchsdk/api';
+import type { BaseParticipant } from '@benchsdk/worker';
 import type { HigherIsBetter, LowerIsBetter, ScoringSpec } from './scoring.js';
 
 /** How tasks are ordered across participants. */
@@ -71,7 +71,7 @@ export interface TaskResult {
    * Pre-measured steps the task timed itself (e.g. socket phases).
    * Only honored in `groupBy: 'round'` runs, where the runner builds records
    * manually. In `groupBy: 'participant'` runs the platform worker
-   * (`client.runWorker`) owns steps, so `steps` and `latencyMs` are ignored.
+   * (`runWorker`) owns steps, so `steps` and `latencyMs` are ignored.
    */
   steps?: TaskStepRecord[];
   /** Task-owned overall latency; overrides framework wall-clock (round mode only). */
@@ -112,7 +112,7 @@ export interface TaskContext<T extends BaseParticipant = BaseParticipant> {
   /** Current phase name, when the benchmark declares `phases`. */
   phase?: string;
   /**
-   * Runs `fn` as a named platform step. Mirrors `@benchsdk/client`'s
+   * Runs `fn` as a named platform step. Mirrors `@benchsdk/worker`'s
    * `RunWorkerContext.step`; supports closures and try/finally. A `concurrency`
    * greater than 1 invokes `fn` that many times in parallel and returns an array.
    * `timeoutMs` aborts any invocation that exceeds it with a `step_timeout` TaskError.

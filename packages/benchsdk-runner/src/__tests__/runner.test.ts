@@ -1,12 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const createBenchmarkClient = vi.fn();
+const runWorker = vi.fn();
 const reporterClaim = vi.fn();
 
-vi.mock('@benchsdk/client', () => ({
+vi.mock('@benchsdk/api', () => ({
   createBenchmarkClient: (...args: unknown[]) => createBenchmarkClient(...args),
+}));
+
+vi.mock('@benchsdk/worker', () => ({
   BenchmarkReporter: { claim: (...args: unknown[]) => reporterClaim(...args) },
-  selectParticipants: (all: any[], names?: string[]) => (names ? all.filter((p) => names.includes(p.name)) : all),
   filterParticipantsByEnv: (ps: any[]) => {
     const available: any[] = [];
     const skipped: { name: string; missing: string[] }[] = [];
@@ -17,13 +20,15 @@ vi.mock('@benchsdk/client', () => ({
     }
     return { available, skipped };
   },
+  runWorker: (...args: unknown[]) => runWorker(...args),
+  selectParticipants: (all: any[], names?: string[]) => (names ? all.filter((p) => names.includes(p.name)) : all),
 }));
 
 import { parseCliArgs, mergeConfig, runBenchmark } from '../runner';
 import { TaskError, defineTask } from '../bench-config';
 import { NoAvailableParticipantsError } from '../no-available-participants';
 import type { BenchmarkConfig } from '../bench-config';
-import type { TaskResultRecord } from '@benchsdk/client';
+import type { TaskResultRecord } from '@benchsdk/api';
 
 describe('parseCliArgs', () => {
   it('parses space-separated flags', () => {
@@ -181,6 +186,7 @@ describe('runBenchmark', () => {
     taskRangeStart = 0;
     vi.restoreAllMocks();
     reporterClaim.mockReset();
+    runWorker.mockReset();
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -198,41 +204,41 @@ describe('runBenchmark', () => {
         calls.getRun.push([slug, runId]);
         return { id: runId, totalTasks: 3, participantSized: runId === 'run-open' };
       }),
-      runWorker: vi.fn(async (opts: any) => {
-        calls.runWorker.push(opts);
-        const total = calls.createRun[0]?.[1]?.totalTasks ?? calls.upsertParticipant[0]?.[3]?.totalTasks ?? 1;
-        // The platform hands out globally-indexed task ranges; `taskRangeStart`
-        // lets a test exercise a worker whose range doesn't start at 0.
-        const start = taskRangeStart;
-        const assignment = { workerId: 'w1', taskRange: { start, end: start + total - 1, count: total } };
-        const records: any[] = [];
-        for (let ti = start; ti < start + total; ti++) {
-          // Mirror the real client worker: `measure` merges into the record's
-          // data alongside whatever the task returns. `step` records options
-          // so participant-mode option forwarding can be asserted.
-          const measures: Record<string, unknown> = {};
-          const steps: any[] = [];
-          const ctx = {
-            taskIndex: ti,
-            assignment,
-            step: async (_n: string, fn: any, options: any) => {
-              const value = await fn();
-              steps.push({ name: _n, options });
-              return value;
-            },
-            measure: (d: Record<string, unknown>) => Object.assign(measures, d),
-            log: () => {},
-          };
-          const returned = await opts.task(ctx);
-          calls.taskData.push(returned);
-          const data = { ...measures, ...(returned ?? {}) };
-          const rec = { taskIndex: ti, status: 'success', data, steps };
-          opts.onResult?.(rec);
-          records.push(rec);
-        }
-        return { assignment, records };
-      }),
     };
+    runWorker.mockImplementation(async (_client: any, opts: any) => {
+      calls.runWorker.push(opts);
+      const total = calls.createRun[0]?.[1]?.totalTasks ?? calls.upsertParticipant[0]?.[3]?.totalTasks ?? 1;
+      // The platform hands out globally-indexed task ranges; `taskRangeStart`
+      // lets a test exercise a worker whose range doesn't start at 0.
+      const start = taskRangeStart;
+      const assignment = { workerId: 'w1', taskRange: { start, end: start + total - 1, count: total } };
+      const records: any[] = [];
+      for (let ti = start; ti < start + total; ti++) {
+        // Mirror the real client worker: `measure` merges into the record's
+        // data alongside whatever the task returns. `step` records options
+        // so participant-mode option forwarding can be asserted.
+        const measures: Record<string, unknown> = {};
+        const steps: any[] = [];
+        const ctx = {
+          taskIndex: ti,
+          assignment,
+          step: async (_n: string, fn: any, options: any) => {
+            const value = await fn();
+            steps.push({ name: _n, options });
+            return value;
+          },
+          measure: (d: Record<string, unknown>) => Object.assign(measures, d),
+          log: () => {},
+        };
+        const returned = await opts.task(ctx);
+        calls.taskData.push(returned);
+        const data = { ...measures, ...(returned ?? {}) };
+        const rec = { taskIndex: ti, status: 'success', data, steps };
+        opts.onResult?.(rec);
+        records.push(rec);
+      }
+      return { assignment, records };
+    });
     createBenchmarkClient.mockReturnValue(fakeClient);
   });
 
@@ -588,7 +594,7 @@ describe('runBenchmark', () => {
     expect(finished.modal).toBe(false);
     // runWorker is NOT used in round mode; the single worker per participant is
     // planned for every task in the schedule, not just one.
-    expect(fakeClient.runWorker).not.toHaveBeenCalled();
+    expect(runWorker).not.toHaveBeenCalled();
     expect(fakeClient.planWorkers).toHaveBeenCalledTimes(2);
     expect(calls.planWorkers[0][3]).toMatchObject({ workerCount: 1, targetConcurrency: 2 });
   });
@@ -1018,7 +1024,7 @@ describe('runBenchmark', () => {
       expect(createBenchmarkClient).not.toHaveBeenCalled();
       expect(fakeClient.upsertBenchmark).not.toHaveBeenCalled();
       expect(fakeClient.createRun).not.toHaveBeenCalled();
-      expect(fakeClient.runWorker).not.toHaveBeenCalled();
+      expect(runWorker).not.toHaveBeenCalled();
       expect(fakeClient.submitRunSummary).not.toHaveBeenCalled();
       expect(outcome.runId).toBe('no-ingest');
       expect(outcome.dashboardUrl).toBe('');
