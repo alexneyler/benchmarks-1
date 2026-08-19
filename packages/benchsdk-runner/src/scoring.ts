@@ -14,6 +14,28 @@ export interface MetricScoring {
   trim?: number;
 }
 
+export interface BenchmarkScoringWeights {
+  median: number;
+  p95: number;
+  p99: number;
+}
+
+export interface BenchmarkScoringMetric {
+  key: string;
+  label?: string;
+  unit: string;
+  ceiling: number;
+  floor?: number;
+  higherIsBetter?: boolean;
+  weights: BenchmarkScoringWeights;
+  trim?: number;
+}
+
+/** Serializable scoring spec declared in a `*.bench.ts` file and uploaded to the platform. */
+export interface BenchmarkScoringConfig {
+  metrics: BenchmarkScoringMetric[];
+}
+
 export interface ScoringSpec {
   dimensions?: Record<string, unknown>;
   success?: (record: TaskResultRecord) => boolean;
@@ -209,4 +231,20 @@ export function score(outcome: BenchmarkRunOutcome, spec: ScoringSpec): Benchmar
   }
 
   return results;
+}
+
+/** Builds a runtime {@link ScoringSpec} from a serializable {@link BenchmarkScoringConfig}. */
+export function scoringConfigToSpec(config: BenchmarkScoringConfig): ScoringSpec {
+  return {
+    metrics: config.metrics.map((metric) => ({
+      name: metric.key,
+      value: metric.key,
+      unit: metric.unit,
+      ceiling: metric.ceiling,
+      floor: metric.floor,
+      higherIsBetter: metric.higherIsBetter,
+      weights: metric.weights,
+      trim: metric.trim,
+    })),
+  };
 }

@@ -24,7 +24,7 @@ import {
   selectParticipants,
 } from '@benchsdk/worker';
 import { NoAvailableParticipantsError } from './no-available-participants.js';
-import { higherIsBetter, lowerIsBetter, score, ScoringSpecError } from './scoring.js';
+import { higherIsBetter, lowerIsBetter, score, ScoringSpecError, scoringConfigToSpec } from './scoring.js';
 import type {
   BenchmarkClient,
   DefineStepOptions,
@@ -477,8 +477,12 @@ export async function runBenchmark<T extends BaseParticipant>(
     dashboardUrl = '';
   } else {
     if (identityIsOurs) {
+      const benchmarkConfig: JsonObject = config.scoring
+        ? { scoring: config.scoring as unknown as JsonObject }
+        : {};
       await client!.upsertBenchmark(config.benchmarkSlug, {
         name: config.benchmarkName,
+        ...(Object.keys(benchmarkConfig).length > 0 ? { config: benchmarkConfig } : {}),
       });
     }
 
@@ -526,9 +530,11 @@ export async function runBenchmark<T extends BaseParticipant>(
     participants: participantRecords,
     config: resolved,
   };
-  if (client && config.onScore) {
+  if (client && (config.onScore || config.scoring)) {
     try {
-      const spec = await config.onScore(lowerIsBetter, higherIsBetter);
+      const spec = config.onScore
+        ? await config.onScore(lowerIsBetter, higherIsBetter)
+        : scoringConfigToSpec(config.scoring!);
       const scored = score(outcome, spec);
       const run = {
         gitSha: process.env.GITHUB_SHA ?? getGitSha(),
@@ -540,7 +546,7 @@ export async function runBenchmark<T extends BaseParticipant>(
       };
       await client.submitRunSummary(config.benchmarkSlug, runId, { run, results: scored });
     } catch (err) {
-      // A ScoringSpecError means onScore itself is misconfigured (e.g. metric
+      // A ScoringSpecError means the scoring spec is misconfigured (e.g. metric
       // weights don't sum to 1.0) — an authoring bug, not a transient submit
       // failure, so it must fail the run rather than degrade to a warning.
       if (err instanceof ScoringSpecError) throw err;

@@ -37,7 +37,7 @@ import type {
   TaskStepRecord,
 } from '@benchsdk/api';
 import type { BaseParticipant } from '@benchsdk/worker';
-import type { HigherIsBetter, LowerIsBetter, ScoringSpec } from './scoring.js';
+import type { BenchmarkScoringConfig, HigherIsBetter, LowerIsBetter, ScoringSpec } from './scoring.js';
 
 /** How tasks are ordered across participants. */
 export type GroupBy = 'participant' | 'round';
@@ -237,12 +237,70 @@ export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
    * writers). This is the run-level counterpart to per-step `ctx.measure`.
    */
   onComplete?: (outcome: BenchmarkRunOutcome) => void | Promise<void>;
+  /**
+   * Serializable scoring spec uploaded to the platform. When provided without
+   * `onScore`, the runner computes the run summary from this spec automatically.
+   * The platform can recompute `compositeScore` from the same spec at read time.
+   */
+  scoring?: BenchmarkScoringConfig;
 }
 
 function assertPositiveInt(value: number | undefined, field: string): void {
   if (value === undefined) return;
   if (!Number.isInteger(value) || value < 1) {
     throw new Error(`${field} must be an integer >= 1 (got ${value})`);
+  }
+}
+
+function assertFiniteNumber(value: unknown, field: string): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`${field} must be a finite number (got ${value})`);
+  }
+  return value;
+}
+
+function validateBenchmarkScoringConfig(scoring: BenchmarkScoringConfig): void {
+  if (!Array.isArray(scoring.metrics) || scoring.metrics.length === 0) {
+    throw new Error('scoring.metrics must be a non-empty array');
+  }
+  const seen = new Set<string>();
+  let totalWeight = 0;
+  for (let i = 0; i < scoring.metrics.length; i++) {
+    const metric = scoring.metrics[i];
+    if (metric === null || typeof metric !== 'object' || Array.isArray(metric)) {
+      throw new Error(`scoring.metrics[${i}] must be an object`);
+    }
+    const key = metric.key;
+    if (typeof key !== 'string' || key.trim() === '') {
+      throw new Error(`scoring.metrics[${i}].key must be a non-empty string`);
+    }
+    if (seen.has(key)) {
+      throw new Error(`duplicate scoring metric key: ${key}`);
+    }
+    seen.add(key);
+    if (typeof metric.unit !== 'string' || metric.unit.trim() === '') {
+      throw new Error(`scoring.metrics[${i}].unit must be a non-empty string`);
+    }
+    assertFiniteNumber(metric.ceiling, `scoring.metrics[${i}].ceiling`);
+    if (metric.floor !== undefined) {
+      assertFiniteNumber(metric.floor, `scoring.metrics[${i}].floor`);
+    }
+    if (metric.weights === null || typeof metric.weights !== 'object' || Array.isArray(metric.weights)) {
+      throw new Error(`scoring.metrics[${i}].weights must be an object`);
+    }
+    const median = assertFiniteNumber(metric.weights.median, `scoring.metrics[${i}].weights.median`);
+    const p95 = assertFiniteNumber(metric.weights.p95, `scoring.metrics[${i}].weights.p95`);
+    const p99 = assertFiniteNumber(metric.weights.p99, `scoring.metrics[${i}].weights.p99`);
+    if (median < 0 || p95 < 0 || p99 < 0) {
+      throw new Error(`scoring.metrics[${i}].weights must be non-negative`);
+    }
+    totalWeight += median + p95 + p99;
+    if (metric.trim !== undefined) {
+      assertFiniteNumber(metric.trim, `scoring.metrics[${i}].trim`);
+    }
+  }
+  if (Math.abs(totalWeight - 1) > 0.01) {
+    throw new Error(`scoring metric weights must sum to 1.0 (got ${totalWeight.toFixed(3)})`);
   }
 }
 
@@ -295,6 +353,9 @@ export function defineBenchmarkConfig<T extends BaseParticipant = BaseParticipan
         throw new Error(`shape '${shapeName}' staggerDelayMs must be a number >= 0 (got ${shape.staggerDelayMs})`);
       }
     }
+  }
+  if (config.scoring !== undefined) {
+    validateBenchmarkScoringConfig(config.scoring);
   }
   return config;
 }

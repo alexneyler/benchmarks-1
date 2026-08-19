@@ -64,18 +64,24 @@ export const config = defineBenchmarkConfig({
   iterations: 10,
   concurrency: 1,
   participants: [{ name: 'local', requiredEnvVars: [] }],
+  scoring: {
+    metrics: [
+      { key: 'durationMs', unit: 'ms', ceiling: 1000, weights: { median: 0.7, p95: 0.2, p99: 0.1 } },
+    ],
+  },
 });
 
 export const task = defineTask(async ({ taskIndex, step, measure, log }) => {
   log(\`running task \${taskIndex}\`);
   // Declare named steps with \`step(...)\`; values flow between them via
   // closures and each step is recorded on the platform with its own timing.
+  const start = Date.now();
   await step('work', async () => {
     // Replace with your benchmark logic.
     await new Promise((resolve) => setTimeout(resolve, 100));
   });
   // \`measure(...)\` attaches metrics to the current step (or the task).
-  measure({ ok: true });
+  measure({ durationMs: Date.now() - start });
 });
 `;
 
