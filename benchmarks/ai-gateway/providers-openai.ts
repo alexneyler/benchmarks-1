@@ -21,8 +21,9 @@ import { resolveNeonHost } from './neon-host.js';
  * Responses API passthrough if it has one, since that's the least-translated
  * route (Responses is OpenAI's own format, so a gateway proxying it natively
  * adds no translation layer); fall back to `/chat/completions` only where no
- * Responses passthrough is documented.** Every gateway below turned out to
- * have one.
+ * Responses passthrough is documented.** Every gateway below except Novita
+ * turned out to have one; Novita is included via `/chat/completions` so the
+ * unsupported-model failure is still captured.
  *
  * Still worth a 1-iteration smoke test against real credentials before
  * fully trusting any of these — "confirmed against docs" isn't the same bar
@@ -139,6 +140,17 @@ export const providers: AIGatewayProviderConfig[] = [
     path: '/v1/responses/',
     buildHeaders: () => ({
       Authorization: `Bearer ${process.env.CONCENTRATE_AI_GATEWAY_API_KEY}`,
+    }),
+  },
+  {
+    name: 'novita',
+    requiredEnvVars: ['NOVITA_API_KEY'],
+    wireFormat: 'openai',
+    model: 'gpt-5.4-mini',
+    host: 'api.novita.ai',
+    path: '/openai/v1/chat/completions',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NOVITA_API_KEY}`,
     }),
   },
   {

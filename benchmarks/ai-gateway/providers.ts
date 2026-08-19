@@ -163,6 +163,28 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    name: 'novita',
+    requiredEnvVars: ['NOVITA_API_KEY'],
+    wireFormat: 'openai',
+    model: 'anthropic/claude-haiku-4.5',
+    host: 'api.novita.ai',
+    path: '/openai/v1/chat/completions',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NOVITA_API_KEY}`,
+    }),
+  },
+  {
+    name: 'ramp',
+    requiredEnvVars: ['RAMP_ROUTER_API_KEY'],
+    wireFormat: 'responses',
+    model: 'claude-haiku-4-5-20251001',
+    host: 'router-api.ramp.com',
+    path: '/v1/responses',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.RAMP_ROUTER_API_KEY}`,
+    }),
+  },
+  {
     name: 'neon',
     requiredEnvVars: ['NEON_AI_GATEWAY_BASE_URL', 'NEON_AI_GATEWAY_TOKEN'],
     wireFormat: 'anthropic',

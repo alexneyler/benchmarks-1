@@ -12,15 +12,15 @@ import { resolveNeonHost } from './neon-host.js';
  * Unlike the OpenAI family, only one gateway here gets the native
  * `wireFormat: 'gemini'` treatment: Cloudflare AI Gateway, confirmed via its
  * own `google-ai-studio` provider docs to proxy Google's real
- * `generateContent`/`streamGenerateContent` shape directly. The other four
- * gateways (OpenRouter, Vercel AI Gateway, LLM Gateway, Concentrate AI) show
- * no evidence of a genuine native Gemini passthrough — unlike their
- * confirmed native Anthropic Messages / OpenAI Responses passthroughs used
- * elsewhere in this repo — so they route through their own OpenAI-compatible
- * `/chat/completions` surface instead, translating Gemini's real response
- * into that shape. This isn't a shortcut: a native passthrough genuinely
- * isn't documented for those four, so the OpenAI-compatible surface is the
- * least-translated option actually available.
+ * `generateContent`/`streamGenerateContent` shape directly. The other
+ * gateways (OpenRouter, Vercel AI Gateway, LLM Gateway, Concentrate AI,
+ * Novita) show no evidence of a genuine native Gemini passthrough — unlike
+ * their confirmed native Anthropic Messages / OpenAI Responses
+ * passthroughs used elsewhere in this repo — so they route through their
+ * own OpenAI-compatible `/chat/completions` surface instead, translating
+ * Gemini's real response where they can or failing at runtime if they cannot.
+ * Ramp Router is included via `/v1/responses` and is expected to fail at
+ * runtime because it has no Gemini provider.
  *
  * Pydantic AI Gateway is deliberately excluded, not just unconfirmed: its
  * own docs state directly that its `gateway` provider mode for Google routes
@@ -147,6 +147,28 @@ export const providers: AIGatewayProviderConfig[] = [
     path: '/v1/chat/completions/',
     buildHeaders: () => ({
       Authorization: `Bearer ${process.env.CONCENTRATE_AI_GATEWAY_API_KEY}`,
+    }),
+  },
+  {
+    name: 'novita',
+    requiredEnvVars: ['NOVITA_API_KEY'],
+    wireFormat: 'openai',
+    model: 'gemini-3.6-flash',
+    host: 'api.novita.ai',
+    path: '/openai/v1/chat/completions',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NOVITA_API_KEY}`,
+    }),
+  },
+  {
+    name: 'ramp',
+    requiredEnvVars: ['RAMP_ROUTER_API_KEY'],
+    wireFormat: 'responses',
+    model: 'gemini-3.6-flash',
+    host: 'router-api.ramp.com',
+    path: '/v1/responses',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.RAMP_ROUTER_API_KEY}`,
     }),
   },
   {
