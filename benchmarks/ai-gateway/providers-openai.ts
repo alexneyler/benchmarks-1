@@ -201,6 +201,20 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    // ngrok AI Gateway's Responses API passthrough. The SDKs page lists the
+    // Responses API as supported, so we keep the OpenAI-family convention of
+    // `/v1/responses` rather than falling back to `/v1/chat/completions`.
+    name: 'ngrok',
+    requiredEnvVars: ['NGROK_AI_GATEWAY_API_KEY'],
+    wireFormat: 'responses',
+    model: 'gpt-5.4-mini',
+    host: 'gateway.ngrok.ai',
+    path: '/v1/responses',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NGROK_AI_GATEWAY_API_KEY}`,
+    }),
+  },
+  {
     // No-gateway baseline/control. OpenAI's own Responses API — its current
     // flagship endpoint (vs. the older Chat Completions surface) — is the
     // most direct route into OpenAI's own infrastructure.

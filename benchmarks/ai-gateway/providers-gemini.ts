@@ -19,7 +19,9 @@ import { resolveNeonHost } from './neon-host.js';
  * Messages / OpenAI Responses passthroughs used elsewhere in this repo — so
  * they route through their own OpenAI-compatible `/chat/completions` surface
  * instead, translating Gemini's real response where they can or failing at
- * runtime if they cannot.
+ * runtime if they cannot. ngrok AI Gateway is included here because its
+ * Google-provider docs explicitly say to call `/v1/chat/completions` with an
+ * OpenAI client and only change the model name.
  *
  * Pydantic AI Gateway, Novita, and Ramp Router are deliberately excluded:
  * Pydantic's own docs state that its `gateway` provider mode for Google routes
@@ -157,6 +159,21 @@ export const providers: AIGatewayProviderConfig[] = [
     path: `${resolveNeonHost().basePath}/gemini/v1beta/models/gemini-3-6-flash:streamGenerateContent?alt=sse`,
     buildHeaders: () => ({
       Authorization: `Bearer ${process.env.NEON_AI_GATEWAY_TOKEN}`,
+    }),
+  },
+  {
+    // ngrok AI Gateway's Google provider is explicitly OpenAI-Chat-Completions
+    // shaped. Docs warn that the native Gemini `generateContent` API and the
+    // OpenAI Responses API (`/v1/responses`) do not reach Google models, so
+    // this entry uses `wireFormat: 'openai'` against `/v1/chat/completions`.
+    name: 'ngrok',
+    requiredEnvVars: ['NGROK_AI_GATEWAY_API_KEY'],
+    wireFormat: 'openai',
+    model: 'gemini-3.6-flash',
+    host: 'gateway.ngrok.ai',
+    path: '/v1/chat/completions',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NGROK_AI_GATEWAY_API_KEY}`,
     }),
   },
   {
