@@ -1,5 +1,6 @@
 import type { AIGatewayProviderConfig } from './types.js';
 import { resolveNeonHost } from './neon-host.js';
+import { resolveNetlifyHost } from './netlify-host.js';
 
 /**
  * AI gateway benchmark configurations — Gemini family.
@@ -159,6 +160,20 @@ export const providers: AIGatewayProviderConfig[] = [
     path: `${resolveNeonHost().basePath}/gemini/v1beta/models/gemini-3-6-flash:streamGenerateContent?alt=sse`,
     buildHeaders: () => ({
       Authorization: `Bearer ${process.env.NEON_AI_GATEWAY_TOKEN}`,
+    }),
+  },
+  {
+    // Netlify AI Gateway proxies Google's native `streamGenerateContent` API at
+    // `${NETLIFY_AI_GATEWAY_BASE_URL}/v1beta/models/<model>:streamGenerateContent`
+    // with `?alt=sse` and `x-goog-api-key` auth.
+    name: 'netlify',
+    requiredEnvVars: ['NETLIFY_AI_GATEWAY_BASE_URL', 'NETLIFY_AI_GATEWAY_KEY'],
+    wireFormat: 'gemini',
+    model: 'gemini-3.6-flash',
+    host: resolveNetlifyHost().host,
+    path: `${resolveNetlifyHost().basePath}/v1beta/models/gemini-3.6-flash:streamGenerateContent?alt=sse`,
+    buildHeaders: () => ({
+      'x-goog-api-key': process.env.NETLIFY_AI_GATEWAY_KEY || '',
     }),
   },
   {

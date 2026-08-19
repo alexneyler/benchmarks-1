@@ -1,5 +1,6 @@
 import type { AIGatewayProviderConfig } from './types.js';
 import { resolveNeonHost } from './neon-host.js';
+import { resolveNetlifyHost } from './netlify-host.js';
 
 /**
  * AI gateway benchmark configurations.
@@ -193,6 +194,23 @@ export const providers: AIGatewayProviderConfig[] = [
     path: `${resolveNeonHost().basePath}/anthropic/v1/messages`,
     buildHeaders: () => ({
       Authorization: `Bearer ${process.env.NEON_AI_GATEWAY_TOKEN}`,
+      'anthropic-version': '2023-06-01',
+    }),
+  },
+  {
+    // Netlify AI Gateway exposes a native Anthropic Messages API passthrough at
+    // `${NETLIFY_AI_GATEWAY_BASE_URL}/v1/messages` with the upstream's
+    // `x-api-key` + `anthropic-version` headers; the base URL is either a
+    // site-scoped `https://<site>/.netlify/ai` or the account-scoped
+    // `https://ai-gateway.netlify.com`.
+    name: 'netlify',
+    requiredEnvVars: ['NETLIFY_AI_GATEWAY_BASE_URL', 'NETLIFY_AI_GATEWAY_KEY'],
+    wireFormat: 'anthropic',
+    model: 'claude-haiku-4-5',
+    host: resolveNetlifyHost().host,
+    path: `${resolveNetlifyHost().basePath}/v1/messages`,
+    buildHeaders: () => ({
+      'x-api-key': process.env.NETLIFY_AI_GATEWAY_KEY || '',
       'anthropic-version': '2023-06-01',
     }),
   },

@@ -1,5 +1,6 @@
 import type { AIGatewayProviderConfig } from './types.js';
 import { resolveNeonHost } from './neon-host.js';
+import { resolveNetlifyHost } from './netlify-host.js';
 
 /**
  * AI gateway benchmark configurations — OpenAI family.
@@ -198,6 +199,20 @@ export const providers: AIGatewayProviderConfig[] = [
     path: `${resolveNeonHost().basePath}/openai/v1/responses`,
     buildHeaders: () => ({
       Authorization: `Bearer ${process.env.NEON_AI_GATEWAY_TOKEN}`,
+    }),
+  },
+  {
+    // Netlify AI Gateway exposes a native OpenAI Responses API passthrough at
+    // `${NETLIFY_AI_GATEWAY_BASE_URL}/v1/responses` using `Authorization: Bearer
+    // <NETLIFY_AI_GATEWAY_KEY>`.
+    name: 'netlify',
+    requiredEnvVars: ['NETLIFY_AI_GATEWAY_BASE_URL', 'NETLIFY_AI_GATEWAY_KEY'],
+    wireFormat: 'responses',
+    model: 'gpt-5.4-mini',
+    host: resolveNetlifyHost().host,
+    path: `${resolveNetlifyHost().basePath}/v1/responses`,
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NETLIFY_AI_GATEWAY_KEY}`,
     }),
   },
   {

@@ -262,6 +262,10 @@
       "NEON_AI_GATEWAY_BASE_URL",
       "NEON_AI_GATEWAY_TOKEN"
     ],
+    "netlify": [
+      "NETLIFY_AI_GATEWAY_BASE_URL",
+      "NETLIFY_AI_GATEWAY_KEY"
+    ],
     "ngrok": [
       "NGROK_AI_GATEWAY_API_KEY"
     ],
@@ -298,6 +302,10 @@
       "NEON_AI_GATEWAY_BASE_URL",
       "NEON_AI_GATEWAY_TOKEN"
     ],
+    "netlify": [
+      "NETLIFY_AI_GATEWAY_BASE_URL",
+      "NETLIFY_AI_GATEWAY_KEY"
+    ],
     "ngrok": [
       "NGROK_AI_GATEWAY_API_KEY"
     ],
@@ -327,6 +335,10 @@
     "neon": [
       "NEON_AI_GATEWAY_BASE_URL",
       "NEON_AI_GATEWAY_TOKEN"
+    ],
+    "netlify": [
+      "NETLIFY_AI_GATEWAY_BASE_URL",
+      "NETLIFY_AI_GATEWAY_KEY"
     ],
     "ngrok": [
       "NGROK_AI_GATEWAY_API_KEY"
