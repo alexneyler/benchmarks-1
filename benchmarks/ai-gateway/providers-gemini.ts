@@ -9,25 +9,24 @@ import { resolveNeonHost } from './neon-host.js';
  * with the same model — `gemini-3.6-flash` — so the comparison is
  * apples-to-apples, and `gemini-direct` is the no-gateway control.
  *
- * Unlike the OpenAI family, only one gateway here gets the native
- * `wireFormat: 'gemini'` treatment: Cloudflare AI Gateway, confirmed via its
- * own `google-ai-studio` provider docs to proxy Google's real
- * `generateContent`/`streamGenerateContent` shape directly. The other
- * gateways (OpenRouter, Vercel AI Gateway, LLM Gateway, Concentrate AI,
- * Novita) show no evidence of a genuine native Gemini passthrough — unlike
- * their confirmed native Anthropic Messages / OpenAI Responses
- * passthroughs used elsewhere in this repo — so they route through their
- * own OpenAI-compatible `/chat/completions` surface instead, translating
- * Gemini's real response where they can or failing at runtime if they cannot.
- * Ramp Router is included via `/v1/responses` and is expected to fail at
- * runtime because it has no Gemini provider.
+ * Unlike the OpenAI family, only two gateways here get the native
+ * `wireFormat: 'gemini'` treatment: Cloudflare AI Gateway and Neon AI Gateway,
+ * confirmed via their own `google-ai-studio` provider docs (Cloudflare) and
+ * Neon AI Gateway docs to proxy Google's real `generateContent`/
+ * `streamGenerateContent` shape directly. The other gateways (OpenRouter,
+ * Vercel AI Gateway, LLM Gateway, and Concentrate AI) show no evidence of a
+ * genuine native Gemini passthrough — unlike their confirmed native Anthropic
+ * Messages / OpenAI Responses passthroughs used elsewhere in this repo — so
+ * they route through their own OpenAI-compatible `/chat/completions` surface
+ * instead, translating Gemini's real response where they can or failing at
+ * runtime if they cannot.
  *
- * Pydantic AI Gateway is deliberately excluded, not just unconfirmed: its
- * own docs state directly that its `gateway` provider mode for Google routes
- * to **Vertex AI**, not the native Gemini API — a genuinely different
- * serving stack than every other participant here (and than `gemini-direct`
- * itself), so including it would compare a different backend rather than
- * this gateway's overhead on the same one.
+ * Pydantic AI Gateway, Novita, and Ramp Router are deliberately excluded:
+ * Pydantic's own docs state that its `gateway` provider mode for Google routes
+ * to **Vertex AI**, not the native Gemini API, while Novita's catalog doesn't
+ * list Gemini models and Ramp Router has no Gemini provider. Including any of
+ * them would either compare a different backend or fail at runtime, so they're
+ * left out entirely rather than included just to error out.
  *
  * Still worth a 1-iteration smoke test against real credentials before
  * fully trusting any of these — "confirmed against docs" isn't the same bar
@@ -147,28 +146,6 @@ export const providers: AIGatewayProviderConfig[] = [
     path: '/v1/chat/completions/',
     buildHeaders: () => ({
       Authorization: `Bearer ${process.env.CONCENTRATE_AI_GATEWAY_API_KEY}`,
-    }),
-  },
-  {
-    name: 'novita',
-    requiredEnvVars: ['NOVITA_API_KEY'],
-    wireFormat: 'openai',
-    model: 'gemini-3.6-flash',
-    host: 'api.novita.ai',
-    path: '/openai/v1/chat/completions',
-    buildHeaders: () => ({
-      Authorization: `Bearer ${process.env.NOVITA_API_KEY}`,
-    }),
-  },
-  {
-    name: 'ramp',
-    requiredEnvVars: ['RAMP_ROUTER_API_KEY'],
-    wireFormat: 'responses',
-    model: 'gemini-3.6-flash',
-    host: 'router-api.ramp.com',
-    path: '/v1/responses',
-    buildHeaders: () => ({
-      Authorization: `Bearer ${process.env.RAMP_ROUTER_API_KEY}`,
     }),
   },
   {
