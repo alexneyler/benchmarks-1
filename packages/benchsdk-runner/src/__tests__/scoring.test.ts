@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { score, validateScoringSpec, ScoringSpecError, lowerIsBetter, higherIsBetter } from '../scoring';
+import { score, validateScoringSpec, ScoringSpecError, lowerIsBetter, higherIsBetter, scoringConfigToSpec } from '../scoring';
 import type { ScoringSpec } from '../scoring';
 import type { BenchmarkRunOutcome } from '../bench-config';
 import type { TaskResultRecord } from '@benchsdk/api';
@@ -121,5 +121,60 @@ describe('score with groupBy', () => {
 
     expect(results).toHaveLength(1);
     expect(results[0]).toMatchObject({ provider: 'aws-s3', skipped: true, successRate: 0 });
+  });
+});
+
+describe('scoringConfigToSpec success rule', () => {
+  const spec = scoringConfigToSpec({
+    success: { requireData: { verified: true } },
+    metrics: [{ key: 'forkMs', unit: 'ms', ceiling: 1000, weights: { median: 1, p95: 0, p99: 0 } }],
+  });
+
+  function record(taskIndex: number, status: string, data: Record<string, unknown>): TaskResultRecord {
+    return { taskIndex, status, data: data as TaskResultRecord['data'] };
+  }
+
+  it('excludes a record whose required data field does not match', () => {
+    const results = score(
+      {
+        participants: [
+          {
+            participant: 'tigris',
+            records: [
+              record(0, 'success', { verified: true, forkMs: 100 }),
+              record(1, 'success', { verified: false, forkMs: 900 }),
+            ],
+          },
+        ],
+      } as BenchmarkRunOutcome,
+      spec,
+    );
+
+    expect(results[0].successRate).toBe(0.5);
+    // Only the verified record's timing is aggregated.
+    expect(results[0].metrics[0].median).toBe(100);
+  });
+
+  it('counts every successful record when no success rule is declared', () => {
+    const plain = scoringConfigToSpec({
+      metrics: [{ key: 'forkMs', unit: 'ms', ceiling: 1000, weights: { median: 1, p95: 0, p99: 0 } }],
+    });
+    const results = score(
+      {
+        participants: [
+          {
+            participant: 'tigris',
+            records: [
+              record(0, 'success', { verified: true, forkMs: 100 }),
+              record(1, 'success', { verified: false, forkMs: 900 }),
+            ],
+          },
+        ],
+      } as BenchmarkRunOutcome,
+      plain,
+    );
+
+    expect(results[0].successRate).toBe(1);
+    expect(results[0].metrics[0].median).toBe(500);
   });
 });

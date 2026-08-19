@@ -3,7 +3,7 @@
  * OpenAI, Gemini, Kimi). Deliberately holds only what's identical across
  * every family — the probe task itself, phase/step shaping, and CLI
  * iteration-flag parsing — not the family's own identity (`benchmarkSlug`,
- * `providers`, `onScore`, `onComplete`), which each `*.bench.ts` file
+ * `providers`, `scoring`, `onComplete`), which each `*.bench.ts` file
  * declares directly via `defineBenchmarkConfig`, mirroring
  * `ai-gateway.bench.ts` (the Anthropic family, the original of the four).
  * Config/scoring intentionally isn't abstracted here even though it's
@@ -85,8 +85,15 @@ function phaseSteps(result: PhaseProbeResult): TaskStepRecord[] {
 }
 
 function probeData(result: PhaseProbeResult): JsonObject {
+  // The scored latency is reported under a phase-specific key (`coldE2eMs` /
+  // `warmTtftMs`) so cold and warm are separate metrics without a scoring-time
+  // phase filter.
+  const scoredLatencyMs = result.mode === 'cold' ? result.coldE2eMs ?? result.ttftMs : result.ttftMs;
   return {
     mode: result.mode,
+    ...(typeof scoredLatencyMs === 'number' && Number.isFinite(scoredLatencyMs)
+      ? { [result.mode === 'cold' ? 'coldE2eMs' : 'warmTtftMs']: scoredLatencyMs }
+      : {}),
     ...(result.outputTokens !== undefined ? { outputTokens: result.outputTokens } : {}),
     ...(result.outputTokensPerSec !== undefined ? { outputTokensPerSec: result.outputTokensPerSec } : {}),
     ...(result.resolvedProvider !== undefined ? { resolvedProvider: result.resolvedProvider } : {}),

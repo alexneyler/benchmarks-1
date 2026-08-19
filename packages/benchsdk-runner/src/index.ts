@@ -16,4 +16,4 @@ export { runBenchmark, parseCliArgs, mergeConfig } from './runner.js';
 export type { CliArgs } from './runner.js';
 export { run, runBenchmarkFile } from './cli.js';
 export { score, lowerIsBetter, higherIsBetter, validateScoringSpec, ScoringSpecError, scoringConfigToSpec } from './scoring.js';
-export type { ScoringSpec, MetricScoring, BenchmarkScoreResult, BenchmarkScoringConfig, BenchmarkScoringMetric, BenchmarkScoringWeights } from './scoring.js';
+export type { ScoringSpec, MetricScoring, BenchmarkScoreResult, BenchmarkScoringConfig, BenchmarkScoringMetric, BenchmarkScoringSuccess, BenchmarkScoringWeights } from './scoring.js';

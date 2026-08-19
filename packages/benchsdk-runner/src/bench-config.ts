@@ -269,6 +269,23 @@ function validateBenchmarkScoringConfig(scoring: BenchmarkScoringConfig): void {
   if (!Array.isArray(scoring.metrics) || scoring.metrics.length === 0) {
     throw new Error('scoring.metrics must be a non-empty array');
   }
+  if (scoring.success !== undefined) {
+    const requireData = scoring.success.requireData;
+    if (requireData === null || typeof requireData !== 'object' || Array.isArray(requireData)) {
+      throw new Error('scoring.success.requireData must be a plain object');
+    }
+    if (Object.keys(requireData).length === 0) {
+      throw new Error('scoring.success.requireData must declare at least one data field');
+    }
+    for (const [key, value] of Object.entries(requireData)) {
+      const type = typeof value;
+      if (type !== 'string' && type !== 'number' && type !== 'boolean') {
+        throw new Error(
+          `scoring.success.requireData.${key} must be a string, number, or boolean (got ${type})`,
+        );
+      }
+    }
+  }
   const seen = new Set<string>();
   let totalWeight = 0;
   for (let i = 0; i < scoring.metrics.length; i++) {

@@ -31,10 +31,23 @@ export interface BenchmarkScoringMetric {
   trim?: number;
 }
 
+/**
+ * Serializable counterpart to a `success` predicate: a record counts as
+ * successful only if it succeeded *and* every listed data field equals the
+ * given value (e.g. `{ verified: true }`, `{ actionsCompleted: 24 }`). Kept to
+ * equality on scalar data fields so the platform can express the same rule as
+ * a query predicate rather than replaying benchmark code.
+ */
+export interface BenchmarkScoringSuccess {
+  requireData: Record<string, string | number | boolean>;
+}
+
 /** Serializable scoring spec declared in a `*.bench.ts` file and uploaded to the platform. */
 export interface BenchmarkScoringConfig {
   /** Optional data key to group records by when computing summary rows (e.g. 'file_size'). */
   groupBy?: string;
+  /** Extra conditions a record must meet to count as successful. Default: `status === 'success'`. */
+  success?: BenchmarkScoringSuccess;
   metrics: BenchmarkScoringMetric[];
 }
 
@@ -285,9 +298,17 @@ export function scoringConfigToSpec(
   config: BenchmarkScoringConfig,
   dimensions?: Record<string, unknown>,
 ): ScoringSpec {
+  const success = config.success;
   return {
     ...(dimensions ? { dimensions: toJsonObject(dimensions) } : {}),
     ...(config.groupBy ? { groupBy: config.groupBy } : {}),
+    ...(success
+      ? {
+        success: (record: TaskResultRecord) =>
+          record.status === 'success' &&
+          Object.entries(success.requireData).every(([key, value]) => record.data?.[key] === value),
+      }
+      : {}),
     metrics: config.metrics.map((metric) => ({
       name: metric.key,
       value: metric.key,
