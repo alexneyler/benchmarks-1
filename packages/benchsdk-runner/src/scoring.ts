@@ -33,11 +33,15 @@ export interface BenchmarkScoringMetric {
 
 /** Serializable scoring spec declared in a `*.bench.ts` file and uploaded to the platform. */
 export interface BenchmarkScoringConfig {
+  /** Optional data key to group records by when computing summary rows (e.g. 'file_size'). */
+  groupBy?: string;
   metrics: BenchmarkScoringMetric[];
 }
 
 export interface ScoringSpec {
   dimensions?: Record<string, unknown>;
+  /** Optional data key that groups task records into separate summary rows. */
+  groupBy?: string;
   success?: (record: TaskResultRecord) => boolean;
   metrics: MetricScoring[];
 }
@@ -187,47 +191,88 @@ export function validateScoringSpec(spec: ScoringSpec): void {
   }
 }
 
+function groupRecordsByKey(
+  records: TaskResultRecord[],
+  key: string,
+): { value: unknown; records: TaskResultRecord[] }[] {
+  const groups = new Map<string, { value: unknown; records: TaskResultRecord[] }>();
+  for (const record of records) {
+    const raw = record.data?.[key];
+    const value = raw === undefined ? undefined : raw;
+    const mapKey = value === undefined ? '__undefined__' : JSON.stringify(value);
+    let group = groups.get(mapKey);
+    if (!group) {
+      group = { value, records: [] };
+      groups.set(mapKey, group);
+    }
+    group.records.push(record);
+  }
+  return Array.from(groups.values());
+}
+
+function scoreGroup(
+  records: TaskResultRecord[],
+  spec: ScoringSpec,
+  baseDimensions: JsonObject,
+  groupKey: string | undefined,
+  groupValue: unknown,
+  provider: string,
+): BenchmarkScoreResult {
+  const successFilter = spec.success ?? ((r: TaskResultRecord) => r.status === 'success');
+  const passing = records.filter(successFilter);
+  const successRate = records.length === 0 ? 0 : passing.length / records.length;
+  const skipped = records.length === 0;
+
+  let metricScoresSum = 0;
+  const metrics: BenchmarkScoreResult['metrics'] = [];
+
+  for (const metric of spec.metrics) {
+    const samples = collectSamples(metric, passing);
+    // A metric with no data points should not contribute to the composite
+    // score; otherwise an empty lower-is-better metric would be scored as 100.
+    if (samples.length === 0) {
+      continue;
+    }
+    const { median, p95, p99 } = computeStats(samples, metric.trim ?? 0.05);
+    const metricScore =
+      metric.weights.median * scoreStat(median, metric) +
+      metric.weights.p95 * scoreStat(p95, metric) +
+      metric.weights.p99 * scoreStat(p99, metric);
+    metricScoresSum += metricScore;
+
+    metrics.push({ name: metric.name, unit: metric.unit, median, p95, p99 });
+  }
+
+  const compositeScore = successRate === 0 ? 0 : Math.round(metricScoresSum * successRate * 100) / 100;
+
+  const dimensions = toJsonObject({
+    ...baseDimensions,
+    ...(groupKey !== undefined && groupValue !== undefined ? { [groupKey]: groupValue } : {}),
+  });
+
+  return {
+    provider,
+    dimensions,
+    metrics,
+    compositeScore,
+    successRate,
+    skipped,
+  };
+}
+
 export function score(outcome: BenchmarkRunOutcome, spec: ScoringSpec): BenchmarkScoreResult[] {
   validateScoringSpec(spec);
-  const successFilter = spec.success ?? ((r: TaskResultRecord) => r.status === 'success');
-  const dimensions = toJsonObject(spec.dimensions ?? {});
+  const baseDimensions = toJsonObject(spec.dimensions ?? {});
   const results: BenchmarkScoreResult[] = [];
 
   for (const { participant, records } of outcome.participants) {
-    const passing = records.filter(successFilter);
-    const successRate = records.length === 0 ? 0 : passing.length / records.length;
-    const skipped = records.length === 0;
+    const groups = spec.groupBy
+      ? groupRecordsByKey(records, spec.groupBy)
+      : [{ value: undefined, records }];
 
-    let metricScoresSum = 0;
-    const metrics: BenchmarkScoreResult['metrics'] = [];
-
-    for (const metric of spec.metrics) {
-      const samples = collectSamples(metric, passing);
-      // A metric with no data points should not contribute to the composite
-      // score; otherwise an empty lower-is-better metric would be scored as 100.
-      if (samples.length === 0) {
-        continue;
-      }
-      const { median, p95, p99 } = computeStats(samples, metric.trim ?? 0.05);
-      const metricScore =
-        metric.weights.median * scoreStat(median, metric) +
-        metric.weights.p95 * scoreStat(p95, metric) +
-        metric.weights.p99 * scoreStat(p99, metric);
-      metricScoresSum += metricScore;
-
-      metrics.push({ name: metric.name, unit: metric.unit, median, p95, p99 });
+    for (const group of groups) {
+      results.push(scoreGroup(group.records, spec, baseDimensions, spec.groupBy, group.value, participant));
     }
-
-    const compositeScore = successRate === 0 ? 0 : Math.round(metricScoresSum * successRate * 100) / 100;
-
-    results.push({
-      provider: participant,
-      dimensions,
-      metrics,
-      compositeScore,
-      successRate,
-      skipped,
-    });
   }
 
   return results;
@@ -240,6 +285,7 @@ export function scoringConfigToSpec(
 ): ScoringSpec {
   return {
     ...(dimensions ? { dimensions: toJsonObject(dimensions) } : {}),
+    ...(config.groupBy ? { groupBy: config.groupBy } : {}),
     metrics: config.metrics.map((metric) => ({
       name: metric.key,
       value: metric.key,
