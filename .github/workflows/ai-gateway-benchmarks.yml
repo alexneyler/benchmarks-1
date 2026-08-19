@@ -41,8 +41,14 @@ on:
           - llmgateway
           - pydantic-ai-gateway
           - concentrate-ai-gateway
+          - novita
+          - ramp
+          - neon
           - ngrok
           - anthropic-direct
+          - openai-direct
+          - gemini-direct
+          - kimi-direct
       dry_run:
         description: 'Run without ingesting or committing results'
         required: false
@@ -139,10 +145,10 @@ jobs:
 
           if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_name }}" = "schedule" ]; then
             ITERATIONS="10"
-          elif [ -n "$FAMILY_ITERATIONS" ]; then
-            ITERATIONS="$FAMILY_ITERATIONS"
           elif [ -n "$INPUT_ITERATIONS" ]; then
             ITERATIONS="$INPUT_ITERATIONS"
+          elif [ -n "$FAMILY_ITERATIONS" ]; then
+            ITERATIONS="$FAMILY_ITERATIONS"
           else
             ITERATIONS="10"
           fi
