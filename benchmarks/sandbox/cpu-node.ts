@@ -274,10 +274,7 @@ export async function runCpuNodeBenchmark(
       replicateMs.push(performance.now() - rStart);
       if (sandbox) {
         try {
-          await Promise.race([
-            sandbox.destroy(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('destroy timeout')), destroyTimeoutMs)),
-          ]);
+          await withTimeout(sandbox.destroy(), destroyTimeoutMs, 'destroy timeout');
         } catch (err) {
           console.warn('    [cleanup] destroy failed: ' + formatError(err));
         }
