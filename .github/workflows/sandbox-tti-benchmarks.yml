@@ -72,7 +72,7 @@ jobs:
           - lightning
           - modal
           - microsandbox
-          # - miosa
+          - miosa
           - mosaic
           # - namespace
           - northflank

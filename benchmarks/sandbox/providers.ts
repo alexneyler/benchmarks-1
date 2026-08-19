@@ -16,7 +16,7 @@ import { isorun } from '@computesdk/isorun';
 import { lightning } from '@computesdk/lightning';
 import { modal } from '@computesdk/modal';
 import { microsandbox } from '@computesdk/microsandbox';
-// import { miosa } from '@computesdk/miosa';
+import { miosa } from '@computesdk/miosa';
 import { mosaic } from '@computesdk/mosaic';
 import { namespace } from '@computesdk/namespace';
 import { northflank } from '@computesdk/northflank';

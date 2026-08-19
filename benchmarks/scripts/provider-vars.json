@@ -55,6 +55,9 @@
     "microsandbox": [
       "MSB_API_KEY"
     ],
+    "miosa": [
+      "MIOSA_API_KEY"
+    ],
     "mosaic": [
       "MOSAIC_API_URL",
       "MOSAIC_API_TOKEN"

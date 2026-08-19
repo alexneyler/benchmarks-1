@@ -51,7 +51,7 @@ jobs:
           - lightning
           - modal
           - microsandbox
-          # - miosa
+          - miosa
           - mosaic
           - northflank
           - opencomputer
