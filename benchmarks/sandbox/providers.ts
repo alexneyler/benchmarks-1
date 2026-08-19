@@ -15,6 +15,8 @@ import { isorun } from '@computesdk/isorun';
 // import { lelantos } from '@computesdk/lelantos';
 import { lightning } from '@computesdk/lightning';
 import { modal } from '@computesdk/modal';
+import { microsandbox } from '@computesdk/microsandbox';
+import { miosa } from '@computesdk/miosa';
 import { mosaic } from '@computesdk/mosaic';
 import { namespace } from '@computesdk/namespace';
 import { northflank } from '@computesdk/northflank';
@@ -147,6 +149,17 @@ export const providers: ProviderConfig[] = [
     name: 'modal',
     requiredEnvVars: ['MODAL_TOKEN_ID', 'MODAL_TOKEN_SECRET'],
     createCompute: () => modal({ tokenId: process.env.MODAL_TOKEN_ID!, tokenSecret: process.env.MODAL_TOKEN_SECRET!, scalableSandboxes: true }),
+  },
+  {
+    name: 'microsandbox',
+    requiredEnvVars: ['MSB_API_KEY'],
+    createCompute: () => microsandbox({ apiKey: process.env.MSB_API_KEY! }),
+    sandboxOptions: { image: 'node:22' },
+  },
+  {
+    name: 'miosa',
+    requiredEnvVars: ['MIOSA_API_KEY'],
+    createCompute: () => miosa({ apiKey: process.env.MIOSA_API_KEY! }),
   },
   {
     name: 'mosaic',
