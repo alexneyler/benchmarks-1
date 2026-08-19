@@ -28,6 +28,7 @@ function formatProviderName(s: string): string {
   if (s === 'novita') return 'Novita';
   if (s === 'ramp') return 'Ramp Router';
   if (s === 'neon') return 'Neon AI Gateway';
+  if (s === 'ngrok') return 'ngrok AI Gateway';
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 

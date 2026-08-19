@@ -197,6 +197,21 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    // ngrok AI Gateway proxies Anthropic's native Messages API directly at
+    // `/v1/messages` using the upstream's `x-api-key` + `anthropic-version`
+    // headers; the access key is the ngrok.ai gateway key itself.
+    name: 'ngrok',
+    requiredEnvVars: ['NGROK_AI_GATEWAY_API_KEY'],
+    wireFormat: 'anthropic',
+    model: 'claude-haiku-4-5',
+    host: 'gateway.ngrok.ai',
+    path: '/v1/messages',
+    buildHeaders: () => ({
+      'x-api-key': process.env.NGROK_AI_GATEWAY_API_KEY || '',
+      'anthropic-version': '2023-06-01',
+    }),
+  },
+  {
     // No-gateway baseline/control.
     name: 'anthropic-direct',
     requiredEnvVars: ['ANTHROPIC_API_KEY'],
