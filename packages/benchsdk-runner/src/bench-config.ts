@@ -156,6 +156,13 @@ export interface ParticipantRecords {
 /** The orchestration knobs a run actually used, after CLI overrides. */
 export interface ResolvedRunConfig {
   iterations: number;
+  /**
+   * Iterations each phase runs, when the benchmark declares `phases` and
+   * `--iterations` overrode their configured counts. A phase is one arm of a
+   * comparison (a file size), so the flag scales every arm equally rather than
+   * dividing a total between them.
+   */
+  phaseIterations?: number;
   concurrency: number;
   staggerDelayMs: number;
   groupBy: GroupBy;

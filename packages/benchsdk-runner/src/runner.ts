@@ -279,12 +279,20 @@ export function mergeConfig<T extends BaseParticipant>(
   config: BenchmarkConfig<T>,
   args: CliArgs,
 ): ResolvedRunConfig {
-  const phaseTotal = config.phases?.reduce((sum, p) => sum + p.iterations, 0);
-  if (phaseTotal !== undefined && args.iterations !== undefined) {
-    console.warn('--iterations is ignored because this benchmark declares phases.');
-  }
+  // `--iterations` applies per phase: phases are the arms of one comparison, so
+  // scaling them equally keeps the arms comparable, where splitting a total
+  // between them would shrink each arm as arms are added.
+  const phaseCount = config.phases?.length;
+  const phaseIterations = phaseCount !== undefined ? args.iterations : undefined;
+  const phaseTotal =
+    phaseCount !== undefined
+      ? (phaseIterations !== undefined
+          ? phaseIterations * phaseCount
+          : config.phases!.reduce((sum, p) => sum + p.iterations, 0))
+      : undefined;
   const resolved: ResolvedRunConfig = {
     iterations: phaseTotal ?? args.iterations ?? config.iterations ?? 1,
+    phaseIterations,
     concurrency: args.concurrency ?? config.concurrency ?? 1,
     staggerDelayMs: args.staggerDelayMs ?? config.staggerDelayMs ?? 0,
     groupBy: args.groupBy ?? config.groupBy ?? 'participant',
@@ -307,21 +315,24 @@ interface Slot<T extends BaseParticipant = BaseParticipant> {
 
 /**
  * Flattens a config into an ordered list of task slots. With `phases`, each
- * phase contributes `iterations` slots tagged with its name (framework owns
- * the phase boundary — no index arithmetic in the task). Without phases, the
- * task is repeated `iterations` times.
+ * phase contributes its own iterations' worth of slots tagged with its name
+ * (framework owns the phase boundary — no index arithmetic in the task).
+ * Without phases, the task is repeated `iterations` times.
  */
 function buildSchedule<T extends BaseParticipant>(
   config: BenchmarkConfig<T>,
-  iterations: number,
+  resolved: ResolvedRunConfig,
   task: BenchmarkTask<T>,
 ): Slot<T>[] {
   if (config.phases?.length) {
     return config.phases.flatMap((phase) =>
-      Array.from({ length: phase.iterations }, () => ({ phase: phase.name, task })),
+      Array.from({ length: resolved.phaseIterations ?? phase.iterations }, () => ({
+        phase: phase.name,
+        task,
+      })),
     );
   }
-  return Array.from({ length: iterations }, () => ({ phase: undefined, task }));
+  return Array.from({ length: resolved.iterations }, () => ({ phase: undefined, task }));
 }
 
 type OnResult = (record: TaskResultRecord, meta: { iterations: number; participant: string }) => void;
@@ -446,7 +457,7 @@ export async function runBenchmark<T extends BaseParticipant>(
     client = createBenchmarkClient({ baseUrl, apiKey });
   }
 
-  const schedule = buildSchedule(config, resolved.iterations, task);
+  const schedule = buildSchedule(config, resolved, task);
   const totalTasks = schedule.length;
 
   const concurrencyLabel = resolved.groupBy === 'round' ? 'n/a (round mode)' : String(resolved.concurrency);

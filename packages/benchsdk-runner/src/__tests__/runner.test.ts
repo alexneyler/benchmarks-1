@@ -157,18 +157,17 @@ describe('mergeConfig', () => {
     expect(mergeConfig(withDefaults, { providers: ['modal'] }).providers).toEqual(['modal']);
   });
 
-  it('derives iterations from phases (sum) and ignores --iterations with a warning', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it('derives iterations from phases (sum), and applies --iterations to each phase', () => {
     const phased: BenchmarkConfig = {
       benchmarkSlug: 's',
       benchmarkName: 'n',
       phases: [{ name: 'cold', iterations: 3 }, { name: 'warm', iterations: 2 }],
       participants: [],
     };
-    expect(mergeConfig(phased, {}).iterations).toBe(5);
-    expect(mergeConfig(phased, { iterations: 99 }).iterations).toBe(5);
-    expect(warn).toHaveBeenCalled();
-    warn.mockRestore();
+    expect(mergeConfig(phased, {})).toMatchObject({ iterations: 5, phaseIterations: undefined });
+    // Phases are the arms of one comparison, so the flag scales every arm
+    // rather than being split between them.
+    expect(mergeConfig(phased, { iterations: 10 })).toMatchObject({ iterations: 20, phaseIterations: 10 });
   });
 });
 
@@ -550,6 +549,28 @@ describe('runBenchmark', () => {
       { i: 1, phase: 'cold' },
       { i: 2, phase: 'warm' },
     ]);
+  });
+
+  it('participant mode: --iterations runs that many iterations of every phase', async () => {
+    const seenPhases: (string | undefined)[] = [];
+    const task = vi.fn(async (ctx: any) => {
+      seenPhases.push(ctx.phase);
+      return {};
+    });
+
+    await runBenchmark(
+      {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        phases: [{ name: '1MB', iterations: 2 }, { name: '16MB', iterations: 2 }],
+        participants: [participants[0]],
+      },
+      defineTask(task),
+      ['--iterations', '3'],
+    );
+
+    expect(calls.createRun[0][1].totalTasks).toBe(6);
+    expect(seenPhases).toEqual(['1MB', '1MB', '1MB', '16MB', '16MB', '16MB']);
   });
 
   it('participant mode: a failing task keeps its phase tag and TaskError data on the record', async () => {
