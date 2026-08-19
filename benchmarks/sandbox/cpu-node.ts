@@ -351,8 +351,11 @@ function buildPayload(): Payload | PayloadErr {
   if (!fs.existsSync(BENCH_SCRIPT_PATH)) {
     return { ok: false, error: 'Workload script missing on disk: ' + BENCH_SCRIPT_PATH };
   }
+  if (!fs.existsSync(BENCH_STDOUT_PATH)) {
+    return { ok: false, error: 'Stdout helper missing on disk: ' + BENCH_STDOUT_PATH };
+  }
   const scriptContent = fs.readFileSync(BENCH_SCRIPT_PATH, 'utf8');
-  const stdoutContent = fs.existsSync(BENCH_STDOUT_PATH) ? fs.readFileSync(BENCH_STDOUT_PATH, 'utf8') : '';
+  const stdoutContent = fs.readFileSync(BENCH_STDOUT_PATH, 'utf8');
 
   return {
     ok: true,

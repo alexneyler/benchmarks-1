@@ -106,6 +106,7 @@ jobs:
           (github.event.inputs.provider == '' || contains(format(',{0},', github.event.inputs.provider), format(',{0},', matrix.provider)))
         env:
           PROVIDER: ${{ matrix.provider }}
+          ITERATIONS: ${{ github.event.inputs.iterations || '3' }}
         run: |
           COMMON_KEYS='BENCHMARKS_PLATFORM_API_KEY'
           case "$PROVIDER" in
@@ -154,7 +155,7 @@ jobs:
           RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           pnpm exec -- tsx packages/benchsdk-runner/dist/bin.js run benchmarks/sandbox/cpu-node.bench.ts \
             --provider "$PROVIDER" \
-            --iterations ${{ github.event.inputs.iterations || '3' }} \
+            --iterations "$ITERATIONS" \
             --run-key "$RUN_KEY" \
             ${{ (github.event_name == 'push' || github.event.inputs.dry_run == 'true') && '--no-ingest' || '' }}
       - name: Upload results
