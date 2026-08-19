@@ -156,11 +156,11 @@ export const providers: ProviderConfig[] = [
     createCompute: () => microsandbox({ apiKey: process.env.MSB_API_KEY! }),
     sandboxOptions: { image: 'node:22' },
   },
-  // {
-  //   name: 'miosa',
-  //   requiredEnvVars: ['MIOSA_API_KEY'],
-  //   createCompute: () => miosa({ apiKey: process.env.MIOSA_API_KEY! }),
-  // },
+  {
+    name: 'miosa',
+    requiredEnvVars: ['MIOSA_API_KEY'],
+    createCompute: () => miosa({ apiKey: process.env.MIOSA_API_KEY! }),
+  },
   {
     name: 'mosaic',
     requiredEnvVars: ['MOSAIC_API_URL', 'MOSAIC_API_TOKEN'],
