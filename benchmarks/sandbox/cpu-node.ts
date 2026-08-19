@@ -78,6 +78,33 @@ export interface CpuNodeBenchmarkResult {
   skipReason?: string;
 }
 
+// Schema-compliant shape written to results/cpu_node/*.json.
+export interface MetricSummary {
+  median: number;
+  p95?: number;
+  p99?: number;
+  min?: number;
+  max?: number;
+  avg?: number;
+}
+
+export interface SerializedCpuNodeBenchmarkResult {
+  provider: string;
+  suite: 'cpu-node';
+  mode: 'cpu-node';
+  iterations: CpuNodeWorkloadResult[];
+  summary: { totalMs: MetricSummary };
+  wallClockMs: number;
+  replicateMs: number[];
+  compositeScore: number;
+  successRate: number;
+  n: number;
+  scoreBeforeReliability: number;
+  meta: CpuNodeWorkloadMeta;
+  skipped?: boolean;
+  skipReason?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Scoring
 // ---------------------------------------------------------------------------
@@ -275,8 +302,9 @@ export async function runCpuNodeBenchmark(
 // ---------------------------------------------------------------------------
 
 export async function writeCpuNodeResultsJson(results: CpuNodeBenchmarkResult[], outPath: string): Promise<void> {
-  const cleanResults = results.map(r => ({
+  const cleanResults: SerializedCpuNodeBenchmarkResult[] = results.map(r => ({
     provider: r.provider,
+    suite: r.suite,
     mode: r.mode,
     iterations: r.iterations.map(i => {
       if (i.ok) {
@@ -297,20 +325,21 @@ export async function writeCpuNodeResultsJson(results: CpuNodeBenchmarkResult[],
       };
     }),
     summary: {
-      median: round(r.summary.median),
-      p95: round(r.summary.p95),
-      p99: round(r.summary.p99),
-      min: round(r.summary.min),
-      max: round(r.summary.max),
-      successRate: round(r.summary.successRate),
-      n: r.summary.n,
-      scoreBeforeReliability: round(r.summary.scoreBeforeReliability),
-      compositeScore: round(r.summary.compositeScore),
-      meta: r.summary.meta,
+      totalMs: {
+        median: round(r.summary.median),
+        p95: round(r.summary.p95),
+        p99: round(r.summary.p99),
+        min: round(r.summary.min),
+        max: round(r.summary.max),
+      },
     },
     wallClockMs: round(r.wallClockMs),
     replicateMs: r.replicateMs.map(round),
     compositeScore: round(r.compositeScore),
+    successRate: round(r.summary.successRate),
+    n: r.summary.n,
+    scoreBeforeReliability: round(r.summary.scoreBeforeReliability),
+    meta: r.summary.meta,
     ...(r.skipped ? { skipped: r.skipped, skipReason: r.skipReason } : {}),
   }));
 

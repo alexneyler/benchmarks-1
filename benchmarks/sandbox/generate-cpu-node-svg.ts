@@ -6,14 +6,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SUITE_CONFIG, type CpuNodeBenchmarkResult } from './cpu-node.js';
+import { SUITE_CONFIG, type SerializedCpuNodeBenchmarkResult } from './cpu-node.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
 const RESULTS_DIR = path.join(ROOT, 'results');
 const OUT_DIR = ROOT;
 
-function readLatest(): CpuNodeBenchmarkResult[] | null {
+function readLatest(): SerializedCpuNodeBenchmarkResult[] | null {
   const dir = path.join(RESULTS_DIR, 'cpu_node');
   const f = path.join(dir, 'latest.json');
   if (!fs.existsSync(f)) return null;
@@ -69,7 +69,7 @@ function generateSvg(): string {
     const y = HEADER_H + 8 + i * ROW;
     const r = visible[i];
     const w = Math.max(2, (r.compositeScore / 100) * barW);
-    const sublabel = 'n=' + r.summary.n + ' ' + suite.unit + ' ceiling=' + suite.ceiling;
+    const sublabel = 'n=' + r.n + ' ' + suite.unit + ' ceiling=' + suite.ceiling;
     parts.push('<text x="' + labelX + '" y="' + (y + 4) + '" font-size="13" fill="#1e293b">' + escapeXml(r.provider) + '</text>');
     parts.push('<rect x="' + barX + '" y="' + (y - 10) + '" width="' + barW + '" height="14" fill="#e2e8f0"/>');
     parts.push('<rect x="' + barX + '" y="' + (y - 10) + '" width="' + w + '" height="14" fill="' + color(r.compositeScore) + '"/>');

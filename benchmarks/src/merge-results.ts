@@ -51,7 +51,9 @@ type GenericBenchmarkResult = {
   skipped?: boolean;
   skipReason?: string;
   iterations: any[];
-  summary: { median: number; n: number };
+  successRate?: number;
+  n?: number;
+  summary: Record<string, { median?: number } | Record<string, { median?: number }>>;
 };
 
 // Benchmark suite IDs for the standalone benchmarks
@@ -786,8 +788,9 @@ function printHpcResultsTable(results: GenericBenchmarkResult[], suiteDir: strin
     const ok = (r.iterations || []).filter(it => !(it as any).error && (it as any).ok).length;
     const total = (r.iterations || []).length;
     const score = r.compositeScore !== undefined ? r.compositeScore.toFixed(1) : '--';
-    const median = r.summary?.median != null ? r.summary.median.toFixed(1) : '--';
-    console.log([String(i + 1).padEnd(4), r.provider.padEnd(14), score.padEnd(8), median.padEnd(12), unit.padEnd(12), String(r.summary?.n ?? 0).padEnd(4), `${ok}/${total} OK`.padEnd(10)].join(' | '));
+    const totalMs = (r.summary as any)?.totalMs;
+    const median = typeof totalMs?.median === 'number' ? totalMs.median.toFixed(1) : '--';
+    console.log([String(i + 1).padEnd(4), r.provider.padEnd(14), score.padEnd(8), median.padEnd(12), unit.padEnd(12), String(r.n ?? 0).padEnd(4), `${ok}/${total} OK`.padEnd(10)].join(' | '));
   }
   console.log('='.repeat(95));
 }
