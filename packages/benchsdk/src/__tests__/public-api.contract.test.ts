@@ -1421,25 +1421,47 @@ describe('public API surface and type exports', () => {
 
   it('VAL-SDK-090: built barrel re-exports exactly the public type set and excludes internal types', () => {
     // Pin the actual shipped surface by reading the built dist/index.d.ts
-    // declarations rather than regex-parsing the source barrel. This catches
-    // drift between the source export list and what consumers receive.
+    // declarations. The split into @benchsdk/api and @benchsdk/worker means the
+    // barrel can contain both local type declarations and re-exports from workspace
+    // packages, so we gather all exported type names across the file.
     const distDecl = readFileSync(join(here, '..', '..', 'dist', 'index.d.ts'), 'utf8');
 
-    // The built barrel emits a single `export { ... }` statement. Type-only
-    // re-exports are prefixed with `type `; parse those to recover the exact
-    // exported type set and compare it against the expected surface.
-    const exportMatch = distDecl.match(/export\s*\{([^}]*)\}/);
-    expect(exportMatch).not.toBeNull();
-    const exportedTypeNames = exportMatch![1]
-      .split(',')
-      .map((entry) => entry.trim())
-      .filter((entry) => entry.startsWith('type '))
-      .map((entry) => entry.slice('type '.length).trim())
-      .filter(Boolean);
-
     const expectedTypes = [...TYPES_EXPORTS, ...REPORTER_EXPORTS, ...METRICS_EXPORTS];
+    const expectedTypeSet = new Set(expectedTypes);
+
+    const exportedTypeNames: string[] = [];
+
+    // export { type A, B } or export { A, B } from 'pkg'
+    for (const match of distDecl.matchAll(/export\s+(?:type\s*)?\{([^}]+)\}(?:\s*from\s*['"][^'"]+['"])?\s*;?/g)) {
+      const blockIsTypeOnly = match[0].startsWith('export type {');
+      for (let entry of match[1].split(',')) {
+        entry = entry.trim();
+        if (!entry) continue;
+        // strip optional `type` prefix and `as` aliases
+        const name = entry
+          .replace(/^type\s+/, '')
+          .replace(/\s+as\s+.*/, '')
+          .trim();
+        if (entry.startsWith('type ') || blockIsTypeOnly) {
+          exportedTypeNames.push(name);
+        } else if (expectedTypeSet.has(name)) {
+          // Re-exports from workspace packages are not always prefixed with `type`
+          // in declaration emit. Treat names that are part of the expected
+          // public type surface as type exports.
+          exportedTypeNames.push(name);
+        }
+      }
+    }
+
+    // export interface X / export type X = ... (top-level declarations)
+    for (const match of distDecl.matchAll(/export\s+(?:type\s+(\w+)|interface\s+(\w+))/g)) {
+      exportedTypeNames.push(match[1] ?? match[2]);
+    }
+
+    const uniqueExportedTypeNames = [...new Set(exportedTypeNames)].sort();
+
     // The exported type set must match the expected surface exactly.
-    expect(exportedTypeNames.slice().sort()).toEqual([...expectedTypes].sort());
+    expect(uniqueExportedTypeNames).toEqual([...expectedTypes].sort());
 
     // Every expected type must also appear as a declaration in the .d.ts.
     for (const name of expectedTypes) {
@@ -1448,7 +1470,7 @@ describe('public API surface and type exports', () => {
 
     // Internal helper types must never be surfaced by the built barrel.
     for (const internal of INTERNAL_TYPES) {
-      expect(exportedTypeNames).not.toContain(internal);
+      expect(uniqueExportedTypeNames).not.toContain(internal);
     }
 
     // The internal types do exist in types.ts, they are just not surfaced.
