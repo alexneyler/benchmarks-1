@@ -6,7 +6,6 @@ const SITE_LOGO_DARK = 'https://logos.computesdk.com/api/svg/computesdk/raw/logo
 
 export const Leaderboard: FC<LeaderboardData> = ({
   title,
-  subtitle,
   providers,
   sponsors,
 }) => {
@@ -30,7 +29,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const RANK_BG = '#1f2937';
   const RANK_TEXT = '#6b7280';
   const BAR_BG = '#1f2937';
-  const BAR_FILL = '#3b82f6';
+  const BAR_FILL = '#22c55e';
   const TICKER_BG = '#0b1120';
 
   const rankOpacityFor = (end: number) =>
@@ -69,7 +68,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
         style={{
           position: 'absolute',
           left: 80,
-          top: 50,
+          top: 34,
           width: 150,
           height: 32,
           objectFit: 'contain',
@@ -79,26 +78,14 @@ export const Leaderboard: FC<LeaderboardData> = ({
         style={{
           position: 'absolute',
           left: 254,
-          top: 42,
-          fontSize: 48,
+          top: 28,
+          fontSize: 44,
           fontWeight: 800,
           margin: 0,
         }}
       >
         {title}
       </h1>
-      <p
-        style={{
-          position: 'absolute',
-          left: 254,
-          top: 100,
-          fontSize: 20,
-          color: MUTED,
-          margin: 0,
-        }}
-      >
-        {subtitle}
-      </p>
 
       {topProviders.map((provider) => {
         const y = TOP + (provider.rank - 1) * ROW_HEIGHT;
@@ -209,11 +196,11 @@ export const Leaderboard: FC<LeaderboardData> = ({
               style={{
                 position: 'absolute',
                 left: 80,
-                bottom: 16,
+                bottom: 14,
                 width: 1760,
-                height: 4,
+                height: 10,
                 backgroundColor: BAR_BG,
-                borderRadius: 2,
+                borderRadius: 5,
               }}
             >
               <div
@@ -221,7 +208,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                   width: barWidth,
                   height: '100%',
                   backgroundColor: BAR_FILL,
-                  borderRadius: 2,
+                  borderRadius: 5,
                 }}
               />
             </div>
@@ -326,25 +313,25 @@ export const Leaderboard: FC<LeaderboardData> = ({
               position: 'absolute',
               left: 0,
               top: 0,
-              width: 100,
+              width: 110,
               height: 80,
-              backgroundColor: '#1f2937',
+              backgroundColor: BAR_FILL,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: 800,
-              color: TEXT,
+              color: BACKGROUND,
               textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              letterSpacing: '0.08em',
             }}
           >
-            Sponsors
+            Partners
           </div>
           <div
             style={{
               position: 'absolute',
-              left: 100,
+              left: 110,
               top: 20,
               width: tickerWidth * tickerRepeatCount,
               height: SPONSOR_LOGO_HEIGHT,
