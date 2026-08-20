@@ -67,6 +67,10 @@ const singleSizeConfig = {
   ...baseConfig,
   iterations: 2,
   dimensions: { file_size: defaultFileSize },
+  // A single-size run needs the `file_size` tag but not a separate group row,
+  // otherwise the run-wide aggregate and the group row have identical dimensions
+  // and identical metrics and get reported twice.
+  scoring: { metrics: baseConfig.scoring.metrics },
   onComplete: (outcome: BenchmarkRunOutcome) =>
     writeStorageLegacyResults(outcome.participants, {
       resultsDir: path.resolve(__dirname, `../../results/storage/${defaultFileSize.toLowerCase()}`),
