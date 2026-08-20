@@ -1,8 +1,8 @@
 import '../src/env.js';
 import { defineBenchmarkConfig, defineTask, TaskError } from '@benchsdk/runner';
 import { withTimeout } from '../src/util/timeout.js';
-import { providers } from './providers.js';
-import type { ProviderConfig } from './types.js';
+import { providers } from '../sandbox/providers.js';
+import type { ProviderConfig } from '../sandbox/types.js';
 
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'tensorlake-opencode-reliability',
