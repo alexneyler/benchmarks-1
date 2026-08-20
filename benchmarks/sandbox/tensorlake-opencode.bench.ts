@@ -10,8 +10,12 @@ const DEFAULT_EXPECTED = 'tensorlake-ok';
 
 const CREATE_TIMEOUT_MS = 120_000;
 const INSTALL_TIMEOUT_MS = 60_000;
-const CONFIG_TIMEOUT_MS = 10_000;
 const DESTROY_TIMEOUT_MS = 30_000;
+const HOME_DIR = '/tmp/opencode-home';
+const INSTALL_DIR = `${HOME_DIR}/.opencode/bin`;
+const CONFIG_DIR = `${HOME_DIR}/.config/opencode`;
+const PROMPT_PATH = `${HOME_DIR}/prompt.txt`;
+const INSTALL_SCRIPT_PATH = '/tmp/opencode-install.sh';
 
 const model = process.env.OPENCODE_MODEL?.trim() || DEFAULT_MODEL;
 const prompt = process.env.OPENCODE_PROMPT?.trim() || DEFAULT_PROMPT;
@@ -49,9 +53,6 @@ const opencodeConfig = JSON.stringify(
   null,
   2,
 );
-
-const promptB64 = Buffer.from(prompt).toString('base64');
-const configB64 = Buffer.from(opencodeConfig).toString('base64');
 
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'tensorlake-opencode-reliability',
@@ -92,9 +93,10 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
     );
 
     await step('install', async () => {
-      const result = (await sandbox.runCommand('curl -fsSL https://opencode.ai/install | bash', {
-        timeout: INSTALL_TIMEOUT_MS,
-      })) as RunResult;
+      const result = (await sandbox.runCommand(
+        `curl -fsSL https://opencode.ai/install -o ${INSTALL_SCRIPT_PATH} && HOME=${HOME_DIR} bash ${INSTALL_SCRIPT_PATH} --no-modify-path`,
+        { timeout: INSTALL_TIMEOUT_MS },
+      )) as RunResult;
       if (result.exitCode !== 0) {
         throw new TaskError(
           `OpenCode install failed (exit ${result.exitCode}): ${result.stderr || result.stdout || ''}`.trim(),
@@ -103,28 +105,19 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
     });
 
     await step('configure', async () => {
-      const result = (await sandbox.runCommand(
-        `mkdir -p ~/.config/opencode && echo '${configB64}' | base64 -d > ~/.config/opencode/opencode.json`,
-        { timeout: CONFIG_TIMEOUT_MS },
-      )) as RunResult;
-      if (result.exitCode !== 0) {
-        throw new TaskError(
-          `OpenCode config failed (exit ${result.exitCode}): ${result.stderr || result.stdout || ''}`.trim(),
-        );
-      }
+      await sandbox.filesystem.mkdir(CONFIG_DIR);
+      await sandbox.filesystem.writeFile(`${CONFIG_DIR}/opencode.json`, opencodeConfig);
     });
 
-    const promptPath = `/tmp/opencode-prompt-${ctx.taskIndex}`;
-    const runCmd = `set +e
-echo '${promptB64}' | base64 -d > ${promptPath}
-export PATH="$HOME/.opencode/bin:$PATH"
-cat ${promptPath} | opencode run --auto
-OPENCODE_EXIT=$?
-rm -f ${promptPath}
-exit $OPENCODE_EXIT`;
+    await step('write-prompt', async () => {
+      await sandbox.filesystem.writeFile(PROMPT_PATH, prompt);
+    });
 
     const output = (await step('run', async () =>
-      sandbox.runCommand(runCmd, { timeout: opencodeTimeoutMs }),
+      sandbox.runCommand(
+        `export HOME=${HOME_DIR} && export PATH="${INSTALL_DIR}:$PATH" && cat ${PROMPT_PATH} | opencode run --auto`,
+        { timeout: opencodeTimeoutMs },
+      ),
     )) as RunResult;
 
     if (output.exitCode !== 0) {
