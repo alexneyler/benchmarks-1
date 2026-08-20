@@ -48,10 +48,34 @@ function summarizeBody(body: unknown, max = 500): string {
   return text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
+function decodeTokenClaims(jwt: string): Record<string, unknown> | undefined {
+  const parts = jwt.split('.');
+  if (parts.length !== 3) return undefined;
+  try {
+    const payload = parts[1]!.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = payload.padEnd(payload.length + ((4 - (payload.length % 4)) % 4), '=');
+    return JSON.parse(Buffer.from(padded, 'base64').toString('utf8')) as Record<string, unknown>;
+  } catch {
+    return undefined;
+  }
+}
+
 async function main() {
   if (!token || !projectId) {
     console.error('NORTHFLANK_TOKEN and NORTHFLANK_PROJECT_ID must be set');
     process.exit(1);
+  }
+
+  const claims = decodeTokenClaims(token);
+  if (claims) {
+    console.log(`Token claim keys: ${Object.keys(claims).join(', ')}`);
+    for (const key of ['sub', 'team', 'teamId', 'org', 'orgId', 'scope', 'scopes', 'role', 'aud']) {
+      if (claims[key] !== undefined) {
+        console.log(`  ${key}: ${JSON.stringify(claims[key])}`);
+      }
+    }
+  } else {
+    console.log('Token is not a JWT or could not be decoded');
   }
 
   const plans = await rawApi('/v1/plans');
