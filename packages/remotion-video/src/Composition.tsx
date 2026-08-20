@@ -32,7 +32,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
     extrapolateRight: 'clamp',
   });
 
-  const tickerOpacity = interpolate(frame, [120, 130], [0, 1], {
+  const tickerOpacity = interpolate(frame, [0, 15], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
@@ -43,8 +43,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const TICKER_SPEED = 6;
   const sponsorItemWidth = SPONSOR_LOGO_WIDTH + SPONSOR_GAP;
   const tickerWidth = sponsors.length * sponsorItemWidth;
-  const tickerFrame = Math.max(0, frame - 130);
-  const tickerOffset = (tickerFrame * TICKER_SPEED) % tickerWidth;
+  const tickerOffset = (frame * TICKER_SPEED) % tickerWidth;
 
   return (
     <div
