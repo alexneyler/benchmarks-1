@@ -434,6 +434,32 @@ function resolveParticipants<T extends BaseParticipant>(config: BenchmarkConfig<
   return available;
 }
 
+/** Builds a JSON-serializable snapshot of the resolved run execution config. */
+function runConfigToJson<T extends BaseParticipant>(
+  config: BenchmarkConfig<T>,
+  resolved: ResolvedRunConfig,
+  participants: string[],
+): JsonObject {
+  const phases = config.phases?.map((phase) => ({
+    name: phase.name,
+    iterations: resolved.phaseIterations ?? phase.iterations,
+  }));
+  const runConfig = {
+    benchmarkSlug: config.benchmarkSlug,
+    benchmarkName: config.benchmarkName,
+    ...(resolved.phaseIterations !== undefined ? { phaseIterations: resolved.phaseIterations } : {}),
+    ...(phases ? { phases } : {}),
+    ...(!config.phases ? { iterations: resolved.iterations } : {}),
+    concurrency: resolved.concurrency,
+    staggerDelayMs: resolved.staggerDelayMs,
+    groupBy: resolved.groupBy,
+    ...(config.dimensions ? { dimensions: config.dimensions } : {}),
+    ...(config.scoring ? { scoring: config.scoring } : {}),
+    participants,
+  };
+  return JSON.parse(JSON.stringify(runConfig)) as JsonObject;
+}
+
 /**
  * Runs `config`'s `task` against its participants. Selects participants by
  * `--provider` (if given), env-gates them, then drives them per the resolved
@@ -503,6 +529,10 @@ export async function runBenchmark<T extends BaseParticipant>(
       });
     }
 
+    const runConfig = client
+      ? runConfigToJson(config, resolved, available.map((p) => p.name))
+      : {};
+
     if (args.runKey) {
       // Shared run: get-or-created by key, so sibling processes (one per provider)
       // converge on one run. Opened participant-sized — register only the
@@ -510,6 +540,7 @@ export async function runBenchmark<T extends BaseParticipant>(
       // run lists exactly who's benchmarked and each brings its own task count.
       const { run, organizationSlug } = await client!.createRun(config.benchmarkSlug, {
         runKey: args.runKey,
+        config: runConfig,
       });
       runId = run.id;
       dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
@@ -523,6 +554,7 @@ export async function runBenchmark<T extends BaseParticipant>(
         totalTasks,
         workerCount: 1,
         participants: available.map((p) => p.name),
+        config: runConfig,
       });
       runId = run.id;
       dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
