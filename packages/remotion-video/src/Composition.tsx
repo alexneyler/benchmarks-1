@@ -45,6 +45,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const sponsorItemWidth = SPONSOR_LOGO_WIDTH + SPONSOR_GAP;
   const tickerWidth = sponsors.length * sponsorItemWidth;
   const tickerOffset = (frame * TICKER_SPEED) % tickerWidth;
+  const tickerRepeatCount = Math.max(2, Math.ceil(ROW_WIDTH / tickerWidth) + 1);
 
   return (
     <div
@@ -296,15 +297,17 @@ export const Leaderboard: FC<LeaderboardData> = ({
               position: 'absolute',
               left: 0,
               top: 15,
-              width: tickerWidth * 2,
+              width: tickerWidth * tickerRepeatCount,
               height: SPONSOR_LOGO_HEIGHT,
               display: 'flex',
               transform: `translateX(${-tickerOffset}px)`,
             }}
           >
-            {[...sponsors, ...sponsors].map((sponsor, index) => (
+            {Array.from({ length: tickerRepeatCount }).flatMap((_, i) =>
+              sponsors.map((sponsor) => ({ ...sponsor, run: i })),
+            ).map((sponsor) => (
               <div
-                key={`${sponsor.name}-${index}`}
+                key={`${sponsor.name}-${sponsor.run}`}
                 style={{
                   width: sponsorItemWidth,
                   height: '100%',
