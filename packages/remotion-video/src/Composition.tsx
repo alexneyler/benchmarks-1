@@ -9,6 +9,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
 }) => {
   const frame = useCurrentFrame();
   const topProviders = providers.slice(0, 5);
+  const otherProviders = providers.slice(5);
   const minScore = topProviders[topProviders.length - 1]?.score ?? 0;
 
   const RACE_DURATION = 120;
@@ -22,8 +23,13 @@ export const Leaderboard: FC<LeaderboardData> = ({
 
   function finishFrame(score: number): number {
     const spread = Math.max(0.01, 100 - minScore);
-    return Math.round(RACE_DURATION * ((100 - score) / spread));
+    return Math.max(1, Math.round(RACE_DURATION * ((100 - score) / spread)));
   }
+
+  const otherProgress = interpolate(frame, [105, 130], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   return (
     <div
@@ -62,16 +68,16 @@ export const Leaderboard: FC<LeaderboardData> = ({
         {subtitle}
       </p>
 
-      {topProviders.map((provider, index) => {
+      {topProviders.map((provider) => {
         const entryProgress = interpolate(frame, [0, 15], [0, 1], {
           extrapolateLeft: 'clamp',
           extrapolateRight: 'clamp',
         });
         const opacity = entryProgress;
         const translateY = (1 - entryProgress) * 30;
-        const y = TOP + index * ROW_HEIGHT;
+        const y = TOP + (provider.rank - 1) * ROW_HEIGHT;
 
-        const end = Math.max(1, finishFrame(provider.score));
+        const end = finishFrame(provider.score);
         const barProgress = interpolate(
           frame,
           [0, end],
@@ -173,6 +179,75 @@ export const Leaderboard: FC<LeaderboardData> = ({
           </div>
         );
       })}
+
+      {otherProviders.length > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 80,
+            top: 820,
+            width: ROW_WIDTH,
+            height: 230,
+            backgroundColor: '#1e293b',
+            borderRadius: 20,
+            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.25)',
+            opacity: otherProgress,
+            transform: `translateY(${(1 - otherProgress) * 30}px)`,
+          }}
+        >
+          <span
+            style={{
+              position: 'absolute',
+              left: 28,
+              top: 24,
+              fontSize: 28,
+              fontWeight: 700,
+              color: '#94a3b8',
+            }}
+          >
+            {otherProviders.length} other providers
+          </span>
+          <div
+            style={{
+              position: 'absolute',
+              left: 28,
+              top: 70,
+              right: 28,
+              bottom: 24,
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '12px',
+              alignContent: 'flex-start',
+            }}
+          >
+            {otherProviders.map((provider) =>
+              provider.logoUrl ? (
+                <Img
+                  key={provider.provider}
+                  src={provider.logoUrl}
+                  style={{
+                    width: 90,
+                    height: 40,
+                    objectFit: 'contain',
+                  }}
+                />
+              ) : (
+                <span
+                  key={provider.provider}
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: '#cbd5e1',
+                    padding: '0 8px',
+                  }}
+                >
+                  {provider.displayName}
+                </span>
+              ),
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
