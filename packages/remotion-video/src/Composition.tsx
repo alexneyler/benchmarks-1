@@ -2,6 +2,8 @@ import { useCurrentFrame, interpolate, Img } from 'remotion';
 import type { FC } from 'react';
 import type { LeaderboardData } from './data';
 
+const SITE_LOGO_DARK = 'https://www.computesdk.com/hv_main_logo_dark.svg';
+
 export const Leaderboard: FC<LeaderboardData> = ({
   title,
   subtitle,
@@ -16,12 +18,12 @@ export const Leaderboard: FC<LeaderboardData> = ({
 
   const RACE_DURATION = 480;
 
-  const TOP = 190;
-  const ROW_HEIGHT = 108;
+  const TOP = 210;
+  const ROW_HEIGHT = 100;
   const ROW_WIDTH = 1760;
   const CARD_GAP = 16;
-  const LOGO_WIDTH = 220;
-  const LOGO_HEIGHT = 44;
+  const LOGO_WIDTH = 200;
+  const LOGO_HEIGHT = 40;
 
   const BACKGROUND = '#030712';
   const CARD_BG = '#0f172a';
@@ -38,12 +40,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
     return Math.max(1, Math.round(RACE_DURATION * ((100 - score) / spread)));
   }
 
-  const otherProgress = interpolate(frame, [RACE_DURATION, RACE_DURATION + 60], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
-
-  const tickerOpacity = interpolate(frame, [0, 30], [0, 1], {
+  const rankOpacity = interpolate(frame, [0, 30], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
@@ -58,7 +55,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const tickerRepeatCount = Math.max(2, Math.ceil(ROW_WIDTH / tickerWidth) + 1);
 
   const nextTop = TOP + 5 * (ROW_HEIGHT + CARD_GAP) + 24;
-  const tickerTop = nextTop + 100 + 24;
+  const tickerTop = nextTop + 96 + 24;
 
   return (
     <div
@@ -72,12 +69,23 @@ export const Leaderboard: FC<LeaderboardData> = ({
         position: 'relative',
       }}
     >
-      <h1
+      <Img
+        src={SITE_LOGO_DARK}
         style={{
           position: 'absolute',
           left: 80,
-          top: 50,
-          fontSize: 56,
+          top: 54,
+          width: 40,
+          height: 40,
+          objectFit: 'contain',
+        }}
+      />
+      <h1
+        style={{
+          position: 'absolute',
+          left: 136,
+          top: 42,
+          fontSize: 48,
           fontWeight: 800,
           margin: 0,
         }}
@@ -87,8 +95,8 @@ export const Leaderboard: FC<LeaderboardData> = ({
       <p
         style={{
           position: 'absolute',
-          left: 80,
-          top: 120,
+          left: 136,
+          top: 100,
           fontSize: 20,
           color: MUTED,
           margin: 0,
@@ -98,14 +106,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
       </p>
 
       {topProviders.map((provider) => {
-        const entryProgress = interpolate(frame, [0, 30], [0, 1], {
-          extrapolateLeft: 'clamp',
-          extrapolateRight: 'clamp',
-        });
-        const opacity = entryProgress;
-        const translateY = (1 - entryProgress) * 30;
         const y = TOP + (provider.rank - 1) * (ROW_HEIGHT + CARD_GAP);
-
         const end = finishFrame(provider.score);
         const barProgress = interpolate(
           frame,
@@ -127,25 +128,24 @@ export const Leaderboard: FC<LeaderboardData> = ({
               backgroundColor: CARD_BG,
               border: `1px solid ${CARD_BORDER}`,
               borderRadius: 16,
-              opacity,
-              transform: `translateY(${translateY}px)`,
             }}
           >
             <div
               style={{
                 position: 'absolute',
                 left: 20,
-                top: (ROW_HEIGHT - 40) / 2,
-                width: 40,
-                height: 40,
+                top: (ROW_HEIGHT - 36) / 2,
+                width: 36,
+                height: 36,
                 borderRadius: '50%',
                 backgroundColor: RANK_BG,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: 700,
                 color: RANK_TEXT,
+                opacity: rankOpacity,
               }}
             >
               {provider.rank}
@@ -156,7 +156,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                 src={provider.logoUrl}
                 style={{
                   position: 'absolute',
-                  left: 76,
+                  left: 72,
                   top: (ROW_HEIGHT - LOGO_HEIGHT) / 2,
                   width: LOGO_WIDTH,
                   height: LOGO_HEIGHT,
@@ -167,9 +167,9 @@ export const Leaderboard: FC<LeaderboardData> = ({
               <span
                 style={{
                   position: 'absolute',
-                  left: 76,
-                  top: (ROW_HEIGHT - 32) / 2,
-                  fontSize: 24,
+                  left: 72,
+                  top: (ROW_HEIGHT - 28) / 2,
+                  fontSize: 22,
                   fontWeight: 700,
                 }}
               >
@@ -181,7 +181,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
               style={{
                 position: 'absolute',
                 right: 32,
-                top: (ROW_HEIGHT - 54) / 2,
+                top: (ROW_HEIGHT - 50) / 2,
                 textAlign: 'right',
                 display: 'flex',
                 flexDirection: 'column',
@@ -190,7 +190,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
             >
               <span
                 style={{
-                  fontSize: 42,
+                  fontSize: 38,
                   fontWeight: 700,
                   color: TEXT,
                   lineHeight: 1,
@@ -200,7 +200,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
               </span>
               <span
                 style={{
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: 500,
                   color: MUTED,
                   marginTop: 4,
@@ -241,20 +241,18 @@ export const Leaderboard: FC<LeaderboardData> = ({
             left: 80,
             top: nextTop,
             width: ROW_WIDTH,
-            height: 100,
+            height: 96,
             backgroundColor: CARD_BG,
             border: `1px solid ${CARD_BORDER}`,
             borderRadius: 16,
-            opacity: otherProgress,
-            transform: `translateY(${(1 - otherProgress) * 30}px)`,
           }}
         >
           <span
             style={{
               position: 'absolute',
               left: 28,
-              top: 14,
-              fontSize: 18,
+              top: 12,
+              fontSize: 16,
               fontWeight: 700,
               color: MUTED,
             }}
@@ -265,12 +263,12 @@ export const Leaderboard: FC<LeaderboardData> = ({
             style={{
               position: 'absolute',
               left: 28,
-              top: 44,
+              top: 38,
               right: 28,
               height: 44,
               display: 'flex',
               alignItems: 'center',
-              gap: '20px',
+              gap: '18px',
             }}
           >
             {nextProviders.map((provider) =>
@@ -279,8 +277,8 @@ export const Leaderboard: FC<LeaderboardData> = ({
                   key={provider.provider}
                   src={provider.logoUrl}
                   style={{
-                    width: 120,
-                    height: 40,
+                    width: 110,
+                    height: 36,
                     objectFit: 'contain',
                   }}
                 />
@@ -288,7 +286,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                 <span
                   key={provider.provider}
                   style={{
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: 600,
                     color: TEXT,
                   }}
@@ -300,12 +298,12 @@ export const Leaderboard: FC<LeaderboardData> = ({
             {remainingOthers > 0 && (
               <span
                 style={{
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: 800,
                   color: MUTED,
                   backgroundColor: RANK_BG,
                   borderRadius: 12,
-                  padding: '6px 12px',
+                  padding: '5px 12px',
                 }}
               >
                 +{remainingOthers} others
@@ -326,7 +324,6 @@ export const Leaderboard: FC<LeaderboardData> = ({
             backgroundColor: CARD_BG,
             border: `1px solid ${CARD_BORDER}`,
             borderRadius: 16,
-            opacity: tickerOpacity,
             overflow: 'hidden',
           }}
         >
