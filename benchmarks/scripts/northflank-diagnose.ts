@@ -86,6 +86,18 @@ async function main() {
   console.log(`/v1/projects/${projectId}: ${direct.status}`);
   console.log(`  body: ${summarizeBody(direct.body)}`);
 
+  if (claims?.roleEntityType === 'team' && typeof claims.roleEntityId === 'string') {
+    const inferredTeamId = claims.roleEntityId;
+    console.log('Token is team-scoped; trying team-scoped project endpoints');
+    const teamProject = await rawApi(`/v1/teams/${inferredTeamId}/projects/${projectId}`);
+    console.log(`/v1/teams/{roleEntityId}/projects/${projectId}: ${teamProject.status}`);
+    console.log(`  body: ${summarizeBody(teamProject.body)}`);
+
+    const teamServices = await rawApi(`/v1/teams/${inferredTeamId}/projects/${projectId}/services`);
+    console.log(`/v1/teams/{roleEntityId}/projects/${projectId}/services: ${teamServices.status}`);
+    console.log(`  body: ${summarizeBody(teamServices.body)}`);
+  }
+
   const projectsList = await rawApi('/v1/projects');
   const personalProjects = projectsFrom(projectsList.body);
   console.log(`Personal projects total: ${personalProjects.length}`);
