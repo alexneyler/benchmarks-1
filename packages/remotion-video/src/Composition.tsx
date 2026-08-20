@@ -14,7 +14,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const remainingOthers = Math.max(0, providers.length - 10);
   const minScore = topProviders[topProviders.length - 1]?.score ?? 0;
 
-  const RACE_DURATION = 120;
+  const RACE_DURATION = 480;
 
   const TOP = 190;
   const ROW_HEIGHT = 108;
@@ -38,12 +38,12 @@ export const Leaderboard: FC<LeaderboardData> = ({
     return Math.max(1, Math.round(RACE_DURATION * ((100 - score) / spread)));
   }
 
-  const otherProgress = interpolate(frame, [100, 120], [0, 1], {
+  const otherProgress = interpolate(frame, [RACE_DURATION, RACE_DURATION + 60], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
 
-  const tickerOpacity = interpolate(frame, [0, 15], [0, 1], {
+  const tickerOpacity = interpolate(frame, [0, 30], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
@@ -51,7 +51,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const SPONSOR_LOGO_WIDTH = 130;
   const SPONSOR_LOGO_HEIGHT = 40;
   const SPONSOR_GAP = 50;
-  const TICKER_SPEED = 6;
+  const TICKER_SPEED = 3;
   const sponsorItemWidth = SPONSOR_LOGO_WIDTH + SPONSOR_GAP;
   const tickerWidth = sponsors.length * sponsorItemWidth;
   const tickerOffset = (frame * TICKER_SPEED) % tickerWidth;
@@ -98,7 +98,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
       </p>
 
       {topProviders.map((provider) => {
-        const entryProgress = interpolate(frame, [0, 15], [0, 1], {
+        const entryProgress = interpolate(frame, [0, 30], [0, 1], {
           extrapolateLeft: 'clamp',
           extrapolateRight: 'clamp',
         });
