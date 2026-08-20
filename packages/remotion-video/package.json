@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "dev": "remotion studio src/index.tsx",
     "render": "remotion render src/index.tsx BenchmarkLeaderboard out.mp4",
-    "render:png": "remotion still src/index.tsx BenchmarkLeaderboard out.png --frame=140"
+    "render:png": "remotion still src/index.tsx BenchmarkLeaderboard out.png --frame=130"
   },
   "dependencies": {
     "@remotion/cli": "4.0.500",

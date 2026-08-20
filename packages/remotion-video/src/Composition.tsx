@@ -6,6 +6,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
   title,
   subtitle,
   providers,
+  sponsors,
 }) => {
   const frame = useCurrentFrame();
   const topProviders = providers.slice(0, 5);
@@ -26,10 +27,24 @@ export const Leaderboard: FC<LeaderboardData> = ({
     return Math.max(1, Math.round(RACE_DURATION * ((100 - score) / spread)));
   }
 
-  const otherProgress = interpolate(frame, [105, 130], [0, 1], {
+  const otherProgress = interpolate(frame, [100, 120], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
+
+  const tickerOpacity = interpolate(frame, [120, 130], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  const SPONSOR_LOGO_WIDTH = 130;
+  const SPONSOR_LOGO_HEIGHT = 40;
+  const SPONSOR_GAP = 50;
+  const TICKER_SPEED = 6;
+  const sponsorItemWidth = SPONSOR_LOGO_WIDTH + SPONSOR_GAP;
+  const tickerWidth = sponsors.length * sponsorItemWidth;
+  const tickerFrame = Math.max(0, frame - 130);
+  const tickerOffset = (tickerFrame * TICKER_SPEED) % tickerWidth;
 
   return (
     <div
@@ -185,9 +200,9 @@ export const Leaderboard: FC<LeaderboardData> = ({
           style={{
             position: 'absolute',
             left: 80,
-            top: 820,
+            top: 810,
             width: ROW_WIDTH,
-            height: 230,
+            height: 125,
             backgroundColor: '#1e293b',
             borderRadius: 20,
             boxShadow: '0 4px 24px rgba(0, 0, 0, 0.25)',
@@ -199,8 +214,8 @@ export const Leaderboard: FC<LeaderboardData> = ({
             style={{
               position: 'absolute',
               left: 28,
-              top: 24,
-              fontSize: 28,
+              top: 18,
+              fontSize: 20,
               fontWeight: 700,
               color: '#94a3b8',
             }}
@@ -211,9 +226,9 @@ export const Leaderboard: FC<LeaderboardData> = ({
             style={{
               position: 'absolute',
               left: 28,
-              top: 70,
+              top: 52,
               right: 28,
-              bottom: 24,
+              bottom: 20,
               display: 'flex',
               flexWrap: 'wrap',
               gap: '12px',
@@ -226,8 +241,8 @@ export const Leaderboard: FC<LeaderboardData> = ({
                   key={provider.provider}
                   src={provider.logoUrl}
                   style={{
-                    width: 90,
-                    height: 40,
+                    width: 65,
+                    height: 30,
                     objectFit: 'contain',
                   }}
                 />
@@ -235,16 +250,68 @@ export const Leaderboard: FC<LeaderboardData> = ({
                 <span
                   key={provider.provider}
                   style={{
-                    fontSize: 14,
+                    fontSize: 12,
                     fontWeight: 600,
                     color: '#cbd5e1',
-                    padding: '0 8px',
+                    padding: '0 6px',
                   }}
                 >
                   {provider.displayName}
                 </span>
               ),
             )}
+          </div>
+        </div>
+      )}
+
+      {sponsors.length > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 80,
+            top: 945,
+            width: ROW_WIDTH,
+            height: 80,
+            backgroundColor: '#1e293b',
+            borderRadius: 20,
+            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.25)',
+            opacity: tickerOpacity,
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 15,
+              width: tickerWidth * 2,
+              height: SPONSOR_LOGO_HEIGHT,
+              display: 'flex',
+              transform: `translateX(${-tickerOffset}px)`,
+            }}
+          >
+            {[...sponsors, ...sponsors].map((sponsor, index) => (
+              <div
+                key={`${sponsor.name}-${index}`}
+                style={{
+                  width: sponsorItemWidth,
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Img
+                  src={sponsor.logoUrl}
+                  alt={sponsor.name}
+                  style={{
+                    width: SPONSOR_LOGO_WIDTH,
+                    height: SPONSOR_LOGO_HEIGHT,
+                    objectFit: 'contain',
+                  }}
+                />
+              </div>
+            ))}
           </div>
         </div>
       )}

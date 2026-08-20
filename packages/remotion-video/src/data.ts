@@ -6,9 +6,15 @@ export interface Provider {
   logoUrl: string | null;
 }
 
+export interface Sponsor {
+  name: string;
+  logoUrl: string;
+}
+
 export interface LeaderboardData {
   title: string;
   subtitle: string;
   updatedAt: string;
   providers: Provider[];
+  sponsors: Sponsor[];
 }

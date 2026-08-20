@@ -192,5 +192,35 @@
       "logoUrl": "https://logos.computesdk.com/api/svg/sandbox0/normalized/logo-dark?v=a865ff11fd",
       "rank": 27
     }
+  ],
+  "sponsors": [
+    {
+      "name": "Latitude",
+      "logoUrl": "https://logos.computesdk.com/api/svg/latitude/bounded/logo-dark"
+    },
+    {
+      "name": "Google Cloud Run",
+      "logoUrl": "https://logos.computesdk.com/api/svg/google-cloud-run/raw/stacked-dark"
+    },
+    {
+      "name": "Browserbase",
+      "logoUrl": "https://logos.computesdk.com/api/svg/browserbase/bounded/logo-dark"
+    },
+    {
+      "name": "Tigris",
+      "logoUrl": "https://logos.computesdk.com/api/svg/tigris/bounded/logo-dark"
+    },
+    {
+      "name": "Neon",
+      "logoUrl": "https://logos.computesdk.com/api/svg/neon/bounded/logo-dark"
+    },
+    {
+      "name": "GitBook",
+      "logoUrl": "https://logos.computesdk.com/api/svg/gitbook/bounded/logo-dark"
+    },
+    {
+      "name": "Namespace",
+      "logoUrl": "https://logos.computesdk.com/api/svg/namespace/bounded/logo-dark"
+    }
   ]
 }

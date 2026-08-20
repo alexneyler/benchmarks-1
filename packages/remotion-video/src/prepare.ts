@@ -8,6 +8,7 @@ const RESULTS_PATH = path.resolve(PKG_ROOT, '../../results/burst_tti/latest.json
 const DATA_PATH = path.resolve(PKG_ROOT, 'src/data.json');
 
 const LOGOS_PAGE_URL = 'https://www.computesdk.com/benchmarks/sandboxes/';
+const SPONSORS_PAGE_URL = 'https://www.computesdk.com/partners/';
 const SITE_ORIGIN = 'https://www.computesdk.com';
 const LOGO_MAP_KEY = 'providerLogosDark';
 
@@ -43,6 +44,11 @@ interface Provider {
   displayName: string;
   score: number;
   logoUrl: string | null;
+}
+
+interface Sponsor {
+  name: string;
+  logoUrl: string;
 }
 
 const GATEWAY_PROVIDERS = ['render'];
@@ -81,6 +87,34 @@ function computeCompositeScore(entry: ResultEntry): number {
   return Math.round(timingScore * successRate * 100) / 100;
 }
 
+async function fetchSponsors(): Promise<Sponsor[]> {
+  const response = await fetch(SPONSORS_PAGE_URL);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${SPONSORS_PAGE_URL}: ${response.status}`);
+  }
+  const html = await response.text();
+  const decoded = html.replace(/&quot;/g, '"');
+
+  const seen = new Set<string>();
+  const sponsors: Sponsor[] = [];
+
+  const imgTags = decoded.match(/<img[^>]*src="[^"]*logos\.computesdk\.com[^"]*dark[^"]*"[^>]*>/g) ?? [];
+  for (const tag of imgTags) {
+    const srcMatch = tag.match(/src="([^"]*)"/);
+    const altMatch = tag.match(/alt="([^"]*)"/);
+    if (!srcMatch) continue;
+    const src = srcMatch[1].startsWith('/') ? `${SITE_ORIGIN}${srcMatch[1]}` : srcMatch[1];
+    if (seen.has(src)) continue;
+    seen.add(src);
+    sponsors.push({
+      name: altMatch?.[1] ?? '',
+      logoUrl: src,
+    });
+  }
+
+  return sponsors;
+}
+
 async function fetchLogoMap(): Promise<Record<string, string>> {
   const response = await fetch(LOGOS_PAGE_URL);
   if (!response.ok) {
@@ -115,9 +149,10 @@ function resolveLogoUrl(provider: string, logoMap: Record<string, string>): stri
 }
 
 async function main() {
-  const [resultsRaw, logoMap] = await Promise.all([
+  const [resultsRaw, logoMap, sponsors] = await Promise.all([
     fs.readFile(RESULTS_PATH, 'utf-8').then(JSON.parse) as Promise<ResultFile>,
     fetchLogoMap(),
+    fetchSponsors(),
   ]);
 
   const providers: Provider[] = resultsRaw.results
@@ -135,11 +170,12 @@ async function main() {
     subtitle: 'Burst concurrency leaderboard',
     updatedAt: resultsRaw.timestamp,
     providers,
+    sponsors,
   };
 
   await fs.mkdir(path.dirname(DATA_PATH), { recursive: true });
   await fs.writeFile(DATA_PATH, JSON.stringify(data, null, 2));
-  console.log(`Wrote ${DATA_PATH} with ${providers.length} providers`);
+  console.log(`Wrote ${DATA_PATH} with ${providers.length} providers and ${sponsors.length} sponsors`);
 }
 
 main().catch((err) => {
