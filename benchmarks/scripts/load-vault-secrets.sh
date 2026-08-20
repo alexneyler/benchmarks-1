@@ -34,25 +34,58 @@ nsc version ensure --at_least 0.0.550 >/dev/null
 # Pull env-var names from `name=` labels (or `description` as a fallback) and
 # project to KEY=<object_id>. Object_ids are random handles; secret VALUES only
 # materialise via the subsequent `nsc vault export`.
-nsc vault list --output json | jq -r '
+vault_json=$(nsc vault list --output json)
+KEYS_REGEX="$KEYS"
+
+# Diagnostic count of deleted vault objects that match the requested keys.
+# If this is >0, `nsc vault list` is returning deleted entries for active
+# env-vars and that should be reported to Namespace.
+deleted_count=$(jq --arg KEYS "$KEYS_REGEX" '
+  [ .[]
+    | select((.deleted_at // null) != null)
+    | (.labels // []) as $l
+    | (($l | map(select(.name=="name")) | .[0].value) // .description // "") as $name
+    | select($name | test("^[A-Z][A-Z0-9_]*$"))
+    | select($name | test($KEYS))
+  ]
+  | length
+' <<< "$vault_json")
+
+# Count active entries before deduplication so we can detect duplicates.
+active_raw_count=$(jq --arg KEYS "$KEYS_REGEX" '
   [ .[]
     | select((.deleted_at // null) == null)
     | (.labels // []) as $l
     | (($l | map(select(.name=="name")) | .[0].value) // .description // "") as $name
     | select($name | test("^[A-Z][A-Z0-9_]*$"))
+    | select($name | test($KEYS))
+  ]
+  | length
+' <<< "$vault_json")
+
+# Build the envdef from the newest active object per env-var name.
+jq -r --arg KEYS "$KEYS_REGEX" '
+  [ .[]
+    | select((.deleted_at // null) == null)
+    | (.labels // []) as $l
+    | (($l | map(select(.name=="name")) | .[0].value) // .description // "") as $name
+    | select($name | test("^[A-Z][A-Z0-9_]*$"))
+    | select($name | test($KEYS))
     | {name: $name, object_id: .object_id}
   ]
   | group_by(.name)
   | map(last)
   | .[]
   | "\(.name)=\(.object_id)"
-' | grep -E "$KEYS" > /tmp/vault.envdef
+' <<< "$vault_json" > /tmp/vault.envdef
 
-# Diagnostic — surface "did the filter match anything" without leaking the
-# actual KEY=<object_id> mappings into CI logs.
-echo "::notice::envdef line count: $(wc -l < /tmp/vault.envdef)"
+active_unique_count=$(wc -l < /tmp/vault.envdef)
+duplicate_count=$((active_raw_count - active_unique_count))
+
+# Diagnostic — surface counts without leaking KEY=<object_id> mappings.
+echo "::notice::load-vault-secrets.sh: active_raw=${active_raw_count} active_unique=${active_unique_count} duplicates=${duplicate_count} deleted=${deleted_count}"
 if [ ! -s /tmp/vault.envdef ]; then
-  echo "::error::envdef is empty after grep — no vault entries matched KEYS pattern" >&2
+  echo "::error::envdef is empty after filtering — no vault entries matched KEYS pattern" >&2
   return 1 2>/dev/null || exit 1
 fi
 
@@ -80,4 +113,4 @@ while IFS= read -r key; do
     missing_count=$((missing_count + 1))
   fi
 done < <(awk -F= '{print $1}' /tmp/vault.envdef)
-echo "::notice::load-vault-secrets.sh: resolved ${resolved_count} keys, ${missing_count} missing/empty"
+echo "::notice::load-vault-secrets.sh: resolved=${resolved_count} missing=${missing_count}"
