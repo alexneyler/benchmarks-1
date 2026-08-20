@@ -16,7 +16,22 @@ const DATA_PATH = path.resolve(PKG_ROOT, 'src/data.json');
 const SITE_ORIGIN = 'https://www.computesdk.com';
 const SPONSORS_PAGE_URL = `${SITE_ORIGIN}/partners/`;
 
-const BENCHMARK = process.argv[2] ?? process.env.BENCHMARK ?? 'burst_tti';
+const RESULTS_DIR = path.resolve(PKG_ROOT, '../../results');
+
+function getValidatedBenchmark(raw: string | undefined): string {
+  const benchmark = (raw ?? 'burst_tti').trim();
+  if (
+    !/^[a-zA-Z0-9_\-/]+$/.test(benchmark) ||
+    benchmark.includes('..') ||
+    benchmark.startsWith('/') ||
+    benchmark.endsWith('/')
+  ) {
+    throw new Error(`Invalid benchmark name: ${benchmark}`);
+  }
+  return benchmark;
+}
+
+const BENCHMARK = getValidatedBenchmark(process.argv[2] ?? process.env.BENCHMARK);
 const BENCHMARK_TITLE = process.env.BENCHMARK_TITLE;
 
 const LOGO_VARIANT: LogoVariant = 'logo-dark';
@@ -92,7 +107,13 @@ function getBenchmarkTitle(benchmark: string, override?: string): string {
 }
 
 function getResultPath(benchmark: string): string {
-  return path.resolve(PKG_ROOT, '../../results', benchmark, 'latest.json');
+  const resultPath = path.resolve(RESULTS_DIR, benchmark, 'latest.json');
+  const normalizedResult = path.normalize(resultPath) + path.sep;
+  const normalizedBase = path.normalize(RESULTS_DIR) + path.sep;
+  if (!normalizedResult.startsWith(normalizedBase)) {
+    throw new Error(`Invalid benchmark name: ${benchmark}`);
+  }
+  return resultPath;
 }
 
 function computeScore(entry: ResultEntry): number {
