@@ -71,7 +71,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
         const translateY = (1 - entryProgress) * 30;
         const y = TOP + index * ROW_HEIGHT;
 
-        const end = finishFrame(provider.score);
+        const end = Math.max(1, finishFrame(provider.score));
         const barProgress = interpolate(
           frame,
           [0, end],
