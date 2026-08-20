@@ -2,7 +2,7 @@ import { useCurrentFrame, interpolate, Img } from 'remotion';
 import type { FC } from 'react';
 import type { LeaderboardData } from './data';
 
-const SITE_LOGO_DARK = 'https://www.computesdk.com/hv_main_logo_dark.svg';
+const SITE_LOGO_DARK = 'https://logos.computesdk.com/api/svg/computesdk/raw/logo-dark';
 
 export const Leaderboard: FC<LeaderboardData> = ({
   title,
@@ -69,16 +69,16 @@ export const Leaderboard: FC<LeaderboardData> = ({
         style={{
           position: 'absolute',
           left: 80,
-          top: 54,
-          width: 40,
-          height: 40,
+          top: 50,
+          width: 150,
+          height: 32,
           objectFit: 'contain',
         }}
       />
       <h1
         style={{
           position: 'absolute',
-          left: 136,
+          left: 254,
           top: 42,
           fontSize: 48,
           fontWeight: 800,
@@ -90,7 +90,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
       <p
         style={{
           position: 'absolute',
-          left: 136,
+          left: 254,
           top: 100,
           fontSize: 20,
           color: MUTED,
@@ -325,6 +325,26 @@ export const Leaderboard: FC<LeaderboardData> = ({
             style={{
               position: 'absolute',
               left: 0,
+              top: 0,
+              width: 100,
+              height: 80,
+              backgroundColor: '#1f2937',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 12,
+              fontWeight: 800,
+              color: TEXT,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}
+          >
+            Sponsors
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              left: 100,
               top: 20,
               width: tickerWidth * tickerRepeatCount,
               height: SPONSOR_LOGO_HEIGHT,
