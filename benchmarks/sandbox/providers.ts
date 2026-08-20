@@ -187,6 +187,7 @@ export const providers: ProviderConfig[] = [
     createCompute: () => northflank({
       token: process.env.NORTHFLANK_TOKEN!,
       projectId: process.env.NORTHFLANK_PROJECT_ID!,
+      teamId: process.env.NORTHFLANK_TEAM_ID,
       runtime: 'node',
     }),
   },
