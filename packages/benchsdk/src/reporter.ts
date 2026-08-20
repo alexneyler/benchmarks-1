@@ -64,6 +64,7 @@ export class BenchmarkReporter {
   private pending: TaskResultRecord[] = [];
   private sequenceNumber = 0;
   private flushChain: Promise<void> = Promise.resolve();
+  private flushFailed = false;
   private progress: BenchmarkReporterProgress;
   private barrier: { step: string; concurrency: WorkerConcurrencySample[] } | null = null;
 
@@ -184,6 +185,7 @@ export class BenchmarkReporter {
 
   flush(isFinal = false): Promise<void> {
     this.flushChain = this.flushChain.then(async () => {
+      this.flushFailed = false;
       while (this.pending.length >= this.cfg.batchSize || (isFinal && this.pending.length > 0)) {
         const batch = this.pending.slice(0, this.cfg.batchSize);
         try {
@@ -197,10 +199,9 @@ export class BenchmarkReporter {
             records: batch,
           });
         } catch (error) {
-          // Results that never reach the platform are invisible otherwise: the
-          // worker still completes and the run just reports fewer tasks.
+          this.flushFailed = true;
           console.warn(
-            `[benchsdk] dropping ${this.pending.length} unsent task result(s) for worker ${this.assignment.workerId}: ` +
+            `[benchsdk] failed to send ${this.pending.length} task result(s) for worker ${this.assignment.workerId}: ` +
               `${error instanceof Error ? error.message : String(error)}`,
           );
           break;
@@ -213,7 +214,7 @@ export class BenchmarkReporter {
   }
 
   async finish(failed = false, error?: unknown): Promise<void> {
-    await this.flush(true).catch(() => {});
+    await this.flush(true);
     if (failed) {
       await this.client.failWorker(
         this.cfg.benchmarkSlug,
@@ -221,6 +222,16 @@ export class BenchmarkReporter {
         this.assignment.workerId,
         this.assignment.attemptId,
         error,
+      ).catch(() => {});
+      return;
+    }
+    if (this.flushFailed || this.pending.length > 0) {
+      await this.client.failWorker(
+        this.cfg.benchmarkSlug,
+        this.cfg.runId,
+        this.assignment.workerId,
+        this.assignment.attemptId,
+        new Error('Failed to flush task results'),
       ).catch(() => {});
       return;
     }
