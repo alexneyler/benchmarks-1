@@ -1,0 +1,59 @@
+name: Northflank Diagnostic
+
+on:
+  push:
+    branches: [devin/northflank-diagnostic]
+
+concurrency:
+  group: northflank-diagnostic
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: Northflank API diagnostic
+    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - uses: namespacelabs/nscloud-setup@v0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Rebuild runner
+        run: pnpm --filter @benchsdk/runner build
+      - name: Load Northflank secrets and run diagnostics
+        run: |
+          . benchmarks/scripts/load-vault-secrets.sh '^(NORTHFLANK_TOKEN|NORTHFLANK_PROJECT_ID|NORTHFLANK_TEAM_ID)'
+          npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/sandbox/tti.bench.ts \
+            --provider northflank \
+            --iterations 1 \
+            --concurrency 1 \
+            --no-ingest
+          echo "Token-only endpoint (/v1/plans): $(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer ${NORTHFLANK_TOKEN}" https://api.northflank.com/v1/plans)"
+          echo "Project endpoint (/v1/projects/${NORTHFLANK_PROJECT_ID}): $(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer ${NORTHFLANK_TOKEN}" "https://api.northflank.com/v1/projects/${NORTHFLANK_PROJECT_ID}")"
+          if [ -n "${NORTHFLANK_TEAM_ID:-}" ]; then
+            echo "Team-scoped project endpoint (/v1/teams/${NORTHFLANK_TEAM_ID}/projects/${NORTHFLANK_PROJECT_ID}): $(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer ${NORTHFLANK_TOKEN}" "https://api.northflank.com/v1/teams/${NORTHFLANK_TEAM_ID}/projects/${NORTHFLANK_PROJECT_ID}")"
+          fi
+
+          projects_json=$(curl -s -H "Authorization: Bearer ${NORTHFLANK_TOKEN}" https://api.northflank.com/v1/projects)
+          echo "Total personal projects: $(echo "$projects_json" | jq '.projects | length')"
+          personal_matches=$(echo "$projects_json" | jq --arg pid "$NORTHFLANK_PROJECT_ID" '[.projects[]? | select(.id == $pid)] | length')
+          echo "Personal projects matching NORTHFLANK_PROJECT_ID: ${personal_matches}"
+
+          teams_json=$(curl -s -H "Authorization: Bearer ${NORTHFLANK_TOKEN}" https://api.northflank.com/v1/teams)
+          echo "Teams accessible: $(echo "$teams_json" | jq '.teams | length')"
+          team_ids=$(echo "$teams_json" | jq -r '.teams[]?.id // empty')
+          for team_id in $team_ids; do
+            team_matches=$(curl -s -H "Authorization: Bearer ${NORTHFLANK_TOKEN}" "https://api.northflank.com/v1/teams/${team_id}/projects" | jq --arg pid "$NORTHFLANK_PROJECT_ID" '[.projects[]? | select(.id == $pid)] | length')
+            if [ "$team_matches" -gt 0 ]; then
+              team_name=$(echo "$teams_json" | jq -r --arg tid "$team_id" '.teams[]? | select(.id == $tid) | .name')
+              echo "Project found in team: ${team_name} (id: ${team_id})"
+            fi
+          done
