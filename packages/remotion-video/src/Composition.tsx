@@ -10,7 +10,8 @@ export const Leaderboard: FC<LeaderboardData> = ({
 }) => {
   const frame = useCurrentFrame();
   const topProviders = providers.slice(0, 5);
-  const otherProviders = providers.slice(5);
+  const nextProviders = providers.slice(5, 10);
+  const remainingOthers = Math.max(0, providers.length - 10);
   const minScore = topProviders[topProviders.length - 1]?.score ?? 0;
 
   const RACE_DURATION = 120;
@@ -194,7 +195,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
         );
       })}
 
-      {otherProviders.length > 0 && (
+      {nextProviders.length > 0 && (
         <div
           style={{
             position: 'absolute',
@@ -219,7 +220,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
               color: '#94a3b8',
             }}
           >
-            {otherProviders.length} other providers
+            Next 5
           </span>
           <div
             style={{
@@ -227,21 +228,20 @@ export const Leaderboard: FC<LeaderboardData> = ({
               left: 28,
               top: 52,
               right: 28,
-              bottom: 20,
+              height: 50,
               display: 'flex',
-              flexWrap: 'wrap',
-              gap: '12px',
-              alignContent: 'flex-start',
+              alignItems: 'center',
+              gap: '20px',
             }}
           >
-            {otherProviders.map((provider) =>
+            {nextProviders.map((provider) =>
               provider.logoUrl ? (
                 <Img
                   key={provider.provider}
                   src={provider.logoUrl}
                   style={{
-                    width: 65,
-                    height: 30,
+                    width: 120,
+                    height: 40,
                     objectFit: 'contain',
                   }}
                 />
@@ -249,15 +249,28 @@ export const Leaderboard: FC<LeaderboardData> = ({
                 <span
                   key={provider.provider}
                   style={{
-                    fontSize: 12,
+                    fontSize: 16,
                     fontWeight: 600,
                     color: '#cbd5e1',
-                    padding: '0 6px',
                   }}
                 >
                   {provider.displayName}
                 </span>
               ),
+            )}
+            {remainingOthers > 0 && (
+              <span
+                style={{
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: '#64748b',
+                  backgroundColor: '#334155',
+                  borderRadius: 12,
+                  padding: '8px 16px',
+                }}
+              >
+                +{remainingOthers} others
+              </span>
             )}
           </div>
         </div>
