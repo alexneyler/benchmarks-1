@@ -78,6 +78,22 @@ const singleSizeConfig = {
 const multiSizeConfig = {
   ...baseConfig,
   phases: fileSizes.map((size) => ({ name: size, iterations: 2 })),
+  // The legacy results tree is one directory per size, so a multi-size run
+  // splits its records back out by `file_size` and writes each size's
+  // directory as a single-size run would.
+  onComplete: async (outcome: BenchmarkRunOutcome) => {
+    for (const size of fileSizes) {
+      const participants = outcome.participants.map((p) => ({
+        ...p,
+        records: p.records.filter((r) => (r.data as { file_size?: string } | undefined)?.file_size === size),
+      }));
+      await writeStorageLegacyResults(participants, {
+        resultsDir: path.resolve(__dirname, `../../results/storage/${size.toLowerCase()}`),
+        fileSizeBytes: FILE_SIZE_BYTES[size],
+        providers: storageProviders,
+      });
+    }
+  },
 };
 
 export const config = defineBenchmarkConfig(isMultiSize ? multiSizeConfig : singleSizeConfig);
