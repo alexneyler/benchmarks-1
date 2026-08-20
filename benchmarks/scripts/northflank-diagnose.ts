@@ -131,7 +131,7 @@ async function main() {
   }
 
   await snapshot('/v1/projects/{projectId}/services', `/v1/projects/${projectId}/services`);
-  await snapshot('/v1/projects/{projectId}/services/deployment (POST)', `/v1/projects/${projectId}/services/deployment`, {
+  const createRes = await snapshot('/v1/projects/{projectId}/services/deployment (POST)', `/v1/projects/${projectId}/services/deployment`, {
     method: 'POST',
     body: JSON.stringify({
       name: `computesdk-diagnostic-${Date.now()}`,
@@ -142,6 +142,19 @@ async function main() {
       },
     }),
   });
+
+  const serviceId =
+    createRes.body &&
+    typeof createRes.body === 'object' &&
+    (createRes.body as Record<string, unknown>).data &&
+    typeof (createRes.body as Record<string, unknown>).data === 'object'
+      ? ((createRes.body as Record<string, unknown>).data as Record<string, unknown>).id
+      : undefined;
+  if (typeof serviceId === 'string') {
+    await snapshot('/v1/projects/{projectId}/services/{serviceId} (DELETE)', `/v1/projects/${projectId}/services/${serviceId}`, { method: 'DELETE' });
+  } else {
+    console.log('No service id returned; skipping cleanup DELETE');
+  }
 
   fs.mkdirSync('/tmp/northflank-diagnostic', { recursive: true });
   fs.writeFileSync('/tmp/northflank-diagnostic/responses.json', JSON.stringify(snapshots, null, 2));
