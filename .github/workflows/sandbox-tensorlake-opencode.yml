@@ -57,7 +57,7 @@ jobs:
           else
             DRY_RUN_FLAG=""
           fi
-          npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/sandbox/tensorlake-opencode.bench.ts \
+          pnpm exec bench run benchmarks/sandbox/tensorlake-opencode.bench.ts \
             --provider tensorlake \
             --iterations "$ITERATIONS" \
             --stagger-delay-ms "$STAGGER_DELAY_MS" \
