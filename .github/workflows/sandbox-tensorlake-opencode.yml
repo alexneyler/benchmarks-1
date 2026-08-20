@@ -43,12 +43,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Load secrets and run benchmark
+        env:
+          ITERATIONS: ${{ github.event.inputs.iterations || '60' }}
+          STAGGER_DELAY_MS: ${{ github.event.inputs.stagger_delay_ms || '60000' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || false }}
         run: |
           . benchmarks/scripts/load-vault-secrets.sh '^(TENSORLAKE_API_KEY|BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY)='
           RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          ITERATIONS="${ITERATIONS:-60}"
+          STAGGER_DELAY_MS="${STAGGER_DELAY_MS:-60000}"
+          if [ "$DRY_RUN" = "true" ]; then
+            DRY_RUN_FLAG="--no-ingest"
+          else
+            DRY_RUN_FLAG=""
+          fi
           npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/sandbox/tensorlake-opencode.bench.ts \
             --provider tensorlake \
-            --iterations "${{ github.event.inputs.iterations || '60' }}" \
-            --stagger-delay-ms "${{ github.event.inputs.stagger_delay_ms || '60000' }}" \
+            --iterations "$ITERATIONS" \
+            --stagger-delay-ms "$STAGGER_DELAY_MS" \
             --run-key "$RUN_KEY" \
-            ${{ github.event.inputs.dry_run == 'true' && '--no-ingest' || '' }}
+            $DRY_RUN_FLAG
