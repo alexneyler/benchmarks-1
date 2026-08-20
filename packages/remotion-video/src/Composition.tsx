@@ -19,8 +19,8 @@ export const Leaderboard: FC<LeaderboardData> = ({
 
   const TOP = 200;
   const ROW_HEIGHT = 104;
-  const LOGO_WIDTH = 200;
-  const LOGO_HEIGHT = 40;
+  const LOGO_WIDTH = 240;
+  const LOGO_HEIGHT = 48;
 
   const BACKGROUND = '#030712';
   const DIVIDER = '#1f2937';
@@ -68,16 +68,16 @@ export const Leaderboard: FC<LeaderboardData> = ({
         style={{
           position: 'absolute',
           left: 80,
-          top: 34,
-          width: 150,
-          height: 32,
+          top: 26,
+          width: 220,
+          height: 48,
           objectFit: 'contain',
         }}
       />
       <h1
         style={{
           position: 'absolute',
-          left: 254,
+          left: 324,
           top: 28,
           fontSize: 44,
           fontWeight: 800,
@@ -163,7 +163,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
               style={{
                 position: 'absolute',
                 right: 80,
-                top: (ROW_HEIGHT - 50) / 2,
+                top: 20,
                 textAlign: 'right',
                 display: 'flex',
                 flexDirection: 'column',
@@ -185,7 +185,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                   fontSize: 12,
                   fontWeight: 500,
                   color: MUTED,
-                  marginTop: 4,
+                  marginTop: 2,
                 }}
               >
                 Composite Score
@@ -196,7 +196,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
               style={{
                 position: 'absolute',
                 left: 80,
-                bottom: 14,
+                bottom: 10,
                 width: 1760,
                 height: 10,
                 backgroundColor: BAR_BG,
@@ -324,6 +324,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
               color: BACKGROUND,
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
+              zIndex: 2,
             }}
           >
             Partners
@@ -337,6 +338,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
               height: SPONSOR_LOGO_HEIGHT,
               display: 'flex',
               transform: `translateX(${-tickerOffset}px)`,
+              zIndex: 1,
             }}
           >
             {Array.from({ length: tickerRepeatCount })
