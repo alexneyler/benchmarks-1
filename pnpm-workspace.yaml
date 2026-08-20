@@ -2,3 +2,4 @@ packages:
   - packages/benchsdk
   - packages/create-bench
   - packages/benchsdk-runner
+  - packages/remotion-video
