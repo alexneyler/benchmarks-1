@@ -50,6 +50,9 @@ const opencodeConfig = JSON.stringify(
   2,
 );
 
+const promptB64 = Buffer.from(prompt).toString('base64');
+const configB64 = Buffer.from(opencodeConfig).toString('base64');
+
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'tensorlake-opencode-reliability',
   benchmarkName: 'Tensorlake OpenCode Reliability',
@@ -100,8 +103,10 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
     });
 
     await step('configure', async () => {
-      const cmd = `mkdir -p ~/.config/opencode && cat > ~/.config/opencode/opencode.json <<'OPENCODE_CONFIG_EOF'\n${opencodeConfig}\nOPENCODE_CONFIG_EOF`;
-      const result = (await sandbox.runCommand(cmd, { timeout: CONFIG_TIMEOUT_MS })) as RunResult;
+      const result = (await sandbox.runCommand(
+        `mkdir -p ~/.config/opencode && echo '${configB64}' | base64 -d > ~/.config/opencode/opencode.json`,
+        { timeout: CONFIG_TIMEOUT_MS },
+      )) as RunResult;
       if (result.exitCode !== 0) {
         throw new TaskError(
           `OpenCode config failed (exit ${result.exitCode}): ${result.stderr || result.stdout || ''}`.trim(),
@@ -109,13 +114,13 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
       }
     });
 
-    const runCmd = `cat > /tmp/opencode-prompt-$$ <<'OPENCODE_PROMPT_EOF'
-${prompt}
-OPENCODE_PROMPT_EOF
+    const promptPath = `/tmp/opencode-prompt-${ctx.taskIndex}`;
+    const runCmd = `set +e
+echo '${promptB64}' | base64 -d > ${promptPath}
 export PATH="$HOME/.opencode/bin:$PATH"
-cat /tmp/opencode-prompt-$$ | opencode run --auto --model ${model}
+cat ${promptPath} | opencode run --auto
 OPENCODE_EXIT=$?
-rm -f /tmp/opencode-prompt-$$
+rm -f ${promptPath}
 exit $OPENCODE_EXIT`;
 
     const output = (await step('run', async () =>
