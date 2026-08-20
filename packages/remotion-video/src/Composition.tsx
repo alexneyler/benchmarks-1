@@ -63,29 +63,36 @@ export const Leaderboard: FC<LeaderboardData> = ({
         position: 'relative',
       }}
     >
-      <Img
-        src={SITE_LOGO_DARK}
+      <div
         style={{
           position: 'absolute',
           left: 80,
           top: 26,
-          width: 220,
-          height: 48,
-          objectFit: 'contain',
-        }}
-      />
-      <h1
-        style={{
-          position: 'absolute',
-          left: 324,
-          top: 28,
-          fontSize: 44,
-          fontWeight: 800,
-          margin: 0,
+          width: 1760,
+          height: 64,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 24,
         }}
       >
-        {title}
-      </h1>
+        <Img
+          src={SITE_LOGO_DARK}
+          style={{
+            width: 264,
+            height: 56,
+            objectFit: 'contain',
+          }}
+        />
+        <h1
+          style={{
+            fontSize: 34,
+            fontWeight: 700,
+            margin: 0,
+          }}
+        >
+          {title}
+        </h1>
+      </div>
 
       {topProviders.map((provider) => {
         const y = TOP + (provider.rank - 1) * ROW_HEIGHT;

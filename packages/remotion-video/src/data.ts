@@ -13,7 +13,6 @@ export interface Sponsor {
 
 export interface LeaderboardData {
   title: string;
-  subtitle: string;
   updatedAt: string;
   providers: Provider[];
   sponsors: Sponsor[];

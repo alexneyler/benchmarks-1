@@ -1,36 +1,59 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {
+  capitalize,
+  normalizeProvider,
+  providerLogoUrl,
+  type LogoFormat,
+  type LogoVariant,
+} from './logo';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PKG_ROOT = path.resolve(__dirname, '..');
-const RESULTS_PATH = path.resolve(PKG_ROOT, '../../results/burst_tti/latest.json');
 const DATA_PATH = path.resolve(PKG_ROOT, 'src/data.json');
 
-const LOGOS_PAGE_URL = 'https://www.computesdk.com/benchmarks/sandboxes/';
-const SPONSORS_PAGE_URL = 'https://www.computesdk.com/partners/';
 const SITE_ORIGIN = 'https://www.computesdk.com';
-const LOGO_MAP_KEY = 'providerLogosDark';
+const SPONSORS_PAGE_URL = `${SITE_ORIGIN}/partners/`;
 
-const SLUG_ALIASES: Record<string, string> = {
-  'cloud-run': 'google-cloud-run',
-};
+const BENCHMARK = process.argv[2] ?? process.env.BENCHMARK ?? 'burst_tti';
+const BENCHMARK_TITLE = process.env.BENCHMARK_TITLE;
 
-const LOCAL_FALLBACKS: Record<string, string> = {
-  lightning: `${SITE_ORIGIN}/benchmarks/normal-lightning-ai-dark.svg`,
-  sail: `${SITE_ORIGIN}/benchmarks/normal-sail-dark.svg`,
+const LOGO_VARIANT: LogoVariant = 'logo-dark';
+const LOGO_FORMAT: LogoFormat = 'normalized';
+
+const BENCHMARK_TITLES: Record<string, string> = {
+  'burst_tti': 'Burst TTI Benchmarks',
+  'sequential_tti': 'Sequential TTI Benchmarks',
+  'staggered_tti': 'Staggered TTI Benchmarks',
+  'sandbox-dax': 'Dax Benchmarks',
+  'browser': 'Browser Benchmarks',
+  'browser-throughput': 'Browser Throughput Benchmarks',
+  'storage/1mb': 'Storage Benchmarks',
+  'storage/4mb': 'Storage Benchmarks',
+  'storage/10mb': 'Storage Benchmarks',
+  'storage/16mb': 'Storage Benchmarks',
+  'snapshot-fork/small': 'Snapshot Fork Benchmarks',
+  'ai-gateway-latency/anthropic': 'AI Gateway (Anthropic) Benchmarks',
+  'ai-gateway-latency/openai': 'AI Gateway (OpenAI) Benchmarks',
+  'ai-gateway-latency/gemini': 'AI Gateway (Gemini) Benchmarks',
+  'ai-gateway-latency/kimi': 'AI Gateway (Kimi) Benchmarks',
 };
 
 interface Iteration {
-  ttiMs: number;
+  phasesCompleted?: number;
+  phasesTotal?: number;
   error?: string;
+  [key: string]: unknown;
 }
 
 interface ResultEntry {
   provider: string;
-  iterations: Iteration[];
-  summary: { ttiMs: { median: number; p95: number; p99: number } };
+  compositeScore?: number | null;
+  successRate?: number | null;
   skipped?: boolean;
+  iterations?: Iteration[];
+  summary?: Record<string, unknown>;
 }
 
 interface ResultFile {
@@ -51,40 +74,62 @@ interface Sponsor {
   logoUrl: string;
 }
 
-const GATEWAY_PROVIDERS = ['render'];
-
-function titleCase(raw: string): string {
-  return raw
-    .split(/[-_]/)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
+function humanizeBenchmark(raw: string): string {
+  const parts = raw.split(/[/]/).pop() ?? raw;
+  const words = parts.split(/[-_]/).map((word) =>
+    word === 'ai'
+      ? 'AI'
+      : word === 'tti'
+      ? 'TTI'
+      : word.charAt(0).toUpperCase() + word.slice(1),
+  );
+  return `${words.join(' ')} Benchmarks`;
 }
 
-function formatProviderName(raw: string): string {
-  const lower = raw.toLowerCase();
-  if (lower === 'e2b') return 'E2B';
-  if (lower === 'opencomputer') return 'OpenComputer';
-  const name = titleCase(raw);
-  return GATEWAY_PROVIDERS.includes(lower) ? `${name}*` : name;
+function getBenchmarkTitle(benchmark: string, override?: string): string {
+  if (override) return override;
+  return BENCHMARK_TITLES[benchmark] ?? humanizeBenchmark(benchmark);
 }
 
-function scoreMetric(valueMs: number): number {
-  return Math.max(0, 100 * (1 - valueMs / 10_000));
+function getResultPath(benchmark: string): string {
+  return path.resolve(PKG_ROOT, '../../results', benchmark, 'latest.json');
 }
 
-function computeCompositeScore(entry: ResultEntry): number {
-  if (entry.skipped || entry.iterations.length === 0) return 0;
-  const successful = entry.iterations.filter((i) => !i.error).length;
-  const successRate = successful / entry.iterations.length;
-  if (successRate === 0) return 0;
+function computeScore(entry: ResultEntry): number {
+  if (typeof entry.compositeScore === 'number' && !Number.isNaN(entry.compositeScore)) {
+    return entry.compositeScore;
+  }
 
-  const { median, p95, p99 } = entry.summary.ttiMs;
-  const timingScore =
-    0.6 * scoreMetric(median) +
-    0.25 * scoreMetric(p95) +
-    0.15 * scoreMetric(p99);
+  const iterations = entry.iterations;
+  if (Array.isArray(iterations) && iterations.length > 0) {
+    const values = iterations
+      .map((it) => (typeof it.phasesCompleted === 'number' ? it.phasesCompleted : 0))
+      .sort((a, b) => a - b);
+    const mid = Math.floor(values.length / 2);
+    const median =
+      values.length % 2 !== 0
+        ? values[mid]
+        : (values[mid - 1] + values[mid]) / 2;
 
-  return Math.round(timingScore * successRate * 100) / 100;
+    const total =
+      iterations.find((it) => typeof it.phasesTotal === 'number' && it.phasesTotal > 0)
+        ?.phasesTotal ?? 7;
+
+    return Math.max(0, Math.min(100, (median / total) * 100));
+  }
+
+  return 0;
+}
+
+function resolveProviderLogoUrl(provider: string): string | null {
+  const normalized = normalizeProvider(provider);
+  const url = providerLogoUrl(normalized, LOGO_VARIANT, LOGO_FORMAT);
+  if (!url) return null;
+  return url.startsWith('/') ? `${SITE_ORIGIN}${url}` : url;
+}
+
+function formatProviderName(provider: string): string {
+  return capitalize(normalizeProvider(provider));
 }
 
 async function fetchSponsors(): Promise<Sponsor[]> {
@@ -98,12 +143,18 @@ async function fetchSponsors(): Promise<Sponsor[]> {
   const seen = new Set<string>();
   const sponsors: Sponsor[] = [];
 
-  const imgTags = decoded.match(/<img[^>]*src="[^"]*logos\.computesdk\.com[^"]*dark[^"]*"[^>]*>/g) ?? [];
+  const imgTags =
+    decoded.match(
+      /<img[^>]*src="[^"]*logos\.computesdk\.com[^"]*dark[^"]*"[^>]*>/g,
+    ) ?? [];
+
   for (const tag of imgTags) {
     const srcMatch = tag.match(/src="([^"]*)"/);
     const altMatch = tag.match(/alt="([^"]*)"/);
     if (!srcMatch) continue;
-    const src = srcMatch[1].startsWith('/') ? `${SITE_ORIGIN}${srcMatch[1]}` : srcMatch[1];
+    const src = srcMatch[1].startsWith('/')
+      ? `${SITE_ORIGIN}${srcMatch[1]}`
+      : srcMatch[1];
     if (seen.has(src)) continue;
     seen.add(src);
     sponsors.push({
@@ -115,59 +166,26 @@ async function fetchSponsors(): Promise<Sponsor[]> {
   return sponsors;
 }
 
-async function fetchLogoMap(): Promise<Record<string, string>> {
-  const response = await fetch(LOGOS_PAGE_URL);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${LOGOS_PAGE_URL}: ${response.status}`);
-  }
-  const html = await response.text();
-  const decoded = html.replace(/&quot;/g, '"');
-
-  const match = decoded.match(new RegExp(`${LOGO_MAP_KEY}":\\[0,({[^}]*})\\]`));
-  if (!match) {
-    throw new Error(`Could not find ${LOGO_MAP_KEY} map on page`);
-  }
-
-  const objectStr = match[1];
-  const jsonStr = objectStr.replace(/:\[0,"([^"]*)"\]/g, ':"$1"');
-  const map = JSON.parse(jsonStr) as Record<string, string>;
-
-  for (const [key, url] of Object.entries(map)) {
-    if (typeof url === 'string' && url.startsWith('/')) {
-      map[key] = `${SITE_ORIGIN}${url}`;
-    }
-  }
-
-  return map;
-}
-
-function resolveLogoUrl(provider: string, logoMap: Record<string, string>): string | null {
-  const slug = SLUG_ALIASES[provider] ?? provider;
-  const url = logoMap[slug] ?? logoMap[provider] ?? LOCAL_FALLBACKS[provider];
-  if (!url) return null;
-  return url.startsWith('/') ? `${SITE_ORIGIN}${url}` : url;
-}
-
 async function main() {
-  const [resultsRaw, logoMap, sponsors] = await Promise.all([
-    fs.readFile(RESULTS_PATH, 'utf-8').then(JSON.parse) as Promise<ResultFile>,
-    fetchLogoMap(),
+  const resultPath = getResultPath(BENCHMARK);
+  const [resultsRaw, sponsors] = await Promise.all([
+    fs.readFile(resultPath, 'utf-8').then(JSON.parse) as Promise<ResultFile>,
     fetchSponsors(),
   ]);
 
   const providers: Provider[] = resultsRaw.results
+    .filter((entry) => !entry.skipped)
     .map((entry) => ({
       provider: entry.provider,
       displayName: formatProviderName(entry.provider),
-      score: computeCompositeScore(entry),
-      logoUrl: resolveLogoUrl(entry.provider, logoMap),
+      score: computeScore(entry),
+      logoUrl: resolveProviderLogoUrl(entry.provider),
     }))
     .sort((a, b) => b.score - a.score)
-    .map((p, index) => ({ ...p, rank: index + 1 }));
+    .map((provider, index) => ({ ...provider, rank: index + 1 }));
 
   const data = {
-    title: 'Sandbox Benchmarks',
-    subtitle: 'A leaderboard of common benchmarks for each of our sandbox providers.',
+    title: getBenchmarkTitle(BENCHMARK, BENCHMARK_TITLE),
     updatedAt: resultsRaw.timestamp,
     providers,
     sponsors,
@@ -175,7 +193,9 @@ async function main() {
 
   await fs.mkdir(path.dirname(DATA_PATH), { recursive: true });
   await fs.writeFile(DATA_PATH, JSON.stringify(data, null, 2));
-  console.log(`Wrote ${DATA_PATH} with ${providers.length} providers and ${sponsors.length} sponsors`);
+  console.log(
+    `Wrote ${DATA_PATH} for ${BENCHMARK} with ${providers.length} providers and ${sponsors.length} sponsors`,
+  );
 }
 
 main().catch((err) => {
