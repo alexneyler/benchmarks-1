@@ -9,15 +9,15 @@ const DATA_PATH = path.resolve(PKG_ROOT, 'src/data.json');
 
 const LOGOS_PAGE_URL = 'https://www.computesdk.com/benchmarks/sandboxes/';
 const SITE_ORIGIN = 'https://www.computesdk.com';
-const LOGO_MAP_KEY = 'providerLogos';
+const LOGO_MAP_KEY = 'providerLogosDark';
 
 const SLUG_ALIASES: Record<string, string> = {
   'cloud-run': 'google-cloud-run',
 };
 
 const LOCAL_FALLBACKS: Record<string, string> = {
-  lightning: `${SITE_ORIGIN}/benchmarks/normal-lightning-ai-light.svg`,
-  sail: `${SITE_ORIGIN}/benchmarks/normal-sail-light.svg`,
+  lightning: `${SITE_ORIGIN}/benchmarks/normal-lightning-ai-dark.svg`,
+  sail: `${SITE_ORIGIN}/benchmarks/normal-sail-dark.svg`,
 };
 
 interface Iteration {

@@ -9,6 +9,9 @@ export const Leaderboard: FC<LeaderboardData> = ({
 }) => {
   const frame = useCurrentFrame();
   const topProviders = providers.slice(0, 5);
+  const minScore = topProviders[topProviders.length - 1]?.score ?? 0;
+
+  const RACE_DURATION = 120;
 
   const TOP = 170;
   const ROW_HEIGHT = 130;
@@ -17,13 +20,18 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const LOGO_WIDTH = 260;
   const LOGO_HEIGHT = 60;
 
+  function finishFrame(score: number): number {
+    const spread = Math.max(0.01, 100 - minScore);
+    return Math.round(RACE_DURATION * ((100 - score) / spread));
+  }
+
   return (
     <div
       style={{
         width: 1920,
         height: 1080,
-        backgroundColor: '#f9fafb',
-        color: '#111827',
+        backgroundColor: '#0f172a',
+        color: '#f3f4f6',
         fontFamily:
           "Inter, 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         position: 'relative',
@@ -47,7 +55,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
           left: 80,
           top: 115,
           fontSize: 24,
-          color: '#6b7280',
+          color: '#94a3b8',
           margin: 0,
         }}
       >
@@ -55,18 +63,18 @@ export const Leaderboard: FC<LeaderboardData> = ({
       </p>
 
       {topProviders.map((provider, index) => {
-        const start = index * 25;
-        const rowProgress = interpolate(frame, [start, start + 40], [0, 1], {
+        const entryProgress = interpolate(frame, [0, 15], [0, 1], {
           extrapolateLeft: 'clamp',
           extrapolateRight: 'clamp',
         });
-        const opacity = rowProgress;
-        const translateY = (1 - rowProgress) * 30;
+        const opacity = entryProgress;
+        const translateY = (1 - entryProgress) * 30;
         const y = TOP + index * ROW_HEIGHT;
 
+        const end = finishFrame(provider.score);
         const barProgress = interpolate(
           frame,
-          [start + 15, start + 40],
+          [0, end],
           [0, provider.score],
           { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
         );
@@ -81,9 +89,9 @@ export const Leaderboard: FC<LeaderboardData> = ({
               top: y,
               width: ROW_WIDTH,
               height: ROW_HEIGHT - 16,
-              backgroundColor: '#ffffff',
+              backgroundColor: '#1e293b',
               borderRadius: 20,
-              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
+              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.25)',
               opacity,
               transform: `translateY(${translateY}px)`,
             }}
@@ -95,7 +103,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                 top: 18,
                 fontSize: 48,
                 fontWeight: 800,
-                color: '#d1d5db',
+                color: '#475569',
                 width: 60,
                 textAlign: 'center',
               }}
@@ -136,10 +144,10 @@ export const Leaderboard: FC<LeaderboardData> = ({
                 top: 14,
                 fontSize: 56,
                 fontWeight: 800,
-                color: '#111827',
+                color: '#f3f4f6',
               }}
             >
-              {provider.score.toFixed(1)}
+              {barProgress.toFixed(1)}
             </span>
 
             <div
@@ -149,7 +157,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                 bottom: 22,
                 width: BAR_MAX_WIDTH,
                 height: 14,
-                backgroundColor: '#e5e7eb',
+                backgroundColor: '#334155',
                 borderRadius: 7,
               }}
             >
@@ -157,7 +165,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                 style={{
                   width: barWidth,
                   height: '100%',
-                  background: 'linear-gradient(90deg, #2563eb, #60a5fa)',
+                  background: 'linear-gradient(90deg, #3b82f6, #60a5fa)',
                   borderRadius: 7,
                 }}
               />
