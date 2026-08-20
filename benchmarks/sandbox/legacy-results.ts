@@ -6,7 +6,7 @@ import { byTaskIndex } from '../src/util/records.js';
 import { computeStats } from '../src/util/stats.js';
 import { computeCompositeScores } from './scoring.js';
 import { writeResultsJson } from './table.js';
-import type { BenchmarkResult, BenchmarkMode } from './types.js';
+import type { BenchmarkResult, BenchmarkMode, TimingResult } from './types.js';
 
 /**
  * When a sandbox launch actually started. Prefer the `create` step, since a
@@ -54,11 +54,11 @@ export function recordsToSandboxResults(
 ): BenchmarkResult[] {
   return participants.map((participant) => {
     const records = byTaskIndex(participant.records);
-    const iterations = records.map((r) => {
+    const iterations: TimingResult[] = records.map((r) => {
       const ttiMs = typeof r.data?.ttiMs === 'number' ? r.data.ttiMs : 0;
-      return r.status === 'error'
-        ? { ttiMs, error: r.errorCode ?? 'error' }
-        : { ttiMs };
+      if (r.status !== 'error') return { ttiMs };
+      const errorMessage = typeof r.data?.errorMessage === 'string' ? r.data.errorMessage : undefined;
+      return { ttiMs, error: r.errorCode ?? 'error', ...(errorMessage ? { errorMessage } : {}) };
     });
     const successful = iterations.filter((i) => !i.error);
     const summary = {

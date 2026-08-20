@@ -18,8 +18,10 @@ export interface ProviderConfig {
 export interface TimingResult {
   /** Total time from start to first successful code execution */
   ttiMs: number;
-  /** Error message if this iteration failed */
+  /** Error code if this iteration failed */
   error?: string;
+  /** Human-readable error message from the provider */
+  errorMessage?: string;
 }
 
 export interface Stats {
