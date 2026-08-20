@@ -51,7 +51,7 @@ jobs:
     # (missing-creds path) rather than failing.
     runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
     # runs-on: self-hosted
-    timeout-minutes: 60
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -92,7 +92,9 @@ jobs:
           # All matrix jobs for this workflow run share a single platform run. The
           # attempt number is included so re-runs do not rejoin completed runs.
           RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/storage/snapshot-fork.bench.ts \
+          # Cap the benchmark process at 60 minutes so the job can still upload
+          # partial results and complete instead of being cancelled by GitHub.
+          timeout 60m npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/storage/snapshot-fork.bench.ts \
             --provider ${{ matrix.provider }} \
             --dataset ${{ github.event.inputs.dataset || 'small' }} \
             --iterations ${{ (github.event_name == 'schedule' && '100') || github.event.inputs.iterations || (github.event_name == 'push' && '1') || '3' }} \
