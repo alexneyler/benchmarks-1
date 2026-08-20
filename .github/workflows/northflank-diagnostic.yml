@@ -1,0 +1,33 @@
+name: Northflank Diagnostic
+
+on:
+  push:
+    branches: [devin/northflank-diagnostic]
+
+concurrency:
+  group: northflank-diagnostic
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  diagnose:
+    name: Northflank API diagnostic
+    runs-on: namespace-profile-default;permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - uses: namespacelabs/nscloud-setup@v0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Load Northflank secrets and run API diagnostics
+        run: |
+          . benchmarks/scripts/load-vault-secrets.sh '^(NORTHFLANK_TOKEN|NORTHFLANK_PROJECT_ID|NORTHFLANK_TEAM_ID)'
+          npx tsx benchmarks/scripts/northflank-diagnose.ts
