@@ -17,7 +17,7 @@
     }
   },
   "bin": {
-    "bench": "./dist/bin.cjs"
+    "bench": "./dist/bin.js"
   },
   "files": [
     "dist",
