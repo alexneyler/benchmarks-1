@@ -57,7 +57,7 @@ jobs:
           else
             DRY_RUN_FLAG=""
           fi
-          pnpm exec bench run benchmarks/reliability/tensorlake-opencode.bench.ts \
+          pnpm exec bench run benchmarks/reliability/sandbox-opencode.bench.ts \
             --provider tensorlake \
             --iterations "$ITERATIONS" \
             --stagger-delay-ms "$STAGGER_DELAY_MS" \
