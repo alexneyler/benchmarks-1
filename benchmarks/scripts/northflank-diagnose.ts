@@ -48,7 +48,7 @@ function teamsFrom(body: unknown): Team[] {
 }
 
 function summarizeBody(body: unknown, max = 500): string {
-  const text = JSON.stringify(body);
+  const text = JSON.stringify(body) ?? String(body);
   return text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
