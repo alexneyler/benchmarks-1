@@ -84,12 +84,15 @@ describe('score with groupBy', () => {
             ],
           },
         ],
-      } as BenchmarkRunOutcome,
+      } as unknown as BenchmarkRunOutcome,
       spec,
     );
 
-    expect(results.map((r) => r.dimensions?.file_size)).toEqual(['1MB', '4MB']);
-    expect(results.every((r) => r.successRate === 1)).toBe(true);
+    const grouped = results.filter((r) => r.dimensions?.file_size != null);
+    expect(grouped.map((r) => r.dimensions.file_size)).toEqual(['1MB', '4MB']);
+    expect(grouped.every((r) => r.successRate === 1)).toBe(true);
+    // Run-wide aggregate across every group.
+    expect(results.find((r) => r.dimensions?.file_size == null)?.successRate).toBe(1);
   });
 
   it('counts a failure against its own group instead of a separate row', () => {
@@ -104,18 +107,20 @@ describe('score with groupBy', () => {
             ],
           },
         ],
-      } as BenchmarkRunOutcome,
+      } as unknown as BenchmarkRunOutcome,
       spec,
     );
 
-    expect(results).toHaveLength(1);
-    expect(results[0].dimensions?.file_size).toBe('1MB');
-    expect(results[0].successRate).toBe(0.5);
+    const groupRow = results.find((r) => r.dimensions?.file_size === '1MB');
+    expect(groupRow).toBeDefined();
+    expect(groupRow!.successRate).toBe(0.5);
+    // Run-wide aggregate spans both records.
+    expect(results.find((r) => r.dimensions?.file_size == null)?.successRate).toBe(0.5);
   });
 
   it('keeps a participant with no records as a skipped row', () => {
     const results = score(
-      { participants: [{ participant: 'aws-s3', records: [] }] } as BenchmarkRunOutcome,
+      { participants: [{ participant: 'aws-s3', records: [] }] } as unknown as BenchmarkRunOutcome,
       spec,
     );
 
@@ -146,7 +151,7 @@ describe('scoringConfigToSpec success rule', () => {
             ],
           },
         ],
-      } as BenchmarkRunOutcome,
+      } as unknown as BenchmarkRunOutcome,
       spec,
     );
 
@@ -170,7 +175,7 @@ describe('scoringConfigToSpec success rule', () => {
             ],
           },
         ],
-      } as BenchmarkRunOutcome,
+      } as unknown as BenchmarkRunOutcome,
       plain,
     );
 

@@ -282,7 +282,7 @@ export function score(outcome: BenchmarkRunOutcome, spec: ScoringSpec): Benchmar
     // A participant that recorded nothing has no group to belong to, but it
     // still has to appear in the summary as skipped rather than vanish from it.
     const groups = spec.groupBy && records.length > 0
-      ? groupRecordsByKey(records, spec.groupBy)
+      ? [{ value: undefined, records }, ...groupRecordsByKey(records, spec.groupBy)]
       : [{ value: undefined, records }];
 
     for (const group of groups) {

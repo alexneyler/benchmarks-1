@@ -561,7 +561,11 @@ export async function runBenchmark<T extends BaseParticipant>(
         platform: os.platform(),
         arch: os.arch(),
       };
-      await client.submitRunSummary(config.benchmarkSlug, runId, { run, results: scored });
+      await client.submitRunSummary(config.benchmarkSlug, runId, {
+        run,
+        results: scored,
+        ...(config.scoring ? { scoring: config.scoring as unknown as JsonObject } : {}),
+      });
     } catch (err) {
       // A ScoringSpecError means the scoring spec is misconfigured (e.g. metric
       // weights don't sum to 1.0) — an authoring bug, not a transient submit
