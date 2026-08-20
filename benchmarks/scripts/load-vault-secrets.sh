@@ -118,6 +118,7 @@ while IFS= read -r line; do
   fi
 done < /tmp/vault.envdef
 if [ -n "$missing_keys" ]; then
-  echo "::warning::load-vault-secrets.sh: missing ${missing_count} key(s): ${missing_keys}"
+  echo "::error::load-vault-secrets.sh: missing ${missing_count} key(s): ${missing_keys}" >&2
+  return 1 2>/dev/null || exit 1
 fi
 echo "::notice::load-vault-secrets.sh: resolved=${resolved_count} missing=${missing_count}"
