@@ -14,48 +14,43 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const topProviders = providers.slice(0, 5);
   const nextProviders = providers.slice(5, 10);
   const remainingOthers = Math.max(0, providers.length - 10);
-  const minScore = topProviders[topProviders.length - 1]?.score ?? 0;
 
-  const RACE_DURATION = 480;
+  const FINISH_START = 120; // 4s
+  const FINISH_GAP = 60; // 2s between each finish
 
-  const TOP = 210;
-  const ROW_HEIGHT = 100;
-  const ROW_WIDTH = 1760;
-  const CARD_GAP = 16;
+  const TOP = 200;
+  const ROW_HEIGHT = 104;
   const LOGO_WIDTH = 200;
   const LOGO_HEIGHT = 40;
 
   const BACKGROUND = '#030712';
-  const CARD_BG = '#0f172a';
-  const CARD_BORDER = '#1f2937';
+  const DIVIDER = '#1f2937';
   const TEXT = '#f3f4f6';
   const MUTED = '#9ca3af';
   const RANK_BG = '#1f2937';
   const RANK_TEXT = '#6b7280';
   const BAR_BG = '#1f2937';
   const BAR_FILL = '#3b82f6';
+  const TICKER_BG = '#0b1120';
 
-  function finishFrame(score: number): number {
-    const spread = Math.max(0.01, 100 - minScore);
-    return Math.max(1, Math.round(RACE_DURATION * ((100 - score) / spread)));
-  }
-
-  const rankOpacity = interpolate(frame, [0, 30], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
+  const rankOpacityFor = (end: number) =>
+    interpolate(frame, [Math.max(0, end - 45), end], [0, 1], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    });
 
   const SPONSOR_LOGO_WIDTH = 130;
   const SPONSOR_LOGO_HEIGHT = 40;
   const SPONSOR_GAP = 50;
-  const TICKER_SPEED = 3;
+  const TICKER_SPEED = 2;
   const sponsorItemWidth = SPONSOR_LOGO_WIDTH + SPONSOR_GAP;
   const tickerWidth = sponsors.length * sponsorItemWidth;
   const tickerOffset = (frame * TICKER_SPEED) % tickerWidth;
-  const tickerRepeatCount = Math.max(2, Math.ceil(ROW_WIDTH / tickerWidth) + 1);
+  const tickerRepeatCount = Math.max(2, Math.ceil(1920 / tickerWidth) + 1);
 
-  const nextTop = TOP + 5 * (ROW_HEIGHT + CARD_GAP) + 24;
-  const tickerTop = nextTop + 96 + 24;
+  const nextTop = TOP + 5 * ROW_HEIGHT + 48;
+  const tickerTop = 1000;
+
 
   return (
     <div
@@ -106,34 +101,34 @@ export const Leaderboard: FC<LeaderboardData> = ({
       </p>
 
       {topProviders.map((provider) => {
-        const y = TOP + (provider.rank - 1) * (ROW_HEIGHT + CARD_GAP);
-        const end = finishFrame(provider.score);
+        const y = TOP + (provider.rank - 1) * ROW_HEIGHT;
+        const end = FINISH_START + provider.rank * FINISH_GAP;
+        const rankOpacity = rankOpacityFor(end);
         const barProgress = interpolate(
           frame,
           [0, end],
           [0, provider.score],
           { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
         );
-        const barWidth = (barProgress / 100) * (ROW_WIDTH - 64);
+        const barWidth = (barProgress / 100) * 1760;
 
         return (
           <div
             key={provider.provider}
             style={{
               position: 'absolute',
-              left: 80,
+              left: 0,
               top: y,
-              width: ROW_WIDTH,
+              width: 1920,
               height: ROW_HEIGHT,
-              backgroundColor: CARD_BG,
-              border: `1px solid ${CARD_BORDER}`,
-              borderRadius: 16,
+              borderBottom: `1px solid ${DIVIDER}`,
+              boxSizing: 'border-box',
             }}
           >
             <div
               style={{
                 position: 'absolute',
-                left: 20,
+                left: 80,
                 top: (ROW_HEIGHT - 36) / 2,
                 width: 36,
                 height: 36,
@@ -156,7 +151,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                 src={provider.logoUrl}
                 style={{
                   position: 'absolute',
-                  left: 72,
+                  left: 136,
                   top: (ROW_HEIGHT - LOGO_HEIGHT) / 2,
                   width: LOGO_WIDTH,
                   height: LOGO_HEIGHT,
@@ -167,7 +162,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
               <span
                 style={{
                   position: 'absolute',
-                  left: 72,
+                  left: 136,
                   top: (ROW_HEIGHT - 28) / 2,
                   fontSize: 22,
                   fontWeight: 700,
@@ -180,7 +175,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
             <div
               style={{
                 position: 'absolute',
-                right: 32,
+                right: 80,
                 top: (ROW_HEIGHT - 50) / 2,
                 textAlign: 'right',
                 display: 'flex',
@@ -213,9 +208,9 @@ export const Leaderboard: FC<LeaderboardData> = ({
             <div
               style={{
                 position: 'absolute',
-                left: 20,
-                bottom: 8,
-                width: ROW_WIDTH - 40,
+                left: 80,
+                bottom: 16,
+                width: 1760,
                 height: 4,
                 backgroundColor: BAR_BG,
                 borderRadius: 2,
@@ -238,20 +233,18 @@ export const Leaderboard: FC<LeaderboardData> = ({
         <div
           style={{
             position: 'absolute',
-            left: 80,
+            left: 0,
             top: nextTop,
-            width: ROW_WIDTH,
-            height: 96,
-            backgroundColor: CARD_BG,
-            border: `1px solid ${CARD_BORDER}`,
-            borderRadius: 16,
+            width: 1920,
+            height: 80,
+            borderTop: `1px solid ${DIVIDER}`,
           }}
         >
           <span
             style={{
               position: 'absolute',
-              left: 28,
-              top: 12,
+              left: 80,
+              top: 28,
               fontSize: 16,
               fontWeight: 700,
               color: MUTED,
@@ -262,13 +255,13 @@ export const Leaderboard: FC<LeaderboardData> = ({
           <div
             style={{
               position: 'absolute',
-              left: 28,
-              top: 38,
-              right: 28,
+              left: 176,
+              top: 18,
+              right: 80,
               height: 44,
               display: 'flex',
               alignItems: 'center',
-              gap: '18px',
+              gap: '24px',
             }}
           >
             {nextProviders.map((provider) =>
@@ -317,21 +310,22 @@ export const Leaderboard: FC<LeaderboardData> = ({
         <div
           style={{
             position: 'absolute',
-            left: 80,
+            left: 0,
             top: tickerTop,
-            width: ROW_WIDTH,
+            width: 1920,
             height: 80,
-            backgroundColor: CARD_BG,
-            border: `1px solid ${CARD_BORDER}`,
-            borderRadius: 16,
+            backgroundColor: TICKER_BG,
+            borderTop: `1px solid ${DIVIDER}`,
             overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
           }}
         >
           <div
             style={{
               position: 'absolute',
               left: 0,
-              top: 15,
+              top: 20,
               width: tickerWidth * tickerRepeatCount,
               height: SPONSOR_LOGO_HEIGHT,
               display: 'flex',
