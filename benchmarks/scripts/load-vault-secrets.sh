@@ -114,7 +114,7 @@ while IFS= read -r line; do
     resolved_count=$((resolved_count + 1))
   else
     missing_count=$((missing_count + 1))
-    missing_keys="${missing_keys:+, }${key} (object_id=${object_id})"
+    missing_keys="${missing_keys}${missing_keys:+, }${key} (object_id=${object_id})"
   fi
 done < /tmp/vault.envdef
 if [ -n "$missing_keys" ]; then
