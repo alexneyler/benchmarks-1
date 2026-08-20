@@ -1,5 +1,3 @@
-import { ApiClient, ApiClientInMemoryContextProvider } from '@northflank/js-client';
-
 interface Project {
   id: string;
   name?: string;
@@ -13,9 +11,14 @@ interface Team {
 const token = process.env.NORTHFLANK_TOKEN;
 const projectId = process.env.NORTHFLANK_PROJECT_ID;
 
-async function rawApi(path: string) {
+async function rawApi(path: string, init?: RequestInit) {
   const res = await fetch(`https://api.northflank.com${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      ...init?.headers,
+    },
   });
   let body: unknown;
   try {
@@ -40,11 +43,9 @@ function teamsFrom(body: unknown): Team[] {
   return ((data?.teams ?? anyBody.teams) as Team[] | undefined) ?? [];
 }
 
-function buildClient() {
-  const ctx = new ApiClientInMemoryContextProvider();
-  ctx.addContext({ name: 'diagnostic', token: token!, host: 'https://api.northflank.com' });
-  ctx.useContext('diagnostic');
-  return new ApiClient(ctx, { throwErrorOnHttpErrorCode: false });
+function summarizeBody(body: unknown, max = 500): string {
+  const text = JSON.stringify(body);
+  return text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
 async function main() {
@@ -58,7 +59,7 @@ async function main() {
 
   const direct = await rawApi(`/v1/projects/${projectId}`);
   console.log(`/v1/projects/${projectId}: ${direct.status}`);
-  console.log(`  body: ${JSON.stringify(direct.body).slice(0, 500)}`);
+  console.log(`  body: ${summarizeBody(direct.body)}`);
 
   const projectsList = await rawApi('/v1/projects');
   const personalProjects = projectsFrom(projectsList.body);
@@ -81,50 +82,40 @@ async function main() {
       console.log(`Found project in team: ${team.name ?? '(no name)'} (id: ${team.id})`);
       const teamProject = await rawApi(`/v1/teams/${team.id}/projects/${projectId}`);
       console.log(`/v1/teams/${team.id}/projects/${projectId}: ${teamProject.status}`);
+      console.log(`  body: ${summarizeBody(teamProject.body)}`);
     }
   }
 
-  const client = buildClient();
+  const services = await rawApi(`/v1/projects/${projectId}/services`);
+  console.log(`/v1/projects/${projectId}/services: ${services.status}`);
+  console.log(`  body: ${summarizeBody(services.body)}`);
 
-  console.log('--- js-client calls ---');
-  try {
-    const getProject = await client.get.project({ parameters: { projectId } });
-    console.log(`client.get.project: ${getProject.rawResponse.status}`);
-  } catch (error) {
-    console.log(`client.get.project threw: ${error instanceof Error ? error.message : String(error)}`);
-  }
-
-  try {
-    const listServices = await client.list.services({ parameters: { projectId } });
-    console.log(`client.list.services: ${listServices.rawResponse.status}`);
-  } catch (error) {
-    console.log(`client.list.services threw: ${error instanceof Error ? error.message : String(error)}`);
-  }
-
-  try {
-    const createRes = await client.create.service.deployment({
-      parameters: { projectId },
-      data: {
-        name: `computesdk-diagnostic-${Date.now()}`,
-        billing: { deploymentPlan: 'nf-compute-10' },
-        deployment: {
-          instances: 1,
-          docker: { configType: 'customCommand', customCommand: 'tail -f /dev/null' },
-        },
+  const createRes = await rawApi(`/v1/projects/${projectId}/services/deployment`, {
+    method: 'POST',
+    body: JSON.stringify({
+      name: `computesdk-diagnostic-${Date.now()}`,
+      billing: { deploymentPlan: 'nf-compute-10' },
+      deployment: {
+        instances: 1,
+        docker: { configType: 'customCommand', customCommand: 'tail -f /dev/null' },
       },
-    });
-    console.log(`client.create.service.deployment: ${createRes.rawResponse.status}`);
-    if (createRes.data?.id) {
-      console.log(`  created service ${createRes.data.id}; cleaning up...`);
-      try {
-        await client.delete.service({ parameters: { projectId, serviceId: createRes.data.id } });
-        console.log('  cleanup succeeded');
-      } catch (error) {
-        console.log(`  cleanup failed: ${error instanceof Error ? error.message : String(error)}`);
-      }
-    }
-  } catch (error) {
-    console.log(`client.create.service.deployment threw: ${error instanceof Error ? error.message : String(error)}`);
+    }),
+  });
+  console.log(`/v1/projects/${projectId}/services/deployment (POST): ${createRes.status}`);
+  console.log(`  body: ${summarizeBody(createRes.body)}`);
+
+  const serviceId =
+    createRes.status === 200 &&
+    createRes.body &&
+    typeof createRes.body === 'object' &&
+    (createRes.body as Record<string, unknown>).data &&
+    typeof (createRes.body as Record<string, unknown>).data === 'object'
+      ? ((createRes.body as Record<string, unknown>).data as Record<string, unknown>).id
+      : undefined;
+  if (typeof serviceId === 'string') {
+    console.log(`Created diagnostic service ${serviceId}; cleaning up...`);
+    const deleteRes = await rawApi(`/v1/projects/${projectId}/services/${serviceId}`, { method: 'DELETE' });
+    console.log(`DELETE service: ${deleteRes.status}`);
   }
 }
 
