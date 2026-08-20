@@ -12,23 +12,13 @@ export const config = defineBenchmarkConfig({
   staggerDelayMs: 60_000,
   participants: providers,
   defaultProviders: ['tensorlake'],
-  onScore: (lowerIsBetter) => ({
-    metrics: [
-      lowerIsBetter('totalMs', {
-        unit: 'ms',
-        ceiling: 240_000,
-        weights: { median: 1, p95: 0, p99: 0 },
-      }),
-    ],
-  }),
 });
 
 export const task = defineTask<ProviderConfig>(async (ctx) => {
-  const { participant, step, measure } = ctx;
+  const { participant, step } = ctx;
   const compute = participant.createCompute();
 
   let sandbox: any;
-  const start = performance.now();
 
   try {
     sandbox = await step('create', () =>
@@ -67,11 +57,6 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
     if (!stdout.includes('tensorlake-ok')) {
       throw new TaskError(`OpenCode output did not include "tensorlake-ok": ${stdout}`.trim());
     }
-
-    measure({ totalMs: performance.now() - start });
-  } catch (err) {
-    measure({ totalMs: performance.now() - start });
-    throw err;
   } finally {
     if (sandbox) {
       await step(
