@@ -8,22 +8,22 @@ export const Leaderboard: FC<LeaderboardData> = ({
   providers,
 }) => {
   const frame = useCurrentFrame();
+  const topProviders = providers.slice(0, 5);
 
-  const TOP = 150;
-  const ROW_HEIGHT = 34;
-  const NAME_X = 260;
-  const BAR_X = 500;
-  const BAR_MAX_WIDTH = 800;
-  const SCORE_X = BAR_X + BAR_MAX_WIDTH + 32;
-  const LOGO_SIZE = 28;
+  const TOP = 170;
+  const ROW_HEIGHT = 130;
+  const ROW_WIDTH = 1760;
+  const BAR_MAX_WIDTH = 1050;
+  const LOGO_WIDTH = 260;
+  const LOGO_HEIGHT = 60;
 
   return (
     <div
       style={{
         width: 1920,
         height: 1080,
-        backgroundColor: '#0a0a0a',
-        color: '#f5f5f5',
+        backgroundColor: '#f9fafb',
+        color: '#111827',
         fontFamily:
           "Inter, 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         position: 'relative',
@@ -34,7 +34,8 @@ export const Leaderboard: FC<LeaderboardData> = ({
           position: 'absolute',
           left: 80,
           top: 40,
-          fontSize: 56,
+          fontSize: 64,
+          fontWeight: 800,
           margin: 0,
         }}
       >
@@ -44,28 +45,28 @@ export const Leaderboard: FC<LeaderboardData> = ({
         style={{
           position: 'absolute',
           left: 80,
-          top: 110,
+          top: 115,
           fontSize: 24,
-          color: '#9ca3af',
+          color: '#6b7280',
           margin: 0,
         }}
       >
         {subtitle}
       </p>
 
-      {providers.map((provider, index) => {
-        const start = index * 9;
-        const rowProgress = interpolate(frame, [start, start + 18], [0, 1], {
+      {topProviders.map((provider, index) => {
+        const start = index * 25;
+        const rowProgress = interpolate(frame, [start, start + 40], [0, 1], {
           extrapolateLeft: 'clamp',
           extrapolateRight: 'clamp',
         });
         const opacity = rowProgress;
-        const translateX = (1 - rowProgress) * -40;
+        const translateY = (1 - rowProgress) * 30;
         const y = TOP + index * ROW_HEIGHT;
 
         const barProgress = interpolate(
           frame,
-          [start + 8, start + 24],
+          [start + 15, start + 40],
           [0, provider.score],
           { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
         );
@@ -78,21 +79,25 @@ export const Leaderboard: FC<LeaderboardData> = ({
               position: 'absolute',
               left: 80,
               top: y,
-              width: 1760,
-              height: ROW_HEIGHT,
+              width: ROW_WIDTH,
+              height: ROW_HEIGHT - 16,
+              backgroundColor: '#ffffff',
+              borderRadius: 20,
+              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
               opacity,
-              transform: `translateX(${translateX}px)`,
+              transform: `translateY(${translateY}px)`,
             }}
           >
             <span
               style={{
                 position: 'absolute',
-                left: 0,
-                top: 2,
-                width: 40,
-                fontSize: 18,
-                color: '#6b7280',
-                fontWeight: 700,
+                left: 28,
+                top: 18,
+                fontSize: 48,
+                fontWeight: 800,
+                color: '#d1d5db',
+                width: 60,
+                textAlign: 'center',
               }}
             >
               {provider.rank}
@@ -103,65 +108,60 @@ export const Leaderboard: FC<LeaderboardData> = ({
                 src={provider.logoUrl}
                 style={{
                   position: 'absolute',
-                  left: 50,
-                  top: 2,
-                  width: LOGO_SIZE,
-                  height: LOGO_SIZE,
+                  left: 110,
+                  top: 22,
+                  width: LOGO_WIDTH,
+                  height: LOGO_HEIGHT,
                   objectFit: 'contain',
                 }}
               />
-            ) : null}
+            ) : (
+              <span
+                style={{
+                  position: 'absolute',
+                  left: 110,
+                  top: 28,
+                  fontSize: 28,
+                  fontWeight: 700,
+                }}
+              >
+                {provider.displayName}
+              </span>
+            )}
 
             <span
               style={{
                 position: 'absolute',
-                left: NAME_X,
-                top: 2,
-                fontSize: 20,
-                fontWeight: 600,
-                width: 220,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                right: 40,
+                top: 14,
+                fontSize: 56,
+                fontWeight: 800,
+                color: '#111827',
               }}
             >
-              {provider.displayName}
+              {provider.score.toFixed(1)}
             </span>
 
             <div
               style={{
                 position: 'absolute',
-                left: BAR_X,
-                top: 10,
+                left: 110,
+                bottom: 22,
                 width: BAR_MAX_WIDTH,
-                height: 12,
-                backgroundColor: '#1f2937',
-                borderRadius: 6,
+                height: 14,
+                backgroundColor: '#e5e7eb',
+                borderRadius: 7,
               }}
             >
               <div
                 style={{
                   width: barWidth,
                   height: '100%',
-                  background: 'linear-gradient(90deg, #3b82f6, #60a5fa)',
-                  borderRadius: 6,
+                  background: 'linear-gradient(90deg, #2563eb, #60a5fa)',
+                  borderRadius: 7,
                 }}
               />
             </div>
-
-            <span
-              style={{
-                position: 'absolute',
-                left: SCORE_X,
-                top: 2,
-                fontSize: 20,
-                fontWeight: 700,
-                color: '#60a5fa',
-                width: 80,
-              }}
-            >
-              {provider.score.toFixed(1)}
-            </span>
           </div>
         );
       })}

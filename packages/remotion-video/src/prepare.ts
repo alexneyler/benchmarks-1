@@ -9,7 +9,16 @@ const DATA_PATH = path.resolve(PKG_ROOT, 'src/data.json');
 
 const LOGOS_PAGE_URL = 'https://www.computesdk.com/benchmarks/sandboxes/';
 const SITE_ORIGIN = 'https://www.computesdk.com';
-const LOGO_MAP_KEY = 'providerLogosDark';
+const LOGO_MAP_KEY = 'providerLogos';
+
+const SLUG_ALIASES: Record<string, string> = {
+  'cloud-run': 'google-cloud-run',
+};
+
+const LOCAL_FALLBACKS: Record<string, string> = {
+  lightning: `${SITE_ORIGIN}/benchmarks/normal-lightning-ai-light.svg`,
+  sail: `${SITE_ORIGIN}/benchmarks/normal-sail-light.svg`,
+};
 
 interface Iteration {
   ttiMs: number;
@@ -38,11 +47,18 @@ interface Provider {
 
 const GATEWAY_PROVIDERS = ['render'];
 
+function titleCase(raw: string): string {
+  return raw
+    .split(/[-_]/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
 function formatProviderName(raw: string): string {
   const lower = raw.toLowerCase();
   if (lower === 'e2b') return 'E2B';
   if (lower === 'opencomputer') return 'OpenComputer';
-  const name = raw.charAt(0).toUpperCase() + raw.slice(1);
+  const name = titleCase(raw);
   return GATEWAY_PROVIDERS.includes(lower) ? `${name}*` : name;
 }
 
@@ -91,6 +107,13 @@ async function fetchLogoMap(): Promise<Record<string, string>> {
   return map;
 }
 
+function resolveLogoUrl(provider: string, logoMap: Record<string, string>): string | null {
+  const slug = SLUG_ALIASES[provider] ?? provider;
+  const url = logoMap[slug] ?? logoMap[provider] ?? LOCAL_FALLBACKS[provider];
+  if (!url) return null;
+  return url.startsWith('/') ? `${SITE_ORIGIN}${url}` : url;
+}
+
 async function main() {
   const [resultsRaw, logoMap] = await Promise.all([
     fs.readFile(RESULTS_PATH, 'utf-8').then(JSON.parse) as Promise<ResultFile>,
@@ -102,7 +125,7 @@ async function main() {
       provider: entry.provider,
       displayName: formatProviderName(entry.provider),
       score: computeCompositeScore(entry),
-      logoUrl: logoMap[entry.provider] ?? null,
+      logoUrl: resolveLogoUrl(entry.provider, logoMap),
     }))
     .sort((a, b) => b.score - a.score)
     .map((p, index) => ({ ...p, rank: index + 1 }));
