@@ -69,9 +69,10 @@ async function main() {
   const claims = decodeTokenClaims(token);
   if (claims) {
     console.log(`Token claim keys: ${Object.keys(claims).join(', ')}`);
-    for (const key of ['sub', 'team', 'teamId', 'org', 'orgId', 'scope', 'scopes', 'role', 'aud']) {
+    for (const key of ['entityId', 'entityType', 'type', 'roleId', 'roleEntityId', 'roleEntityType', 'roleInternalId']) {
       if (claims[key] !== undefined) {
-        console.log(`  ${key}: ${JSON.stringify(claims[key])}`);
+        const value = typeof claims[key] === 'string' ? `${(claims[key] as string).slice(0, 8)}...` : JSON.stringify(claims[key]);
+        console.log(`  ${key}: ${value}`);
       }
     }
   } else {
