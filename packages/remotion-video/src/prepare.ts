@@ -166,8 +166,8 @@ async function main() {
     .map((p, index) => ({ ...p, rank: index + 1 }));
 
   const data = {
-    title: 'Sandbox Benchmark Composite Scores',
-    subtitle: 'Burst concurrency leaderboard',
+    title: 'Sandbox Benchmarks',
+    subtitle: 'A leaderboard of common benchmarks for each of our sandbox providers.',
     updatedAt: resultsRaw.timestamp,
     providers,
     sponsors,
