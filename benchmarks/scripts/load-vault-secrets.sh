@@ -46,7 +46,7 @@ deleted_count=$(jq --arg KEYS "$KEYS_REGEX" '
     | (.labels // []) as $l
     | (($l | map(select(.name=="name")) | .[0].value) // .description // "") as $name
     | select($name | test("^[A-Z][A-Z0-9_]*$"))
-    | select($name | test($KEYS))
+    | select(($name + "=") | test($KEYS))
   ]
   | length
 ' <<< "$vault_json")
@@ -58,7 +58,7 @@ active_raw_count=$(jq --arg KEYS "$KEYS_REGEX" '
     | (.labels // []) as $l
     | (($l | map(select(.name=="name")) | .[0].value) // .description // "") as $name
     | select($name | test("^[A-Z][A-Z0-9_]*$"))
-    | select($name | test($KEYS))
+    | select(($name + "=") | test($KEYS))
   ]
   | length
 ' <<< "$vault_json")
@@ -70,7 +70,7 @@ jq -r --arg KEYS "$KEYS_REGEX" '
     | (.labels // []) as $l
     | (($l | map(select(.name=="name")) | .[0].value) // .description // "") as $name
     | select($name | test("^[A-Z][A-Z0-9_]*$"))
-    | select($name | test($KEYS))
+    | select(($name + "=") | test($KEYS))
     | {name: $name, object_id: .object_id}
   ]
   | group_by(.name)
