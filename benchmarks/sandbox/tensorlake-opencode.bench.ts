@@ -4,55 +4,19 @@ import { withTimeout } from '../src/util/timeout.js';
 import { providers } from './providers.js';
 import type { ProviderConfig } from './types.js';
 
-const DEFAULT_MODEL = 'opencode/gpt-5-nano';
-const DEFAULT_PROMPT = 'Reply with the exact text "tensorlake-ok".';
-const DEFAULT_EXPECTED = 'tensorlake-ok';
+const MODEL = 'opencode/gpt-5-nano';
+const PROMPT = 'Reply with the exact text "tensorlake-ok".';
+const EXPECTED = 'tensorlake-ok';
 
 const CREATE_TIMEOUT_MS = 120_000;
 const INSTALL_TIMEOUT_MS = 60_000;
+const RUN_TIMEOUT_MS = 180_000;
 const DESTROY_TIMEOUT_MS = 30_000;
+const SANDBOX_TIMEOUT_MS = 600_000;
+
 const HOME_DIR = '/tmp/opencode-home';
 const INSTALL_DIR = `${HOME_DIR}/.opencode/bin`;
-const CONFIG_DIR = `${HOME_DIR}/.config/opencode`;
-const PROMPT_PATH = `${HOME_DIR}/prompt.txt`;
-const INSTALL_SCRIPT_PATH = '/tmp/opencode-install.sh';
-
-const model = process.env.OPENCODE_MODEL?.trim() || DEFAULT_MODEL;
-const prompt = process.env.OPENCODE_PROMPT?.trim() || DEFAULT_PROMPT;
-const expected = process.env.OPENCODE_EXPECTED?.trim() || DEFAULT_EXPECTED;
-const opencodeTimeoutMs = parseInt(process.env.OPENCODE_TIMEOUT_MS || '180000', 10);
-const sandboxTimeoutMs = parseInt(process.env.OPENCODE_SANDBOX_TIMEOUT_MS || '600000', 10);
-
-interface RunResult {
-  exitCode: number;
-  stdout?: string;
-  stderr?: string;
-}
-
-const opencodeConfig = JSON.stringify(
-  {
-    model,
-    permission: {
-      read: 'allow',
-      edit: 'allow',
-      glob: 'allow',
-      grep: 'allow',
-      list: 'allow',
-      bash: 'allow',
-      task: 'allow',
-      external_directory: 'allow',
-      todowrite: 'allow',
-      question: 'allow',
-      webfetch: 'allow',
-      websearch: 'allow',
-      lsp: 'allow',
-      doom_loop: 'allow',
-      skill: 'allow',
-    },
-  },
-  null,
-  2,
-);
+const INSTALL_SCRIPT = '/tmp/opencode-install.sh';
 
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'tensorlake-opencode-reliability',
@@ -67,7 +31,7 @@ export const config = defineBenchmarkConfig({
       lowerIsBetter('totalMs', {
         unit: 'ms',
         ceiling: 240_000,
-        weights: { median: 0.50, p95: 0.30, p99: 0.20 },
+        weights: { median: 1, p95: 0, p99: 0 },
       }),
     ],
   }),
@@ -85,7 +49,7 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
       withTimeout(
         compute.sandbox.create({
           ...participant.sandboxOptions,
-          timeout: sandboxTimeoutMs,
+          timeout: SANDBOX_TIMEOUT_MS,
         }),
         participant.timeout ?? CREATE_TIMEOUT_MS,
         'Sandbox creation timed out',
@@ -93,44 +57,29 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
     );
 
     await step('install', async () => {
-      const result = (await sandbox.runCommand(
-        `curl -fsSL https://opencode.ai/install -o ${INSTALL_SCRIPT_PATH} && HOME=${HOME_DIR} bash ${INSTALL_SCRIPT_PATH} --no-modify-path`,
+      const result = await sandbox.runCommand(
+        `curl -fsSL https://opencode.ai/install -o ${INSTALL_SCRIPT} && HOME=${HOME_DIR} bash ${INSTALL_SCRIPT} --no-modify-path`,
         { timeout: INSTALL_TIMEOUT_MS },
-      )) as RunResult;
+      );
       if (result.exitCode !== 0) {
-        throw new TaskError(
-          `OpenCode install failed (exit ${result.exitCode}): ${result.stderr || result.stdout || ''}`.trim(),
-        );
+        throw new TaskError(`OpenCode install failed (exit ${result.exitCode})`);
       }
     });
 
-    await step('configure', async () => {
-      await sandbox.filesystem.mkdir(CONFIG_DIR);
-      await sandbox.filesystem.writeFile(`${CONFIG_DIR}/opencode.json`, opencodeConfig);
-    });
-
-    await step('write-prompt', async () => {
-      await sandbox.filesystem.writeFile(PROMPT_PATH, prompt);
-    });
-
-    const output = (await step('run', async () =>
+    const output = await step('run', async () =>
       sandbox.runCommand(
-        `export HOME=${HOME_DIR} && export PATH="${INSTALL_DIR}:$PATH" && cat ${PROMPT_PATH} | opencode run --auto`,
-        { timeout: opencodeTimeoutMs },
+        `export HOME=${HOME_DIR} && export PATH="${INSTALL_DIR}:$PATH" && opencode run --auto --model ${MODEL} '${PROMPT}'`,
+        { timeout: RUN_TIMEOUT_MS },
       ),
-    )) as RunResult;
+    );
 
     if (output.exitCode !== 0) {
-      throw new TaskError(
-        `OpenCode run failed (exit ${output.exitCode}): ${output.stderr || output.stdout || ''}`.trim(),
-      );
+      throw new TaskError(`OpenCode run failed (exit ${output.exitCode})`);
     }
 
     const stdout = output.stdout || '';
-    if (!stdout.includes(expected)) {
-      throw new TaskError(
-        `OpenCode output did not include "${expected}": ${stdout}`.trim(),
-      );
+    if (!stdout.includes(EXPECTED)) {
+      throw new TaskError(`OpenCode output did not include "${EXPECTED}": ${stdout}`.trim());
     }
 
     measure({ totalMs: performance.now() - start });
@@ -148,7 +97,7 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
             'Destroy timeout',
           ),
         { reportConcurrency: false },
-      ).catch((err) => console.warn(`[cleanup] destroy failed: ${String(err)}`));
+      ).catch((err: unknown) => console.warn(`[cleanup] destroy failed: ${String(err)}`));
     }
   }
 });
