@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+
 interface Project {
   id: string;
   name?: string;
@@ -10,6 +12,8 @@ interface Team {
 
 const token = process.env.NORTHFLANK_TOKEN;
 const projectId = process.env.NORTHFLANK_PROJECT_ID;
+
+const snapshots: { step: string; status: number; body: unknown }[] = [];
 
 async function rawApi(path: string, init?: RequestInit) {
   const res = await fetch(`https://api.northflank.com${path}`, {
@@ -48,6 +52,14 @@ function summarizeBody(body: unknown, max = 500): string {
   return text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
+async function snapshot(step: string, path: string, init?: RequestInit) {
+  const { status, body } = await rawApi(path, init);
+  snapshots.push({ step, status, body });
+  console.log(`${step}: ${status}`);
+  console.log(`  body: ${summarizeBody(body)}`);
+  return { status, body };
+}
+
 function decodeTokenClaims(jwt: string): Record<string, unknown> | undefined {
   const parts = jwt.split('.');
   if (parts.length !== 3) return undefined;
@@ -79,26 +91,18 @@ async function main() {
     console.log('Token is not a JWT or could not be decoded');
   }
 
-  const plans = await rawApi('/v1/plans');
-  console.log(`/v1/plans: ${plans.status}`);
-
-  const direct = await rawApi(`/v1/projects/${projectId}`);
-  console.log(`/v1/projects/${projectId}: ${direct.status}`);
-  console.log(`  body: ${summarizeBody(direct.body)}`);
+  await snapshot('/v1/plans', '/v1/plans');
+  await snapshot('/v1/projects/{projectId}', `/v1/projects/${projectId}`);
 
   if (claims?.roleEntityType === 'team' && typeof claims.roleEntityId === 'string') {
     const inferredTeamId = claims.roleEntityId;
     console.log('Token is team-scoped; trying team-scoped project endpoints');
-    const teamProject = await rawApi(`/v1/teams/${inferredTeamId}/projects/${projectId}`);
-    console.log(`/v1/teams/{roleEntityId}/projects/${projectId}: ${teamProject.status}`);
-    console.log(`  body: ${summarizeBody(teamProject.body)}`);
-
-    const teamServices = await rawApi(`/v1/teams/${inferredTeamId}/projects/${projectId}/services`);
-    console.log(`/v1/teams/{roleEntityId}/projects/${projectId}/services: ${teamServices.status}`);
-    console.log(`  body: ${summarizeBody(teamServices.body)}`);
+    await snapshot('/v1/teams/{roleEntityId}/projects/{projectId}', `/v1/teams/${inferredTeamId}/projects/${projectId}`);
+    await snapshot('/v1/teams/{roleEntityId}/projects/{projectId}/services', `/v1/teams/${inferredTeamId}/projects/${projectId}/services`);
   }
 
   const projectsList = await rawApi('/v1/projects');
+  snapshots.push({ step: '/v1/projects (full response)', status: projectsList.status, body: projectsList.body });
   const personalProjects = projectsFrom(projectsList.body);
   console.log(`Personal projects total: ${personalProjects.length}`);
   const matching = personalProjects.filter((p) => p.id === projectId);
@@ -108,26 +112,26 @@ async function main() {
   }
 
   const teamsList = await rawApi('/v1/teams');
+  snapshots.push({ step: '/v1/teams (full response)', status: teamsList.status, body: teamsList.body });
   const teams = teamsFrom(teamsList.body);
   console.log(`Teams total: ${teams.length}`);
 
   for (const team of teams) {
     const teamProjectsRes = await rawApi(`/v1/teams/${team.id}/projects`);
+    snapshots.push({ step: `/v1/teams/${team.id}/projects`, status: teamProjectsRes.status, body: teamProjectsRes.body });
     const teamProjects = projectsFrom(teamProjectsRes.body);
     const match = teamProjects.find((p) => p.id === projectId);
     if (match) {
       console.log(`Found project in team: ${team.name ?? '(no name)'} (id: ${team.id})`);
       const teamProject = await rawApi(`/v1/teams/${team.id}/projects/${projectId}`);
+      snapshots.push({ step: `/v1/teams/${team.id}/projects/${projectId}`, status: teamProject.status, body: teamProject.body });
       console.log(`/v1/teams/${team.id}/projects/${projectId}: ${teamProject.status}`);
       console.log(`  body: ${summarizeBody(teamProject.body)}`);
     }
   }
 
-  const services = await rawApi(`/v1/projects/${projectId}/services`);
-  console.log(`/v1/projects/${projectId}/services: ${services.status}`);
-  console.log(`  body: ${summarizeBody(services.body)}`);
-
-  const createRes = await rawApi(`/v1/projects/${projectId}/services/deployment`, {
+  await snapshot('/v1/projects/{projectId}/services', `/v1/projects/${projectId}/services`);
+  await snapshot('/v1/projects/{projectId}/services/deployment (POST)', `/v1/projects/${projectId}/services/deployment`, {
     method: 'POST',
     body: JSON.stringify({
       name: `computesdk-diagnostic-${Date.now()}`,
@@ -138,22 +142,10 @@ async function main() {
       },
     }),
   });
-  console.log(`/v1/projects/${projectId}/services/deployment (POST): ${createRes.status}`);
-  console.log(`  body: ${summarizeBody(createRes.body)}`);
 
-  const serviceId =
-    createRes.status === 200 &&
-    createRes.body &&
-    typeof createRes.body === 'object' &&
-    (createRes.body as Record<string, unknown>).data &&
-    typeof (createRes.body as Record<string, unknown>).data === 'object'
-      ? ((createRes.body as Record<string, unknown>).data as Record<string, unknown>).id
-      : undefined;
-  if (typeof serviceId === 'string') {
-    console.log(`Created diagnostic service ${serviceId}; cleaning up...`);
-    const deleteRes = await rawApi(`/v1/projects/${projectId}/services/${serviceId}`, { method: 'DELETE' });
-    console.log(`DELETE service: ${deleteRes.status}`);
-  }
+  fs.mkdirSync('/tmp/northflank-diagnostic', { recursive: true });
+  fs.writeFileSync('/tmp/northflank-diagnostic/responses.json', JSON.stringify(snapshots, null, 2));
+  console.log('Wrote full response artifact to /tmp/northflank-diagnostic/responses.json');
 }
 
 main().catch((error) => {

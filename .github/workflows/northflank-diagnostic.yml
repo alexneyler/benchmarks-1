@@ -31,3 +31,9 @@ jobs:
         run: |
           . benchmarks/scripts/load-vault-secrets.sh '^(NORTHFLANK_TOKEN|NORTHFLANK_PROJECT_ID|NORTHFLANK_TEAM_ID)'
           npx tsx benchmarks/scripts/northflank-diagnose.ts
+      - name: Upload diagnostic responses
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: northflank-responses
+          path: /tmp/northflank-diagnostic/responses.json
