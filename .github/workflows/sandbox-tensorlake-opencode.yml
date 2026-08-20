@@ -44,7 +44,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Load secrets and run benchmark
         run: |
-          . benchmarks/scripts/load-vault-secrets.sh '^(TENSORLAKE_API_KEY|BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY)$'
+          . benchmarks/scripts/load-vault-secrets.sh '^(TENSORLAKE_API_KEY|BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY)='
           RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           npx tsx packages/benchsdk-runner/dist/bin.js run benchmarks/sandbox/tensorlake-opencode.bench.ts \
             --provider tensorlake \

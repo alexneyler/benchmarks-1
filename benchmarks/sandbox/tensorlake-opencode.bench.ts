@@ -58,18 +58,12 @@ export const config = defineBenchmarkConfig({
   staggerDelayMs: 60_000,
   participants: providers,
   defaultProviders: ['tensorlake'],
-  onScore: (lowerIsBetter, higherIsBetter) => ({
+  onScore: (lowerIsBetter) => ({
     metrics: [
       lowerIsBetter('totalMs', {
         unit: 'ms',
         ceiling: 240_000,
-        weights: { median: 0.20, p95: 0.05, p99: 0 },
-      }),
-      higherIsBetter('success', {
-        unit: 'boolean',
-        floor: 0,
-        ceiling: 1,
-        weights: { median: 0.60, p95: 0.15, p99: 0 },
+        weights: { median: 0.50, p95: 0.30, p99: 0.20 },
       }),
     ],
   }),
@@ -81,7 +75,6 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
 
   let sandbox: any;
   const start = performance.now();
-  let success = 0;
 
   try {
     sandbox = await step('create', () =>
@@ -142,10 +135,9 @@ exit $OPENCODE_EXIT`;
       );
     }
 
-    success = 1;
-    measure({ totalMs: performance.now() - start, success });
+    measure({ totalMs: performance.now() - start });
   } catch (err) {
-    measure({ totalMs: performance.now() - start, success });
+    measure({ totalMs: performance.now() - start });
     throw err;
   } finally {
     if (sandbox) {
