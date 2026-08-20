@@ -4,20 +4,6 @@ import { withTimeout } from '../src/util/timeout.js';
 import { providers } from './providers.js';
 import type { ProviderConfig } from './types.js';
 
-const MODEL = 'opencode/gpt-5-nano';
-const PROMPT = 'Reply with the exact text "tensorlake-ok".';
-const EXPECTED = 'tensorlake-ok';
-
-const CREATE_TIMEOUT_MS = 120_000;
-const INSTALL_TIMEOUT_MS = 60_000;
-const RUN_TIMEOUT_MS = 180_000;
-const DESTROY_TIMEOUT_MS = 30_000;
-const SANDBOX_TIMEOUT_MS = 600_000;
-
-const HOME_DIR = '/tmp/opencode-home';
-const INSTALL_DIR = `${HOME_DIR}/.opencode/bin`;
-const INSTALL_SCRIPT = '/tmp/opencode-install.sh';
-
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'tensorlake-opencode-reliability',
   benchmarkName: 'Tensorlake OpenCode Reliability',
@@ -49,17 +35,17 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
       withTimeout(
         compute.sandbox.create({
           ...participant.sandboxOptions,
-          timeout: SANDBOX_TIMEOUT_MS,
+          timeout: 600_000,
         }),
-        participant.timeout ?? CREATE_TIMEOUT_MS,
+        participant.timeout ?? 120_000,
         'Sandbox creation timed out',
       ),
     );
 
     await step('install', async () => {
       const result = await sandbox.runCommand(
-        `curl -fsSL https://opencode.ai/install -o ${INSTALL_SCRIPT} && HOME=${HOME_DIR} bash ${INSTALL_SCRIPT} --no-modify-path`,
-        { timeout: INSTALL_TIMEOUT_MS },
+        'curl -fsSL https://opencode.ai/install -o /tmp/opencode-install.sh && HOME=/tmp/opencode-home bash /tmp/opencode-install.sh --no-modify-path',
+        { timeout: 60_000 },
       );
       if (result.exitCode !== 0) {
         throw new TaskError(`OpenCode install failed (exit ${result.exitCode})`);
@@ -68,8 +54,8 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
 
     const output = await step('run', async () =>
       sandbox.runCommand(
-        `export HOME=${HOME_DIR} && export PATH="${INSTALL_DIR}:$PATH" && opencode run --auto --model ${MODEL} '${PROMPT}'`,
-        { timeout: RUN_TIMEOUT_MS },
+        `export HOME=/tmp/opencode-home && export PATH="/tmp/opencode-home/.opencode/bin:$PATH" && opencode run --auto --model opencode/gpt-5-nano 'Reply with the exact text "tensorlake-ok".'`,
+        { timeout: 180_000 },
       ),
     );
 
@@ -78,8 +64,8 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
     }
 
     const stdout = output.stdout || '';
-    if (!stdout.includes(EXPECTED)) {
-      throw new TaskError(`OpenCode output did not include "${EXPECTED}": ${stdout}`.trim());
+    if (!stdout.includes('tensorlake-ok')) {
+      throw new TaskError(`OpenCode output did not include "tensorlake-ok": ${stdout}`.trim());
     }
 
     measure({ totalMs: performance.now() - start });
@@ -93,7 +79,7 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
         () =>
           withTimeout(
             sandbox.destroy(),
-            participant.destroyTimeoutMs ?? DESTROY_TIMEOUT_MS,
+            participant.destroyTimeoutMs ?? 30_000,
             'Destroy timeout',
           ),
         { reportConcurrency: false },
