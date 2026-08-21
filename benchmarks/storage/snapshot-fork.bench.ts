@@ -53,16 +53,18 @@ export const config = defineBenchmarkConfig({
   iterations: 2,
   concurrency: 1,
   participants,
-  onScore: (lowerIsBetter) => ({
-    dimensions: { dataset },
-    success: (record) => record.status === 'success' && record.data?.verified === true,
+  dimensions: { dataset },
+  scoring: {
+    // A fork whose read-back didn't match is not a usable fork, so its timings
+    // must not be scored as if it were.
+    success: { requireData: { verified: true } },
     metrics: [
-      lowerIsBetter('snapshotCreateMs', { unit: 'ms', ceiling: 60000, weights: { median: 0.40, p95: 0, p99: 0 } }),
-      lowerIsBetter('forkFromSnapshotMs', { unit: 'ms', ceiling: 60000, weights: { median: 0.35, p95: 0, p99: 0 } }),
-      lowerIsBetter('forkFromLiveMs', { unit: 'ms', ceiling: 60000, weights: { median: 0.15, p95: 0, p99: 0 } }),
-      lowerIsBetter('forkFirstReadMs', { unit: 'ms', ceiling: 60000, weights: { median: 0.10, p95: 0, p99: 0 } }),
+      { key: 'snapshotCreateMs', unit: 'ms', ceiling: 60000, weights: { median: 0.40, p95: 0, p99: 0 } },
+      { key: 'forkFromSnapshotMs', unit: 'ms', ceiling: 60000, weights: { median: 0.35, p95: 0, p99: 0 } },
+      { key: 'forkFromLiveMs', unit: 'ms', ceiling: 60000, weights: { median: 0.15, p95: 0, p99: 0 } },
+      { key: 'forkFirstReadMs', unit: 'ms', ceiling: 60000, weights: { median: 0.10, p95: 0, p99: 0 } },
     ],
-  }),
+  },
   onComplete: (outcome) =>
     writeSnapshotForkLegacyResults(outcome.participants, {
       resultsDir: path.resolve(__dirname, `../../results/snapshot-fork/${dataset}`),

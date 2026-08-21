@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": false,
   "type": "module",
-  "description": "Benchmark framework: task + step + config primitives and the local orchestrator that drives @benchsdk/client",
+  "description": "Benchmark framework: task + step + config primitives and the local orchestrator that drives @benchsdk/worker",
   "author": "Garrison",
   "license": "MIT",
   "main": "./dist/index.cjs",
@@ -52,7 +52,8 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@benchsdk/client": "workspace:*"
+    "@benchsdk/api": "workspace:*",
+    "@benchsdk/worker": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
