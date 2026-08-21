@@ -17,7 +17,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const FINISH_START = 120; // 4s
   const FINISH_GAP = 60; // 2s between each finish
 
-  const TOP = 200;
+  const TOP = 220;
   const ROW_HEIGHT = 104;
   const LOGO_WIDTH = 240;
   const LOGO_HEIGHT = 48;
@@ -67,27 +67,28 @@ export const Leaderboard: FC<LeaderboardData> = ({
         style={{
           position: 'absolute',
           left: 80,
-          top: 26,
+          top: 40,
           width: 1760,
-          height: 64,
           display: 'flex',
-          alignItems: 'center',
-          gap: 24,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          gap: 8,
         }}
       >
         <Img
           src={SITE_LOGO_DARK}
           style={{
-            width: 264,
-            height: 56,
+            width: 280,
+            height: 60,
             objectFit: 'contain',
           }}
         />
         <h1
           style={{
-            fontSize: 34,
+            fontSize: 30,
             fontWeight: 700,
             margin: 0,
+            lineHeight: 1.2,
           }}
         >
           {title}
@@ -232,30 +233,32 @@ export const Leaderboard: FC<LeaderboardData> = ({
             width: 1920,
             height: 80,
             borderTop: `1px solid ${DIVIDER}`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 24,
+            paddingLeft: 80,
+            paddingRight: 80,
+            boxSizing: 'border-box',
           }}
         >
           <span
             style={{
-              position: 'absolute',
-              left: 80,
-              top: 28,
               fontSize: 16,
               fontWeight: 700,
               color: MUTED,
+              flexShrink: 0,
             }}
           >
             even more
           </span>
           <div
             style={{
-              position: 'absolute',
-              left: 176,
-              top: 18,
-              right: 80,
-              height: 44,
               display: 'flex',
               alignItems: 'center',
-              gap: '24px',
+              gap: 24,
+              flex: 1,
+              overflow: 'hidden',
+              height: 44,
             }}
           >
             {nextProviders.map((provider) =>
@@ -267,6 +270,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                     width: 110,
                     height: 36,
                     objectFit: 'contain',
+                    flexShrink: 0,
                   }}
                 />
               ) : (
@@ -276,6 +280,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                     fontSize: 14,
                     fontWeight: 600,
                     color: TEXT,
+                    flexShrink: 0,
                   }}
                 >
                   {provider.displayName}
@@ -289,8 +294,12 @@ export const Leaderboard: FC<LeaderboardData> = ({
                   fontWeight: 800,
                   color: MUTED,
                   backgroundColor: RANK_BG,
-                  borderRadius: 12,
-                  padding: '5px 12px',
+                  borderRadius: 8,
+                  padding: '0 12px',
+                  height: 28,
+                  display: 'flex',
+                  alignItems: 'center',
+                  flexShrink: 0,
                 }}
               >
                 +{remainingOthers} others
