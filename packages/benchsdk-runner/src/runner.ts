@@ -7,7 +7,7 @@
  *
  * Two execution orderings, chosen by `groupBy`:
  *   'participant' (default) — each participant's tasks run to completion via
- *     `client.runWorker` (with its pooled concurrency + heartbeat reporting)
+ *     `runWorker(client, ...)` (with its pooled concurrency + heartbeat reporting)
  *     before the next participant starts.
  *   'round' — participants take turns: every participant runs its Nth task
  *     before anyone starts their (N+1)th, so all Nth tasks happen back-to-back
@@ -16,23 +16,24 @@
  */
 import { execSync } from 'node:child_process';
 import os from 'node:os';
+import { createBenchmarkClient } from '@benchsdk/api';
 import {
   BenchmarkReporter,
-  createBenchmarkClient,
   filterParticipantsByEnv,
+  runWorker,
   selectParticipants,
-} from '@benchsdk/client';
+} from '@benchsdk/worker';
 import { NoAvailableParticipantsError } from './no-available-participants.js';
-import { higherIsBetter, lowerIsBetter, score, ScoringSpecError } from './scoring.js';
+import { higherIsBetter, lowerIsBetter, score, ScoringSpecError, scoringConfigToSpec } from './scoring.js';
 import type {
-  BaseParticipant,
   BenchmarkClient,
   DefineStepOptions,
   JsonObject,
   RunWorkerContext,
   TaskResultRecord,
   TaskStepRecord,
-} from '@benchsdk/client';
+} from '@benchsdk/api';
+import type { BaseParticipant } from '@benchsdk/worker';
 import { TaskError } from './bench-config.js';
 import type {
   BenchmarkConfig,
@@ -69,7 +70,7 @@ export interface CliArgs {
   noIngest?: boolean;
 }
 
-// Matches @benchsdk/client's DEFAULT_BASE_URL origin. `resolvePlatform()`
+// Matches @benchsdk/api's DEFAULT_BASE_URL origin. `resolvePlatform()`
 // appends `/api/v1`. Override for local development via BENCHMARKS_PLATFORM_URL.
 const DEFAULT_PLATFORM_URL = 'https://platform.computesdk.com';
 
@@ -278,12 +279,26 @@ export function mergeConfig<T extends BaseParticipant>(
   config: BenchmarkConfig<T>,
   args: CliArgs,
 ): ResolvedRunConfig {
-  const phaseTotal = config.phases?.reduce((sum, p) => sum + p.iterations, 0);
-  if (phaseTotal !== undefined && args.iterations !== undefined) {
-    console.warn('--iterations is ignored because this benchmark declares phases.');
+  // `--iterations` applies per phase: phases are the arms of one comparison, so
+  // scaling them equally keeps the arms comparable, where splitting a total
+  // between them would shrink each arm as arms are added. A benchmark that
+  // sizes its arms differently (cold probes more than warm) meant that
+  // difference, so its counts win over the flag.
+  const phases = config.phases;
+  const unevenPhases = phases !== undefined && phases.some((p) => p.iterations !== phases[0].iterations);
+  if (unevenPhases && args.iterations !== undefined) {
+    console.warn('--iterations is ignored because this benchmark sizes its phases individually.');
   }
+  const phaseIterations = phases !== undefined && !unevenPhases ? args.iterations : undefined;
+  const phaseTotal =
+    phases !== undefined
+      ? (phaseIterations !== undefined
+          ? phaseIterations * phases.length
+          : phases.reduce((sum, p) => sum + p.iterations, 0))
+      : undefined;
   const resolved: ResolvedRunConfig = {
     iterations: phaseTotal ?? args.iterations ?? config.iterations ?? 1,
+    phaseIterations,
     concurrency: args.concurrency ?? config.concurrency ?? 1,
     staggerDelayMs: args.staggerDelayMs ?? config.staggerDelayMs ?? 0,
     groupBy: args.groupBy ?? config.groupBy ?? 'participant',
@@ -306,21 +321,24 @@ interface Slot<T extends BaseParticipant = BaseParticipant> {
 
 /**
  * Flattens a config into an ordered list of task slots. With `phases`, each
- * phase contributes `iterations` slots tagged with its name (framework owns
- * the phase boundary — no index arithmetic in the task). Without phases, the
- * task is repeated `iterations` times.
+ * phase contributes its own iterations' worth of slots tagged with its name
+ * (framework owns the phase boundary — no index arithmetic in the task).
+ * Without phases, the task is repeated `iterations` times.
  */
 function buildSchedule<T extends BaseParticipant>(
   config: BenchmarkConfig<T>,
-  iterations: number,
+  resolved: ResolvedRunConfig,
   task: BenchmarkTask<T>,
 ): Slot<T>[] {
   if (config.phases?.length) {
     return config.phases.flatMap((phase) =>
-      Array.from({ length: phase.iterations }, () => ({ phase: phase.name, task })),
+      Array.from({ length: resolved.phaseIterations ?? phase.iterations }, () => ({
+        phase: phase.name,
+        task,
+      })),
     );
   }
-  return Array.from({ length: iterations }, () => ({ phase: undefined, task }));
+  return Array.from({ length: resolved.iterations }, () => ({ phase: undefined, task }));
 }
 
 type OnResult = (record: TaskResultRecord, meta: { iterations: number; participant: string }) => void;
@@ -416,6 +434,32 @@ function resolveParticipants<T extends BaseParticipant>(config: BenchmarkConfig<
   return available;
 }
 
+/** Builds a JSON-serializable snapshot of the resolved run execution config. */
+function runConfigToJson<T extends BaseParticipant>(
+  config: BenchmarkConfig<T>,
+  resolved: ResolvedRunConfig,
+  participants: string[],
+): JsonObject {
+  const phases = config.phases?.map((phase) => ({
+    name: phase.name,
+    iterations: resolved.phaseIterations ?? phase.iterations,
+  }));
+  const runConfig = {
+    benchmarkSlug: config.benchmarkSlug,
+    benchmarkName: config.benchmarkName,
+    ...(resolved.phaseIterations !== undefined ? { phaseIterations: resolved.phaseIterations } : {}),
+    ...(phases ? { phases } : {}),
+    ...(!config.phases ? { iterations: resolved.iterations } : {}),
+    concurrency: resolved.concurrency,
+    staggerDelayMs: resolved.staggerDelayMs,
+    groupBy: resolved.groupBy,
+    ...(config.dimensions ? { dimensions: config.dimensions } : {}),
+    ...(config.scoring ? { scoring: config.scoring } : {}),
+    participants,
+  };
+  return JSON.parse(JSON.stringify(runConfig)) as JsonObject;
+}
+
 /**
  * Runs `config`'s `task` against its participants. Selects participants by
  * `--provider` (if given), env-gates them, then drives them per the resolved
@@ -445,7 +489,7 @@ export async function runBenchmark<T extends BaseParticipant>(
     client = createBenchmarkClient({ baseUrl, apiKey });
   }
 
-  const schedule = buildSchedule(config, resolved.iterations, task);
+  const schedule = buildSchedule(config, resolved, task);
   const totalTasks = schedule.length;
 
   const concurrencyLabel = resolved.groupBy === 'round' ? 'n/a (round mode)' : String(resolved.concurrency);
@@ -476,10 +520,18 @@ export async function runBenchmark<T extends BaseParticipant>(
     dashboardUrl = '';
   } else {
     if (identityIsOurs) {
+      const benchmarkConfig: JsonObject = config.scoring
+        ? { scoring: config.scoring as unknown as JsonObject }
+        : {};
       await client!.upsertBenchmark(config.benchmarkSlug, {
         name: config.benchmarkName,
+        ...(Object.keys(benchmarkConfig).length > 0 ? { config: benchmarkConfig } : {}),
       });
     }
+
+    const runConfig = client
+      ? runConfigToJson(config, resolved, available.map((p) => p.name))
+      : {};
 
     if (args.runKey) {
       // Shared run: get-or-created by key, so sibling processes (one per provider)
@@ -488,6 +540,7 @@ export async function runBenchmark<T extends BaseParticipant>(
       // run lists exactly who's benchmarked and each brings its own task count.
       const { run, organizationSlug } = await client!.createRun(config.benchmarkSlug, {
         runKey: args.runKey,
+        config: runConfig,
       });
       runId = run.id;
       dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
@@ -501,6 +554,7 @@ export async function runBenchmark<T extends BaseParticipant>(
         totalTasks,
         workerCount: 1,
         participants: available.map((p) => p.name),
+        config: runConfig,
       });
       runId = run.id;
       dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
@@ -525,9 +579,11 @@ export async function runBenchmark<T extends BaseParticipant>(
     participants: participantRecords,
     config: resolved,
   };
-  if (client && config.onScore) {
+  if (client && (config.onScore || config.scoring)) {
     try {
-      const spec = await config.onScore(lowerIsBetter, higherIsBetter);
+      const spec = config.onScore
+        ? await config.onScore(lowerIsBetter, higherIsBetter)
+        : scoringConfigToSpec(config.scoring!, config.dimensions);
       const scored = score(outcome, spec);
       const run = {
         gitSha: process.env.GITHUB_SHA ?? getGitSha(),
@@ -537,9 +593,13 @@ export async function runBenchmark<T extends BaseParticipant>(
         platform: os.platform(),
         arch: os.arch(),
       };
-      await client.submitRunSummary(config.benchmarkSlug, runId, { run, results: scored });
+      await client.submitRunSummary(config.benchmarkSlug, runId, {
+        run,
+        results: scored,
+        ...(config.scoring ? { scoring: config.scoring as unknown as JsonObject } : {}),
+      });
     } catch (err) {
-      // A ScoringSpecError means onScore itself is misconfigured (e.g. metric
+      // A ScoringSpecError means the scoring spec is misconfigured (e.g. metric
       // weights don't sum to 1.0) — an authoring bug, not a transient submit
       // failure, so it must fail the run rather than degrade to a warning.
       if (err instanceof ScoringSpecError) throw err;
@@ -571,7 +631,7 @@ function getGitRef(): string | undefined {
 }
 
 /**
- * 'participant' ordering: one `client.runWorker` per participant, in turn.
+ * 'participant' ordering: one `runWorker` call per participant, in turn.
  * `staggerDelayMs` here launches task N at `workerStart + N * staggerDelayMs`
  * (vs. round mode's fixed delay between rounds — intentionally different).
  * `TaskResult.steps`/`latencyMs` are ignored in this path: the platform
@@ -633,7 +693,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
     let rampStartMs: number | undefined;
     await client.planWorkers(config.benchmarkSlug, runId, participant.name);
 
-    const result = await client.runWorker({
+    const result = await runWorker(client, {
       benchmarkSlug: config.benchmarkSlug,
       runId: runId,
       participantSlug: participant.name,
@@ -652,16 +712,26 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
         // upload; the runner just threads them onto the task context. The runner
         // wraps `ctx.step` so per-step `timeoutMs` and `concurrency` work in
         // participant mode as well.
-        const taskResult = await slot.task({
-          participant,
-          taskIndex: scheduleIndex,
-          phase: slot.phase,
-          step: (name, fn, options) => runStepWithClient(ctx.step, name, fn, options),
-          measure: ctx.measure,
-          log: ctx.log,
-        });
+        // Tagged before the task runs, not after: measures survive a thrown
+        // task, so a failed record still carries its phase and can be grouped
+        // (and filtered) alongside the successful records of that phase.
         if (slot.phase) ctx.measure({ phase: slot.phase });
-        return taskResult?.data;
+        try {
+          const taskResult = await slot.task({
+            participant,
+            taskIndex: scheduleIndex,
+            phase: slot.phase,
+            step: (name, fn, options) => runStepWithClient(ctx.step, name, fn, options),
+            measure: ctx.measure,
+            log: ctx.log,
+          });
+          return taskResult?.data;
+        } catch (error) {
+          // Mirrors the 'round' path: a TaskError's domain data is preserved on
+          // the failure record instead of being dropped for the error message.
+          if (error instanceof TaskError && error.data) ctx.measure(error.data);
+          throw error;
+        }
       },
       onResult: (record) => onResult(record, { iterations: schedule.length, participant: participant.name }),
     });
@@ -683,7 +753,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
 /**
  * 'round' ordering: claim one `BenchmarkReporter` per participant up front,
  * then loop rounds, running one task per participant per round and streaming
- * each result to its reporter. Steps are built manually (no `client.runWorker`
+ * each result to its reporter. Steps are built manually (no `runWorker`
  * to own them) via a shim that mirrors the platform's record shape.
  */
 async function runGroupedByRound<T extends BaseParticipant>(

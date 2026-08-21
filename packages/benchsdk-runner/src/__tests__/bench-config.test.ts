@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defineBenchmarkConfig, defineTask, TaskError } from '../bench-config';
-import type { BaseParticipant } from '@benchsdk/client';
+import type { BaseParticipant } from '@benchsdk/worker';
 
 const participants: BaseParticipant[] = [{ name: 'e2b', requiredEnvVars: [] }];
 
