@@ -31,13 +31,13 @@
  * recorded.
  */
 import type {
-  BaseParticipant,
   DefineStepOptions,
   JsonObject,
   TaskResultRecord,
   TaskStepRecord,
-} from '@benchsdk/client';
-import type { HigherIsBetter, LowerIsBetter, ScoringSpec } from './scoring.js';
+} from '@benchsdk/api';
+import type { BaseParticipant } from '@benchsdk/worker';
+import type { BenchmarkScoringConfig, HigherIsBetter, LowerIsBetter, ScoringSpec } from './scoring.js';
 
 /** How tasks are ordered across participants. */
 export type GroupBy = 'participant' | 'round';
@@ -71,7 +71,7 @@ export interface TaskResult {
    * Pre-measured steps the task timed itself (e.g. socket phases).
    * Only honored in `groupBy: 'round'` runs, where the runner builds records
    * manually. In `groupBy: 'participant'` runs the platform worker
-   * (`client.runWorker`) owns steps, so `steps` and `latencyMs` are ignored.
+   * (`runWorker`) owns steps, so `steps` and `latencyMs` are ignored.
    */
   steps?: TaskStepRecord[];
   /** Task-owned overall latency; overrides framework wall-clock (round mode only). */
@@ -112,7 +112,7 @@ export interface TaskContext<T extends BaseParticipant = BaseParticipant> {
   /** Current phase name, when the benchmark declares `phases`. */
   phase?: string;
   /**
-   * Runs `fn` as a named platform step. Mirrors `@benchsdk/client`'s
+   * Runs `fn` as a named platform step. Mirrors `@benchsdk/worker`'s
    * `RunWorkerContext.step`; supports closures and try/finally. A `concurrency`
    * greater than 1 invokes `fn` that many times in parallel and returns an array.
    * `timeoutMs` aborts any invocation that exceeds it with a `step_timeout` TaskError.
@@ -156,6 +156,13 @@ export interface ParticipantRecords {
 /** The orchestration knobs a run actually used, after CLI overrides. */
 export interface ResolvedRunConfig {
   iterations: number;
+  /**
+   * Iterations each phase runs, when the benchmark declares `phases` and
+   * `--iterations` overrode their configured counts. A phase is one arm of a
+   * comparison (a file size), so the flag scales every arm equally rather than
+   * dividing a total between them.
+   */
+  phaseIterations?: number;
   concurrency: number;
   staggerDelayMs: number;
   groupBy: GroupBy;
@@ -226,6 +233,12 @@ export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
   /** The participants this benchmark can run against. `--provider` selects a subset by name. */
   participants: T[];
   /**
+   * Static run-level dimensions copied into the submitted summary (e.g.
+   * `{ file_size: '10MB' }`). Useful for distinguishing runs of the same
+   * benchmark that differ by an external parameter.
+   */
+  dimensions?: Record<string, unknown>;
+  /**
    * Run-level scoring hook, called once with `lowerIsBetter` and `higherIsBetter`
    * primitives after the outcome is assembled but before `onComplete`. Use it to
    * define how the run should be scored and reported to the platform.
@@ -237,12 +250,87 @@ export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
    * writers). This is the run-level counterpart to per-step `ctx.measure`.
    */
   onComplete?: (outcome: BenchmarkRunOutcome) => void | Promise<void>;
+  /**
+   * Serializable scoring spec uploaded to the platform. When provided without
+   * `onScore`, the runner computes the run summary from this spec automatically.
+   * The platform can recompute `compositeScore` from the same spec at read time.
+   */
+  scoring?: BenchmarkScoringConfig;
 }
 
 function assertPositiveInt(value: number | undefined, field: string): void {
   if (value === undefined) return;
   if (!Number.isInteger(value) || value < 1) {
     throw new Error(`${field} must be an integer >= 1 (got ${value})`);
+  }
+}
+
+function assertFiniteNumber(value: unknown, field: string): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`${field} must be a finite number (got ${value})`);
+  }
+  return value;
+}
+
+function validateBenchmarkScoringConfig(scoring: BenchmarkScoringConfig): void {
+  if (!Array.isArray(scoring.metrics) || scoring.metrics.length === 0) {
+    throw new Error('scoring.metrics must be a non-empty array');
+  }
+  if (scoring.success !== undefined) {
+    const requireData = scoring.success.requireData;
+    if (requireData === null || typeof requireData !== 'object' || Array.isArray(requireData)) {
+      throw new Error('scoring.success.requireData must be a plain object');
+    }
+    if (Object.keys(requireData).length === 0) {
+      throw new Error('scoring.success.requireData must declare at least one data field');
+    }
+    for (const [key, value] of Object.entries(requireData)) {
+      const type = typeof value;
+      if (type !== 'string' && type !== 'number' && type !== 'boolean') {
+        throw new Error(
+          `scoring.success.requireData.${key} must be a string, number, or boolean (got ${type})`,
+        );
+      }
+    }
+  }
+  const seen = new Set<string>();
+  let totalWeight = 0;
+  for (let i = 0; i < scoring.metrics.length; i++) {
+    const metric = scoring.metrics[i];
+    if (metric === null || typeof metric !== 'object' || Array.isArray(metric)) {
+      throw new Error(`scoring.metrics[${i}] must be an object`);
+    }
+    const key = metric.key;
+    if (typeof key !== 'string' || key.trim() === '') {
+      throw new Error(`scoring.metrics[${i}].key must be a non-empty string`);
+    }
+    if (seen.has(key)) {
+      throw new Error(`duplicate scoring metric key: ${key}`);
+    }
+    seen.add(key);
+    if (typeof metric.unit !== 'string' || metric.unit.trim() === '') {
+      throw new Error(`scoring.metrics[${i}].unit must be a non-empty string`);
+    }
+    assertFiniteNumber(metric.ceiling, `scoring.metrics[${i}].ceiling`);
+    if (metric.floor !== undefined) {
+      assertFiniteNumber(metric.floor, `scoring.metrics[${i}].floor`);
+    }
+    if (metric.weights === null || typeof metric.weights !== 'object' || Array.isArray(metric.weights)) {
+      throw new Error(`scoring.metrics[${i}].weights must be an object`);
+    }
+    const median = assertFiniteNumber(metric.weights.median, `scoring.metrics[${i}].weights.median`);
+    const p95 = assertFiniteNumber(metric.weights.p95, `scoring.metrics[${i}].weights.p95`);
+    const p99 = assertFiniteNumber(metric.weights.p99, `scoring.metrics[${i}].weights.p99`);
+    if (median < 0 || p95 < 0 || p99 < 0) {
+      throw new Error(`scoring.metrics[${i}].weights must be non-negative`);
+    }
+    totalWeight += median + p95 + p99;
+    if (metric.trim !== undefined) {
+      assertFiniteNumber(metric.trim, `scoring.metrics[${i}].trim`);
+    }
+  }
+  if (Math.abs(totalWeight - 1) > 0.01) {
+    throw new Error(`scoring metric weights must sum to 1.0 (got ${totalWeight.toFixed(3)})`);
   }
 }
 
@@ -295,6 +383,14 @@ export function defineBenchmarkConfig<T extends BaseParticipant = BaseParticipan
         throw new Error(`shape '${shapeName}' staggerDelayMs must be a number >= 0 (got ${shape.staggerDelayMs})`);
       }
     }
+  }
+  if (config.dimensions !== undefined) {
+    if (config.dimensions === null || typeof config.dimensions !== 'object' || Array.isArray(config.dimensions)) {
+      throw new Error('dimensions must be a plain object');
+    }
+  }
+  if (config.scoring !== undefined) {
+    validateBenchmarkScoringConfig(config.scoring);
   }
   return config;
 }

@@ -126,6 +126,7 @@
     "bench:ai-gateway-kimi:novita": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-kimi.bench.ts --provider novita",
     "bench:ai-gateway-kimi:ramp": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-kimi.bench.ts --provider ramp",
     "bench:ai-gateway-kimi:neon": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-kimi.bench.ts --provider neon",
+    "bench:ai-gateway-kimi:ngrok": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/ai-gateway/ai-gateway-kimi.bench.ts --provider ngrok",
     "generate-ai-gateway-kimi-svg": "tsx benchmarks/ai-gateway/generate-svg.ts --dir ai-gateway-latency/kimi --title \"AI Gateway Benchmarks — Kimi\" --out ai-gateway-kimi.svg"
   },
   "dependencies": {
@@ -190,7 +191,7 @@
     "@vercel/blob": "^2.8.0",
     "computesdk": "^4.1.4",
     "dotenv": "^17.4.2",
-    "e2b": "^2.44.1",
+    "e2b": "^2.45.0",
     "p-limit": "^7.3.1",
     "pg": "^8.23.0",
     "playwright-core": "^1.62.1",

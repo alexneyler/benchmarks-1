@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { validateScoringSpec, ScoringSpecError, lowerIsBetter, higherIsBetter } from '../scoring';
+import { score, validateScoringSpec, ScoringSpecError, lowerIsBetter, higherIsBetter, scoringConfigToSpec } from '../scoring';
 import type { ScoringSpec } from '../scoring';
+import type { BenchmarkRunOutcome } from '../bench-config';
+import type { TaskResultRecord } from '@benchsdk/api';
 
 describe('validateScoringSpec', () => {
   it('does not throw when declared weights sum to 1.0 across all metrics', () => {
@@ -57,5 +59,127 @@ describe('validateScoringSpec', () => {
   it('throws for no declared metrics (weights sum to 0)', () => {
     const spec: ScoringSpec = { metrics: [] };
     expect(() => validateScoringSpec(spec)).toThrow('(no metrics declared)');
+  });
+});
+
+describe('score with groupBy', () => {
+  const spec: ScoringSpec = {
+    groupBy: 'file_size',
+    metrics: [lowerIsBetter('uploadMs', { unit: 'ms', ceiling: 1000, weights: { median: 1, p95: 0, p99: 0 } })],
+  };
+
+  function record(taskIndex: number, status: string, data: Record<string, unknown>): TaskResultRecord {
+    return { taskIndex, status, data: data as TaskResultRecord['data'] };
+  }
+
+  it('emits one row per group value', () => {
+    const results = score(
+      {
+        participants: [
+          {
+            participant: 'aws-s3',
+            records: [
+              record(0, 'success', { file_size: '1MB', uploadMs: 100 }),
+              record(1, 'success', { file_size: '4MB', uploadMs: 400 }),
+            ],
+          },
+        ],
+      } as unknown as BenchmarkRunOutcome,
+      spec,
+    );
+
+    const grouped = results.filter((r) => r.dimensions?.file_size != null);
+    expect(grouped.map((r) => r.dimensions.file_size)).toEqual(['1MB', '4MB']);
+    expect(grouped.every((r) => r.successRate === 1)).toBe(true);
+    // Run-wide aggregate across every group.
+    expect(results.find((r) => r.dimensions?.file_size == null)?.successRate).toBe(1);
+  });
+
+  it('counts a failure against its own group instead of a separate row', () => {
+    const results = score(
+      {
+        participants: [
+          {
+            participant: 'aws-s3',
+            records: [
+              record(0, 'success', { file_size: '1MB', uploadMs: 100 }),
+              record(1, 'error', { file_size: '1MB' }),
+            ],
+          },
+        ],
+      } as unknown as BenchmarkRunOutcome,
+      spec,
+    );
+
+    const groupRow = results.find((r) => r.dimensions?.file_size === '1MB');
+    expect(groupRow).toBeDefined();
+    expect(groupRow!.successRate).toBe(0.5);
+    // Run-wide aggregate spans both records.
+    expect(results.find((r) => r.dimensions?.file_size == null)?.successRate).toBe(0.5);
+  });
+
+  it('keeps a participant with no records as a skipped row', () => {
+    const results = score(
+      { participants: [{ participant: 'aws-s3', records: [] }] } as unknown as BenchmarkRunOutcome,
+      spec,
+    );
+
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({ provider: 'aws-s3', skipped: true, successRate: 0 });
+  });
+});
+
+describe('scoringConfigToSpec success rule', () => {
+  const spec = scoringConfigToSpec({
+    success: { requireData: { verified: true } },
+    metrics: [{ key: 'forkMs', unit: 'ms', ceiling: 1000, weights: { median: 1, p95: 0, p99: 0 } }],
+  });
+
+  function record(taskIndex: number, status: string, data: Record<string, unknown>): TaskResultRecord {
+    return { taskIndex, status, data: data as TaskResultRecord['data'] };
+  }
+
+  it('excludes a record whose required data field does not match', () => {
+    const results = score(
+      {
+        participants: [
+          {
+            participant: 'tigris',
+            records: [
+              record(0, 'success', { verified: true, forkMs: 100 }),
+              record(1, 'success', { verified: false, forkMs: 900 }),
+            ],
+          },
+        ],
+      } as unknown as BenchmarkRunOutcome,
+      spec,
+    );
+
+    expect(results[0].successRate).toBe(0.5);
+    // Only the verified record's timing is aggregated.
+    expect(results[0].metrics[0].median).toBe(100);
+  });
+
+  it('counts every successful record when no success rule is declared', () => {
+    const plain = scoringConfigToSpec({
+      metrics: [{ key: 'forkMs', unit: 'ms', ceiling: 1000, weights: { median: 1, p95: 0, p99: 0 } }],
+    });
+    const results = score(
+      {
+        participants: [
+          {
+            participant: 'tigris',
+            records: [
+              record(0, 'success', { verified: true, forkMs: 100 }),
+              record(1, 'success', { verified: false, forkMs: 900 }),
+            ],
+          },
+        ],
+      } as unknown as BenchmarkRunOutcome,
+      plain,
+    );
+
+    expect(results[0].successRate).toBe(1);
+    expect(results[0].metrics[0].median).toBe(500);
   });
 });

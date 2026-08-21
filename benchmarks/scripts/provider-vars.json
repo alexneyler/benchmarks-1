@@ -371,6 +371,9 @@
       "NEON_AI_GATEWAY_BASE_URL",
       "NEON_AI_GATEWAY_TOKEN"
     ],
+    "ngrok": [
+      "NGROK_AI_GATEWAY_API_KEY"
+    ],
     "kimi-direct": [
       "KIMI_API_KEY"
     ]

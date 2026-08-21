@@ -35,29 +35,20 @@ export const config = defineBenchmarkConfig({
   phases,
   groupBy: 'round',
   participants: providers,
-  onScore: (lowerIsBetter, higherIsBetter) => ({
+  scoring: {
     metrics: [
-      lowerIsBetter('coldE2eMs', {
-        unit: 'ms',
-        ceiling: 20000,
-        value: (record) => ((record.data?.phase as string | undefined) === 'cold' && typeof record.latencyMs === 'number' ? record.latencyMs : undefined),
-        weights: { median: 0.30, p95: 0.15, p99: 0 },
-      }),
-      lowerIsBetter('warmTtftMs', {
-        unit: 'ms',
-        ceiling: 20000,
-        value: (record) => ((record.data?.phase as string | undefined) === 'warm' && typeof record.latencyMs === 'number' ? record.latencyMs : undefined),
-        weights: { median: 0.30, p95: 0.15, p99: 0 },
-      }),
-      higherIsBetter('outputTokensPerSec', {
+      { key: 'coldE2eMs', unit: 'ms', ceiling: 20000, weights: { median: 0.30, p95: 0.15, p99: 0 } },
+      { key: 'warmTtftMs', unit: 'ms', ceiling: 20000, weights: { median: 0.30, p95: 0.15, p99: 0 } },
+      {
+        key: 'outputTokensPerSec',
         unit: 'tokens/sec',
         floor: 5,
         ceiling: 200,
-        value: (record) => (typeof record.data?.outputTokensPerSec === 'number' ? record.data.outputTokensPerSec : undefined),
+        higherIsBetter: true,
         weights: { median: 0.10, p95: 0, p99: 0 },
-      }),
+      },
     ],
-  }),
+  },
   onComplete: (outcome) =>
     writeAIGatewayLegacyResults(outcome.participants, {
       resultsDir: path.resolve(__dirname, '../../results/ai-gateway-latency/openai'),
