@@ -18,7 +18,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseCliArgs, runBenchmark } from './runner.js';
 import { NoAvailableParticipantsError } from './no-available-participants.js';
-import type { BaseParticipant } from '@benchsdk/client';
+import type { BaseParticipant } from '@benchsdk/worker';
 import type { BenchmarkConfig, BenchmarkTask } from './bench-config.js';
 
 const USAGE =

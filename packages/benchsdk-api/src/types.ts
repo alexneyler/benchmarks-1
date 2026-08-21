@@ -635,6 +635,7 @@ export interface BenchmarkRunSummaryRunMetadata {
 export interface BenchmarkRunSummaryInput {
   run: BenchmarkRunSummaryRunMetadata;
   results: BenchmarkRunSummaryResult[];
+  scoring?: JsonObject;
 }
 
 export interface BenchmarkClient {
