@@ -203,7 +203,7 @@ Cold E2E and warm TTFT are weighted equally (30% median + 15% p95 each) because 
 ## Running it
 
 ```bash
-# Anthropic family — all twelve participants (eleven gateway-overhead + anthropic-direct),
+# Anthropic family — all eleven participants (ten gateway-overhead + anthropic-direct),
 # default 10 cold + 10 warm iterations each
 pnpm run bench:ai-gateway
 
