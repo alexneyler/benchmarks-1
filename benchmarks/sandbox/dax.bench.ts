@@ -20,7 +20,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineBenchmarkConfig, defineTask, TaskError } from '@benchsdk/runner';
-import type { JsonObject, TaskStepRecord } from '@benchsdk/client';
+import type { JsonObject, TaskStepRecord } from '@benchsdk/api';
 import { VMTier } from '@codesandbox/sdk';
 import { withTimeout } from '../src/util/timeout.js';
 import { formatError } from '../src/util/error.js';

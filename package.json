@@ -135,6 +135,7 @@
     "@aws-sdk/s3-presigned-post": "^3.1115.0",
     "@aws-sdk/s3-request-presigner": "^3.1115.0",
     "@azure/storage-blob": "^12.33.0",
+    "@benchsdk/api": "workspace:*",
     "@benchsdk/client": "workspace:*",
     "@benchsdk/runner": "workspace:*",
     "@codesandbox/sdk": "^2.4.2",

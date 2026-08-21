@@ -19,7 +19,7 @@
  */
 import { TaskError } from '@benchsdk/runner';
 import type { TaskContext, TaskResult } from '@benchsdk/runner';
-import type { JsonObject, TaskStepRecord } from '@benchsdk/client';
+import type { JsonObject, TaskStepRecord } from '@benchsdk/api';
 import { runColdProbe, runWarmProbe } from './phase-probe.js';
 import type { AIGatewayProviderConfig, PhaseProbeResult } from './types.js';
 

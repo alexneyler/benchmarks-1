@@ -1,7 +1,7 @@
 import { mkdirSync, copyFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParticipantRecords } from '@benchsdk/runner';
-import type { JsonObject, TaskResultRecord } from '@benchsdk/client';
+import type { JsonObject, TaskResultRecord } from '@benchsdk/api';
 import { byTaskIndex } from '../src/util/records.js';
 import { summarize, emptySummary, writeDaxResultsJson } from './dax.js';
 import type { DaxBenchmarkResult, DaxTimingResult } from './dax.js';

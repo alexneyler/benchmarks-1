@@ -23,6 +23,9 @@ importers:
       '@azure/storage-blob':
         specifier: ^12.33.0
         version: 12.33.0
+      '@benchsdk/api':
+        specifier: workspace:*
+        version: link:packages/benchsdk-api
       '@benchsdk/client':
         specifier: workspace:*
         version: link:packages/benchsdk
