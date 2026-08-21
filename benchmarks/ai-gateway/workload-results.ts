@@ -123,14 +123,16 @@ function computeLevelCosts(level: WorkloadLevelResult, pricing: AIGatewayPricing
   const totalCost = inputCost + outputCost;
 
   if (level.successfulRequests > 0 && totalCost > 0) {
-    level.costPerRequest = round2(totalCost / level.successfulRequests);
-    level.costPer1kRequests = round2(level.costPerRequest * 1000);
-    level.costPerHour = round2(level.costPerRequest * level.requestsPerSec * 3600);
+    const costPerRequest = totalCost / level.successfulRequests;
+    level.costPerRequest = round2(costPerRequest);
+    level.costPer1kRequests = round2(costPerRequest * 1000);
+    level.costPerHour = round2(costPerRequest * level.requestsPerSec * 3600);
   } else if (totalCost > 0 && level.elapsedMs > 0) {
     // Fallback: no successful requests, spread cost over elapsed time.
+    const costPerHour = totalCost / (level.elapsedMs / 3_600_000);
     level.costPerRequest = null;
     level.costPer1kRequests = null;
-    level.costPerHour = round2(totalCost / (level.elapsedMs / 3_600_000));
+    level.costPerHour = round2(costPerHour);
   } else {
     level.costPerRequest = null;
     level.costPer1kRequests = null;
