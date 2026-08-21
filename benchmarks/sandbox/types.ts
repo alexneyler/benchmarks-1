@@ -17,7 +17,7 @@ export interface ProviderConfig {
 
 export interface TimingResult {
   /** Total time from start to first successful code execution */
-  ttiMs: number;
+  ttiMs?: number;
   /** Error message if this iteration failed */
   error?: string;
 }
