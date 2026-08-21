@@ -278,19 +278,30 @@ export const providers: AIGatewayProviderConfig[] = [
     // OpenAI-compatible `/v1/chat/completions` surface on `api.llmapi.ai`;
     // reasoning is locked on for this model, so the same `temperature: undefined`
     // and `reasoningCountsAsFirstToken` overrides as the other Kimi-family
-    // `openai`-format entries apply.
+    // `openai`-format entries apply. Provider pinning uses the `provider/model`
+    // prefix documented at https://docs.llmapi.ai/features/routing
+    // (`moonshot/kimi-k3`, matching the `moonshot` provider in the `/v1/models`
+    // catalog); `X-No-Fallback: true` disables the automatic low-uptime fallback
+    // so the request stays on Moonshot. `extractResolvedProvider` reads the
+    // upstream provider from the response if LLM API exposes it (`provider`,
+    // `resolvedProvider`) or derives it from the `model` prefix.
     name: 'llmapi',
     requiredEnvVars: ['LLMAPI_API_KEY'],
     wireFormat: 'openai',
-    model: 'kimi-k3',
+    model: 'moonshot/kimi-k3',
     host: 'api.llmapi.ai',
     path: '/v1/chat/completions',
     buildHeaders: () => ({
       Authorization: `Bearer ${process.env.LLMAPI_API_KEY}`,
+      'X-No-Fallback': 'true',
     }),
     extraBody: {
       temperature: undefined,
     },
+    extractResolvedProvider: (buf) =>
+      buf.match(/"resolvedProvider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"provider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"model"\s*:\s*"([^"/]+)\/[^"]*"/)?.[1],
     reasoningCountsAsFirstToken: true,
   },
   {

@@ -218,15 +218,26 @@ export const providers: AIGatewayProviderConfig[] = [
     // LLM API's unified gateway exposes the OpenAI Responses API at
     // `/v1/responses` on `api.llmapi.ai`, with the same model id and auth
     // (`Authorization: Bearer`) as its OpenAI-compatible chat-completions surface.
+    // Provider pinning uses the `provider/model` prefix documented at
+    // https://docs.llmapi.ai/features/routing (`openai/gpt-5.4-mini`);
+    // `X-No-Fallback: true` disables the automatic low-uptime fallback so the
+    // request stays on OpenAI. `extractResolvedProvider` reads the upstream
+    // provider from the response if LLM API exposes it (`provider`,
+    // `resolvedProvider`) or derives it from the `model` prefix.
     name: 'llmapi',
     requiredEnvVars: ['LLMAPI_API_KEY'],
     wireFormat: 'responses',
-    model: 'gpt-5.4-mini',
+    model: 'openai/gpt-5.4-mini',
     host: 'api.llmapi.ai',
     path: '/v1/responses',
     buildHeaders: () => ({
       Authorization: `Bearer ${process.env.LLMAPI_API_KEY}`,
+      'X-No-Fallback': 'true',
     }),
+    extractResolvedProvider: (buf) =>
+      buf.match(/"resolvedProvider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"provider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"model"\s*:\s*"([^"/]+)\/[^"]*"/)?.[1],
   },
   {
     // No-gateway baseline/control. OpenAI's own Responses API — its current
