@@ -1,0 +1,396 @@
+import type {
+  BenchmarkClient,
+  BenchmarkAssignment,
+  DefineStepOptions,
+  JsonObject,
+  RunWorkerContext,
+  RunWorkerOptions,
+  RunWorkerResult,
+  TaskFunction,
+  TaskResultRecord,
+  TaskStepRecord,
+  WorkerConcurrencySample,
+} from '@benchsdk/api';
+
+const DEFAULT_BATCH_SIZE = 1000;
+const DEFAULT_HEARTBEAT_INTERVAL_MS = 30_000;
+const DEFAULT_FLUSH_INTERVAL_MS = 30_000;
+const DEFAULT_READY_POLL_INTERVAL_MS = 1000;
+const MAX_TASK_RESULT_RECORDS = 5000;
+const MAX_TASK_RECORD_STEPS = 100;
+const MAX_HEARTBEAT_CONCURRENCY_SAMPLES = 20;
+const MAX_WORKER_LOG_LINES = 100_000;
+
+function getErrorCode(error: unknown): string {
+  if (error instanceof Error && 'code' in error && typeof (error as { code: unknown }).code === 'string' && (error as { code: string }).code) {
+    return (error as { code: string }).code;
+  }
+  if (error instanceof Error && error.name) return error.name;
+  return 'ERROR';
+}
+
+function toJsonObject(value: unknown): JsonObject | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  return value as JsonObject;
+}
+
+function mergeMeasures(measures: JsonObject, returned: JsonObject | undefined): JsonObject | undefined {
+  const merged = { ...measures, ...(returned ?? {}) };
+  return Object.keys(merged).length > 0 ? merged : undefined;
+}
+
+function implicitTaskStep(record: TaskResultRecord, measures: JsonObject): TaskStepRecord {
+  return {
+    name: 'task',
+    status: record.status === 'success' ? 'success' : 'error',
+    startedAt: record.startedAt,
+    completedAt: record.completedAt,
+    latencyMs: record.latencyMs,
+    errorCode: record.errorCode ?? null,
+    data: Object.keys(measures).length > 0 ? { ...measures } : undefined,
+  };
+}
+
+function validatePositiveInteger(name: string, value: number): void {
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(`Benchmark ${name} must be a positive integer.`);
+  }
+}
+
+function validateBatchSize(value: number): void {
+  validatePositiveInteger('batchSize', value);
+  if (value > MAX_TASK_RESULT_RECORDS) {
+    throw new Error(`Benchmark batchSize must be at most ${MAX_TASK_RESULT_RECORDS}.`);
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function mapPool<T>(items: T[], concurrency: number, fn: (item: T) => Promise<void>): Promise<void> {
+  let nextIndex = 0;
+  const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+    while (nextIndex < items.length) {
+      const item = items[nextIndex];
+      nextIndex += 1;
+      await fn(item);
+    }
+  });
+  await Promise.all(workers);
+}
+
+export async function runWorker(client: BenchmarkClient, options: RunWorkerOptions): Promise<RunWorkerResult> {
+  if (options.concurrency !== undefined) validatePositiveInteger('concurrency', options.concurrency);
+  if (options.batchSize !== undefined) validateBatchSize(options.batchSize);
+  if (options.flushIntervalMs !== undefined) validatePositiveInteger('flushIntervalMs', options.flushIntervalMs);
+
+  const assignment = await client.claimWorker(options.benchmarkSlug, options.runId, options.participantSlug, {
+    processKind: options.processKind,
+    processKey: options.processKey,
+  });
+  if (!assignment) return { assignment: null, records: [] };
+  const claimed = assignment;
+
+  let sequenceNumber = 0;
+  const records: TaskResultRecord[] = [];
+  const pending: TaskResultRecord[] = [];
+  const batchSize = options.batchSize ?? DEFAULT_BATCH_SIZE;
+  const workerConcurrency = options.concurrency ?? claimed.targetConcurrency;
+  validatePositiveInteger('concurrency', workerConcurrency);
+  const taskIndices = Array.from({ length: claimed.taskRange.count }, (_, index) => claimed.taskRange.start + index);
+  const activeByStep = new Map<string, number>();
+  const targetByStep = new Map<string, number>();
+  const readyWaitByStep = new Map<string, Promise<void>>();
+  let doneCount = 0;
+  let errorCount = 0;
+  let inFlightCount = 0;
+  let flushChain = Promise.resolve();
+
+  function concurrencySamples(): WorkerConcurrencySample[] {
+    return Array.from(activeByStep.entries())
+      .filter(([, active]) => active > 0)
+      .map(([step, active]) => ({
+        step,
+        active,
+        target: targetByStep.get(step) ?? workerConcurrency,
+      }))
+      .sort((a, b) => b.active - a.active)
+      .slice(0, MAX_HEARTBEAT_CONCURRENCY_SAMPLES);
+  }
+
+  async function sendHeartbeat(): Promise<void> {
+    const concurrency = concurrencySamples();
+    const step = concurrency[0]?.step ?? null;
+    await client.heartbeatWorker(options.benchmarkSlug, options.runId, claimed.workerId, {
+      attemptId: claimed.attemptId,
+      progressDone: doneCount,
+      progressInFlight: inFlightCount,
+      progressErrors: errorCount,
+      progressTotal: taskIndices.length,
+      ...(step ? { currentStep: step } : {}),
+      concurrency,
+    });
+  }
+
+  let heartbeatInFlight: Promise<void> | null = null;
+  let heartbeatRequested = false;
+
+  function requestHeartbeat(): void {
+    heartbeatRequested = true;
+    if (heartbeatInFlight) return;
+
+    heartbeatInFlight = (async () => {
+      while (heartbeatRequested) {
+        heartbeatRequested = false;
+        await sendHeartbeat().catch(() => {});
+      }
+    })().finally(() => {
+      heartbeatInFlight = null;
+      if (heartbeatRequested) requestHeartbeat();
+    });
+  }
+
+  async function pollStepReady(stepName: string, stepOptions: DefineStepOptions): Promise<void> {
+    const startedAt = Date.now();
+    const pollInterval = stepOptions.readyPollIntervalMs ?? options.readyPollIntervalMs ?? DEFAULT_READY_POLL_INTERVAL_MS;
+
+    while (true) {
+      const progress = await client.getRunProgress(options.benchmarkSlug, options.runId);
+      const participant = progress.participants.find((item) => item.slug === options.participantSlug);
+      const step = participant?.concurrency.find((item) => item.step === stepName);
+      if (step?.ready) return;
+
+      if (typeof stepOptions.readyTimeoutMs === 'number' && Date.now() - startedAt >= stepOptions.readyTimeoutMs) {
+        throw new Error(`Timed out waiting for benchmark step "${stepName}" to become ready.`);
+      }
+
+      await sleep(pollInterval);
+    }
+  }
+
+  async function waitForStepReady(stepName: string, stepOptions: DefineStepOptions): Promise<void> {
+    const existing = readyWaitByStep.get(stepName);
+    if (existing) return existing;
+
+    const wait = pollStepReady(stepName, stepOptions).finally(() => {
+      if (readyWaitByStep.get(stepName) === wait) readyWaitByStep.delete(stepName);
+    });
+    readyWaitByStep.set(stepName, wait);
+    return wait;
+  }
+
+  const heartbeat = setInterval(() => {
+    requestHeartbeat();
+  }, options.heartbeatIntervalMs ?? DEFAULT_HEARTBEAT_INTERVAL_MS);
+  heartbeat.unref?.();
+
+  async function flush(isFinal: boolean, force = false): Promise<void> {
+    flushChain = flushChain.then(async () => {
+      if (force && doneCount >= taskIndices.length) return;
+      while (pending.length >= batchSize || ((isFinal || force) && pending.length > 0)) {
+        const batch = pending.splice(0, batchSize);
+        await client.sendTaskResults({
+          benchmarkSlug: options.benchmarkSlug,
+          runId: options.runId,
+          workerId: claimed.workerId,
+          attemptId: claimed.attemptId,
+          sequenceNumber,
+          isFinal: isFinal && pending.length === 0,
+          records: batch,
+        });
+        sequenceNumber += 1;
+      }
+    });
+    await flushChain;
+  }
+
+  const resultFlush = setInterval(() => {
+    if (doneCount < taskIndices.length) void flush(false, true).catch(() => {});
+  }, options.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS);
+  resultFlush.unref?.();
+
+  // Accumulated across the worker's tasks via `ctx.step` and `ctx.log`,
+  // uploaded once as a worker log artifact when the worker finishes.
+  const workerLogLines: string[] = [];
+  let workerLogTruncated = false;
+  function appendWorkerLog(line: string): void {
+    if (workerLogLines.length >= MAX_WORKER_LOG_LINES) {
+      if (!workerLogTruncated) {
+        workerLogTruncated = true;
+        workerLogLines.push('... (worker log truncated)');
+      }
+      return;
+    }
+    workerLogLines.push(line);
+  }
+
+  async function runFinishHook(status: 'success' | 'error'): Promise<void> {
+    await options.onFinish?.({
+      assignment: claimed,
+      records,
+      status,
+      client,
+      uploadArtifact(input) {
+        return client.uploadWorkerArtifact(options.benchmarkSlug, options.runId, claimed.workerId, {
+          ...input,
+          attemptId: claimed.attemptId,
+        });
+      },
+    });
+  }
+
+  async function uploadWorkerLogArtifact(): Promise<void> {
+    if (workerLogLines.length === 0) return;
+    try {
+      await client.uploadWorkerArtifact(options.benchmarkSlug, options.runId, claimed.workerId, {
+        attemptId: claimed.attemptId,
+        kind: 'coordinator.log',
+        contentType: 'text/plain',
+        name: 'worker.log',
+        body: workerLogLines.join('\n') + '\n',
+      });
+    } catch {
+      // Log upload is best-effort; never fail the run over it.
+    }
+  }
+
+  try {
+    await sendHeartbeat().catch(() => {});
+
+    await mapPool(taskIndices, workerConcurrency, async (taskIndex) => {
+      inFlightCount += 1;
+      const startedAtDate = new Date();
+      const startedAtMs = Date.now();
+      const record: TaskResultRecord = {
+        taskIndex,
+        status: 'success',
+        startedAt: startedAtDate.toISOString(),
+      };
+      const steps: TaskStepRecord[] = [];
+      const taskMeasures: JsonObject = {};
+      // The step a `measure(...)` call currently attributes to. Set while a
+      // step's fn runs; null at task top-level (measures go on the record).
+      let activeStep: TaskStepRecord | null = null;
+
+      function measure(data: JsonObject): void {
+        if (activeStep) {
+          activeStep.data = { ...(activeStep.data ?? {}), ...data };
+        } else {
+          Object.assign(taskMeasures, data);
+        }
+      }
+
+      function log(message: string, meta?: JsonObject): void {
+        const suffix = meta && Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : '';
+        appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] ${message}${suffix}`);
+      }
+
+      async function step<T>(name: string, fn: () => Promise<T> | T, stepOptions: DefineStepOptions = {}): Promise<T> {
+        const stepStartedAtMs = Date.now();
+        const stepRecord: TaskStepRecord = {
+          name,
+          status: 'success',
+          startedAt: new Date().toISOString(),
+          completedAt: new Date().toISOString(),
+          latencyMs: 0,
+        };
+        if (stepOptions.timeoutMs !== undefined) stepRecord.timeoutMs = stepOptions.timeoutMs;
+        if (stepOptions.stepConcurrency !== undefined) stepRecord.concurrency = stepOptions.stepConcurrency;
+
+        const shouldReportConcurrency = stepOptions.reportConcurrency ?? true;
+        if (shouldReportConcurrency) {
+          const stepConcurrency = stepOptions.concurrency ?? workerConcurrency;
+          validatePositiveInteger(`step "${name}" concurrency`, stepConcurrency);
+          targetByStep.set(name, stepConcurrency);
+          activeByStep.set(name, (activeByStep.get(name) ?? 0) + 1);
+          requestHeartbeat();
+        }
+
+        const previousStep = activeStep;
+        activeStep = stepRecord;
+        try {
+          if (stepOptions.readiness === 'poll') {
+            await waitForStepReady(name, stepOptions);
+          }
+          const value = await fn();
+          appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] ${name}`);
+          return value;
+        } catch (error) {
+          stepRecord.status = 'error';
+          stepRecord.errorCode = getErrorCode(error);
+          appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] ${name}`);
+          appendWorkerLog(`  error: ${error instanceof Error ? error.message : String(error)}`);
+          throw error;
+        } finally {
+          activeStep = previousStep;
+          stepRecord.completedAt = new Date().toISOString();
+          stepRecord.latencyMs = Date.now() - stepStartedAtMs;
+          steps.push(stepRecord);
+          if (shouldReportConcurrency) {
+            const nextActive = Math.max(0, (activeByStep.get(name) ?? 0) - 1);
+            if (nextActive === 0) {
+              activeByStep.delete(name);
+              targetByStep.delete(name);
+            } else {
+              activeByStep.set(name, nextActive);
+            }
+            requestHeartbeat();
+          }
+        }
+      }
+
+      try {
+        const data = await options.task({ assignment: claimed, taskIndex, step, measure, log });
+        record.data = mergeMeasures(taskMeasures, toJsonObject(data));
+      } catch (error) {
+        record.status = 'error';
+        record.errorCode = getErrorCode(error);
+        record.data = mergeMeasures(taskMeasures, { errorMessage: error instanceof Error ? error.message : String(error) });
+      } finally {
+        record.completedAt = new Date().toISOString();
+        record.latencyMs = Date.now() - startedAtMs;
+        // A task with no explicit steps is recorded as a single implicit
+        // 'task' step, so every task contributes at least one step row.
+        if (steps.length === 0) {
+          steps.push(implicitTaskStep(record, taskMeasures));
+        }
+        record.steps = steps;
+        doneCount += 1;
+        inFlightCount = Math.max(0, inFlightCount - 1);
+        if (record.status !== 'success') errorCount += 1;
+      }
+
+      records.push(record);
+      pending.push(record);
+      options.onResult?.(record);
+      if (pending.length >= batchSize) await flush(false);
+    });
+
+    await flush(true);
+
+    const hasErrors = records.some((record) => record.status !== 'success');
+    try {
+      await runFinishHook(hasErrors ? 'error' : 'success');
+    } catch (error) {
+      if (!hasErrors) throw error;
+    }
+
+    if (hasErrors) {
+      await client.failWorker(options.benchmarkSlug, options.runId, claimed.workerId, claimed.attemptId, new Error('One or more tasks failed'));
+    } else {
+      await client.completeWorker(options.benchmarkSlug, options.runId, claimed.workerId, claimed.attemptId);
+    }
+
+    return { assignment: claimed, records };
+  } catch (error) {
+    await flush(true).catch(() => {});
+    await runFinishHook('error').catch(() => {});
+    await client.failWorker(options.benchmarkSlug, options.runId, claimed.workerId, claimed.attemptId, error).catch(() => {});
+    throw error;
+  } finally {
+    await uploadWorkerLogArtifact();
+    clearInterval(heartbeat);
+    clearInterval(resultFlush);
+  }
+}

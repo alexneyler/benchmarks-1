@@ -1,9 +1,9 @@
 {
-  "name": "@benchsdk/client",
-  "version": "0.3.0",
+  "name": "@benchsdk/api",
+  "version": "0.1.0",
   "private": false,
   "type": "module",
-  "description": "Client and worker helpers for the ComputeSDK benchmark orchestrator",
+  "description": "Typed REST API client and shared types for the ComputeSDK benchmarks platform",
   "author": "Garrison",
   "license": "MIT",
   "main": "./dist/index.cjs",
@@ -29,20 +29,19 @@
     "pretest": "tsup",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:integration": "vitest run src/__tests__/integration.test.ts",
     "test:watch": "vitest watch",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "computesdk",
     "benchmark",
-    "observability",
+    "api",
     "orchestrator"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/computesdk/benchmarks.git",
-    "directory": "packages/benchsdk"
+    "directory": "packages/benchsdk-api"
   },
   "homepage": "https://www.computesdk.com",
   "bugs": {
@@ -51,10 +50,7 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {
-    "@benchsdk/api": "workspace:*",
-    "@benchsdk/worker": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@vitest/coverage-v8": "^1.0.0",
