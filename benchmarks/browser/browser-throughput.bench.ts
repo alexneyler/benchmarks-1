@@ -17,7 +17,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { defineBenchmarkConfig, defineTask, TaskError } from '@benchsdk/runner';
-import type { JsonValue } from '@benchsdk/client';
+import type { JsonValue } from '@benchsdk/api';
 import { withTimeout } from '../src/util/timeout.js';
 import { throughputProviders } from './throughput-providers.js';
 import { writeThroughputLegacyResults } from './browser-throughput-legacy-results.js';

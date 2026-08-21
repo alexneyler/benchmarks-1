@@ -1,7 +1,7 @@
 import { mkdirSync, copyFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParticipantRecords } from '@benchsdk/runner';
-import type { TaskResultRecord } from '@benchsdk/client';
+import type { TaskResultRecord } from '@benchsdk/api';
 import { byTaskIndex } from '../src/util/records.js';
 import { computeStats } from '../src/util/stats.js';
 import { computeCompositeScores } from './scoring.js';
