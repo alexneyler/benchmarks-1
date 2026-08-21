@@ -70,11 +70,21 @@ export const Leaderboard: FC<LeaderboardData> = ({
           top: 40,
           width: 1760,
           display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          gap: 8,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}
       >
+        <h1
+          style={{
+            fontSize: 36,
+            fontWeight: 700,
+            margin: 0,
+            lineHeight: 1.2,
+          }}
+        >
+          {title}
+        </h1>
         <Img
           src={SITE_LOGO_DARK}
           style={{
@@ -83,16 +93,6 @@ export const Leaderboard: FC<LeaderboardData> = ({
             objectFit: 'contain',
           }}
         />
-        <h1
-          style={{
-            fontSize: 30,
-            fontWeight: 700,
-            margin: 0,
-            lineHeight: 1.2,
-          }}
-        >
-          {title}
-        </h1>
       </div>
 
       {topProviders.map((provider) => {
