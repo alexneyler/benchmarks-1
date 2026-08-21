@@ -177,6 +177,33 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    // LLM API routes Gemini through its unified OpenAI-compatible
+    // `/v1/chat/completions` surface (`api.llmapi.ai/v1/chat/completions`);
+    // the `/v1/models` catalog lists `gemini-3.6-flash` as the public model id
+    // backed by Google AI Studio. Provider pinning uses the `provider/model`
+    // prefix documented at https://docs.llmapi.ai/features/routing
+    // (`google-ai-studio/gemini-3.6-flash`, matching the `google-ai-studio`
+    // provider in the `/v1/models` catalog); `X-No-Fallback: true` disables the
+    // automatic low-uptime fallback so the request stays on Google AI Studio.
+    // `extractResolvedProvider` reads the upstream provider from the response
+    // if LLM API exposes it (`provider`, `resolvedProvider`) or derives it from
+    // the `model` prefix.
+    name: 'llmapi',
+    requiredEnvVars: ['LLMAPI_API_KEY'],
+    wireFormat: 'openai',
+    model: 'google-ai-studio/gemini-3.6-flash',
+    host: 'api.llmapi.ai',
+    path: '/v1/chat/completions',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.LLMAPI_API_KEY}`,
+      'X-No-Fallback': 'true',
+    }),
+    extractResolvedProvider: (buf) =>
+      buf.match(/"resolvedProvider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"provider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"model"\s*:\s*"([^"/]+)\/[^"]*"/)?.[1],
+  },
+  {
     // No-gateway baseline/control. Gemini's native `streamGenerateContent`
     // endpoint (not the OpenAI-compatibility shim Google also exposes) —
     // `contents`/`parts` request shape, `usageMetadata.candidatesTokenCount`

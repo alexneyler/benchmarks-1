@@ -205,6 +205,33 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    // LLM API exposes an Anthropic-native `/v1/messages` passthrough on
+    // `api.llmapi.ai` in addition to its OpenAI-compatible surface. Provider
+    // pinning uses the `provider/model` prefix documented at
+    // https://docs.llmapi.ai/features/routing (`anthropic/claude-haiku-4-5-20251001`);
+    // `X-No-Fallback: true` disables the automatic low-uptime fallback so the
+    // request stays on Anthropic. Auth is the single account-wide
+    // `Authorization: Bearer` key shown in the LLM API docs.
+    // `extractResolvedProvider` reads the upstream provider from the response
+    // if LLM API exposes it (`provider`, `resolvedProvider`) or derives it from
+    // the `model` prefix, so a fallback off Anthropic is visible in the logs.
+    name: 'llmapi',
+    requiredEnvVars: ['LLMAPI_API_KEY'],
+    wireFormat: 'anthropic',
+    model: 'anthropic/claude-haiku-4-5-20251001',
+    host: 'api.llmapi.ai',
+    path: '/v1/messages',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.LLMAPI_API_KEY}`,
+      'anthropic-version': '2023-06-01',
+      'X-No-Fallback': 'true',
+    }),
+    extractResolvedProvider: (buf) =>
+      buf.match(/"resolvedProvider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"provider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"model"\s*:\s*"([^"/]+)\/[^"]*"/)?.[1],
+  },
+  {
     // No-gateway baseline/control.
     name: 'anthropic-direct',
     requiredEnvVars: ['ANTHROPIC_API_KEY'],
