@@ -177,6 +177,21 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    // LLM API routes Gemini through its unified OpenAI-compatible
+    // `/v1/chat/completions` surface (`api.llmapi.ai/v1/chat/completions`);
+    // the `/v1/models` catalog lists `gemini-3.6-flash` as the public model id
+    // backed by Google AI Studio.
+    name: 'llmapi',
+    requiredEnvVars: ['LLMAPI_API_KEY'],
+    wireFormat: 'openai',
+    model: 'gemini-3.6-flash',
+    host: 'api.llmapi.ai',
+    path: '/v1/chat/completions',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.LLMAPI_API_KEY}`,
+    }),
+  },
+  {
     // No-gateway baseline/control. Gemini's native `streamGenerateContent`
     // endpoint (not the OpenAI-compatibility shim Google also exposes) —
     // `contents`/`parts` request shape, `usageMetadata.candidatesTokenCount`

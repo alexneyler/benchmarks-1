@@ -205,6 +205,23 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    // LLM API exposes an Anthropic-native `/v1/messages` passthrough on
+    // `api.llmapi.ai` in addition to its OpenAI-compatible surface. The
+    // model id and the `anthropic-version` header follow the same conventions
+    // as the Anthropic-direct and Cloudflare entries; auth is the single
+    // account-wide `Authorization: Bearer` key shown in the LLM API docs.
+    name: 'llmapi',
+    requiredEnvVars: ['LLMAPI_API_KEY'],
+    wireFormat: 'anthropic',
+    model: 'claude-haiku-4-5-20251001',
+    host: 'api.llmapi.ai',
+    path: '/v1/messages',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.LLMAPI_API_KEY}`,
+      'anthropic-version': '2023-06-01',
+    }),
+  },
+  {
     // No-gateway baseline/control.
     name: 'anthropic-direct',
     requiredEnvVars: ['ANTHROPIC_API_KEY'],

@@ -215,6 +215,20 @@ export const providers: AIGatewayProviderConfig[] = [
     }),
   },
   {
+    // LLM API's unified gateway exposes the OpenAI Responses API at
+    // `/v1/responses` on `api.llmapi.ai`, with the same model id and auth
+    // (`Authorization: Bearer`) as its OpenAI-compatible chat-completions surface.
+    name: 'llmapi',
+    requiredEnvVars: ['LLMAPI_API_KEY'],
+    wireFormat: 'responses',
+    model: 'gpt-5.4-mini',
+    host: 'api.llmapi.ai',
+    path: '/v1/responses',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.LLMAPI_API_KEY}`,
+    }),
+  },
+  {
     // No-gateway baseline/control. OpenAI's own Responses API — its current
     // flagship endpoint (vs. the older Chat Completions surface) — is the
     // most direct route into OpenAI's own infrastructure.

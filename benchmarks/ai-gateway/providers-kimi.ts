@@ -274,6 +274,26 @@ export const providers: AIGatewayProviderConfig[] = [
     reasoningCountsAsFirstToken: true,
   },
   {
+    // LLM API reaches Moonshot's `kimi-k3` through its unified
+    // OpenAI-compatible `/v1/chat/completions` surface on `api.llmapi.ai`;
+    // reasoning is locked on for this model, so the same `temperature: undefined`
+    // and `reasoningCountsAsFirstToken` overrides as the other Kimi-family
+    // `openai`-format entries apply.
+    name: 'llmapi',
+    requiredEnvVars: ['LLMAPI_API_KEY'],
+    wireFormat: 'openai',
+    model: 'kimi-k3',
+    host: 'api.llmapi.ai',
+    path: '/v1/chat/completions',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.LLMAPI_API_KEY}`,
+    }),
+    extraBody: {
+      temperature: undefined,
+    },
+    reasoningCountsAsFirstToken: true,
+  },
+  {
     // No-gateway baseline/control. Moonshot AI's Kimi API is itself
     // OpenAI-Chat-Completions-shaped (not a third-party compatibility shim —
     // that's Moonshot's own native API), so this is the most direct route
