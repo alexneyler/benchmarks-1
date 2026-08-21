@@ -159,7 +159,7 @@ async function runSustainedWorkload(
 
   const elapsedMs = now() - (stopAt - durationMs);
   const totalRequests = successfulRequests + errorCount + timeoutCount;
-  const errorRate = totalRequests > 0 ? round2(errorCount / totalRequests) : 0;
+  const errorRate = totalRequests > 0 ? round2((errorCount + timeoutCount) / totalRequests) : 0;
   const timeoutRate = totalRequests > 0 ? round2(timeoutCount / totalRequests) : 0;
   const requestsPerSec = elapsedMs > 0 ? round2(successfulRequests / (elapsedMs / 1000)) : 0;
   const tokensPerSec = elapsedMs > 0 ? round2(totalOutputTokens / (elapsedMs / 1000)) : 0;
