@@ -71,6 +71,14 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+function round4(n: number): number {
+  return Math.round(n * 10_000) / 10_000;
+}
+
+function round6(n: number): number {
+  return Math.round(n * 1_000_000) / 1_000_000;
+}
+
 function asNumber(v: unknown): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : 0;
 }
@@ -124,8 +132,8 @@ function computeLevelCosts(level: WorkloadLevelResult, pricing: AIGatewayPricing
 
   if (level.successfulRequests > 0 && totalCost > 0) {
     const costPerRequest = totalCost / level.successfulRequests;
-    level.costPerRequest = round2(costPerRequest);
-    level.costPer1kRequests = round2(costPerRequest * 1000);
+    level.costPerRequest = round6(costPerRequest);
+    level.costPer1kRequests = round4(costPerRequest * 1000);
     level.costPerHour = round2(costPerRequest * level.requestsPerSec * 3600);
   } else if (totalCost > 0 && level.elapsedMs > 0) {
     // Fallback: no successful requests, spread cost over elapsed time.
