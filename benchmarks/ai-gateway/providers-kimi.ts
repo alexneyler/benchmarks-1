@@ -72,7 +72,7 @@ import { resolveNeonHost } from './neon-host.js';
  * model chooses to deliberate rather than gateway/network responsiveness.
  * Confirmed live across all participants here: exactly two reasoning-field
  * conventions exist — `reasoning_content` (Moonshot direct, Cloudflare) and
- * `reasoning` (OpenRouter, Vercel, LLM Gateway, Concentrate, Novita, Neon) —
+ * `reasoning` (OpenRouter, Vercel, LLM Gateway, Concentrate, Novita, Neon, ngrok) —
  * both handled by `contentRegexFor` in `phase-probe.ts`. Ramp Router uses
  * the Responses API, which does not expose reasoning tokens to this flag.
  *
@@ -248,6 +248,25 @@ export const providers: AIGatewayProviderConfig[] = [
     path: `${resolveNeonHost().basePath}/v1/chat/completions`,
     buildHeaders: () => ({
       Authorization: `Bearer ${process.env.NEON_AI_GATEWAY_TOKEN}`,
+    }),
+    extraBody: {
+      temperature: undefined,
+    },
+    reasoningCountsAsFirstToken: true,
+  },
+  {
+    // ngrok AI Gateway's Moonshot provider is listed in the model catalog
+    // (provider id `moonshotai`); the OpenAI-compatible `/v1/chat/completions`
+    // route is the documented way to reach it, and the catalog model id is
+    // `kimi-k3`.
+    name: 'ngrok',
+    requiredEnvVars: ['NGROK_AI_GATEWAY_API_KEY'],
+    wireFormat: 'openai',
+    model: 'kimi-k3',
+    host: 'gateway.ngrok.ai',
+    path: '/v1/chat/completions',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.NGROK_AI_GATEWAY_API_KEY}`,
     }),
     extraBody: {
       temperature: undefined,
