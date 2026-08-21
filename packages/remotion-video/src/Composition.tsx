@@ -363,7 +363,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
               )
               .map((sponsor) => (
                 <div
-                  key={`${sponsor.name}-${sponsor.run}`}
+                  key={`${sponsor.name}-${sponsor.logoUrl}-${sponsor.run}`}
                   style={{
                     width: sponsorItemWidth,
                     height: '100%',
