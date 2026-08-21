@@ -44,10 +44,9 @@ jobs:
         run: pnpm install --ignore-scripts
 
       - name: Build packages
-        run: |
-          pnpm --filter @benchsdk/client run build
-          pnpm --filter @benchsdk/runner run build
-          pnpm --filter create-bench run build
+        # Build all workspace packages in topological order so each package's
+        # dist output is available before dependents are built.
+        run: pnpm -r --filter './packages/**' run build
 
       - name: Test
         run: |

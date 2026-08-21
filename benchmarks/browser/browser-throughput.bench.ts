@@ -35,31 +35,24 @@ export const config = defineBenchmarkConfig({
   iterations: 2,
   groupBy: 'round',
   participants: throughputProviders,
-  onScore: (lowerIsBetter, higherIsBetter) => ({
-    success: (record) => record.status === 'success' && typeof record.data?.actionsCompleted === 'number' && record.data.actionsCompleted === ACTIONS_PER_SESSION,
+  scoring: {
+    // A session that dropped actions isn't comparable to one that completed
+    // them all, so it counts against the success rate and its timings are
+    // excluded from the metrics.
+    success: { requireData: { actionsCompleted: ACTIONS_PER_SESSION } },
     metrics: [
-      higherIsBetter('actionsPerSecond', {
+      {
+        key: 'actionsPerSecond',
         unit: 'actions/sec',
         floor: 0,
         ceiling: 10,
+        higherIsBetter: true,
         weights: { median: 0.40, p95: 0, p99: 0 },
-      }),
-      lowerIsBetter('taskMs', {
-        unit: 'ms',
-        ceiling: 30000,
-        weights: { median: 0.25, p95: 0.20, p99: 0 },
-      }),
-      lowerIsBetter('screenshot', {
-        unit: 'ms',
-        ceiling: 30000,
-        value: (record) => {
-          const actions = Array.isArray(record.data?.actions) ? (record.data!.actions as any[]) : [];
-          return actions.filter((a) => a.type === 'screenshot' && a.success).map((a) => a.durationMs);
-        },
-        weights: { median: 0.15, p95: 0, p99: 0 },
-      }),
+      },
+      { key: 'taskMs', unit: 'ms', ceiling: 30000, weights: { median: 0.25, p95: 0.20, p99: 0 } },
+      { key: 'screenshotMs', unit: 'ms', ceiling: 30000, weights: { median: 0.15, p95: 0, p99: 0 } },
     ],
-  }),
+  },
   onComplete: (outcome) =>
     writeThroughputLegacyResults(outcome.participants, {
       resultsDir: path.resolve(__dirname, '../../results/browser-throughput'),
@@ -231,6 +224,17 @@ async function runActionLoop(page: Page, results: ActionResult[], navigateUrl: s
   }
 }
 
+/** Median duration of the session's successful screenshots, or undefined if it took none. */
+function medianScreenshotMs(actions: ActionResult[]): number | undefined {
+  const durations = actions
+    .filter((a) => a.type === 'screenshot' && a.success)
+    .map((a) => a.durationMs)
+    .sort((a, b) => a - b);
+  if (durations.length === 0) return undefined;
+  const mid = Math.floor(durations.length / 2);
+  return durations.length % 2 === 0 ? (durations[mid - 1] + durations[mid]) / 2 : durations[mid];
+}
+
 /** One provider instance per participant, reused across that provider's sessions. */
 const providerCache = new Map<string, any>();
 
@@ -254,6 +258,7 @@ export const task = defineTask<ThroughputProviderConfig>(async (ctx) => {
   let taskMs = 0;
   let actionsCompleted = 0;
   let actionsPerSecond = 0;
+  let screenshotMs: number | undefined;
 
   let session: { sessionId: string; connectUrl: string } | undefined;
   let browser: Browser | undefined;
@@ -292,7 +297,8 @@ export const task = defineTask<ThroughputProviderConfig>(async (ctx) => {
       taskMs = actions.reduce((sum, a) => sum + a.durationMs, 0);
       actionsCompleted = actions.filter((a) => a.success).length;
       actionsPerSecond = taskMs > 0 ? actionsCompleted / (taskMs / 1000) : 0;
-      measure({ actionsPerSecond, actionsCompleted });
+      screenshotMs = medianScreenshotMs(actions);
+      measure({ actionsPerSecond, actionsCompleted, ...(screenshotMs !== undefined ? { screenshotMs } : {}) });
     });
   } catch (err) {
     iterationError = err instanceof Error ? err.message : String(err);
@@ -329,6 +335,7 @@ export const task = defineTask<ThroughputProviderConfig>(async (ctx) => {
     taskMs,
     actionsCompleted,
     actionsPerSecond,
+    ...(screenshotMs !== undefined ? { screenshotMs } : {}),
     actions: actions as unknown as JsonValue,
     ...(iterationError ? { errorMessage: iterationError } : {}),
   };

@@ -1,4 +1,6 @@
 packages:
+  - packages/benchsdk-api
+  - packages/benchsdk-worker
   - packages/benchsdk
   - packages/create-bench
   - packages/benchsdk-runner

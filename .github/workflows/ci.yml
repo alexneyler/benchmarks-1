@@ -31,13 +31,9 @@ jobs:
         run: pnpm install --ignore-scripts
 
       - name: Build packages
-        # The root typecheck consumes the built dist output, so build
-        # @benchsdk/client, @benchsdk/runner, and create-bench before running
-        # typecheck.
-        run: |
-          pnpm --filter @benchsdk/client run build
-          pnpm --filter @benchsdk/runner run build
-          pnpm --filter create-bench run build
+        # The root typecheck consumes the built dist output, so build all
+        # workspace packages in dependency order before running typecheck.
+        run: pnpm -r --filter './packages/**' run build
 
       - name: Typecheck
         run: pnpm typecheck

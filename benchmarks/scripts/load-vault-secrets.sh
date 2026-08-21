@@ -104,13 +104,23 @@ eval "$vault_exported"
 # call; GH Actions splits the value internally so each line gets masked.
 resolved_count=0
 missing_count=0
-while IFS= read -r key; do
+missing_keys=""
+while IFS= read -r line; do
+  key="${line%%=*}"
+  object_id="${line#*=}"
   v="${!key-}"
   if [ -n "$v" ]; then
     echo "::add-mask::$v"
     resolved_count=$((resolved_count + 1))
   else
     missing_count=$((missing_count + 1))
+    missing_keys="${missing_keys}${missing_keys:+, }${key} (object_id=${object_id})"
   fi
-done < <(awk -F= '{print $1}' /tmp/vault.envdef)
+done < /tmp/vault.envdef
+if [ -n "$missing_keys" ]; then
+  echo "::error::load-vault-secrets.sh: missing ${missing_count} key(s): ${missing_keys}" >&2
+fi
 echo "::notice::load-vault-secrets.sh: resolved=${resolved_count} missing=${missing_count}"
+if [ -n "$missing_keys" ]; then
+  return 1 2>/dev/null || exit 1
+fi
