@@ -11,7 +11,6 @@ export interface BaseParticipant {
 }
 
 /**
-/**
  * Filters `participants` down to those whose `requiredEnvVars` are all set
  * in `process.env`. Returns an object `{ available, skipped }` where `skipped`
  * includes the names and missing vars for logging.
@@ -35,9 +34,9 @@ export function filterParticipantsByEnv<T extends BaseParticipant>(
 }
 
 /**
- * Filters `all` down to the requested `names`, exiting with a clear error
- * if any name is unrecognized. Returns `all` unchanged when `names` is
- * undefined (no filter specified).
+ * Filters `all` down to the requested `names`, throwing a clear error if any
+ * name is unrecognized. Returns `all` unchanged when `names` is undefined
+ * (no filter specified).
  */
 export function selectParticipants<T extends BaseParticipant>(
   all: T[],
@@ -46,9 +45,9 @@ export function selectParticipants<T extends BaseParticipant>(
   if (!names) return all;
   const unknown = names.filter((n) => !all.some((p) => p.name === n));
   if (unknown.length > 0) {
-    console.error(`Unknown participant(s): ${unknown.join(', ')}`);
-    console.error(`Available: ${all.map((p) => p.name).join(', ')}`);
-    process.exit(1);
+    throw new Error(
+      `Unknown participant(s): ${unknown.join(', ')}. Available: ${all.map((p) => p.name).join(', ')}`,
+    );
   }
   return all.filter((p) => names.includes(p.name));
 }

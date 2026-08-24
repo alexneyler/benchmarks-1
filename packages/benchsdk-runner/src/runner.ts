@@ -162,12 +162,18 @@ async function runStepWithClient<R, C extends number = 1>(
 }
 
 /**
- * Parses the orchestration flags this runner understands, ignoring anything
- * else. Supports both `--flag value` and `--flag=value`; `--provider` accepts
+ * Parses the orchestration flags this runner understands, rejecting unknown
+ * flags. Supports both `--flag value` and `--flag=value`; `--provider` accepts
  * a comma-separated list and may be repeated.
+ *
+ * `allowedCustomFlags` lists pass-through flags the benchmark file reads from
+ * `process.argv` itself; the runner validates and skips them without choking on
+ * their values.
  */
-export function parseCliArgs(argv: string[]): CliArgs {
+export function parseCliArgs(argv: string[], allowedCustomFlags?: readonly string[]): CliArgs {
   const args: CliArgs = {};
+  const unknown: string[] = [];
+  const allowed = new Set(allowedCustomFlags ?? []);
 
   const readValue = (raw: string, i: number): { value: string; nextIndex: number } => {
     const eq = raw.indexOf('=');
@@ -263,9 +269,34 @@ export function parseCliArgs(argv: string[]): CliArgs {
       case '--dry-run':
         args.noIngest = true;
         break;
-      default:
+      default: {
+        if (allowed.has(name)) {
+          // Skip the flag's value (if supplied as a separate token) so the
+          // benchmark file can read it from process.argv itself.
+          if (!arg.includes('=')) {
+            const next = argv[i + 1];
+            if (next && !next.startsWith('-')) {
+              i++;
+            }
+          }
+        } else {
+          unknown.push(name);
+          // Unknown flags that take a value shouldn't report the value as a
+          // separate unknown flag.
+          if (!arg.includes('=')) {
+            const next = argv[i + 1];
+            if (next && !next.startsWith('-')) {
+              i++;
+            }
+          }
+        }
         break;
+      }
     }
+  }
+
+  if (unknown.length > 0) {
+    throw new Error(`Unknown flag(s): ${unknown.join(', ')}`);
   }
 
   if (!args.noIngest && isEnvNoIngest()) {
@@ -355,11 +386,13 @@ function defaultOnResult(record: TaskResultRecord, meta: { iterations: number; p
 
 function resolvePlatform(): { baseUrl: string; apiKey: string } {
   const root = (process.env.BENCHMARKS_PLATFORM_URL || DEFAULT_PLATFORM_URL).replace(/\/+$/, '');
-  const apiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
+  const apiKey =
+    process.env.BENCHMARKS_PLATFORM_API_KEY ??
+    process.env.COMPUTESDK_API_KEY;
   if (!apiKey) {
     throw new Error(
-      'BENCHMARKS_PLATFORM_API_KEY is required. Create an org-scoped API key ' +
-        'in your organization settings on the platform and set it in your .env.'
+      'An API key is required. Set BENCHMARKS_PLATFORM_API_KEY in your environment. Create an org-scoped API key in your ' +
+        'organization settings on the platform.'
     );
   }
   return {
@@ -474,7 +507,7 @@ export async function runBenchmark<T extends BaseParticipant>(
   task: BenchmarkTask<T>,
   argv: string[] = [],
 ): Promise<BenchmarkRunOutcome> {
-  const args = parseCliArgs(argv);
+  const args = parseCliArgs(argv, fileConfig.customCliFlags);
   const noIngest = args.noIngest ?? isEnvNoIngest();
   const shaped = applyShape(fileConfig, resolveShape(fileConfig, args.shape));
   const config = applyIdentityOverrides(shaped, args);

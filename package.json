@@ -61,7 +61,7 @@
     "bench:snapshot-fork:s3": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/storage/snapshot-fork.bench.ts --provider aws-s3",
     "bench:snapshot-fork:wide": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/storage/snapshot-fork.bench.ts --dataset wide",
     "bench:snapshot-fork:deep": "tsx packages/benchsdk-runner/dist/bin.js run benchmarks/storage/snapshot-fork.bench.ts --dataset deep",
-    "bundle:scale": "esbuild benchmarks/scale/coordinator.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/scale.cjs",
+    "bundle:scale": "esbuild benchmarks/scale/coordinator.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/scale.mjs --inject:benchmarks/scale/inject-require.mjs",
     "bench:scale:image": "SCALE_IMAGE_REPO=${SCALE_IMAGE_REPO:-nscr.io/5enq753trme1k/scale}; SCALE_IMAGE_TAG=${SCALE_IMAGE_TAG:-latest}; docker buildx build --platform linux/amd64 --provenance=false --sbom=false -f benchmarks/scale/Dockerfile --push -t \"$SCALE_IMAGE_REPO:$SCALE_IMAGE_TAG\" .",
     "bench:scale:local": "tsx benchmarks/scale/coordinator.ts",
     "bench:scale:start": "tsx benchmarks/scale/scripts/start.ts",
@@ -205,11 +205,11 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.1",
-    "@types/node": "^26.2.0",
+    "@types/node": "^20.0.0",
     "@types/pg": "^8.23.1",
     "esbuild": "^0.28.2",
     "tsx": "^4.23.12",
-    "typescript": "^6.0.3"
+    "typescript": "^5.0.0"
   },
   "packageManager": "pnpm@10.33.0"
 }

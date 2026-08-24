@@ -53,6 +53,7 @@ export const config = defineBenchmarkConfig({
   iterations: 2,
   concurrency: 1,
   participants,
+  customCliFlags: ['--dataset'],
   dimensions: { dataset },
   scoring: {
     // A fork whose read-back didn't match is not a usable fork, so its timings

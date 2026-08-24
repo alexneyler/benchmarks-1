@@ -72,7 +72,9 @@ function queryString(input: Record<string, number | undefined>): string {
 }
 
 function getApiKey(input?: string): string | undefined {
-  return input ?? (typeof process !== 'undefined' ? process.env.COMPUTESDK_ADMIN_API_KEY ?? process.env.COMPUTESDK_API_KEY : undefined);
+  if (input) return input;
+  if (typeof process === 'undefined') return undefined;
+  return process.env.BENCHMARKS_PLATFORM_API_KEY ?? process.env.COMPUTESDK_API_KEY;
 }
 
 function getErrorCode(error: unknown): string {

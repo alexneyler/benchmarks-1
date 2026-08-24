@@ -3,14 +3,15 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import * as barrel from '../index';
 import {
   BenchmarkApiError,
+  BenchmarkReporter,
+  claimBenchmarkReporter,
   createBenchmarkClient,
-} from '../client';
-import { BenchmarkReporter, claimBenchmarkReporter } from '../reporter';
-import { createSystemMetricsCollector } from '../metrics';
-import * as barrel from '../index';
-import type { BenchmarkAssignment, BenchmarkClient } from '../types';
+  createSystemMetricsCollector,
+} from '../index';
+import type { BenchmarkAssignment, BenchmarkClient } from '../index';
 
 // The public type surface is imported by name here purely to prove every exported
 // type resolves against the package barrel (the consumer-compile contract).
@@ -392,23 +393,23 @@ describe('transport layer', () => {
     }
   });
 
-  it('VAL-SDK-005: falls back to COMPUTESDK_ADMIN_API_KEY then COMPUTESDK_API_KEY', async () => {
-    const prevAdmin = process.env.COMPUTESDK_ADMIN_API_KEY;
+  it('VAL-SDK-005: falls back to BENCHMARKS_PLATFORM_API_KEY then COMPUTESDK_API_KEY', async () => {
+    const prevBenchmarks = process.env.BENCHMARKS_PLATFORM_API_KEY;
     const prevApi = process.env.COMPUTESDK_API_KEY;
     try {
-      process.env.COMPUTESDK_ADMIN_API_KEY = 'admin_key';
+      process.env.BENCHMARKS_PLATFORM_API_KEY = 'benchmarks_key';
       process.env.COMPUTESDK_API_KEY = 'api_key';
       const first = recordingClient(() => jsonResponse({ benchmark: benchmarkResource() }));
       await createBenchmarkClient({ baseUrl: BASE, fetch: first.fetchMock }).getBenchmark('scale');
-      expect(first.calls[0].headers.Authorization).toBe('Bearer admin_key');
+      expect(first.calls[0].headers.Authorization).toBe('Bearer benchmarks_key');
 
-      delete process.env.COMPUTESDK_ADMIN_API_KEY;
+      delete process.env.BENCHMARKS_PLATFORM_API_KEY;
       const second = recordingClient(() => jsonResponse({ benchmark: benchmarkResource() }));
       await createBenchmarkClient({ baseUrl: BASE, fetch: second.fetchMock }).getBenchmark('scale');
       expect(second.calls[0].headers.Authorization).toBe('Bearer api_key');
     } finally {
-      if (prevAdmin === undefined) delete process.env.COMPUTESDK_ADMIN_API_KEY;
-      else process.env.COMPUTESDK_ADMIN_API_KEY = prevAdmin;
+      if (prevBenchmarks === undefined) delete process.env.BENCHMARKS_PLATFORM_API_KEY;
+      else process.env.BENCHMARKS_PLATFORM_API_KEY = prevBenchmarks;
       if (prevApi === undefined) delete process.env.COMPUTESDK_API_KEY;
       else process.env.COMPUTESDK_API_KEY = prevApi;
     }
@@ -1391,8 +1392,8 @@ describe('createSystemMetricsCollector', () => {
 // ---------------------------------------------------------------------------
 describe('public API surface and type exports', () => {
   const here = dirname(fileURLToPath(import.meta.url));
-  // The barrel re-exports the full public type surface from types/reporter/metrics.
-  // Internal helper types must never appear here.
+  // The barrel re-exports the full public type surface from @benchsdk/api and
+  // @benchsdk/worker. Internal helper types must never appear here.
   const TYPES_EXPORTS = [
     'BenchmarkAssignment', 'BenchmarkArtifact', 'BenchmarkClient', 'BenchmarkClientConfig',
     'BenchmarkConcurrencyPoint', 'BenchmarkAnalyticsReadiness', 'BenchmarkEventRateBucket', 'BenchmarkFailurePoint',
@@ -1473,11 +1474,6 @@ describe('public API surface and type exports', () => {
       expect(uniqueExportedTypeNames).not.toContain(internal);
     }
 
-    // The internal types do exist in types.ts, they are just not surfaced.
-    const typesSource = readFileSync(join(here, '..', 'types.ts'), 'utf8');
-    for (const internal of INTERNAL_TYPES) {
-      expect(typesSource).toMatch(new RegExp(`export (interface|type) ${internal}\\b`));
-    }
   });
 
   it('VAL-SDK-091: every value export is present on the package barrel', () => {

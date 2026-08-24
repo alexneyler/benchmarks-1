@@ -35,7 +35,7 @@ async function main() {
   })();
 
   const provider = getProvider(PROVIDER);
-  const benchApiKey = process.env.COMPUTESDK_API_KEY ?? process.env.COMPUTESDK_ADMIN_API_KEY;
+  const benchApiKey = process.env.BENCHMARKS_PLATFORM_API_KEY ?? process.env.COMPUTESDK_API_KEY;
   const LABEL = process.env.LABEL ?? `scale.${PROVIDER}`;
 
   // Platform orchestration target. start.ts creates the run + plans the workers,

@@ -1,17 +1,19 @@
 import { createBenchmarkClient as createApiClient, BenchmarkApiError } from '@benchsdk/api';
 import { runWorker } from '@benchsdk/worker';
-import type { BenchmarkClient, BenchmarkClientConfig, RunWorkerOptions, RunWorkerResult } from './types';
+import type { BenchmarkClient as BenchmarkApiClient, BenchmarkClientConfig, RunWorkerOptions, RunWorkerResult } from '@benchsdk/api';
 
 export { BenchmarkApiError };
 
+export type BenchmarkClient = BenchmarkApiClient & {
+  runWorker(options: RunWorkerOptions): Promise<RunWorkerResult>;
+};
+
+export type { BenchmarkClientConfig } from '@benchsdk/api';
+
 export function createBenchmarkClient(config: BenchmarkClientConfig = {}): BenchmarkClient {
   const apiClient = createApiClient(config);
-  function runWorkerWrapped(options: RunWorkerOptions): Promise<RunWorkerResult> {
-    return runWorker(client as any, options as unknown as any) as Promise<RunWorkerResult>;
-  }
-  const client = {
+  return {
     ...apiClient,
-    runWorker: runWorkerWrapped,
-  } as BenchmarkClient;
-  return client;
+    runWorker: (options: RunWorkerOptions) => runWorker(apiClient, options),
+  };
 }

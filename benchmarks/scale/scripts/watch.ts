@@ -97,7 +97,7 @@ const args = parseArgs();
 
 const client = createBenchmarkClient({
   baseUrl: 'https://platform.computesdk.com/api/v1',
-  apiKey: process.env.COMPUTESDK_ADMIN_API_KEY ?? process.env.COMPUTESDK_API_KEY,
+  apiKey: process.env.BENCHMARKS_PLATFORM_API_KEY ?? process.env.COMPUTESDK_API_KEY,
 });
 
 function classifyError(err: unknown): { status: string; detail: string } {

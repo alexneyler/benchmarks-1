@@ -100,7 +100,7 @@ jobs:
           CONCURRENCY: ${{ github.event.inputs.concurrency || '1' }}
           PROVIDER: ${{ matrix.provider }}
         run: |
-          COMMON_KEYS='BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY'
+          COMMON_KEYS='BENCHMARKS_PLATFORM_API_KEY'
           case "$PROVIDER" in
             archil) PROVIDER_KEYS='ARCHIL_API_KEY|ARCHIL_REGION|ARCHIL_DISK_ID' ;;
             arker) PROVIDER_KEYS='ARKER_API_KEY' ;;
