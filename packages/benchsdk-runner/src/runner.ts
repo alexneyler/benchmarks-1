@@ -165,10 +165,15 @@ async function runStepWithClient<R, C extends number = 1>(
  * Parses the orchestration flags this runner understands, rejecting unknown
  * flags. Supports both `--flag value` and `--flag=value`; `--provider` accepts
  * a comma-separated list and may be repeated.
+ *
+ * `allowedCustomFlags` lists pass-through flags the benchmark file reads from
+ * `process.argv` itself; the runner validates and skips them without choking on
+ * their values.
  */
-export function parseCliArgs(argv: string[]): CliArgs {
+export function parseCliArgs(argv: string[], allowedCustomFlags?: readonly string[]): CliArgs {
   const args: CliArgs = {};
   const unknown: string[] = [];
+  const allowed = new Set(allowedCustomFlags ?? []);
 
   const readValue = (raw: string, i: number): { value: string; nextIndex: number } => {
     const eq = raw.indexOf('=');
@@ -264,9 +269,29 @@ export function parseCliArgs(argv: string[]): CliArgs {
       case '--dry-run':
         args.noIngest = true;
         break;
-      default:
-        unknown.push(name);
+      default: {
+        if (allowed.has(name)) {
+          // Skip the flag's value (if supplied as a separate token) so the
+          // benchmark file can read it from process.argv itself.
+          if (!arg.includes('=')) {
+            const next = argv[i + 1];
+            if (next && !next.startsWith('-')) {
+              i++;
+            }
+          }
+        } else {
+          unknown.push(name);
+          // Unknown flags that take a value shouldn't report the value as a
+          // separate unknown flag.
+          if (!arg.includes('=')) {
+            const next = argv[i + 1];
+            if (next && !next.startsWith('-')) {
+              i++;
+            }
+          }
+        }
         break;
+      }
     }
   }
 
@@ -484,7 +509,7 @@ export async function runBenchmark<T extends BaseParticipant>(
   task: BenchmarkTask<T>,
   argv: string[] = [],
 ): Promise<BenchmarkRunOutcome> {
-  const args = parseCliArgs(argv);
+  const args = parseCliArgs(argv, fileConfig.customCliFlags);
   const noIngest = args.noIngest ?? isEnvNoIngest();
   const shaped = applyShape(fileConfig, resolveShape(fileConfig, args.shape));
   const config = applyIdentityOverrides(shaped, args);

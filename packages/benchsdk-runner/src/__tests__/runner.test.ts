@@ -82,6 +82,19 @@ describe('parseCliArgs', () => {
     expect(() => parseCliArgs(['--unknown', 'x', '--iterations', '3'])).toThrow('Unknown flag');
   });
 
+  it('allows declared custom pass-through flags and their values', () => {
+    expect(parseCliArgs(['--file-size', '10MB', '--iterations', '3'], ['--file-size'])).toEqual({
+      iterations: 3,
+    });
+    expect(parseCliArgs(['--file-size=10MB', '--iterations', '3'], ['--file-size'])).toEqual({
+      iterations: 3,
+    });
+  });
+
+  it('still throws when a pass-through-style flag is not declared', () => {
+    expect(() => parseCliArgs(['--file-size', '10MB'])).toThrow('Unknown flag');
+  });
+
   it('throws on non-numeric numeric flags', () => {
     expect(() => parseCliArgs(['--iterations', 'abc'])).toThrow('--iterations');
   });

@@ -53,6 +53,7 @@ const baseConfig = {
   benchmarkName: `Storage Lifecycle${process.env.DAILY_BENCH_NAME ? ` - ${process.env.DAILY_BENCH_NAME}` : ''}`,
   concurrency: 1,
   participants: storageProviders,
+  customCliFlags: ['--file-size'],
   scoring: {
     groupBy: 'file_size',
     metrics: [
