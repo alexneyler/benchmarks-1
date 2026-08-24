@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BenchmarkApiError, createBenchmarkClient } from '../client';
 
-const shouldRun = !!process.env.COMPUTESDK_ADMIN_API_KEY || !!process.env.COMPUTESDK_API_KEY;
+const shouldRun = !!process.env.BENCHMARKS_PLATFORM_API_KEY || !!process.env.COMPUTESDK_API_KEY;
 const describeIntegration = shouldRun ? describe : describe.skip;
 
 function isInvalidApiKeyError(error: unknown): boolean {
@@ -167,7 +167,7 @@ describeIntegration('benchmark orchestrator integration', () => {
       expect(Array.isArray(imports.items)).toBe(true);
     } catch (error) {
       if (isInvalidApiKeyError(error)) {
-        console.warn('Skipping bench orchestrator smoke - COMPUTESDK_ADMIN_API_KEY is invalid for the platform API.');
+        console.warn('Skipping bench orchestrator smoke - the bench API key is invalid for the platform API.');
         return;
       }
       throw error;

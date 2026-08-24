@@ -48,7 +48,7 @@ jobs:
           STAGGER_DELAY_MS: ${{ github.event.inputs.stagger_delay_ms || '60000' }}
           DRY_RUN: ${{ github.event.inputs.dry_run || false }}
         run: |
-          . benchmarks/scripts/load-vault-secrets.sh '^(TENSORLAKE_API_KEY|BENCHMARKS_PLATFORM_API_KEY|COMPUTESDK_ADMIN_API_KEY)='
+          . benchmarks/scripts/load-vault-secrets.sh '^(TENSORLAKE_API_KEY|BENCHMARKS_PLATFORM_API_KEY)='
           RUN_KEY="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           ITERATIONS="${ITERATIONS:-60}"
           STAGGER_DELAY_MS="${STAGGER_DELAY_MS:-60000}"
