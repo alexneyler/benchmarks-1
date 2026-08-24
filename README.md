@@ -8,6 +8,13 @@ Live leaderboards and full methodology: [https://www.computesdk.com/benchmarks](
 
 For LLMs and agents: see [`llms.txt`](./llms.txt) for a machine-readable index of this repo, and [`results/schema.json`](./results/schema.json) for the JSON Schema of every benchmark result file.
 
+## Writing and running benchmarks
+
+- [`WRITING_BENCHMARKS.md`](./WRITING_BENCHMARKS.md) — step-by-step guide to authoring benchmarks.
+- [`examples/`](./examples) — runnable `*.bench.ts` examples covering every benchsdk capability.
+- [`packages/create-bench/README.md`](./packages/create-bench/README.md) — scaffold a new benchmark project in one command.
+- [`packages/benchsdk-runner/README.md`](./packages/benchsdk-runner/README.md) — runner API and CLI reference.
+
 ## Partners
 
 Our partners support our independent benchmarks.

@@ -30,3 +30,5 @@ The CLI creates a directory with the given project name and writes:
 2. `pnpm install`
 3. Copy `.env.example` to `.env` and fill in the required values
 4. `pnpm bench`
+
+For a full guide to authoring benchmarks and runnable examples covering every capability, see [`WRITING_BENCHMARKS.md`](../../WRITING_BENCHMARKS.md) and the [`examples/`](../../examples) directory.

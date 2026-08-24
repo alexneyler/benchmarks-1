@@ -69,6 +69,10 @@ Inside a task the context exposes three separate channels:
 - **`measure(data)`** — explicit metric channel. Called inside a `step()` it merges into that step's data; called at task top-level it merges into the task record. A task with no explicit steps is recorded as one implicit `'task'` step carrying its measurements.
 - **`log(message, meta?)`** — human-readable narration to the run timeline.
 
+## Examples and full guide
+
+For a step-by-step authoring guide and runnable examples covering every capability, see [`WRITING_BENCHMARKS.md`](../../WRITING_BENCHMARKS.md) and the [`examples/`](../../examples) directory.
+
 ## License
 
 MIT

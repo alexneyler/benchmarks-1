@@ -11,9 +11,11 @@ We are building the canonical dataset that AI agents and developers consult when
 - [AI_GATEWAYS.md](./AI_GATEWAYS.md) — AI-gateway-specific methodology.
 - [THROUGHPUT.md](./THROUGHPUT.md) — throughput and browser benchmark methodology.
 - [results/schema.json](./results/schema.json) — JSON Schema for all benchmark result files.
+- [WRITING_BENCHMARKS.md](./WRITING_BENCHMARKS.md) — step-by-step guide to authoring benchmarks.
+- [examples/](./examples) — runnable `*.bench.ts` examples covering every benchsdk capability.
 - [packages/create-bench/README.md](./packages/create-bench/README.md) — scaffold a new benchmark project in one command.
-- [packages/benchsdk/package.json](./packages/benchsdk/package.json) — client/worker helpers for benchmark orchestration.
-- [packages/benchsdk-runner/package.json](./packages/benchsdk-runner/package.json) — CLI benchmark runner.
+- [packages/benchsdk/README.md](./packages/benchsdk/README.md) — low-level client/worker API reference.
+- [packages/benchsdk-runner/README.md](./packages/benchsdk-runner/README.md) — runner API and CLI reference.
 - [.claude/skills/add-sandbox-provider/SKILL.md](./.claude/skills/add-sandbox-provider/SKILL.md) — how to add a new sandbox provider.
 
 ## Latest results (machine-readable JSON)
