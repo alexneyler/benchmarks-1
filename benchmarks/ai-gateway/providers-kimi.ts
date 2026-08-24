@@ -208,6 +208,30 @@ export const providers: AIGatewayProviderConfig[] = [
     reasoningCountsAsFirstToken: true,
   },
   {
+    // BlazeRail: OpenAI-compatible /v1/chat/completions. moonshotai/kimi-k3 is
+    // BlazeRail-s public id for the model; routing picks among its five live
+    // upstreams (CrofAI, DeepInfra, Wafer, Moonshot AI, Modal) by measured
+    // latency and price, which is the product behavior being benchmarked -
+    // same posture as the other multi-upstream gateways in this family.
+    name: 'blazerail',
+    requiredEnvVars: ['BLAZERAIL_API_KEY'],
+    wireFormat: 'openai',
+    model: 'moonshotai/kimi-k3',
+    host: 'api.blazerail.com',
+    path: '/v1/chat/completions',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.BLAZERAIL_API_KEY}`,
+    }),
+    extraBody: {
+      temperature: undefined,
+    },
+    extractResolvedProvider: (buf) =>
+      buf.match(/"resolvedProvider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"provider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"model"\s*:\s*"([^"/]+)\/[^"]*"/)?.[1],
+    reasoningCountsAsFirstToken: true,
+  },
+  {
     name: 'novita',
     requiredEnvVars: ['NOVITA_API_KEY'],
     wireFormat: 'openai',
