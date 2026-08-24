@@ -324,6 +324,7 @@ function getPayloadBytes(): number {
 
 export const task = defineTask(async ({ step, measure }) => {
   const bytes = getPayloadBytes();
+  const start = performance.now();
   await step('work', () => hashRandomBytes(bytes));
   measure({ durationMs: performance.now() - start });
 });
