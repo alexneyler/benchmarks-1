@@ -1,14 +1,9 @@
-export {
-  BenchmarkApiError,
-  createBenchmarkClient,
-} from './client';
-export { BenchmarkReporter, claimBenchmarkReporter } from './reporter';
-export { createSystemMetricsCollector } from './metrics';
+export { BenchmarkApiError, createBenchmarkClient } from './client';
+export type { BenchmarkClient, BenchmarkClientConfig } from './client';
+
 export type {
   BenchmarkAssignment,
   BenchmarkArtifact,
-  BenchmarkClient,
-  BenchmarkClientConfig,
   BenchmarkConcurrencyPoint,
   BenchmarkAnalyticsReadiness,
   BenchmarkEventRateBucket,
@@ -70,31 +65,31 @@ export type {
   UpdateParticipantInput,
   UpdateRunInput,
   UpdateWorkerInput,
-  WorkerConcurrencySample,
-  WorkerFinishContext,
-  WorkerHeartbeatInput,
   UpsertBenchmarkInput,
   UpsertParticipantInput,
   UploadWorkerArtifactInput,
-} from './types';
+  WorkerConcurrencySample,
+  WorkerFinishContext,
+  WorkerHeartbeatInput,
+} from '@benchsdk/api';
 
 export {
+  BenchmarkReporter,
+  claimBenchmarkReporter,
+  createSystemMetricsCollector,
   filterParticipantsByEnv,
+  runWorker,
   selectParticipants,
-} from './participants';
+} from '@benchsdk/worker';
 
 export type {
   BaseParticipant,
-} from './participants';
-export type {
   BenchmarkReporterArtifactInput,
   BenchmarkReporterBarrierInput,
   BenchmarkReporterBarrierResult,
   BenchmarkReporterConfig,
   BenchmarkReporterHeartbeatInput,
   BenchmarkReporterProgress,
-} from './reporter';
-export type {
   BenchmarkSystemMetricsCollector,
   BenchmarkSystemMetricsSample,
-} from './metrics';
+} from '@benchsdk/worker';

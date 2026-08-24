@@ -78,8 +78,8 @@ describe('parseCliArgs', () => {
     expect(() => parseCliArgs(['--group-by', 'nope'])).toThrow('--group-by');
   });
 
-  it('ignores unknown flags', () => {
-    expect(parseCliArgs(['--unknown', 'x', '--iterations', '3'])).toEqual({ iterations: 3 });
+  it('throws on unknown flags', () => {
+    expect(() => parseCliArgs(['--unknown', 'x', '--iterations', '3'])).toThrow('Unknown flag');
   });
 
   it('throws on non-numeric numeric flags', () => {

@@ -1,8 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { BenchmarkApiError, createBenchmarkClient } from '../client';
-import { createSystemMetricsCollector } from '../metrics';
-import { BenchmarkReporter } from '../reporter';
-import type { BenchmarkAssignment } from '../types';
+import { createBenchmarkClient } from '../client';
+import { BenchmarkApiError, BenchmarkReporter, createSystemMetricsCollector } from '../index';
+import type { BenchmarkAssignment } from '../index';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

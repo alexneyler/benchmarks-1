@@ -162,12 +162,13 @@ async function runStepWithClient<R, C extends number = 1>(
 }
 
 /**
- * Parses the orchestration flags this runner understands, ignoring anything
- * else. Supports both `--flag value` and `--flag=value`; `--provider` accepts
+ * Parses the orchestration flags this runner understands, rejecting unknown
+ * flags. Supports both `--flag value` and `--flag=value`; `--provider` accepts
  * a comma-separated list and may be repeated.
  */
 export function parseCliArgs(argv: string[]): CliArgs {
   const args: CliArgs = {};
+  const unknown: string[] = [];
 
   const readValue = (raw: string, i: number): { value: string; nextIndex: number } => {
     const eq = raw.indexOf('=');
@@ -264,8 +265,13 @@ export function parseCliArgs(argv: string[]): CliArgs {
         args.noIngest = true;
         break;
       default:
+        unknown.push(name);
         break;
     }
+  }
+
+  if (unknown.length > 0) {
+    throw new Error(`Unknown flag(s): ${unknown.join(', ')}`);
   }
 
   if (!args.noIngest && isEnvNoIngest()) {
@@ -355,11 +361,15 @@ function defaultOnResult(record: TaskResultRecord, meta: { iterations: number; p
 
 function resolvePlatform(): { baseUrl: string; apiKey: string } {
   const root = (process.env.BENCHMARKS_PLATFORM_URL || DEFAULT_PLATFORM_URL).replace(/\/+$/, '');
-  const apiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
+  const apiKey =
+    process.env.BENCHMARKS_PLATFORM_API_KEY ??
+    process.env.COMPUTESDK_ADMIN_API_KEY ??
+    process.env.COMPUTESDK_API_KEY;
   if (!apiKey) {
     throw new Error(
-      'BENCHMARKS_PLATFORM_API_KEY is required. Create an org-scoped API key ' +
-        'in your organization settings on the platform and set it in your .env.'
+      'An API key is required. Set one of BENCHMARKS_PLATFORM_API_KEY, COMPUTESDK_ADMIN_API_KEY, ' +
+        'or COMPUTESDK_API_KEY in your environment. Create an org-scoped API key in your ' +
+        'organization settings on the platform.'
     );
   }
   return {

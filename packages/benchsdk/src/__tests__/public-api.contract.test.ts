@@ -3,14 +3,15 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import * as barrel from '../index';
 import {
   BenchmarkApiError,
+  BenchmarkReporter,
+  claimBenchmarkReporter,
   createBenchmarkClient,
-} from '../client';
-import { BenchmarkReporter, claimBenchmarkReporter } from '../reporter';
-import { createSystemMetricsCollector } from '../metrics';
-import * as barrel from '../index';
-import type { BenchmarkAssignment, BenchmarkClient } from '../types';
+  createSystemMetricsCollector,
+} from '../index';
+import type { BenchmarkAssignment, BenchmarkClient } from '../index';
 
 // The public type surface is imported by name here purely to prove every exported
 // type resolves against the package barrel (the consumer-compile contract).
@@ -1391,8 +1392,8 @@ describe('createSystemMetricsCollector', () => {
 // ---------------------------------------------------------------------------
 describe('public API surface and type exports', () => {
   const here = dirname(fileURLToPath(import.meta.url));
-  // The barrel re-exports the full public type surface from types/reporter/metrics.
-  // Internal helper types must never appear here.
+  // The barrel re-exports the full public type surface from @benchsdk/api and
+  // @benchsdk/worker. Internal helper types must never appear here.
   const TYPES_EXPORTS = [
     'BenchmarkAssignment', 'BenchmarkArtifact', 'BenchmarkClient', 'BenchmarkClientConfig',
     'BenchmarkConcurrencyPoint', 'BenchmarkAnalyticsReadiness', 'BenchmarkEventRateBucket', 'BenchmarkFailurePoint',
@@ -1473,11 +1474,6 @@ describe('public API surface and type exports', () => {
       expect(uniqueExportedTypeNames).not.toContain(internal);
     }
 
-    // The internal types do exist in types.ts, they are just not surfaced.
-    const typesSource = readFileSync(join(here, '..', 'types.ts'), 'utf8');
-    for (const internal of INTERNAL_TYPES) {
-      expect(typesSource).toMatch(new RegExp(`export (interface|type) ${internal}\\b`));
-    }
   });
 
   it('VAL-SDK-091: every value export is present on the package barrel', () => {
