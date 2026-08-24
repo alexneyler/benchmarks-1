@@ -253,7 +253,7 @@ There is no single `mode` switch. The shape of a run emerges from the knobs:
 ```ts
 scoring: {
   metrics: [
-    { key: 'ttiMs', unit: 'ms', ceiling: 10000, weights: { median: 0.6, p95: 0.25, p99: 0.15 } },
+    { key: 'ttiMs', unit: 'ms', ceiling: 10000, weights: { median: 0.4, p95: 0.25, p99: 0.15 } },
     { key: 'opsPerSec', unit: 'ops/s', floor: 1, ceiling: 1000, higherIsBetter: true, weights: { median: 0.2, p95: 0, p99: 0 } },
   ],
   success: {
