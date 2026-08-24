@@ -22,6 +22,6 @@ RUN pnpm run --silent bundle:scale
 FROM node:24-alpine
 
 WORKDIR /app
-COPY --from=builder /app/dist/scale.cjs /app/coordinator.cjs
+COPY --from=builder /app/dist/scale.mjs /app/coordinator.mjs
 
-CMD ["node", "/app/coordinator.cjs"]
+CMD ["node", "/app/coordinator.mjs"]

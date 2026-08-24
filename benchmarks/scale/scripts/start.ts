@@ -52,11 +52,11 @@ const BENCHMARK_SLUG = 'scale';
 const BENCH_TIMEOUT_MS = 120_000;
 
 // The container command — the coordinator bundle baked into the scale image
-// (see src/scale/Dockerfile: CMD ["node", "/app/coordinator.cjs"]). We run it
+// (see src/scale/Dockerfile: CMD ["node", "/app/coordinator.mjs"]). We run it
 // as the container's PID 1 (not via runCommand), so its stdout is captured
 // natively by `nsc logs <id> --kind containers` and the instance auto-reaps
 // when it exits — exactly like the old `nsc run` path.
-const COORDINATOR_ARGS = ['node', '/app/coordinator.cjs'];
+const COORDINATOR_ARGS = ['node', '/app/coordinator.mjs'];
 
 // Namespace Compute API endpoints. The package's own create/describe use these
 // via its exported fetchNamespace; we call CreateInstance directly so we can set
