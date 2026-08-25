@@ -321,32 +321,52 @@ export async function runWorker(client: BenchmarkClient, options: RunWorkerOptio
     });
   }
 
-  let logUploadInFlight = false;
+  let logUploadInFlight: Promise<void> | undefined;
 
-  async function uploadWorkerLogArtifact(isFinal: boolean): Promise<void> {
-    if (logUploadInFlight) return;
+  async function uploadWorkerLogArtifact(isFinal: boolean = false): Promise<void> {
+    if (logUploadInFlight) {
+      if (!isFinal) return;
+      // At finish, wait for the in-flight upload before flushing any remaining
+      // lines appended after its snapshot.
+      await logUploadInFlight.catch(() => {});
+    }
+
     const snapshot = workerLogLines.slice();
     if (snapshot.length === 0) return;
 
-    logUploadInFlight = true;
+    let uploaded = false;
+    const upload = (async () => {
+      try {
+        const bodyText = snapshot.join('\n') + '\n';
+        const body = logCompression === 'gzip' ? await gzip(bodyText) : bodyText;
+        const contentType = logCompression === 'gzip' ? 'application/gzip' : 'text/plain';
+        await client.uploadWorkerArtifact(options.benchmarkSlug, options.runId, claimed.workerId, {
+          attemptId: claimed.attemptId,
+          kind: 'coordinator.log',
+          contentType,
+          name: 'worker.log',
+          body,
+        });
+        uploaded = true;
+        // Only remove the lines that were uploaded; lines appended during the
+        // upload remain buffered for the next flush.
+        workerLogLines.splice(0, snapshot.length);
+      } catch {
+        // Log upload is best-effort; never fail the run over it.
+      }
+    })();
+
+    logUploadInFlight = upload;
     try {
-      const bodyText = snapshot.join('\n') + '\n';
-      const body = logCompression === 'gzip' ? await gzip(bodyText) : bodyText;
-      const contentType = logCompression === 'gzip' ? 'application/gzip' : 'text/plain';
-      await client.uploadWorkerArtifact(options.benchmarkSlug, options.runId, claimed.workerId, {
-        attemptId: claimed.attemptId,
-        kind: 'coordinator.log',
-        contentType,
-        name: 'worker.log',
-        body,
-      });
-      // Only remove the lines that were uploaded; lines appended during the
-      // upload remain buffered for the next flush.
-      workerLogLines.splice(0, snapshot.length);
-    } catch {
-      // Log upload is best-effort; never fail the run over it.
+      await upload;
     } finally {
-      logUploadInFlight = false;
+      if (logUploadInFlight === upload) {
+        logUploadInFlight = undefined;
+      }
+      if (isFinal && uploaded && workerLogLines.length > 0) {
+        // Flush any lines appended while this upload was in flight.
+        await uploadWorkerLogArtifact(true).catch(() => {});
+      }
     }
   }
 
