@@ -6,6 +6,12 @@ export interface BenchmarkClientConfig {
   baseUrl?: string;
   /** Bearer token. Defaults to BENCHMARKS_PLATFORM_API_KEY, then COMPUTESDK_API_KEY. */
   apiKey?: string;
+  /** OAuth/session token. Takes precedence over apiKey when both are set. */
+  token?: string;
+  /** Explicit organization slug for OAuth requests. Sent as the X-Org-Slug header. */
+  orgSlug?: string;
+  /** Explicit organization id for OAuth requests. Sent as the X-Organization-Id header (orgSlug takes precedence). */
+  orgId?: string;
   /** Custom fetch implementation, mostly useful for tests. */
   fetch?: typeof fetch;
 }
@@ -310,6 +316,7 @@ export interface BenchmarkStepResultSummary {
 
 export interface BenchmarkResultsOverviewInput {
   limit?: number;
+  offset?: number;
 }
 
 export type BenchmarkAnalyticsReadiness = 'ready' | 'complete' | 'partial' | 'pending' | 'unavailable' | 'failed';
@@ -681,14 +688,14 @@ export interface BenchmarkClient {
   upsertBenchmark(slug: string, input: UpsertBenchmarkInput): Promise<BenchmarkResource>;
   updateBenchmark(slug: string, input: UpdateBenchmarkInput): Promise<BenchmarkResource>;
   getBenchmark(slug: string): Promise<BenchmarkResource>;
-  listBenchmarks(): Promise<BenchmarkResource[]>;
+  listBenchmarks(options?: { limit?: number; offset?: number }): Promise<BenchmarkResource[]>;
   createRun(benchmarkSlug: string, input: CreateRunInput): Promise<{
     run: BenchmarkRun;
     participants: BenchmarkParticipant[];
     /** The slug of the org the run was attributed to, resolved server-side from the caller's API key. */
     organizationSlug: string;
   }>;
-  listRuns(benchmarkSlug: string): Promise<BenchmarkRun[]>;
+  listRuns(benchmarkSlug: string, options?: { limit?: number; offset?: number }): Promise<BenchmarkRun[]>;
   getRun(benchmarkSlug: string, runId: string): Promise<BenchmarkRun>;
   updateRun(benchmarkSlug: string, runId: string, input: UpdateRunInput): Promise<BenchmarkRun>;
   upsertParticipant(
@@ -766,8 +773,8 @@ export interface BenchmarkClient {
     workerId: string,
     input: UploadWorkerArtifactInput,
   ): Promise<CreateWorkerArtifactResponse>;
-  listRunArtifacts(benchmarkSlug: string, runId: string): Promise<BenchmarkArtifact[]>;
-  listWorkerArtifacts(benchmarkSlug: string, runId: string, workerId: string): Promise<BenchmarkArtifact[]>;
+  listRunArtifacts(benchmarkSlug: string, runId: string, options?: { limit?: number; offset?: number }): Promise<BenchmarkArtifact[]>;
+  listWorkerArtifacts(benchmarkSlug: string, runId: string, workerId: string, options?: { limit?: number; offset?: number }): Promise<BenchmarkArtifact[]>;
   getWorkerArtifact(
     benchmarkSlug: string,
     runId: string,
