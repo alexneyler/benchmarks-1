@@ -12,18 +12,30 @@ let packageVersion: string | undefined;
 
 async function getVersion(): Promise<string> {
   if (packageVersion) return packageVersion;
-  try {
-    const pkgPath =
-      typeof __dirname !== 'undefined'
-        ? join(__dirname, '..', 'package.json')
-        : fileURLToPath(new URL('../../package.json', import.meta.url));
-    const pkg = JSON.parse(await readFile(pkgPath, 'utf-8')) as {
-      version?: string;
-    };
-    packageVersion = pkg.version ?? '0.0.0';
-  } catch {
-    packageVersion = '0.0.0';
+
+  const candidates: string[] = [];
+  if (typeof __dirname !== 'undefined') {
+    candidates.push(join(__dirname, '..', 'package.json'));
   }
+  if (typeof __dirname === 'undefined') {
+    const base = import.meta.url;
+    candidates.push(fileURLToPath(new URL('../package.json', base)));
+    candidates.push(fileURLToPath(new URL('../../package.json', base)));
+  }
+
+  for (const pkgPath of candidates) {
+    try {
+      const pkg = JSON.parse(await readFile(pkgPath, 'utf-8')) as { version?: string };
+      if (pkg.version) {
+        packageVersion = pkg.version;
+        return packageVersion;
+      }
+    } catch {
+      // try next candidate
+    }
+  }
+
+  packageVersion = '0.0.0';
   return packageVersion;
 }
 
