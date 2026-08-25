@@ -31,6 +31,7 @@
  * recorded.
  */
 import type {
+  BenchmarkLogOptions,
   DefineStepOptions,
   JsonObject,
   TaskResultRecord,
@@ -127,8 +128,11 @@ export interface TaskContext<T extends BaseParticipant = BaseParticipant> {
    * that step's data; at task top-level it lands on the task record's data.
    */
   measure(data: JsonObject): void;
-  /** Appends a line to the worker log, uploaded as an artifact when the worker finishes. */
-  log(message: string, meta?: JsonObject): void;
+  /**
+   * Appends a line to the worker log, uploaded as an artifact when the worker finishes.
+   * `metaOrOptions` can be a metadata JSON object, or `{ level, meta }` to set a log level.
+   */
+  log(message: string, metaOrOptions?: JsonObject | BenchmarkLogOptions): void;
 }
 
 export type BenchmarkTask<T extends BaseParticipant = BaseParticipant> = (
