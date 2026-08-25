@@ -38,7 +38,7 @@ export async function resolveAuth(override?: {
   const orgId = credentials.orgId;
 
   if (!token && !apiKey && !process.env.BENCHMARKS_PLATFORM_API_KEY && !process.env.COMPUTESDK_API_KEY) {
-    throw new Error('Not authenticated. Run `csdk-bench auth login` or set BENCHMARKS_PLATFORM_API_KEY.');
+    throw new Error('Not authenticated. Run `bench auth login` or set BENCHMARKS_PLATFORM_API_KEY.');
   }
 
   return { token, apiKey, orgSlug, orgId, baseUrl: platformUrl, apiBaseUrl, authBaseUrl };
