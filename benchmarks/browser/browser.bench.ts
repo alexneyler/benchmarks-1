@@ -43,7 +43,7 @@ export const config = defineBenchmarkConfig({
 const providerCache = new Map<string, any>();
 
 export const task = defineTask<BrowserProviderConfig>(async (ctx) => {
-  const { participant, step } = ctx;
+  const { participant, step, log } = ctx;
   const timeout = participant.timeout ?? 120_000;
   const sessionCreateOptions = participant.sessionCreateOptions ?? {};
 
@@ -91,7 +91,7 @@ export const task = defineTask<BrowserProviderConfig>(async (ctx) => {
       );
       timings.navigateMs = performance.now() - navStart;
     } finally {
-      if (browser) await browser.close().catch(() => {});
+      if (browser) await browser.close().catch((err: unknown) => log('browser close failed', { level: 'warn', meta: { error: String(err) } }));
       const releaseStart = performance.now();
       await step(
         'release',
@@ -102,10 +102,12 @@ export const task = defineTask<BrowserProviderConfig>(async (ctx) => {
     }
 
     timings.totalMs = performance.now() - totalStart;
+    log('Browser lifecycle completed', { level: 'info', meta: timings });
     return { data: { ...timings } };
   } catch (err) {
     timings.totalMs = performance.now() - totalStart;
     const message = err instanceof Error ? err.message : String(err);
+    log('Browser lifecycle failed', { level: 'error', meta: { ...timings, error: message } });
     throw new TaskError(message, { code: 'BROWSER_ERROR', data: { ...timings, errorMessage: message } });
   }
 });

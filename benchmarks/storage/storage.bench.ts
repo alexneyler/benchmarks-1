@@ -114,7 +114,7 @@ function randomId(): string {
 const storageCache = new Map<string, Storage>();
 
 export const task = defineTask<StorageProviderConfig>(async (ctx) => {
-  const { participant, step, measure } = ctx;
+  const { participant, step, measure, log } = ctx;
   const timeout = participant.timeout ?? 30_000;
 
   // When running multiple file sizes per run, each phase is named after the size.
@@ -165,17 +165,25 @@ export const task = defineTask<StorageProviderConfig>(async (ctx) => {
       'delete',
       () => withTimeout(storage!.delete(key), 10_000, 'Delete timed out'),
       { reportConcurrency: false },
-    ).catch((err) => console.warn(`    [cleanup] delete failed: ${formatError(err)}`));
+    ).catch((err: unknown) => log('delete cleanup failed', { level: 'warn', meta: { key, error: formatError(err) } }));
 
+    log('Storage lifecycle completed', {
+      level: 'info',
+      meta: { fileSize: fileSizeLabel, fileSizeBytes, uploadMs, downloadMs, throughputMbps, key },
+    });
     return { data: { file_size: fileSizeLabel, uploadMs, downloadMs, throughputMbps, fileSizeBytes } };
   } catch (err) {
     // Attempt cleanup even on failure.
     try {
       await withTimeout(storage!.delete(key), 10_000, 'Delete timed out');
-    } catch {
-      // Ignore cleanup errors on the failure path.
+    } catch (cleanupErr: unknown) {
+      log('cleanup delete failed', { level: 'warn', meta: { key, error: formatError(cleanupErr) } });
     }
     const message = formatError(err);
+    log('Storage lifecycle failed', {
+      level: 'error',
+      meta: { fileSize: fileSizeLabel, fileSizeBytes, uploadMs, downloadMs, throughputMbps, key, error: message },
+    });
     throw new TaskError(message, {
       code: 'STORAGE_ERROR',
       data: { file_size: fileSizeLabel, uploadMs: 0, downloadMs: 0, throughputMbps: 0, fileSizeBytes },
