@@ -38,7 +38,7 @@ export const task = defineTask(async (ctx: TaskContext<LocalParticipant>) => {
 
   try {
     await step('acquire-resource', () => {
-      log(`acquired resource for task ${taskIndex}`);
+      log('acquired resource', { level: 'info', meta: { taskIndex } });
       return { id: taskIndex };
     });
 
@@ -57,7 +57,7 @@ export const task = defineTask(async (ctx: TaskContext<LocalParticipant>) => {
         await step('risky', () => sleep(2000), { timeoutMs: 100 });
       } catch (err) {
         if (typeof err === 'object' && err !== null && (err as { code?: string }).code === 'step_timeout') {
-          log('risky step timed out; continuing with degraded path');
+          log('risky step timed out; continuing with degraded path', { level: 'warn' });
           measure({ riskyTimedOut: true });
         } else {
           throw err;
@@ -71,7 +71,7 @@ export const task = defineTask(async (ctx: TaskContext<LocalParticipant>) => {
   } finally {
     await step('cleanup', async () => {
       acquired.released = true;
-      log(`released resource for task ${taskIndex}`);
+      log('released resource', { level: 'debug', meta: { taskIndex } });
     });
   }
 });

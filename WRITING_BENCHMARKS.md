@@ -58,7 +58,7 @@ export const config = defineBenchmarkConfig({
 });
 
 export const task = defineTask(async ({ participant, step, measure, log }) => {
-  log(`running for ${participant.name}`);
+  log('running', { level: 'info', meta: { participant: participant.name } });
   const start = performance.now();
   await step('work', async () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -168,13 +168,15 @@ export const config = defineBenchmarkConfig({
 The task function receives a `TaskContext`:
 
 ```ts
+import type { BenchmarkLogOptions } from '@benchsdk/api';
+
 interface TaskContext<T extends BaseParticipant> {
   participant: T;
   taskIndex: number;
   phase?: string;
   step: (name, fn, options?) => Promise<R>;
   measure: (data: JsonObject) => void;
-  log: (message: string, meta?: JsonObject) => void;
+  log: (message: string, metaOrOptions?: JsonObject | BenchmarkLogOptions) => void;
 }
 ```
 
@@ -198,6 +200,7 @@ Step options:
 | `timeoutMs` | Abort and throw a `step_timeout` `TaskError` if the step exceeds this time. |
 | `concurrency` | Run `fn` this many times in parallel and return an array. |
 | `reportConcurrency` | Whether to include this step in worker heartbeat concurrency samples. Default `true`. |
+| `captureOutput` | When `true` (default), a step returning a `BenchmarkStepOutcome`-shaped object (`stdout`, `stderr`, `error`, `exitCode`, `code`, `signal`, `pid`) is captured as step output and appended to the worker log. Set to `false` to return such an object as a normal result. |
 
 ### `measure(data)`
 
@@ -212,9 +215,44 @@ await step('upload', async () => {
 });
 ```
 
-### `log(message, meta?)`
+### `log(message, metaOrOptions?)`
 
 Appends a line to the worker log, which is uploaded as an artifact when the worker finishes.
+
+`metaOrOptions` can be a plain JSON metadata object (default level `info`) or `{ level, meta }` with `level: 'debug' | 'info' | 'warn' | 'error'`:
+
+```ts
+log('cold start complete', { level: 'info' });
+log('skipping remote participant', { level: 'debug', meta: { reason: 'missing env var' } });
+```
+
+The worker's `BENCHMARK_LOG_LEVEL` environment variable filters which levels are recorded (default `info`).
+
+### Step return values and `isStepOutcome`
+
+The runner and platform worker inspect each step's return value. If it matches the `BenchmarkStepOutcome` shape, it is captured as step output and appended to the worker log instead of being returned to the task. The guard is strict: the object may contain only the keys `stdout`, `stderr`, `error`, `exitCode`, `code`, `signal`, and `pid`, and at least one of `stdout`, `stderr`, or `error` must be a string.
+
+Use this to capture the output of a spawned command:
+
+```ts
+const { stdout, stderr, exitCode } = await step('version', () => ({
+  stdout: 'v20.0.0',
+  stderr: '',
+  exitCode: 0,
+}));
+```
+
+If you want to return an outcome-shaped object as a normal result, either wrap it or pass `captureOutput: false`:
+
+```ts
+const result = await step('version', () => ({
+  stdout: 'v20.0.0',
+  stderr: '',
+  exitCode: 0,
+}), { captureOutput: false });
+
+const parsed = await step('parse-version', () => ({ version: '20.0.0' })); // not an outcome shape
+```
 
 ## Participants and env gating
 
@@ -372,6 +410,25 @@ bench run <file.bench.ts> [flags]
 | `--name "..."` | Override display name. |
 | `--run-key key` | Share one run across sibling processes (one per provider, for example). |
 
+### Querying the platform
+
+`bench` is a unified CLI: `bench run` executes benchmark files, and the remaining commands query platform data.
+
+```bash
+bench auth login
+bench auth status
+bench org list
+bench org use <slug>
+bench benchmarks list
+bench runs list <benchmark-slug>
+bench runs show <benchmark-slug> <runId>
+bench results <benchmark-slug> [--run <runId>]
+bench artifacts list <benchmark-slug> <runId>
+bench export <benchmark-slug> --out ./exports
+```
+
+See [.agents/skills/benchsdk-cli/SKILL.md](.agents/skills/benchsdk-cli/SKILL.md) for the full CLI reference, OAuth device-code login, config/credentials files, and non-interactive/CI use.
+
 ### Multi-process runs with `--run-key`
 
 When one CI job per provider needs to contribute to the same run, each process passes the same `--run-key`. The first creates the run; later processes attach:
@@ -392,10 +449,11 @@ See the [`examples/`](./examples) directory for runnable benchmarks covering eve
 4. `04-round-robin.bench.ts` — `groupBy: 'round'`.
 5. `05-scoring.bench.ts` — multiple metrics and `success.requireData`.
 6. `06-custom-flags.bench.ts` — custom CLI flags and dimensions.
-7. `07-error-handling.bench.ts` — `TaskError`, timeouts, and cleanup.
+7. `07-error-handling.bench.ts` — `TaskError`, timeouts, `try/finally`, and leveled logs.
 8. `08-env-gated.bench.ts` — `requiredEnvVars` and `defaultProviders`.
 9. `09-on-complete.bench.ts` — `onComplete` aggregate output.
 10. `10-shared-run.bench.ts` — `--run-key`.
+11. `11-logging.bench.ts` — structured `log` levels, step output capture, and `captureOutput`.
 
 Run any example in dry-run mode:
 
@@ -409,4 +467,5 @@ pnpm exec bench run examples/01-hello.bench.ts --dry-run
 - **`iterations` with phases.** With `phases`, `--iterations` scales each phase equally, not the total. A benchmark with uneven phase counts ignores `--iterations`.
 - **Participants are filtered by env.** If a participant is skipped, the runner logs which env vars are missing. If every participant is skipped, the run exits cleanly with `NoAvailableParticipantsError`.
 - **Scoring weights sum to 1.0.** The runner validates this at config-evaluation time.
+- **Step return values that look like `{ stdout, stderr, error }`.** The runner treats them as step output and writes them to the worker log. To return them as a result, either wrap the data under a different key or pass `captureOutput: false` to `step`.
 - **Round mode and pre-measured steps.** In `groupBy: 'round'` the runner builds records manually and honors `TaskResult.steps` and `TaskResult.latencyMs`. This is useful for socket-level probes that measure sub-step timing themselves. In `groupBy: 'participant'` the platform worker owns the steps, so `steps`/`latencyMs` are ignored.

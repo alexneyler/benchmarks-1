@@ -72,7 +72,7 @@ function hashPayload(bytes: number): { hash: string; durationMs: number } {
 
 export const task = defineTask(async (ctx: TaskContext<LocalParticipant>) => {
   const { step, measure, log } = ctx;
-  log(`hashing ${payloadBytes} bytes with ${algorithm}`);
+  log('hashing payload', { level: 'info', meta: { payloadBytes, algorithm } });
 
   const { hash, durationMs } = await step('hash', () => hashPayload(payloadBytes));
   measure({ durationMs, hashLength: hash.length });

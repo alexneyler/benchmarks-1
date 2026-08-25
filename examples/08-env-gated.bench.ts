@@ -45,7 +45,7 @@ export const task = defineTask(async (ctx: TaskContext<LocalParticipant>) => {
   if (participant.name === 'remote') {
     // In a real benchmark this would use the key to call the remote service.
     const key = process.env.DEMO_API_KEY!;
-    log(`authenticating remote participant with key ${key.slice(0, 4)}...`);
+    log('authenticating remote participant', { level: 'info', meta: { keyPrefix: key.slice(0, 4) } });
     await step('remote-auth', () => sleep(40));
   } else {
     await step('local-work', () => sleep(20));

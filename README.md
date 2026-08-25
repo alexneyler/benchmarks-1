@@ -13,7 +13,8 @@ For LLMs and agents: see [`llms.txt`](./llms.txt) for a machine-readable index o
 - [`WRITING_BENCHMARKS.md`](./WRITING_BENCHMARKS.md) — step-by-step guide to authoring benchmarks.
 - [`examples/`](./examples) — runnable `*.bench.ts` examples covering every benchsdk capability.
 - [`packages/create-bench/README.md`](./packages/create-bench/README.md) — scaffold a new benchmark project in one command.
-- [`packages/benchsdk-runner/README.md`](./packages/benchsdk-runner/README.md) — runner API and CLI reference.
+- [`packages/benchsdk-runner/README.md`](./packages/benchsdk-runner/README.md) — runner API and `bench run` reference.
+- [`.agents/skills/benchsdk-cli/SKILL.md`](./.agents/skills/benchsdk-cli/SKILL.md) — full `bench` CLI reference (auth, org, runs, results, artifacts, export).
 
 ## Partners
 

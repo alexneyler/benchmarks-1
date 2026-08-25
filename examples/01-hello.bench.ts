@@ -32,7 +32,8 @@ function sleep(ms: number): Promise<void> {
 
 export const task = defineTask(async (ctx: TaskContext<LocalParticipant>) => {
   const { participant, step, measure, log } = ctx;
-  log(`starting task ${ctx.taskIndex} for ${participant.name}`);
+  // `log` accepts a level and optional metadata, or a plain metadata object.
+  log('starting task', { level: 'info', meta: { taskIndex: ctx.taskIndex, participant: participant.name } });
 
   const start = performance.now();
   await step('work', async () => {
@@ -42,4 +43,5 @@ export const task = defineTask(async (ctx: TaskContext<LocalParticipant>) => {
   const durationMs = performance.now() - start;
 
   measure({ durationMs });
+  log('task complete', { level: 'debug', meta: { durationMs } });
 });

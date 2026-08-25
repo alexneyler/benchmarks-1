@@ -40,7 +40,7 @@ function sleep(ms: number): Promise<void> {
 
 export const task = defineTask(async (ctx: TaskContext<LocalParticipant>) => {
   const { participant, step, measure, log } = ctx;
-  log(`contributing to shared run for ${participant.name}`);
+  log('contributing to shared run', { level: 'info', meta: { participant: participant.name } });
 
   const start = performance.now();
   await step('work', () => sleep(participant.workMs));
