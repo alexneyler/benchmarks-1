@@ -1,5 +1,6 @@
 import { writeFile, mkdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { BenchmarkApiError } from '@benchsdk/api';
 import { requestDeviceCode, pollDeviceToken, AuthError } from './auth.js';
 import { loadCredentials, saveCredentials, clearCredentials, loadConfig } from './config.js';
@@ -12,7 +13,11 @@ let packageVersion: string | undefined;
 async function getVersion(): Promise<string> {
   if (packageVersion) return packageVersion;
   try {
-    const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf-8')) as {
+    const pkgPath =
+      typeof __dirname !== 'undefined'
+        ? join(__dirname, '..', 'package.json')
+        : fileURLToPath(new URL('../../package.json', import.meta.url));
+    const pkg = JSON.parse(await readFile(pkgPath, 'utf-8')) as {
       version?: string;
     };
     packageVersion = pkg.version ?? '0.0.0';
