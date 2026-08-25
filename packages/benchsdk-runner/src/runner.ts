@@ -27,6 +27,8 @@ import { NoAvailableParticipantsError } from './no-available-participants.js';
 import { higherIsBetter, lowerIsBetter, score, ScoringSpecError, scoringConfigToSpec } from './scoring.js';
 import type {
   BenchmarkClient,
+  BenchmarkLogOptions,
+  BenchmarkStepOutcome,
   DefineStepOptions,
   JsonObject,
   RunWorkerContext,
@@ -85,6 +87,15 @@ function sleep(ms: number): Promise<void> {
 
 function getErrorCode(error: unknown): string {
   return error instanceof Error && error.name ? error.name : 'ERROR';
+}
+
+function isStepOutcome(value: unknown): value is BenchmarkStepOutcome {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const o = value as Record<string, unknown>;
+  return (
+    (typeof o.stdout === 'string' || typeof o.stderr === 'string' || typeof o.error === 'string') &&
+    typeof o.then !== 'function'
+  );
 }
 
 function withTimeout<T>(promise: Promise<T>, ms: number, name: string): Promise<T> {
@@ -952,7 +963,11 @@ async function runTaskRecord<T extends BaseParticipant>(
       activeStep = stepRecord;
       try {
         const result = await runStepInvocations<R>(name, fn, options);
-        logBuffer.step(taskIndex, name, {});
+        const outcome: BenchmarkStepOutcome =
+          options?.captureOutput !== false && !Array.isArray(result) && isStepOutcome(result)
+            ? (result as BenchmarkStepOutcome)
+            : {};
+        logBuffer.step(taskIndex, name, outcome);
         return result as C extends 1 ? R : R[];
       } catch (error) {
         stepRecord.status = 'error';
@@ -973,8 +988,8 @@ async function runTaskRecord<T extends BaseParticipant>(
         Object.assign(taskMeasures, data);
       }
     },
-    log(message, meta) {
-      logBuffer.line(`[task ${taskIndex}] ${message}`, meta);
+    log(message, metaOrOptions) {
+      logBuffer.line(`[task ${taskIndex}] ${message}`, metaOrOptions);
     },
   };
 

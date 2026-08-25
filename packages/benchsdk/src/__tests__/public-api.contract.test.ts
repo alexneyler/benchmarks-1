@@ -17,7 +17,11 @@ import type { BenchmarkAssignment, BenchmarkClient } from '../index';
 // type resolves against the package barrel (the consumer-compile contract).
 import type {
   BenchmarkArtifact,
+  BenchmarkArtifactDownload,
   BenchmarkClientConfig,
+  BenchmarkLogLevel,
+  BenchmarkLogOptions,
+  BenchmarkStepOutcome,
   BenchmarkConcurrencyPoint,
   BenchmarkAnalyticsReadiness,
   BenchmarkEventRateBucket,
@@ -104,9 +108,13 @@ import type {
 type _PublicTypeSurface = [
   BenchmarkAssignment,
   BenchmarkArtifact,
+  BenchmarkArtifactDownload,
   BenchmarkClient,
   BenchmarkClientConfig,
   BenchmarkConcurrencyPoint,
+  BenchmarkLogLevel,
+  BenchmarkLogOptions,
+  BenchmarkStepOutcome,
   BenchmarkAnalyticsReadiness,
   BenchmarkEventRateBucket,
   BenchmarkFailurePoint,

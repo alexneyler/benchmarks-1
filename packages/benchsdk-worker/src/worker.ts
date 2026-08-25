@@ -1,6 +1,13 @@
+import { gzip as gzipCallback } from 'node:zlib';
+import { promisify } from 'node:util';
+
+const gzip = promisify(gzipCallback);
 import type {
   BenchmarkClient,
   BenchmarkAssignment,
+  BenchmarkLogLevel,
+  BenchmarkLogOptions,
+  BenchmarkStepOutcome,
   DefineStepOptions,
   JsonObject,
   RunWorkerContext,
@@ -16,10 +23,59 @@ const DEFAULT_BATCH_SIZE = 1000;
 const DEFAULT_HEARTBEAT_INTERVAL_MS = 30_000;
 const DEFAULT_FLUSH_INTERVAL_MS = 30_000;
 const DEFAULT_READY_POLL_INTERVAL_MS = 1000;
+const DEFAULT_LOG_LEVEL: BenchmarkLogLevel = 'info';
+const DEFAULT_LOG_FLUSH_INTERVAL_MS = 0;
+const DEFAULT_MAX_LOG_LINES = 100_000;
 const MAX_TASK_RESULT_RECORDS = 5000;
 const MAX_TASK_RECORD_STEPS = 100;
 const MAX_HEARTBEAT_CONCURRENCY_SAMPLES = 20;
-const MAX_WORKER_LOG_LINES = 100_000;
+
+const LOG_LEVEL_ORDER: BenchmarkLogLevel[] = ['debug', 'info', 'warn', 'error'];
+
+function logLevelIndex(level: BenchmarkLogLevel): number {
+  return LOG_LEVEL_ORDER.indexOf(level);
+}
+
+function shouldLog(level: BenchmarkLogLevel, threshold: BenchmarkLogLevel): boolean {
+  return logLevelIndex(level) >= logLevelIndex(threshold);
+}
+
+function parseLogLevel(value: string | undefined, fallback: BenchmarkLogLevel): BenchmarkLogLevel {
+  if (!value) return fallback;
+  const trimmed = value.trim().toLowerCase() as BenchmarkLogLevel;
+  if (LOG_LEVEL_ORDER.includes(trimmed)) return trimmed;
+  return fallback;
+}
+
+function parseEnvInt(name: string, fallback: number): number {
+  if (typeof process === 'undefined') return fallback;
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < 0) return fallback;
+  return parsed;
+}
+
+function isLogOptions(value: unknown): value is BenchmarkLogOptions {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const o = value as Record<string, unknown>;
+  const keys = Object.keys(o);
+  if (keys.length === 0) return false;
+  if (!keys.every((k) => k === 'level' || k === 'meta')) return false;
+  if (o.level !== undefined && (typeof o.level !== 'string' || !LOG_LEVEL_ORDER.includes(o.level as BenchmarkLogLevel))) {
+    return false;
+  }
+  return true;
+}
+
+function isStepOutcome(value: unknown): value is BenchmarkStepOutcome {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const o = value as Record<string, unknown>;
+  return (
+    (typeof o.stdout === 'string' || typeof o.stderr === 'string' || typeof o.error === 'string') &&
+    typeof o.then !== 'function'
+  );
+}
 
 function getErrorCode(error: unknown): string {
   if (error instanceof Error && 'code' in error && typeof (error as { code: unknown }).code === 'string' && (error as { code: string }).code) {
@@ -84,6 +140,19 @@ export async function runWorker(client: BenchmarkClient, options: RunWorkerOptio
   if (options.concurrency !== undefined) validatePositiveInteger('concurrency', options.concurrency);
   if (options.batchSize !== undefined) validateBatchSize(options.batchSize);
   if (options.flushIntervalMs !== undefined) validatePositiveInteger('flushIntervalMs', options.flushIntervalMs);
+  if (options.logFlushIntervalMs !== undefined && options.logFlushIntervalMs < 0) {
+    throw new Error('Benchmark logFlushIntervalMs must be a non-negative integer.');
+  }
+
+  const logLevel: BenchmarkLogLevel = options.logLevel ?? parseLogLevel(
+    typeof process !== 'undefined' ? process.env.BENCHMARK_LOG_LEVEL : undefined,
+    DEFAULT_LOG_LEVEL,
+  );
+  const maxLogLines = options.maxLogLines ?? parseEnvInt('BENCHMARK_LOG_MAX_LINES', DEFAULT_MAX_LOG_LINES);
+  const logFlushIntervalMs = options.logFlushIntervalMs ?? parseEnvInt('BENCHMARK_LOG_FLUSH_INTERVAL_MS', DEFAULT_LOG_FLUSH_INTERVAL_MS);
+  const logCompression: 'gzip' | false =
+    options.logCompression ??
+    (typeof process !== 'undefined' && process.env.BENCHMARK_LOG_COMPRESSION === 'gzip' ? 'gzip' : false);
 
   const assignment = await client.claimWorker(options.benchmarkSlug, options.runId, options.participantSlug, {
     processKind: options.processKind,
@@ -211,11 +280,12 @@ export async function runWorker(client: BenchmarkClient, options: RunWorkerOptio
   resultFlush.unref?.();
 
   // Accumulated across the worker's tasks via `ctx.step` and `ctx.log`,
-  // uploaded once as a worker log artifact when the worker finishes.
+  // uploaded as a `coordinator.log` worker artifact. Flushed incrementally
+  // when `logFlushIntervalMs` is set and once when the worker finishes.
   const workerLogLines: string[] = [];
   let workerLogTruncated = false;
   function appendWorkerLog(line: string): void {
-    if (workerLogLines.length >= MAX_WORKER_LOG_LINES) {
+    if (workerLogLines.length >= maxLogLines) {
       if (!workerLogTruncated) {
         workerLogTruncated = true;
         workerLogLines.push('... (worker log truncated)');
@@ -223,6 +293,22 @@ export async function runWorker(client: BenchmarkClient, options: RunWorkerOptio
       return;
     }
     workerLogLines.push(line);
+  }
+
+  function appendPrefixedLines(prefix: string, channel: string, text: string): void {
+    const timestamp = new Date().toISOString();
+    for (const rawLine of text.split(/\r?\n/)) {
+      const line = rawLine.trimEnd();
+      if (line.length === 0) continue;
+      appendWorkerLog(`${timestamp} ${prefix} ${channel}: ${line}`);
+    }
+  }
+
+  function appendStepOutcome(name: string, taskIndex: number, outcome: BenchmarkStepOutcome): void {
+    const prefix = `[task ${taskIndex}] ${name}`;
+    if (outcome.stdout?.trim()) appendPrefixedLines(prefix, 'stdout', outcome.stdout.trim());
+    if (outcome.stderr?.trim()) appendPrefixedLines(prefix, 'stderr', outcome.stderr.trim());
+    if (outcome.error?.trim()) appendPrefixedLines(prefix, 'error', outcome.error.trim());
   }
 
   async function runFinishHook(status: 'success' | 'error'): Promise<void> {
@@ -240,20 +326,62 @@ export async function runWorker(client: BenchmarkClient, options: RunWorkerOptio
     });
   }
 
-  async function uploadWorkerLogArtifact(): Promise<void> {
-    if (workerLogLines.length === 0) return;
+  let logUploadInFlight: Promise<void> | undefined;
+
+  async function uploadWorkerLogArtifact(isFinal: boolean = false): Promise<void> {
+    if (logUploadInFlight) {
+      if (!isFinal) return;
+      // At finish, wait for the in-flight upload before flushing any remaining
+      // lines appended after its snapshot.
+      await logUploadInFlight.catch(() => {});
+    }
+
+    const snapshot = workerLogLines.slice();
+    if (snapshot.length === 0) return;
+
+    let uploaded = false;
+    const upload = (async () => {
+      try {
+        const bodyText = snapshot.join('\n') + '\n';
+        const body = logCompression === 'gzip' ? await gzip(bodyText) : bodyText;
+        const contentType = logCompression === 'gzip' ? 'application/gzip' : 'text/plain';
+        await client.uploadWorkerArtifact(options.benchmarkSlug, options.runId, claimed.workerId, {
+          attemptId: claimed.attemptId,
+          kind: 'coordinator.log',
+          contentType,
+          name: 'worker.log',
+          body,
+        });
+        uploaded = true;
+        // Only remove the lines that were uploaded; lines appended during the
+        // upload remain buffered for the next flush.
+        workerLogLines.splice(0, snapshot.length);
+      } catch {
+        // Log upload is best-effort; never fail the run over it.
+      }
+    })();
+
+    logUploadInFlight = upload;
     try {
-      await client.uploadWorkerArtifact(options.benchmarkSlug, options.runId, claimed.workerId, {
-        attemptId: claimed.attemptId,
-        kind: 'coordinator.log',
-        contentType: 'text/plain',
-        name: 'worker.log',
-        body: workerLogLines.join('\n') + '\n',
-      });
-    } catch {
-      // Log upload is best-effort; never fail the run over it.
+      await upload;
+    } finally {
+      if (logUploadInFlight === upload) {
+        logUploadInFlight = undefined;
+      }
+      if (isFinal && uploaded && workerLogLines.length > 0) {
+        // Flush any lines appended while this upload was in flight.
+        await uploadWorkerLogArtifact(true).catch(() => {});
+      }
     }
   }
+
+  const logFlush =
+    logFlushIntervalMs > 0
+      ? setInterval(() => {
+          if (workerLogLines.length > 0) void uploadWorkerLogArtifact(false).catch(() => {});
+        }, logFlushIntervalMs)
+      : undefined;
+  logFlush?.unref?.();
 
   try {
     await sendHeartbeat().catch(() => {});
@@ -281,9 +409,13 @@ export async function runWorker(client: BenchmarkClient, options: RunWorkerOptio
         }
       }
 
-      function log(message: string, meta?: JsonObject): void {
-        const suffix = meta && Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : '';
-        appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] ${message}${suffix}`);
+      function log(message: string, metaOrOptions?: JsonObject | BenchmarkLogOptions): void {
+        const opts: { level: BenchmarkLogLevel; meta?: JsonObject } = isLogOptions(metaOrOptions)
+          ? { level: metaOrOptions.level ?? 'info', meta: metaOrOptions.meta }
+          : { level: 'info', meta: metaOrOptions };
+        if (!shouldLog(opts.level, logLevel)) return;
+        const suffix = opts.meta && Object.keys(opts.meta).length > 0 ? ` ${JSON.stringify(opts.meta)}` : '';
+        appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] [${opts.level}] ${message}${suffix}`);
       }
 
       async function step<T>(name: string, fn: () => Promise<T> | T, stepOptions: DefineStepOptions = {}): Promise<T> {
@@ -314,12 +446,15 @@ export async function runWorker(client: BenchmarkClient, options: RunWorkerOptio
             await waitForStepReady(name, stepOptions);
           }
           const value = await fn();
-          appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] ${name}`);
+          appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] [info] ${name}`);
+          if (stepOptions.captureOutput !== false && isStepOutcome(value)) {
+            appendStepOutcome(name, taskIndex, value);
+          }
           return value;
         } catch (error) {
           stepRecord.status = 'error';
           stepRecord.errorCode = getErrorCode(error);
-          appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] ${name}`);
+          appendWorkerLog(`${new Date().toISOString()} [task ${taskIndex}] [error] ${name}`);
           appendWorkerLog(`  error: ${error instanceof Error ? error.message : String(error)}`);
           throw error;
         } finally {
@@ -389,7 +524,8 @@ export async function runWorker(client: BenchmarkClient, options: RunWorkerOptio
     await client.failWorker(options.benchmarkSlug, options.runId, claimed.workerId, claimed.attemptId, error).catch(() => {});
     throw error;
   } finally {
-    await uploadWorkerLogArtifact();
+    if (logFlush) clearInterval(logFlush);
+    await uploadWorkerLogArtifact(true);
     clearInterval(heartbeat);
     clearInterval(resultFlush);
   }

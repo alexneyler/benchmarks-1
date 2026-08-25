@@ -1,6 +1,11 @@
+import { gunzip as gunzipCallback } from 'node:zlib';
+import { promisify } from 'node:util';
+
+const gunzip = promisify(gunzipCallback);
 import type {
-  BenchmarkAssignment,
   BenchmarkArtifact,
+  BenchmarkArtifactDownload,
+  BenchmarkAssignment,
   BenchmarkClient,
   BenchmarkClientConfig,
   BenchmarkParticipant,
@@ -123,6 +128,40 @@ function bodySizeBytes(body: UploadWorkerArtifactInput['body']): number | undefi
   if (ArrayBuffer.isView(body)) return body.byteLength;
   if (body instanceof URLSearchParams) return new TextEncoder().encode(body.toString()).byteLength;
   return undefined;
+}
+
+function isGzipContentType(contentType: string | null | undefined): boolean {
+  if (!contentType) return false;
+  const lowered = contentType.toLowerCase();
+  return lowered.includes('gzip') || lowered.includes('x-gzip') || lowered === 'application/gzip';
+}
+
+async function downloadArtifactBody(
+  doFetch: typeof fetch,
+  url: string,
+  options?: { contentType?: string; decompress?: boolean },
+): Promise<string> {
+  const response = await doFetch(url);
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => '');
+    throw new BenchmarkApiError(
+      `Artifact download failed with ${response.status}`,
+      response.status,
+      errorBody,
+    );
+  }
+  const buffer = await response.arrayBuffer();
+  const responseContentType = response.headers.get('content-type');
+  const contentType = options?.contentType ?? responseContentType ?? '';
+  if (isGzipContentType(contentType) || options?.decompress) {
+    try {
+      const decompressed = await gunzip(new Uint8Array(buffer));
+      return new TextDecoder().decode(decompressed);
+    } catch {
+      // Fall through and return the raw body if decompression fails.
+    }
+  }
+  return new TextDecoder().decode(buffer);
 }
 
 export function createBenchmarkClient(config: BenchmarkClientConfig = {}): BenchmarkClient {
@@ -401,6 +440,27 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
         `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/workers/${encodePath(workerId)}/artifacts`,
       );
       return normalizeArtifacts(data);
+    },
+
+    async getWorkerArtifact(benchmarkSlug, runId, workerId, artifactId) {
+      return request<BenchmarkArtifactDownload>(
+        'GET',
+        `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/workers/${encodePath(workerId)}/artifacts/${encodePath(artifactId)}`,
+      );
+    },
+
+    downloadArtifact(url, options) {
+      return downloadArtifactBody(doFetch, url, options);
+    },
+
+    async downloadWorkerArtifact(benchmarkSlug, runId, workerId, artifactId) {
+      const { artifact, downloadUrl } = await client.getWorkerArtifact(
+        benchmarkSlug,
+        runId,
+        workerId,
+        artifactId,
+      );
+      return downloadArtifactBody(doFetch, downloadUrl, { contentType: artifact.contentType ?? undefined });
     },
 
     async getBenchmarkResults(benchmarkSlug, input: BenchmarkResultsOverviewInput = {}) {
