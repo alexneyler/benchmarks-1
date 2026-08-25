@@ -20,6 +20,12 @@ describe('parseGlobalArgs', () => {
     expect(result.positionals).toEqual(['results', 'my-bench', '--run', 'run-123']);
     expect(result.values.json).toBe(true);
   });
+
+  it('keeps values containing = when passed as --key=value', () => {
+    const result = parseGlobalArgs(['--api-key=sk-abc==', '--base-url=http://h?a=b']);
+    expect(result.values['api-key']).toBe('sk-abc==');
+    expect(result.values['base-url']).toBe('http://h?a=b');
+  });
 });
 
 describe('parseSubcommandOptions', () => {
@@ -39,6 +45,12 @@ describe('parseSubcommandOptions', () => {
   it('parses --key=value syntax', () => {
     const { options, positionals } = parseSubcommandOptions(['my-bench', '--out=/tmp/export']);
     expect(options).toEqual({ out: '/tmp/export' });
+    expect(positionals).toEqual(['my-bench']);
+  });
+
+  it('keeps values containing = in --key=value syntax', () => {
+    const { options, positionals } = parseSubcommandOptions(['my-bench', '--out=/a=b=c']);
+    expect(options).toEqual({ out: '/a=b=c' });
     expect(positionals).toEqual(['my-bench']);
   });
 

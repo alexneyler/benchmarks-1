@@ -58,11 +58,13 @@ function parseGlobalArgs(argv: string[]): ParsedOptions {
       continue;
     }
 
-    const [namePart, valuePart] = arg.split('=');
+    const eqIndex = arg.indexOf('=');
+    const namePart = eqIndex === -1 ? arg : arg.slice(0, eqIndex);
+    const valuePart = eqIndex === -1 ? undefined : arg.slice(eqIndex + 1);
     const key = namePart.slice(2);
 
     if (stringGlobals.has(key)) {
-      const rawValue = valuePart ?? argv[i + 1];
+      const rawValue = valuePart !== undefined ? valuePart : argv[i + 1];
       if (rawValue === undefined) throw new Error(`Option --${key} requires a value`);
       (values as Record<string, string>)[key] = rawValue;
       i += valuePart !== undefined ? 1 : 2;
@@ -104,7 +106,9 @@ function parseSubcommandOptions(args: string[]): { options: Record<string, strin
       continue;
     }
 
-    const [namePart, valuePart] = arg.split('=');
+    const eqIndex = arg.indexOf('=');
+    const namePart = eqIndex === -1 ? arg : arg.slice(0, eqIndex);
+    const valuePart = eqIndex === -1 ? undefined : arg.slice(eqIndex + 1);
     const key = namePart.slice(2);
     const schema = subcommandOptionSchema[key as keyof typeof subcommandOptionSchema];
     if (!schema) throw new Error(`Unknown option: ${arg}`);
@@ -113,10 +117,11 @@ function parseSubcommandOptions(args: string[]): { options: Record<string, strin
     if (valuePart !== undefined) {
       rawValue = valuePart;
       i += 1;
-    } else {
-      if (i + 1 >= args.length) throw new Error(`Option --${key} requires a value`);
+    } else if (i + 1 < args.length) {
       rawValue = args[i + 1];
       i += 2;
+    } else {
+      throw new Error(`Option --${key} requires a value`);
     }
 
     if (schema.type === 'number') {

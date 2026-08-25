@@ -24,8 +24,8 @@ export async function loadCredentials(): Promise<Credentials | null> {
 }
 
 export async function saveCredentials(credentials: Credentials): Promise<void> {
-  await mkdir(CONFIG_DIR, { recursive: true });
-  await writeFile(CREDENTIALS_PATH, JSON.stringify(credentials, null, 2));
+  await mkdir(CONFIG_DIR, { recursive: true, mode: 0o700 });
+  await writeFile(CREDENTIALS_PATH, JSON.stringify(credentials, null, 2), { mode: 0o600 });
 }
 
 export async function clearCredentials(): Promise<void> {
