@@ -8,11 +8,18 @@ import type { BenchmarkLogLevel, BenchmarkLogOptions, BenchmarkStepOutcome } fro
  */
 export type StepOutcome = BenchmarkStepOutcome;
 
+const LOG_LEVEL_ORDER: BenchmarkLogLevel[] = ['debug', 'info', 'warn', 'error'];
+
 function isLogOptions(value: unknown): value is BenchmarkLogOptions {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  const keys = Object.keys(value as Record<string, unknown>);
+  const o = value as Record<string, unknown>;
+  const keys = Object.keys(o);
   if (keys.length === 0) return false;
-  return keys.includes('level') || (keys.includes('meta') && keys.every((k) => k === 'level' || k === 'meta'));
+  if (!keys.every((k) => k === 'level' || k === 'meta')) return false;
+  if (o.level !== undefined && (typeof o.level !== 'string' || !LOG_LEVEL_ORDER.includes(o.level as BenchmarkLogLevel))) {
+    return false;
+  }
+  return true;
 }
 
 export class LogBuffer {
