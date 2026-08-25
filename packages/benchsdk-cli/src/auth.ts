@@ -9,8 +9,10 @@ export interface DeviceCodeResponse {
 
 export interface TokenResponse {
   access_token: string;
+  refresh_token: string;
   token_type: string;
   expires_in: number;
+  refresh_expires_in: number;
   scope?: string;
 }
 
@@ -21,6 +23,13 @@ export class DeviceFlowError extends Error {
   ) {
     super(message);
     this.name = 'DeviceFlowError';
+  }
+}
+
+export class AuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AuthError';
   }
 }
 
@@ -49,7 +58,7 @@ export async function exchangeDeviceToken(
   deviceCode: string,
   clientId = 'benchsdk-cli',
 ): Promise<TokenResponse> {
-  const response = await fetch(`${authBaseUrl}/device/token`, {
+  const response = await fetch(`${authBaseUrl}/cli/device-token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -81,6 +90,32 @@ export async function exchangeDeviceToken(
   return JSON.parse(text) as TokenResponse;
 }
 
+export async function refreshAccessToken(
+  authBaseUrl: string,
+  refreshToken: string,
+  clientId = 'benchsdk-cli',
+): Promise<TokenResponse> {
+  const response = await fetch(`${authBaseUrl}/cli/refresh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      refresh_token: refreshToken,
+      client_id: clientId,
+    }),
+  });
+  const text = await response.text();
+  if (!response.ok) {
+    let body: { error?: string; error_description?: string } = {};
+    try {
+      body = JSON.parse(text);
+    } catch {
+      // ignore
+    }
+    throw new AuthError(body.error_description ?? `Token refresh failed: ${response.status} ${response.statusText}`);
+  }
+  return JSON.parse(text) as TokenResponse;
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -90,6 +125,7 @@ export async function pollDeviceToken(
   deviceCode: string,
   intervalSeconds: number,
   expiresInSeconds: number,
+  clientId = 'benchsdk-cli',
 ): Promise<TokenResponse> {
   const start = Date.now();
   let interval = intervalSeconds * 1000;
@@ -99,7 +135,7 @@ export async function pollDeviceToken(
     await sleep(interval);
 
     try {
-      const token = await exchangeDeviceToken(authBaseUrl, deviceCode);
+      const token = await exchangeDeviceToken(authBaseUrl, deviceCode, clientId);
       return token;
     } catch (err) {
       if (err instanceof DeviceFlowError) {

@@ -256,8 +256,11 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
       return data.benchmark;
     },
 
-    async listBenchmarks() {
-      const data = await request<{ items?: BenchmarkResource[]; benchmarks?: BenchmarkResource[] }>('GET', '/benchmarks');
+    async listBenchmarks(options: { limit?: number; offset?: number } = {}) {
+      const data = await request<{ items?: BenchmarkResource[]; benchmarks?: BenchmarkResource[] }>(
+        'GET',
+        `/benchmarks${queryString(options)}`,
+      );
       return data.items ?? data.benchmarks ?? [];
     },
 
@@ -269,8 +272,11 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
       );
     },
 
-    async listRuns(benchmarkSlug) {
-      const data = await request<{ items: BenchmarkRun[] }>('GET', `/benchmarks/${encodePath(benchmarkSlug)}/runs`);
+    async listRuns(benchmarkSlug, options: { limit?: number; offset?: number } = {}) {
+      const data = await request<{ items: BenchmarkRun[] }>(
+        'GET',
+        `/benchmarks/${encodePath(benchmarkSlug)}/runs${queryString(options)}`,
+      );
       return data.items;
     },
 
@@ -436,18 +442,18 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
       return response;
     },
 
-    async listRunArtifacts(benchmarkSlug, runId) {
+    async listRunArtifacts(benchmarkSlug, runId, options: { limit?: number; offset?: number } = {}) {
       const data = await request<{ items?: BenchmarkArtifact[]; artifacts?: BenchmarkArtifact[] }>(
         'GET',
-        `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/artifacts`,
+        `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/artifacts${queryString(options)}`,
       );
       return normalizeArtifacts(data);
     },
 
-    async listWorkerArtifacts(benchmarkSlug, runId, workerId) {
+    async listWorkerArtifacts(benchmarkSlug, runId, workerId, options: { limit?: number; offset?: number } = {}) {
       const data = await request<{ items?: BenchmarkArtifact[]; artifacts?: BenchmarkArtifact[] }>(
         'GET',
-        `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/workers/${encodePath(workerId)}/artifacts`,
+        `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/workers/${encodePath(workerId)}/artifacts${queryString(options)}`,
       );
       return normalizeArtifacts(data);
     },
@@ -476,7 +482,7 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
     async getBenchmarkResults(benchmarkSlug, input: BenchmarkResultsOverviewInput = {}) {
       return request<BenchmarkResultsOverview>(
         'GET',
-        `/benchmarks/${encodePath(benchmarkSlug)}/results${queryString({ limit: input.limit })}`,
+        `/benchmarks/${encodePath(benchmarkSlug)}/results${queryString({ limit: input.limit, offset: input.offset })}`,
       );
     },
 

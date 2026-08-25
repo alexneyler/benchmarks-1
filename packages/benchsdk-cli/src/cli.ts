@@ -1,11 +1,26 @@
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, mkdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { BenchmarkApiError } from '@benchsdk/api';
-import { requestDeviceCode, pollDeviceToken } from './auth.js';
-import { loadCredentials, saveCredentials, clearCredentials } from './config.js';
+import { requestDeviceCode, pollDeviceToken, AuthError } from './auth.js';
+import { loadCredentials, saveCredentials, clearCredentials, loadConfig } from './config.js';
 import { createApiClient, getMe, listOrganizations, setActiveOrganization } from './client.js';
 import { printData, type OutputOptions } from './output.js';
 import { getPlatformBaseUrl } from './platform.js';
+
+let packageVersion: string | undefined;
+
+async function getVersion(): Promise<string> {
+  if (packageVersion) return packageVersion;
+  try {
+    const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf-8')) as {
+      version?: string;
+    };
+    packageVersion = pkg.version ?? '0.0.0';
+  } catch {
+    packageVersion = '0.0.0';
+  }
+  return packageVersion;
+}
 
 const USAGE = `Usage: bench [options] <command>
 
@@ -15,18 +30,26 @@ Commands:
   auth status                        Show current user and active organization
   org list                           List organizations
   org use <slug>                     Set active organization
-  benchmarks list                    List benchmarks
-  runs list <benchmark-slug> [--limit N]
-  runs show <benchmark-slug> <runId>
+  benchmarks list [--limit N] [--offset N]
+                                     List benchmarks
+  runs list <benchmark-slug> [--limit N] [--offset N]
+                                     List benchmark runs
+  runs show <benchmark-slug> <runId> Show a single run
   results <benchmark-slug> [--run <id>] [--format json|table]
+                                     Show benchmark or run results
   artifacts list <benchmark-slug> <runId> [--worker <id>]
+                                     List run artifacts
   export <benchmark-slug> [--run <id>] [--out <dir>]
+                                     Export benchmark or run results to JSON
 
 Options:
   --base-url <url>                   Platform root URL (default: https://platform.computesdk.com)
   --api-key <key>                    Use an API key instead of OAuth
   --org <slug>                       Organization slug for this command
-  --json                             Output JSON (also --format json on results)
+  --format json|table                Output format (also --json for JSON)
+  --json                             Output JSON
+  --verbose                          Include extra diagnostics on errors
+  --version                          Show version
   --help                             Show this help
 `;
 
@@ -34,7 +57,10 @@ interface GlobalOptions {
   'base-url'?: string;
   'api-key'?: string;
   org?: string;
+  format?: 'json' | 'table';
   json?: boolean;
+  verbose?: boolean;
+  version?: boolean;
   help?: boolean;
 }
 
@@ -43,11 +69,11 @@ interface ParsedOptions {
   positionals: string[];
 }
 
-function parseGlobalArgs(argv: string[]): ParsedOptions {
+export function parseGlobalArgs(argv: string[]): ParsedOptions {
   const values: GlobalOptions = {};
   const positionals: string[] = [];
-  const stringGlobals = new Set(['base-url', 'api-key', 'org']);
-  const booleanGlobals = new Set(['json', 'help']);
+  const stringGlobals = new Set(['base-url', 'api-key', 'org', 'format']);
+  const booleanGlobals = new Set(['json', 'verbose', 'version', 'help']);
 
   let i = 0;
   while (i < argv.length) {
@@ -88,13 +114,13 @@ function parseGlobalArgs(argv: string[]): ParsedOptions {
 
 const subcommandOptionSchema = {
   limit: { type: 'number' as const },
+  offset: { type: 'number' as const },
   run: { type: 'string' as const },
-  format: { type: 'string' as const },
   worker: { type: 'string' as const },
   out: { type: 'string' as const },
 };
 
-function parseSubcommandOptions(args: string[]): { options: Record<string, string | number>; positionals: string[] } {
+export function parseSubcommandOptions(args: string[]): { options: Record<string, string | number>; positionals: string[] } {
   const options: Record<string, string | number> = {};
   const positionals: string[] = [];
   let i = 0;
@@ -135,43 +161,102 @@ function parseSubcommandOptions(args: string[]): { options: Record<string, strin
   return { options, positionals };
 }
 
-async function printErrorAndExit(err: unknown): Promise<never> {
+function commandHelp(command?: string): string {
+  switch (command) {
+    case 'auth':
+      return `Usage: bench auth <subcommand>
+
+Subcommands:
+  login      Authenticate with OAuth device flow
+  logout     Remove saved credentials
+  status     Show current user and active organization`;
+    case 'org':
+      return `Usage: bench org <subcommand>
+
+Subcommands:
+  list       List organizations
+  use <slug> Set active organization`;
+    case 'benchmarks':
+      return `Usage: bench benchmarks list [--limit N] [--offset N]`;
+    case 'runs':
+      return `Usage: bench runs list <benchmark-slug> [--limit N] [--offset N]
+       bench runs show <benchmark-slug> <runId>`;
+    case 'results':
+      return `Usage: bench results <benchmark-slug> [--run <id>] [--format json|table]`;
+    case 'artifacts':
+      return `Usage: bench artifacts list <benchmark-slug> <runId> [--worker <id>]`;
+    case 'export':
+      return `Usage: bench export <benchmark-slug> [--run <id>] [--out <dir>]`;
+    default:
+      return USAGE;
+  }
+}
+
+async function printErrorAndExit(err: unknown, verbose = false): Promise<never> {
   if (err instanceof BenchmarkApiError) {
     console.error(`API error: ${err.message}`);
     if (err.body) console.error(err.body);
+  } else if (err instanceof AuthError) {
+    console.error(err.message);
+    if (verbose && err.stack) console.error(err.stack);
+    process.exit(2);
   } else if (err instanceof Error) {
     console.error(err.message);
+    if (verbose && err.stack) console.error(err.stack);
   } else {
     console.error('Unexpected error:', err);
   }
   process.exit(1);
 }
 
-async function handleAuthLogin(overrides: { baseUrl?: string }): Promise<void> {
+async function handleAuthLogin(overrides: { baseUrl?: string; verbose?: boolean }): Promise<void> {
   const baseUrl = getPlatformBaseUrl(overrides.baseUrl);
   const authBaseUrl = `${baseUrl}/api/auth`;
+  const clientId = 'benchsdk-cli';
   const { device_code, user_code, verification_uri_complete, verification_uri, expires_in, interval } =
-    await requestDeviceCode(authBaseUrl);
+    await requestDeviceCode(authBaseUrl, clientId);
 
   console.log(`To sign in, visit:`);
   console.log(verification_uri_complete ?? verification_uri);
   console.log(`User code: ${user_code}`);
 
-  const { access_token } = await pollDeviceToken(authBaseUrl, device_code, interval, expires_in);
-  await saveCredentials({ baseUrl, token: access_token, kind: 'oauth' });
+  const response = await pollDeviceToken(authBaseUrl, device_code, interval, expires_in, clientId);
+  const now = Date.now();
+  await saveCredentials({
+    baseUrl,
+    token: response.access_token,
+    refreshToken: response.refresh_token,
+    tokenExpiresAt: now + response.expires_in * 1000,
+    refreshExpiresAt: now + response.refresh_expires_in * 1000,
+    kind: 'oauth',
+  });
 
   console.log('Authenticated.');
 
-  const { api, auth } = await createApiClient({ baseUrl });
   try {
+    const { auth } = await createApiClient({ baseUrl });
     const me = await getMe(auth);
     if (!me.activeOrganizationId && me.organizations.length === 1) {
       const org = me.organizations[0];
       await setActiveOrganization(auth, org.slug);
-      await saveCredentials({ baseUrl, token: access_token, kind: 'oauth', orgSlug: org.slug, orgId: org.id });
+      const existing = (await loadCredentials()) ?? {};
+      await saveCredentials({
+        ...existing,
+        baseUrl,
+        token: auth.token,
+        refreshToken: auth.refreshToken,
+        tokenExpiresAt: auth.tokenExpiresAt,
+        refreshExpiresAt: auth.refreshExpiresAt,
+        orgSlug: org.slug,
+        orgId: org.id,
+        kind: 'oauth',
+      });
       console.log(`Set active organization to ${org.slug}`);
     }
-  } catch {
+  } catch (err) {
+    if (overrides.verbose) {
+      console.error('Organization auto-select failed:', err instanceof Error ? err.message : err);
+    }
     // organization auto-select is best-effort
   }
 }
@@ -217,30 +302,36 @@ async function handleOrgUse(slug: string, overrides: { baseUrl?: string; apiKey?
   await saveCredentials({
     ...credentials,
     baseUrl: auth.baseUrl,
+    token: auth.token,
+    refreshToken: auth.refreshToken,
+    tokenExpiresAt: auth.tokenExpiresAt,
+    refreshExpiresAt: auth.refreshExpiresAt,
     orgSlug: result.organization.slug,
     orgId: result.organization.id,
+    kind: 'oauth',
   });
   console.log(`Active organization set to ${result.organization.slug} (${result.organization.id})`);
 }
 
 async function handleBenchmarksList(
   overrides: { baseUrl?: string; apiKey?: string; org?: string },
+  options: { limit?: number; offset?: number },
   outputOptions: OutputOptions = {},
 ): Promise<void> {
   const { api } = await createApiClient(overrides);
-  const benchmarks = await api.listBenchmarks();
+  const benchmarks = await api.listBenchmarks(options);
   printData(benchmarks, outputOptions);
 }
 
 async function handleRunsList(
   benchmarkSlug: string,
-  limit: number | undefined,
+  options: { limit?: number; offset?: number },
   overrides: { baseUrl?: string; apiKey?: string; org?: string },
   outputOptions: OutputOptions = {},
 ): Promise<void> {
   const { api } = await createApiClient(overrides);
-  const runs = await api.listRuns(benchmarkSlug);
-  printData(limit ? runs.slice(0, limit) : runs, outputOptions);
+  const runs = await api.listRuns(benchmarkSlug, options);
+  printData(runs, outputOptions);
 }
 
 async function handleRunsShow(
@@ -264,7 +355,7 @@ async function handleResults(
   const results = options.run
     ? await api.getRunResults(benchmarkSlug, options.run as string)
     : await api.getBenchmarkResults(benchmarkSlug);
-  printData(results, { json: outputOptions.json || options.format === 'json' });
+  printData(results, { ...outputOptions, format: options.format === 'json' ? 'json' : outputOptions.format });
 }
 
 async function handleArtifactsList(
@@ -305,28 +396,58 @@ async function handleExport(
   }
 }
 
+function toOutputOptions(values: GlobalOptions): OutputOptions {
+  return {
+    json: !!values.json,
+    format: values.format ?? (values.json ? 'json' : 'table'),
+  };
+}
+
 export async function run(argv: string[]): Promise<void> {
-  let { values, positionals } = parseGlobalArgs(argv);
-  if (values.help || positionals.length === 0) {
-    console.log(USAGE);
-    process.exit(values.help ? 0 : 1);
+  let values: GlobalOptions;
+  let positionals: string[];
+  try {
+    ({ values, positionals } = parseGlobalArgs(argv));
+  } catch (err) {
+    await printErrorAndExit(err, false);
+    return;
   }
 
-  const [command, ...rest] = positionals;
+  if (values.version) {
+    console.log(await getVersion());
+    process.exit(0);
+  }
+
+  if (values.help || positionals.length === 0) {
+    if (values.help && positionals.length > 0) {
+      console.log(commandHelp(positionals[0]));
+    } else {
+      console.log(USAGE);
+    }
+    process.exit(values.help || positionals.length === 0 ? 0 : 1);
+  }
+
+  const config = (await loadConfig()) ?? {};
   const overrides = {
-    baseUrl: values['base-url'],
+    baseUrl: values['base-url'] ?? config.baseUrl,
     apiKey: values['api-key'],
-    org: values.org,
+    org: values.org ?? config.org,
   };
-  const outputOptions: OutputOptions = { json: !!values.json };
+  const outputOptions: OutputOptions = toOutputOptions(values);
 
   try {
+    const [command, ...rest] = positionals;
+
+    if (rest.includes('--help')) {
+      console.log(commandHelp(command));
+      process.exit(0);
+    }
+
     switch (command) {
       case 'auth': {
         const [sub, ...subRest] = rest;
-        const { positionals: subPositionals } = parseSubcommandOptions(subRest);
         if (sub === 'login') {
-          await handleAuthLogin(overrides);
+          await handleAuthLogin({ baseUrl: overrides.baseUrl, verbose: values.verbose });
         } else if (sub === 'logout') {
           await handleAuthLogout();
         } else if (sub === 'status') {
@@ -352,8 +473,9 @@ export async function run(argv: string[]): Promise<void> {
       }
       case 'benchmarks': {
         const [sub, ...subRest] = rest;
+        const { options } = parseSubcommandOptions(subRest);
         if (sub === 'list') {
-          await handleBenchmarksList(overrides, outputOptions);
+          await handleBenchmarksList(overrides, options, outputOptions);
         } else {
           throw new Error(USAGE);
         }
@@ -364,7 +486,7 @@ export async function run(argv: string[]): Promise<void> {
         const [sub, slug, runId] = subPositionals;
         if (sub === 'list') {
           if (!slug) throw new Error('Benchmark slug required: bench runs list <benchmark-slug>');
-          await handleRunsList(slug, options.limit as number | undefined, overrides, outputOptions);
+          await handleRunsList(slug, options, overrides, outputOptions);
         } else if (sub === 'show') {
           if (!slug || !runId) throw new Error('Usage: bench runs show <benchmark-slug> <runId>');
           await handleRunsShow(slug, runId, overrides, outputOptions);
@@ -404,9 +526,7 @@ export async function run(argv: string[]): Promise<void> {
     }
     process.exit(0);
   } catch (err) {
-    await printErrorAndExit(err);
+    await printErrorAndExit(err, values.verbose);
   }
 }
-
-export { parseGlobalArgs, parseSubcommandOptions };
 
