@@ -82,6 +82,14 @@ function getApiKey(input?: string): string | undefined {
   return process.env.BENCHMARKS_PLATFORM_API_KEY ?? process.env.COMPUTESDK_API_KEY;
 }
 
+function getAuthToken(config: BenchmarkClientConfig): string | undefined {
+  if (config.token) return config.token;
+  if (typeof process !== 'undefined' && process.env.BENCHMARKS_PLATFORM_TOKEN) {
+    return process.env.BENCHMARKS_PLATFORM_TOKEN;
+  }
+  return getApiKey(config.apiKey);
+}
+
 function getErrorCode(error: unknown): string {
   if (error instanceof Error && 'code' in error && typeof (error as { code: unknown }).code === 'string' && (error as { code: string }).code) {
     return (error as { code: string }).code;
@@ -166,7 +174,7 @@ async function downloadArtifactBody(
 
 export function createBenchmarkClient(config: BenchmarkClientConfig = {}): BenchmarkClient {
   const baseUrl = trimTrailingSlash(config.baseUrl ?? DEFAULT_BASE_URL);
-  const apiKey = getApiKey(config.apiKey);
+  const authToken = getAuthToken(config);
   const fetchImpl = config.fetch ?? (typeof fetch !== 'undefined' ? fetch : undefined);
 
   if (!fetchImpl) {
@@ -176,7 +184,9 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
 
   async function request<T>(method: string, path: string, body?: JsonObject): Promise<T> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
+    if (authToken) headers.Authorization = `Bearer ${authToken}`;
+    if (config.orgSlug) headers['X-Org-Slug'] = config.orgSlug;
+    else if (config.orgId) headers['X-Organization-Id'] = config.orgId;
 
     const response = await doFetch(`${baseUrl}${path}`, {
       method,

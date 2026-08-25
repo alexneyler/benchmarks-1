@@ -6,6 +6,12 @@ export interface BenchmarkClientConfig {
   baseUrl?: string;
   /** Bearer token. Defaults to BENCHMARKS_PLATFORM_API_KEY, then COMPUTESDK_API_KEY. */
   apiKey?: string;
+  /** OAuth/session token. Takes precedence over apiKey when both are set. */
+  token?: string;
+  /** Explicit organization slug for OAuth requests. Sent as the X-Org-Slug header. */
+  orgSlug?: string;
+  /** Explicit organization id for OAuth requests. Sent as the X-Organization-Id header (orgSlug takes precedence). */
+  orgId?: string;
   /** Custom fetch implementation, mostly useful for tests. */
   fetch?: typeof fetch;
 }
