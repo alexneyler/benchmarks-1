@@ -10,4 +10,10 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   external: ['@benchsdk/api'],
+  esbuildOptions(options) {
+    options.logOverride = {
+      ...(options.logOverride || {}),
+      'empty-import-meta': 'silent' as import('esbuild').LogLevel,
+    };
+  },
 });
