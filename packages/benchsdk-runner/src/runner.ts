@@ -89,13 +89,15 @@ function getErrorCode(error: unknown): string {
   return error instanceof Error && error.name ? error.name : 'ERROR';
 }
 
+const STEP_OUTCOME_KEYS = new Set(['stdout', 'stderr', 'error', 'exitCode', 'code', 'signal', 'pid']);
+
 function isStepOutcome(value: unknown): value is BenchmarkStepOutcome {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const o = value as Record<string, unknown>;
-  return (
-    (typeof o.stdout === 'string' || typeof o.stderr === 'string' || typeof o.error === 'string') &&
-    typeof o.then !== 'function'
-  );
+  const keys = Object.keys(o);
+  if (keys.length === 0) return false;
+  if (!keys.every((k) => STEP_OUTCOME_KEYS.has(k))) return false;
+  return typeof o.stdout === 'string' || typeof o.stderr === 'string' || typeof o.error === 'string';
 }
 
 function withTimeout<T>(promise: Promise<T>, ms: number, name: string): Promise<T> {
