@@ -33,7 +33,7 @@ To report results to the platform instead of running dry, set:
 
 - `BENCHMARKS_PLATFORM_API_KEY` — a ComputeSDK benchmarks platform API key.
 
-For a local or self-hosted platform, also set `BENCHMARKS_PLATFORM_URL` to the root URL (no `/api/v1` suffix; the runner appends it). The default is `https://platform.computesdk.com`.
+To point at a different platform endpoint (for example, a staging environment or local development proxy), also set `BENCHMARKS_PLATFORM_URL` to the root URL (no `/api/v1` suffix; the runner appends it). The default is `https://platform.computesdk.com`.
 
 `--dry-run` / `--no-ingest` / `BENCHSDK_NO_INGEST=1` skip platform reporting entirely.
 
