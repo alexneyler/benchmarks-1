@@ -138,11 +138,26 @@ function buildRequestBody(config: AIGatewayProviderConfig, prompt: string, maxTo
 /** Cheap regex extraction of the latest known output-token count from the raw SSE buffer so far. */
 function extractOutputTokens(wireFormat: AIGatewayWireFormat, buf: string): number | undefined {
   if (wireFormat === 'openai') {
-    // Some OpenAI-compatible gateways stream cumulative usage on early events
-    // (mirroring Anthropic's message_start) rather than only on the final
-    // chunk, so take the last match — like the anthropic path below.
-    const m = [...buf.matchAll(/"usage"\s*:\s*\{[^}]*"completion_tokens"\s*:\s*(\d+)/g)];
-    return m.length > 0 ? Number(m[m.length - 1][1]) : undefined;
+    // Take the last match per field: some gateways stream cumulative usage on
+    // early chunks, not just the final one. Fields are matched independently
+    // (not scoped inside `"usage":{}`) because LLM API emits
+    // `prompt_tokens_details:{...}` before `completion_tokens`, which a
+    // brace-scoped regex can't step past.
+    //
+    // Some Gemini-via-OpenAI-compat gateways (ngrok, BlazeRail, LLM API) report
+    // `completion_tokens` as visible-answer-only and fold the thinking tokens
+    // into `total_tokens` instead — so take max(completion, total - prompt).
+    // No-op for non-thinking models where the two are already equal.
+    const last = (re: RegExp): number | undefined => {
+      const m = [...buf.matchAll(re)];
+      return m.length > 0 ? Number(m[m.length - 1][1]) : undefined;
+    };
+    const completion = last(/"completion_tokens"\s*:\s*(\d+)/g);
+    const prompt = last(/"prompt_tokens"\s*:\s*(\d+)/g);
+    const total = last(/"total_tokens"\s*:\s*(\d+)/g);
+    const derived = total !== undefined && prompt !== undefined ? total - prompt : undefined;
+    const candidates = [completion, derived].filter((n): n is number => n !== undefined && n > 0);
+    return candidates.length > 0 ? Math.max(...candidates) : undefined;
   }
   if (wireFormat === 'gemini') {
     // Gemini streams cumulative usage under `usageMetadata` on each chunk
