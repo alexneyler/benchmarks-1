@@ -401,25 +401,16 @@ describe('transport layer', () => {
     }
   });
 
-  it('VAL-SDK-005: falls back to BENCHMARKS_PLATFORM_API_KEY then COMPUTESDK_API_KEY', async () => {
+  it('VAL-SDK-005: reads the API key from BENCHMARKS_PLATFORM_API_KEY', async () => {
     const prevBenchmarks = process.env.BENCHMARKS_PLATFORM_API_KEY;
-    const prevApi = process.env.COMPUTESDK_API_KEY;
     try {
       process.env.BENCHMARKS_PLATFORM_API_KEY = 'benchmarks_key';
-      process.env.COMPUTESDK_API_KEY = 'api_key';
-      const first = recordingClient(() => jsonResponse({ benchmark: benchmarkResource() }));
-      await createBenchmarkClient({ baseUrl: BASE, fetch: first.fetchMock }).getBenchmark('scale');
-      expect(first.calls[0].headers.Authorization).toBe('Bearer benchmarks_key');
-
-      delete process.env.BENCHMARKS_PLATFORM_API_KEY;
-      const second = recordingClient(() => jsonResponse({ benchmark: benchmarkResource() }));
-      await createBenchmarkClient({ baseUrl: BASE, fetch: second.fetchMock }).getBenchmark('scale');
-      expect(second.calls[0].headers.Authorization).toBe('Bearer api_key');
+      const { calls, fetchMock } = recordingClient(() => jsonResponse({ benchmark: benchmarkResource() }));
+      await createBenchmarkClient({ baseUrl: BASE, fetch: fetchMock }).getBenchmark('scale');
+      expect(calls[0].headers.Authorization).toBe('Bearer benchmarks_key');
     } finally {
       if (prevBenchmarks === undefined) delete process.env.BENCHMARKS_PLATFORM_API_KEY;
       else process.env.BENCHMARKS_PLATFORM_API_KEY = prevBenchmarks;
-      if (prevApi === undefined) delete process.env.COMPUTESDK_API_KEY;
-      else process.env.COMPUTESDK_API_KEY = prevApi;
     }
   });
 

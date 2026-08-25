@@ -407,9 +407,7 @@ function defaultOnResult(record: TaskResultRecord, meta: { iterations: number; p
 
 function resolvePlatform(): { baseUrl: string; apiKey: string } {
   const root = (process.env.BENCHMARKS_PLATFORM_URL || DEFAULT_PLATFORM_URL).replace(/\/+$/, '');
-  const apiKey =
-    process.env.BENCHMARKS_PLATFORM_API_KEY ??
-    process.env.COMPUTESDK_API_KEY;
+  const apiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
   if (!apiKey) {
     throw new Error(
       'An API key is required. Set BENCHMARKS_PLATFORM_API_KEY in your environment. Create an org-scoped API key in your ' +

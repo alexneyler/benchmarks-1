@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BenchmarkApiError, createBenchmarkClient } from '../client';
 
-const shouldRun = !!process.env.BENCHMARKS_PLATFORM_API_KEY || !!process.env.COMPUTESDK_API_KEY;
+const shouldRun = !!process.env.BENCHMARKS_PLATFORM_API_KEY;
 const describeIntegration = shouldRun ? describe : describe.skip;
 
 function isInvalidApiKeyError(error: unknown): boolean {

@@ -31,7 +31,7 @@ function tokenFromEnvironment(): string | undefined {
 
 function apiKeyFromEnvironment(): string | undefined {
   if (typeof process === 'undefined') return undefined;
-  return process.env.BENCHMARKS_PLATFORM_API_KEY ?? process.env.COMPUTESDK_API_KEY;
+  return process.env.BENCHMARKS_PLATFORM_API_KEY;
 }
 
 function isNonInteractive(): boolean {

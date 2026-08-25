@@ -72,7 +72,7 @@ function formatSeconds(ms: number): string {
   return (ms / 1000).toFixed(2) + 's';
 }
 
-// Providers that require COMPUTESDK_API_KEY (via ComputeSDK orchestrator)
+// Providers routed through the ComputeSDK orchestrator
 const GATEWAY_PROVIDERS = ['render'];
 
 function formatProviderName(s: string): string {
