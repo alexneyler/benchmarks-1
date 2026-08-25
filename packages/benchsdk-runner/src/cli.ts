@@ -16,6 +16,7 @@
  */
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { run as runPlatformCli } from '@benchsdk/cli';
 import { parseCliArgs, runBenchmark } from './runner.js';
 import { NoAvailableParticipantsError } from './no-available-participants.js';
 import type { BaseParticipant } from '@benchsdk/worker';
@@ -66,8 +67,12 @@ export async function runBenchmarkFile(argv: string[]): Promise<void> {
   await runBenchmark(config as BenchmarkConfig<BaseParticipant>, task as BenchmarkTask<BaseParticipant>, flags);
 }
 
-/** Executable entry: runs the file and maps outcomes to process exit codes. */
+/** Executable entry: dispatches to benchmark execution or platform data commands. */
 export async function run(argv: string[]): Promise<void> {
+  if (argv[0] !== 'run') {
+    return runPlatformCli(argv);
+  }
+
   try {
     await runBenchmarkFile(argv);
     // Provider SDKs can leave sockets/timers open; exit explicitly so a

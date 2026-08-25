@@ -227,6 +227,7 @@ function daxPhaseSteps(t: DaxTimingResult): TaskStepRecord[] {
 
 export const task = defineTask<ProviderConfig>(async (ctx) => {
   const p = ctx.participant;
+  const { log } = ctx;
   const compute = p.createCompute();
   const opts = getSandboxOptionsWithResources(p.name, p.sandboxOptions);
 
@@ -246,14 +247,36 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
       .step('destroy', () => withTimeout(sandbox.destroy(), p.destroyTimeoutMs ?? destroyTimeoutMs, 'Destroy timeout'), {
         reportConcurrency: false,
       })
-      .catch((err) => console.warn(`    [cleanup] destroy failed: ${formatError(err)}`));
+      .catch((err: unknown) => log('destroy failed', { level: 'warn', meta: { error: formatError(err) } }));
   }
 
   const data = timing as unknown as JsonObject;
   const steps = daxPhaseSteps(timing);
 
   if (timing.error) {
+    log('Dax build failed', {
+      level: 'error',
+      meta: {
+        provider: p.name,
+        totalMs: timing.totalMs,
+        phasesCompleted: `${timing.phasesCompleted}/${timing.phasesTotal}`,
+        error: timing.error,
+      },
+    });
     throw new TaskError(timing.error, { code: 'dax_failed', data, steps });
   }
+
+  log('Dax build completed', {
+    level: 'info',
+    meta: {
+      provider: p.name,
+      totalMs: timing.totalMs,
+      phasesCompleted: `${timing.phasesCompleted}/${timing.phasesTotal}`,
+      ...(timing.commit ? { commit: timing.commit } : {}),
+      ...(timing.bunVersion ? { bunVersion: timing.bunVersion } : {}),
+      ...(timing.nodeVersion ? { nodeVersion: timing.nodeVersion } : {}),
+      ...(timing.architecture ? { architecture: timing.architecture } : {}),
+    },
+  });
   return { data, steps, latencyMs: timing.totalMs };
 });

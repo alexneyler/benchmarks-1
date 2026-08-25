@@ -27,6 +27,8 @@ import { NoAvailableParticipantsError } from './no-available-participants.js';
 import { higherIsBetter, lowerIsBetter, score, ScoringSpecError, scoringConfigToSpec } from './scoring.js';
 import type {
   BenchmarkClient,
+  BenchmarkLogOptions,
+  BenchmarkStepOutcome,
   DefineStepOptions,
   JsonObject,
   RunWorkerContext,
@@ -93,6 +95,17 @@ function getErrorCode(error: unknown): string {
 
 function isTaskError(error: unknown): error is TaskError {
   return error instanceof Error && (error instanceof TaskError || error.name === 'TaskError');
+}
+
+const STEP_OUTCOME_KEYS = new Set(['stdout', 'stderr', 'error', 'exitCode', 'code', 'signal', 'pid']);
+
+function isStepOutcome(value: unknown): value is BenchmarkStepOutcome {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const o = value as Record<string, unknown>;
+  const keys = Object.keys(o);
+  if (keys.length === 0) return false;
+  if (!keys.every((k) => STEP_OUTCOME_KEYS.has(k))) return false;
+  return typeof o.stdout === 'string' || typeof o.stderr === 'string' || typeof o.error === 'string';
 }
 
 function withTimeout<T>(promise: Promise<T>, ms: number, name: string): Promise<T> {
@@ -960,7 +973,11 @@ async function runTaskRecord<T extends BaseParticipant>(
       activeStep = stepRecord;
       try {
         const result = await runStepInvocations<R>(name, fn, options);
-        logBuffer.step(taskIndex, name, {});
+        const outcome: BenchmarkStepOutcome =
+          options?.captureOutput !== false && !Array.isArray(result) && isStepOutcome(result)
+            ? (result as BenchmarkStepOutcome)
+            : {};
+        logBuffer.step(taskIndex, name, outcome);
         return result as C extends 1 ? R : R[];
       } catch (error) {
         stepRecord.status = 'error';
@@ -981,8 +998,8 @@ async function runTaskRecord<T extends BaseParticipant>(
         Object.assign(taskMeasures, data);
       }
     },
-    log(message, meta) {
-      logBuffer.line(`[task ${taskIndex}] ${message}`, meta);
+    log(message, metaOrOptions) {
+      logBuffer.line(`[task ${taskIndex}] ${message}`, metaOrOptions);
     },
   };
 
