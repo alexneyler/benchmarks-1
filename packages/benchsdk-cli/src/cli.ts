@@ -7,7 +7,7 @@ import { createApiClient, getMe, listOrganizations, setActiveOrganization } from
 import { printData, type OutputOptions } from './output.js';
 import { getPlatformBaseUrl } from './platform.js';
 
-const USAGE = `Usage: csdk-bench [options] <command>
+const USAGE = `Usage: bench [options] <command>
 
 Commands:
   auth login                         Authenticate with OAuth device flow
@@ -343,7 +343,7 @@ export async function run(argv: string[]): Promise<void> {
           await handleOrgList(overrides, outputOptions);
         } else if (sub === 'use') {
           const slug = subPositionals[0];
-          if (!slug) throw new Error('Organization slug required: csdk-bench org use <slug>');
+          if (!slug) throw new Error('Organization slug required: bench org use <slug>');
           await handleOrgUse(slug, overrides);
         } else {
           throw new Error(USAGE);
@@ -363,10 +363,10 @@ export async function run(argv: string[]): Promise<void> {
         const { options, positionals: subPositionals } = parseSubcommandOptions(rest);
         const [sub, slug, runId] = subPositionals;
         if (sub === 'list') {
-          if (!slug) throw new Error('Benchmark slug required: csdk-bench runs list <benchmark-slug>');
+          if (!slug) throw new Error('Benchmark slug required: bench runs list <benchmark-slug>');
           await handleRunsList(slug, options.limit as number | undefined, overrides, outputOptions);
         } else if (sub === 'show') {
-          if (!slug || !runId) throw new Error('Usage: csdk-bench runs show <benchmark-slug> <runId>');
+          if (!slug || !runId) throw new Error('Usage: bench runs show <benchmark-slug> <runId>');
           await handleRunsShow(slug, runId, overrides, outputOptions);
         } else {
           throw new Error(USAGE);
@@ -376,7 +376,7 @@ export async function run(argv: string[]): Promise<void> {
       case 'results': {
         const { options, positionals: subPositionals } = parseSubcommandOptions(rest);
         const [slug] = subPositionals;
-        if (!slug) throw new Error('Benchmark slug required: csdk-bench results <benchmark-slug>');
+        if (!slug) throw new Error('Benchmark slug required: bench results <benchmark-slug>');
         await handleResults(slug, options, overrides, outputOptions);
         break;
       }
@@ -385,7 +385,7 @@ export async function run(argv: string[]): Promise<void> {
         const { options, positionals: subPositionals } = parseSubcommandOptions(subRest);
         if (sub === 'list') {
           const [slug, runId] = subPositionals;
-          if (!slug || !runId) throw new Error('Usage: csdk-bench artifacts list <benchmark-slug> <runId>');
+          if (!slug || !runId) throw new Error('Usage: bench artifacts list <benchmark-slug> <runId>');
           await handleArtifactsList(slug, runId, options.worker as string | undefined, overrides, outputOptions);
         } else {
           throw new Error(USAGE);
@@ -395,7 +395,7 @@ export async function run(argv: string[]): Promise<void> {
       case 'export': {
         const { options, positionals: subPositionals } = parseSubcommandOptions(rest);
         const [slug] = subPositionals;
-        if (!slug) throw new Error('Benchmark slug required: csdk-bench export <benchmark-slug>');
+        if (!slug) throw new Error('Benchmark slug required: bench export <benchmark-slug>');
         await handleExport(slug, options, overrides);
         break;
       }

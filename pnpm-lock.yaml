@@ -320,6 +320,9 @@ importers:
       '@benchsdk/api':
         specifier: workspace:*
         version: link:../benchsdk-api
+      '@benchsdk/cli':
+        specifier: workspace:*
+        version: link:../benchsdk-cli
       '@benchsdk/worker':
         specifier: workspace:*
         version: link:../benchsdk-worker
