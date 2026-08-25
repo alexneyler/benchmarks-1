@@ -57,12 +57,12 @@ export const config = defineBenchmarkConfig({
 
 /** The slice of a provider's sandbox this workload actually touches. */
 interface TtiSandbox {
-  runCommand(command: string): Promise<{ exitCode: number; stderr?: string }>;
+  runCommand(command: string): Promise<{ exitCode: number; stdout?: string; stderr?: string }>;
   destroy(): Promise<unknown>;
 }
 
 export const task = defineTask<ProviderConfig>(async (ctx) => {
-  const { participant, step, measure } = ctx;
+  const { participant, step, measure, log } = ctx;
   const compute = participant.createCompute();
 
   const start = performance.now();
@@ -75,21 +75,24 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
   );
 
   try {
-    await step('exec.task', async () => {
-      const result = await withTimeout(
+    const result = await step('exec.task', async () => {
+      const r = await withTimeout(
         sandbox.runCommand('node -v'),
         COMMAND_TIMEOUT_MS,
         'First command execution timed out',
       );
-      if (result.exitCode !== 0) {
-        throw new Error(`Command failed with exit code ${result.exitCode}: ${result.stderr || 'Unknown error'}`);
+      if (r.exitCode !== 0) {
+        log('node -v failed', { level: 'error', meta: { exitCode: r.exitCode, stderr: r.stderr ?? null } });
+        throw new Error(`Command failed with exit code ${r.exitCode}: ${r.stderr || 'Unknown error'}`);
       }
+      return r;
     });
+    log('node -v succeeded', { level: 'info', meta: { version: result.stdout?.trim() ?? null, exitCode: result.exitCode } });
     measure({ ttiMs: performance.now() - start });
   } finally {
     await step('destroy', () =>
       withTimeout(sandbox.destroy(), participant.destroyTimeoutMs ?? DESTROY_TIMEOUT_MS, 'Destroy timeout'),
       { reportConcurrency: false },
-    ).catch((err) => console.warn(`    [cleanup] destroy failed: ${formatError(err)}`));
+    ).catch((err: unknown) => log('destroy failed', { level: 'warn', meta: { error: formatError(err) } }));
   }
 });

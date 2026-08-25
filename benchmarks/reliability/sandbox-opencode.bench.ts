@@ -1,8 +1,15 @@
 import '../src/env.js';
 import { defineBenchmarkConfig, defineTask, TaskError } from '@benchsdk/runner';
 import { withTimeout } from '../src/util/timeout.js';
+import { formatError } from '../src/util/error.js';
 import { providers } from '../sandbox/providers.js';
 import type { ProviderConfig } from '../sandbox/types.js';
+
+function preview(text: string | null | undefined, max = 2000): string | null {
+  if (!text) return null;
+  if (text.length <= max) return text;
+  return text.slice(0, max) + '...';
+}
 
 export const config = defineBenchmarkConfig({
   benchmarkSlug: 'tensorlake-opencode-reliability',
@@ -15,7 +22,7 @@ export const config = defineBenchmarkConfig({
 });
 
 export const task = defineTask<ProviderConfig>(async (ctx) => {
-  const { participant, step } = ctx;
+  const { participant, step, log } = ctx;
   const compute = participant.createCompute();
 
   let sandbox: any;
@@ -38,8 +45,13 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
         { timeout: 60_000 },
       );
       if (result.exitCode !== 0) {
+        log('OpenCode install failed', {
+          level: 'error',
+          meta: { exitCode: result.exitCode, stderr: preview(result.stderr) },
+        });
         throw new TaskError(`OpenCode install failed (exit ${result.exitCode})`);
       }
+      log('OpenCode install succeeded', { level: 'info', meta: { exitCode: result.exitCode } });
     });
 
     const output = await step('run', async () =>
@@ -49,12 +61,21 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
       ),
     );
 
+    const stdout = output.stdout || '';
     if (output.exitCode !== 0) {
+      log('OpenCode run failed', {
+        level: 'error',
+        meta: { exitCode: output.exitCode, stdout: preview(stdout), stderr: preview(output.stderr) },
+      });
       throw new TaskError(`OpenCode run failed (exit ${output.exitCode})`);
     }
 
-    const stdout = output.stdout || '';
-    if (!stdout.includes('tensorlake-ok')) {
+    const foundOk = stdout.includes('tensorlake-ok');
+    log('OpenCode run completed', {
+      level: foundOk ? 'info' : 'error',
+      meta: { exitCode: output.exitCode, outputLength: stdout.length, foundOk, stdout: preview(stdout) },
+    });
+    if (!foundOk) {
       throw new TaskError(`OpenCode output did not include "tensorlake-ok": ${stdout}`.trim());
     }
   } finally {
@@ -68,7 +89,7 @@ export const task = defineTask<ProviderConfig>(async (ctx) => {
             'Destroy timeout',
           ),
         { reportConcurrency: false },
-      ).catch((err: unknown) => console.warn(`[cleanup] destroy failed: ${String(err)}`));
+      ).catch((err: unknown) => log('destroy failed', { level: 'warn', meta: { error: formatError(err) } }));
     }
   }
 });
