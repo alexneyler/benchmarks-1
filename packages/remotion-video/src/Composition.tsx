@@ -14,8 +14,9 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const nextProviders = providers.slice(5, 10);
   const remainingOthers = Math.max(0, providers.length - 10);
 
-  const FINISH_START = 120; // 4s
-  const FINISH_GAP = 60; // 2s between each finish
+  const REVEAL_START = 60; // 2s
+  const REVEAL_GAP = 60; // 2s between each row fade-in
+  const REVEAL_DURATION = 45; // 1.5s fade
 
   const TOP = 220;
   const ROW_HEIGHT = 104;
@@ -32,8 +33,8 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const BAR_FILL = '#22c55e';
   const TICKER_BG = '#0b1120';
 
-  const rankOpacityFor = (end: number) =>
-    interpolate(frame, [Math.max(0, end - 45), end], [0, 1], {
+  const rowOpacityFor = (start: number) =>
+    interpolate(frame, [start, start + REVEAL_DURATION], [0, 1], {
       extrapolateLeft: 'clamp',
       extrapolateRight: 'clamp',
     });
@@ -97,15 +98,9 @@ export const Leaderboard: FC<LeaderboardData> = ({
 
       {topProviders.map((provider) => {
         const y = TOP + (provider.rank - 1) * ROW_HEIGHT;
-        const end = FINISH_START + provider.rank * FINISH_GAP;
-        const rankOpacity = rankOpacityFor(end);
-        const barProgress = interpolate(
-          frame,
-          [0, end],
-          [0, provider.score],
-          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-        );
-        const barWidth = (barProgress / 100) * 1760;
+        const start = REVEAL_START + provider.rank * REVEAL_GAP;
+        const rowOpacity = rowOpacityFor(start);
+        const barWidth = (provider.score / 100) * 1760;
 
         return (
           <div
@@ -118,6 +113,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
               height: ROW_HEIGHT,
               borderBottom: `1px solid ${DIVIDER}`,
               boxSizing: 'border-box',
+              opacity: rowOpacity,
             }}
           >
             <div
@@ -135,7 +131,6 @@ export const Leaderboard: FC<LeaderboardData> = ({
                 fontSize: 14,
                 fontWeight: 700,
                 color: RANK_TEXT,
-                opacity: rankOpacity,
               }}
             >
               {provider.rank}
@@ -186,7 +181,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                   lineHeight: 1,
                 }}
               >
-                {barProgress.toFixed(1)}
+                {provider.score.toFixed(1)}
               </span>
               <span
                 style={{
