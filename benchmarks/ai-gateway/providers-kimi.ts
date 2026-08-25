@@ -208,6 +208,30 @@ export const providers: AIGatewayProviderConfig[] = [
     reasoningCountsAsFirstToken: true,
   },
   {
+    // BlazeRail: OpenAI-compatible /v1/chat/completions. moonshotai/kimi-k3 is
+    // BlazeRail-s public id for the model; routing picks among its five live
+    // upstreams (CrofAI, DeepInfra, Wafer, Moonshot AI, Modal) by measured
+    // latency and price, which is the product behavior being benchmarked -
+    // same posture as the other multi-upstream gateways in this family.
+    name: 'blazerail',
+    requiredEnvVars: ['BLAZERAIL_API_KEY'],
+    wireFormat: 'openai',
+    model: 'moonshotai/kimi-k3',
+    host: 'api.blazerail.com',
+    path: '/v1/chat/completions',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.BLAZERAIL_API_KEY}`,
+    }),
+    extraBody: {
+      temperature: undefined,
+    },
+    extractResolvedProvider: (buf) =>
+      buf.match(/"resolvedProvider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"provider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"model"\s*:\s*"([^"/]+)\/[^"]*"/)?.[1],
+    reasoningCountsAsFirstToken: true,
+  },
+  {
     name: 'novita',
     requiredEnvVars: ['NOVITA_API_KEY'],
     wireFormat: 'openai',
@@ -271,6 +295,37 @@ export const providers: AIGatewayProviderConfig[] = [
     extraBody: {
       temperature: undefined,
     },
+    reasoningCountsAsFirstToken: true,
+  },
+  {
+    // LLM API reaches Moonshot's `kimi-k3` through its unified
+    // OpenAI-compatible `/v1/chat/completions` surface on `api.llmapi.ai`;
+    // reasoning is locked on for this model, so the same `temperature: undefined`
+    // and `reasoningCountsAsFirstToken` overrides as the other Kimi-family
+    // `openai`-format entries apply. Provider pinning uses the `provider/model`
+    // prefix documented at https://docs.llmapi.ai/features/routing
+    // (`moonshot/kimi-k3`, matching the `moonshot` provider in the `/v1/models`
+    // catalog); `X-No-Fallback: true` disables the automatic low-uptime fallback
+    // so the request stays on Moonshot. `extractResolvedProvider` reads the
+    // upstream provider from the response if LLM API exposes it (`provider`,
+    // `resolvedProvider`) or derives it from the `model` prefix.
+    name: 'llmapi',
+    requiredEnvVars: ['LLMAPI_API_KEY'],
+    wireFormat: 'openai',
+    model: 'moonshot/kimi-k3',
+    host: 'api.llmapi.ai',
+    path: '/v1/chat/completions',
+    buildHeaders: () => ({
+      Authorization: `Bearer ${process.env.LLMAPI_API_KEY}`,
+      'X-No-Fallback': 'true',
+    }),
+    extraBody: {
+      temperature: undefined,
+    },
+    extractResolvedProvider: (buf) =>
+      buf.match(/"resolvedProvider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"provider"\s*:\s*"([^"]+)"/)?.[1] ??
+      buf.match(/"model"\s*:\s*"([^"/]+)\/[^"]*"/)?.[1],
     reasoningCountsAsFirstToken: true,
   },
   {

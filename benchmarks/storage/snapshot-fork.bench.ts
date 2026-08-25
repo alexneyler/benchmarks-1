@@ -53,6 +53,7 @@ export const config = defineBenchmarkConfig({
   iterations: 2,
   concurrency: 1,
   participants,
+  customCliFlags: ['--dataset'],
   dimensions: { dataset },
   scoring: {
     // A fork whose read-back didn't match is not a usable fork, so its timings
@@ -78,14 +79,7 @@ function randomId(): string {
   return Math.random().toString(36).substring(2, 15);
 }
 
-/** Best-effort cleanup that never throws — logs and swallows. */
-async function safeCleanup(label: string, fn: () => Promise<unknown>): Promise<void> {
-  try {
-    await withTimeout(Promise.resolve(fn()), 30_000, `${label} timed out`);
-  } catch (err) {
-    console.warn(`    [cleanup] ${label} failed: ${formatError(err)}`);
-  }
-}
+
 
 /** One `Storage` per participant, and a single random payload buffer for the run. */
 const storageCache = new Map<string, Storage>();
@@ -99,8 +93,16 @@ const datasetBytes = spec.objectCount * spec.objectSizeBytes;
  * storage.
  */
 export const task = defineTask<StorageProviderConfig>(async (ctx) => {
-  const { participant, step } = ctx;
+  const { participant, step, log } = ctx;
   const timeout = participant.timeout ?? 60_000;
+
+  const safeCleanup = async (label: string, fn: () => Promise<unknown>): Promise<void> => {
+    try {
+      await withTimeout(Promise.resolve(fn()), 30_000, `${label} timed out`);
+    } catch (err) {
+      log('cleanup failed', { level: 'warn', meta: { label, error: formatError(err) } });
+    }
+  };
 
   let storage = storageCache.get(participant.name);
   if (!storage) {
@@ -162,20 +164,34 @@ export const task = defineTask<StorageProviderConfig>(async (ctx) => {
     const forkFirstReadMs = performance.now() - readStart;
     const verified = bytes.length === payload.length;
 
-    return {
-      data: {
-        seedMs,
-        snapshotCreateMs,
-        forkFromSnapshotMs,
-        forkFromLiveMs,
-        forkFirstReadMs,
-        verified,
-        datasetBytes,
-        objectCount: spec.objectCount,
-      },
+    const data = {
+      seedMs,
+      snapshotCreateMs,
+      forkFromSnapshotMs,
+      forkFromLiveMs,
+      forkFirstReadMs,
+      verified,
+      datasetBytes,
+      objectCount: spec.objectCount,
     };
+    log('Snapshot/fork lifecycle completed', { level: 'info', meta: data });
+    return { data };
   } catch (err) {
     const message = formatError(err);
+    log('Snapshot/fork lifecycle failed', {
+      level: 'error',
+      meta: {
+        seedMs: 0,
+        snapshotCreateMs: 0,
+        forkFromSnapshotMs: 0,
+        forkFromLiveMs: 0,
+        forkFirstReadMs: 0,
+        verified: false,
+        datasetBytes,
+        objectCount: spec.objectCount,
+        error: message,
+      },
+    });
     throw new TaskError(message, {
       code: 'SNAPSHOT_FORK_ERROR',
       data: {

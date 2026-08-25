@@ -1,10 +1,14 @@
 export { BenchmarkApiError, createBenchmarkClient } from './client';
 export type {
+  BenchmarkArtifactDownload,
   BenchmarkAssignment,
   BenchmarkArtifact,
   BenchmarkClient,
   BenchmarkClientConfig,
   BenchmarkConcurrencyPoint,
+  BenchmarkLogLevel,
+  BenchmarkLogOptions,
+  BenchmarkStepOutcome,
   BenchmarkAnalyticsReadiness,
   BenchmarkEventRateBucket,
   BenchmarkFailurePoint,

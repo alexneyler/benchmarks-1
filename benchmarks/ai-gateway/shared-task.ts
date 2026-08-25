@@ -19,7 +19,7 @@
  */
 import { TaskError } from '@benchsdk/runner';
 import type { TaskContext, TaskResult } from '@benchsdk/runner';
-import type { JsonObject, TaskStepRecord } from '@benchsdk/client';
+import type { JsonObject, TaskStepRecord } from '@benchsdk/api';
 import { runColdProbe, runWarmProbe } from './phase-probe.js';
 import type { AIGatewayProviderConfig, PhaseProbeResult } from './types.js';
 
@@ -118,12 +118,15 @@ export function makeAIGatewayTask(maxTokens: number, timeoutMs: number) {
     const steps = phaseSteps(result);
 
     if (result.error) {
-      ctx.log(`${ctx.participant.name} ${result.mode} probe failed: ${result.error}`, probeData(result));
+      ctx.log(`${ctx.participant.name} ${result.mode} probe failed: ${result.error}`, {
+        level: 'error',
+        meta: probeData(result),
+      });
       throw new TaskError(result.error, { code: 'probe_failed', data: probeData(result), steps });
     }
     ctx.log(
       `${ctx.participant.name} ${result.mode} probe: ttfb=${result.ttfbMs}ms ttft=${result.ttftMs}ms`,
-      probeData(result),
+      { level: 'info', meta: probeData(result) },
     );
     return {
       data: probeData(result),

@@ -133,6 +133,22 @@ For full details on each suite, see:
 
 ![DAX Sandbox Builds](./dax.svg)
 
+### [AI Gateway - Anthropic](#ai-gateway---anthropic)
+
+![AI Gateway - Anthropic](./ai-gateway.svg)
+
+### [AI Gateway - OpenAI](#ai-gateway---openai)
+
+![AI Gateway - OpenAI](./ai-gateway-openai.svg)
+
+### [AI Gateway - Gemini](#ai-gateway---gemini)
+
+![AI Gateway - Gemini](./ai-gateway-gemini.svg)
+
+### [AI Gateway - Kimi](#ai-gateway---kimi)
+
+![AI Gateway - Kimi](./ai-gateway-kimi.svg)
+
 ## Roadmap
 
 - [x] computesdk.com/benchmarks

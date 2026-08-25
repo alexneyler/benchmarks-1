@@ -1,6 +1,11 @@
+import { gunzip as gunzipCallback } from 'node:zlib';
+import { promisify } from 'node:util';
+
+const gunzip = promisify(gunzipCallback);
 import type {
-  BenchmarkAssignment,
   BenchmarkArtifact,
+  BenchmarkArtifactDownload,
+  BenchmarkAssignment,
   BenchmarkClient,
   BenchmarkClientConfig,
   BenchmarkParticipant,
@@ -72,7 +77,17 @@ function queryString(input: Record<string, number | undefined>): string {
 }
 
 function getApiKey(input?: string): string | undefined {
-  return input ?? (typeof process !== 'undefined' ? process.env.COMPUTESDK_ADMIN_API_KEY ?? process.env.COMPUTESDK_API_KEY : undefined);
+  if (input) return input;
+  if (typeof process === 'undefined') return undefined;
+  return process.env.BENCHMARKS_PLATFORM_API_KEY ?? process.env.COMPUTESDK_API_KEY;
+}
+
+function getAuthToken(config: BenchmarkClientConfig): string | undefined {
+  if (config.token) return config.token;
+  if (typeof process !== 'undefined' && process.env.BENCHMARKS_PLATFORM_TOKEN) {
+    return process.env.BENCHMARKS_PLATFORM_TOKEN;
+  }
+  return getApiKey(config.apiKey);
 }
 
 function getErrorCode(error: unknown): string {
@@ -123,9 +138,43 @@ function bodySizeBytes(body: UploadWorkerArtifactInput['body']): number | undefi
   return undefined;
 }
 
+function isGzipContentType(contentType: string | null | undefined): boolean {
+  if (!contentType) return false;
+  const lowered = contentType.toLowerCase();
+  return lowered.includes('gzip') || lowered.includes('x-gzip') || lowered === 'application/gzip';
+}
+
+async function downloadArtifactBody(
+  doFetch: typeof fetch,
+  url: string,
+  options?: { contentType?: string; decompress?: boolean },
+): Promise<string> {
+  const response = await doFetch(url);
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => '');
+    throw new BenchmarkApiError(
+      `Artifact download failed with ${response.status}`,
+      response.status,
+      errorBody,
+    );
+  }
+  const buffer = await response.arrayBuffer();
+  const responseContentType = response.headers.get('content-type');
+  const contentType = options?.contentType ?? responseContentType ?? '';
+  if (isGzipContentType(contentType) || options?.decompress) {
+    try {
+      const decompressed = await gunzip(new Uint8Array(buffer));
+      return new TextDecoder().decode(decompressed);
+    } catch {
+      // Fall through and return the raw body if decompression fails.
+    }
+  }
+  return new TextDecoder().decode(buffer);
+}
+
 export function createBenchmarkClient(config: BenchmarkClientConfig = {}): BenchmarkClient {
   const baseUrl = trimTrailingSlash(config.baseUrl ?? DEFAULT_BASE_URL);
-  const apiKey = getApiKey(config.apiKey);
+  const authToken = getAuthToken(config);
   const fetchImpl = config.fetch ?? (typeof fetch !== 'undefined' ? fetch : undefined);
 
   if (!fetchImpl) {
@@ -135,7 +184,9 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
 
   async function request<T>(method: string, path: string, body?: JsonObject): Promise<T> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
+    if (authToken) headers.Authorization = `Bearer ${authToken}`;
+    if (config.orgSlug) headers['X-Org-Slug'] = config.orgSlug;
+    else if (config.orgId) headers['X-Organization-Id'] = config.orgId;
 
     const response = await doFetch(`${baseUrl}${path}`, {
       method,
@@ -205,8 +256,11 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
       return data.benchmark;
     },
 
-    async listBenchmarks() {
-      const data = await request<{ items?: BenchmarkResource[]; benchmarks?: BenchmarkResource[] }>('GET', '/benchmarks');
+    async listBenchmarks(options: { limit?: number; offset?: number } = {}) {
+      const data = await request<{ items?: BenchmarkResource[]; benchmarks?: BenchmarkResource[] }>(
+        'GET',
+        `/benchmarks${queryString(options)}`,
+      );
       return data.items ?? data.benchmarks ?? [];
     },
 
@@ -218,8 +272,11 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
       );
     },
 
-    async listRuns(benchmarkSlug) {
-      const data = await request<{ items: BenchmarkRun[] }>('GET', `/benchmarks/${encodePath(benchmarkSlug)}/runs`);
+    async listRuns(benchmarkSlug, options: { limit?: number; offset?: number } = {}) {
+      const data = await request<{ items: BenchmarkRun[] }>(
+        'GET',
+        `/benchmarks/${encodePath(benchmarkSlug)}/runs${queryString(options)}`,
+      );
       return data.items;
     },
 
@@ -385,26 +442,47 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
       return response;
     },
 
-    async listRunArtifacts(benchmarkSlug, runId) {
+    async listRunArtifacts(benchmarkSlug, runId, options: { limit?: number; offset?: number } = {}) {
       const data = await request<{ items?: BenchmarkArtifact[]; artifacts?: BenchmarkArtifact[] }>(
         'GET',
-        `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/artifacts`,
+        `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/artifacts${queryString(options)}`,
       );
       return normalizeArtifacts(data);
     },
 
-    async listWorkerArtifacts(benchmarkSlug, runId, workerId) {
+    async listWorkerArtifacts(benchmarkSlug, runId, workerId, options: { limit?: number; offset?: number } = {}) {
       const data = await request<{ items?: BenchmarkArtifact[]; artifacts?: BenchmarkArtifact[] }>(
         'GET',
-        `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/workers/${encodePath(workerId)}/artifacts`,
+        `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/workers/${encodePath(workerId)}/artifacts${queryString(options)}`,
       );
       return normalizeArtifacts(data);
+    },
+
+    async getWorkerArtifact(benchmarkSlug, runId, workerId, artifactId) {
+      return request<BenchmarkArtifactDownload>(
+        'GET',
+        `/benchmarks/${encodePath(benchmarkSlug)}/runs/${encodePath(runId)}/workers/${encodePath(workerId)}/artifacts/${encodePath(artifactId)}`,
+      );
+    },
+
+    downloadArtifact(url, options) {
+      return downloadArtifactBody(doFetch, url, options);
+    },
+
+    async downloadWorkerArtifact(benchmarkSlug, runId, workerId, artifactId) {
+      const { artifact, downloadUrl } = await client.getWorkerArtifact(
+        benchmarkSlug,
+        runId,
+        workerId,
+        artifactId,
+      );
+      return downloadArtifactBody(doFetch, downloadUrl, { contentType: artifact.contentType ?? undefined });
     },
 
     async getBenchmarkResults(benchmarkSlug, input: BenchmarkResultsOverviewInput = {}) {
       return request<BenchmarkResultsOverview>(
         'GET',
-        `/benchmarks/${encodePath(benchmarkSlug)}/results${queryString({ limit: input.limit })}`,
+        `/benchmarks/${encodePath(benchmarkSlug)}/results${queryString({ limit: input.limit, offset: input.offset })}`,
       );
     },
 

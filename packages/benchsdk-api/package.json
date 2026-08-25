@@ -27,8 +27,8 @@
     "lint": "eslint",
     "prepare": "tsup",
     "pretest": "tsup",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test": "vitest run --passWithNoTests",
+    "test:coverage": "vitest run --coverage --passWithNoTests",
     "test:watch": "vitest watch",
     "typecheck": "tsc --noEmit"
   },

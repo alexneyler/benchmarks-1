@@ -17,7 +17,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { defineBenchmarkConfig, defineTask, TaskError } from '@benchsdk/runner';
-import type { JsonValue } from '@benchsdk/client';
+import type { JsonValue } from '@benchsdk/api';
 import { withTimeout } from '../src/util/timeout.js';
 import { throughputProviders } from './throughput-providers.js';
 import { writeThroughputLegacyResults } from './browser-throughput-legacy-results.js';
@@ -239,7 +239,7 @@ function medianScreenshotMs(actions: ActionResult[]): number | undefined {
 const providerCache = new Map<string, any>();
 
 export const task = defineTask<ThroughputProviderConfig>(async (ctx) => {
-  const { participant, taskIndex, step, measure } = ctx;
+  const { participant, taskIndex, step, measure, log } = ctx;
   const timeout = participant.timeout ?? 120_000;
   const sessionCreateOptions = participant.sessionCreateOptions ?? {};
 
@@ -304,7 +304,7 @@ export const task = defineTask<ThroughputProviderConfig>(async (ctx) => {
     iterationError = err instanceof Error ? err.message : String(err);
   } finally {
     if (browser) {
-      await browser.close().catch(() => { });
+      await browser.close().catch((err: unknown) => log('browser close failed', { level: 'warn', meta: { error: String(err) } }));
     }
     if (session) {
       const releaseStart = performance.now();
@@ -319,23 +319,32 @@ export const task = defineTask<ThroughputProviderConfig>(async (ctx) => {
             ),
           { reportConcurrency: false },
         );
-      } catch {
-        // Swallow release errors — they're recorded via releaseMs but should
-        // not mask the more important action timings.
+      } catch (err: unknown) {
+        log('release failed', { level: 'warn', meta: { error: err instanceof Error ? err.message : String(err) } });
       }
       releaseMs = performance.now() - releaseStart;
     }
   }
 
-  const data = {
+  const totalMs = performance.now() - totalStart;
+  const summary = {
     createMs,
     connectMs,
     releaseMs,
-    totalMs: performance.now() - totalStart,
+    totalMs,
     taskMs,
     actionsCompleted,
     actionsPerSecond,
     ...(screenshotMs !== undefined ? { screenshotMs } : {}),
+  };
+
+  log(
+    iterationError ? 'Browser throughput session failed' : 'Browser throughput session completed',
+    { level: iterationError ? 'error' : 'info', meta: iterationError ? { ...summary, error: iterationError } : summary },
+  );
+
+  const data = {
+    ...summary,
     actions: actions as unknown as JsonValue,
     ...(iterationError ? { errorMessage: iterationError } : {}),
   };

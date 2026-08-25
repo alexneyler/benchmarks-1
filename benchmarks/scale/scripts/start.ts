@@ -33,7 +33,8 @@
  *
  * Optional env:
  *   GITHUB_SHA                Defaults to `git rev-parse HEAD` or "local"
- *   COMPUTESDK_API_KEY        Bench ingest token (Bearer)
+ *   BENCHMARKS_PLATFORM_API_KEY  Bench ingest token (Bearer)
+ *   COMPUTESDK_API_KEY           Legacy bench ingest token (fallback)
  *   SCALE_IMAGE_REPO          Default image repository when --image is unset
  *                             (default: nscr.io/5enq753trme1k/scale)
  *   SCALE_IMAGE_TAG           Default image tag when --image is unset
@@ -51,11 +52,11 @@ const BENCHMARK_SLUG = 'scale';
 const BENCH_TIMEOUT_MS = 120_000;
 
 // The container command — the coordinator bundle baked into the scale image
-// (see src/scale/Dockerfile: CMD ["node", "/app/coordinator.cjs"]). We run it
+// (see src/scale/Dockerfile: CMD ["node", "/app/coordinator.mjs"]). We run it
 // as the container's PID 1 (not via runCommand), so its stdout is captured
 // natively by `nsc logs <id> --kind containers` and the instance auto-reaps
 // when it exits — exactly like the old `nsc run` path.
-const COORDINATOR_ARGS = ['node', '/app/coordinator.cjs'];
+const COORDINATOR_ARGS = ['node', '/app/coordinator.mjs'];
 
 // Namespace Compute API endpoints. The package's own create/describe use these
 // via its exported fetchNamespace; we call CreateInstance directly so we can set
@@ -231,7 +232,7 @@ interface ShardOpts {
   shardIndex?: number;
   shardCount?: number;
   // Platform orchestration target; undefined when bench reporting is disabled
-  // (no COMPUTESDK_API_KEY, or run creation failed). The coordinator then runs
+  // (no BENCHMARKS_PLATFORM_API_KEY or COMPUTESDK_API_KEY, or run creation failed). The coordinator then runs
   // Tigris-only.
   benchmarkRunId?: string;
   participantSlug?: string;
@@ -257,8 +258,8 @@ function buildEnv(opts: ShardOpts): Record<string, string> {
     // in addition to the logger's in-memory buffer uploaded as coordinator.log.
     COORDINATOR_LOG_PATH: '/tmp/coordinator.log',
   };
+  if (process.env.BENCHMARKS_PLATFORM_API_KEY) env.BENCHMARKS_PLATFORM_API_KEY = process.env.BENCHMARKS_PLATFORM_API_KEY;
   if (process.env.COMPUTESDK_API_KEY) env.COMPUTESDK_API_KEY = process.env.COMPUTESDK_API_KEY;
-  if (process.env.COMPUTESDK_ADMIN_API_KEY) env.COMPUTESDK_ADMIN_API_KEY = process.env.COMPUTESDK_ADMIN_API_KEY;
   if (opts.label !== undefined) env.LABEL = opts.label;
   if (opts.groupId !== undefined && opts.shardIndex !== undefined && opts.shardCount !== undefined) {
     env.GROUP_ID = opts.groupId;
@@ -371,13 +372,13 @@ async function launchOne(shard: number, opts: ShardOpts, log: Logger): Promise<S
 /**
  * Create the platform run + plan one worker per VM before launching. Best-effort:
  * if no key is present or the API rejects, returns null and the burst runs
- * Tigris-only (bench reporting is optional). Needs an admin-scoped key for run
- * creation (COMPUTESDK_ADMIN_API_KEY, falling back to COMPUTESDK_API_KEY).
+ * Tigris-only (bench reporting is optional). Needs the bench API key
+ * (BENCHMARKS_PLATFORM_API_KEY, falling back to COMPUTESDK_API_KEY).
  */
 async function createPlatformRun(args: Args, perVm: number): Promise<string | null> {
-  const apiKey = process.env.COMPUTESDK_ADMIN_API_KEY ?? process.env.COMPUTESDK_API_KEY;
+  const apiKey = process.env.BENCHMARKS_PLATFORM_API_KEY ?? process.env.COMPUTESDK_API_KEY;
   if (!apiKey) {
-    console.log('  bench:      disabled (no COMPUTESDK_API_KEY) — Tigris-only run\n');
+    console.log('  bench:      disabled (no BENCHMARKS_PLATFORM_API_KEY or COMPUTESDK_API_KEY) — Tigris-only run\n');
     return null;
   }
   try {

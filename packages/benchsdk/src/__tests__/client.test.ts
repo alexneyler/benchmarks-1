@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { BenchmarkApiError, createBenchmarkClient } from '../client';
-import { createSystemMetricsCollector } from '../metrics';
-import { BenchmarkReporter } from '../reporter';
-import type { BenchmarkAssignment } from '../types';
+import { gzipSync, gunzipSync } from 'node:zlib';
+import { createBenchmarkClient } from '../client';
+import { BenchmarkApiError, BenchmarkReporter, createSystemMetricsCollector } from '../index';
+import type { BenchmarkAssignment } from '../index';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -542,7 +542,7 @@ describe('createBenchmarkClient', () => {
     expect(upload?.method).toBe('PUT');
     const logBody = String((upload as any)?.body);
     expect(logBody.length).toBeGreaterThan(0);
-    expect(logBody).toContain('[task 0] create');
+    expect(logBody).toContain('[task 0] [info] create');
   });
 
   it('waits for platform step readiness before running a step body', async () => {
@@ -829,6 +829,63 @@ describe('createBenchmarkClient', () => {
       'GET https://platform.test/api/v1/benchmarks/scale/runs/run_1/results/imports',
       'POST https://platform.test/api/v1/benchmarks/scale/runs/run_1/workers/worker_1/release',
     ]);
+  });
+
+  it('downloads a worker artifact and decompresses gzip content', async () => {
+    const gzBody = gzipSync(Buffer.from('hello worker log\n'));
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith('/workers/worker_1/artifacts/artifact_1')) {
+        return jsonResponse({ artifact: { artifactId: 'artifact_1', contentType: 'application/gzip' }, downloadUrl: 'https://download.test' });
+      }
+      if (url === 'https://download.test') return new Response(gzBody, { status: 200 });
+      throw new Error(`unexpected request: ${url}`);
+    });
+
+    const client = createBenchmarkClient({ baseUrl: 'https://platform.test/api/v1', fetch: fetchMock as typeof fetch });
+
+    const { artifact, downloadUrl } = await client.getWorkerArtifact('scale', 'run_1', 'worker_1', 'artifact_1');
+    expect(artifact.artifactId).toBe('artifact_1');
+    expect(downloadUrl).toBe('https://download.test');
+
+    const text = await client.downloadWorkerArtifact('scale', 'run_1', 'worker_1', 'artifact_1');
+    expect(text).toBe('hello worker log\n');
+
+    const directText = await client.downloadArtifact('https://download.test', { decompress: true });
+    expect(directText).toBe('hello worker log\n');
+  });
+
+  it('uploads gzip-compressed worker logs when logCompression is enabled', async () => {
+    const seen: Array<{ url: string; body: unknown; method?: string }> = [];
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const body = init?.body && url.startsWith('https://platform.test/') ? JSON.parse(String(init.body)) : init?.body;
+      seen.push({ url, body, method: init?.method });
+      if (url.endsWith('/participants/e2b/workers/claim')) return jsonResponse({ assignment: assignment({ taskRange: { start: 0, end: 0, count: 1 } }) });
+      if (url.endsWith('/events')) return jsonResponse({ eventBatch: { id: 'batch_1' } }, 202);
+      if (url.endsWith('/workers/00000000-0000-4000-8000-000000000002/artifacts')) return jsonResponse({ artifactId: 'artifact_1', uploadUrl: 'https://upload.test' });
+      if (url === 'https://upload.test') return new Response(null, { status: 200 });
+      if (url.endsWith('/complete')) return jsonResponse({ worker: { id: 'worker_1' }, attempt: { id: 'attempt_1' } });
+      throw new Error(`unexpected request: ${url}`);
+    });
+
+    const client = createBenchmarkClient({ baseUrl: 'https://platform.test/api/v1', fetch: fetchMock as typeof fetch });
+    await client.runWorker({
+      benchmarkSlug: 'scale',
+      runId: '00000000-0000-4000-8000-000000000001',
+      participantSlug: 'e2b',
+      logCompression: 'gzip',
+      task: async ({ log }) => {
+        log('compressed entry');
+      },
+    });
+
+    const artifactPost = seen.find((entry) => entry.url.endsWith('/artifacts') && entry.method === 'POST');
+    expect(artifactPost?.body).toMatchObject({ kind: 'coordinator.log', name: 'worker.log', contentType: 'application/gzip' });
+
+    const upload = seen.find((entry) => entry.url === 'https://upload.test');
+    const decompressed = gunzipSync(Buffer.from(upload?.body as ArrayBufferView));
+    expect(decompressed.toString()).toContain('compressed entry');
   });
 
   it('reports custom coordinator progress, barriers, artifacts, and finish best-effort', async () => {

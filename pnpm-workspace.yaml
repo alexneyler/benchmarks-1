@@ -5,3 +5,4 @@ packages:
   - packages/create-bench
   - packages/benchsdk-runner
   - packages/remotion-video
+  - packages/benchsdk-cli

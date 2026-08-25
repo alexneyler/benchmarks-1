@@ -139,7 +139,7 @@ export async function writeResultsJson(results: BenchmarkResult[], outPath: stri
       })),
     } : {}),
     iterations: r.iterations.map(i => ({
-      ttiMs: round(i.ttiMs),
+      ...(i.ttiMs != null ? { ttiMs: round(i.ttiMs) } : {}),
       ...(i.error ? { error: i.error } : {}),
     })),
     summary: {

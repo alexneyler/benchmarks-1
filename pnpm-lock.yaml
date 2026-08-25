@@ -23,6 +23,9 @@ importers:
       '@azure/storage-blob':
         specifier: ^12.33.0
         version: 12.33.0
+      '@benchsdk/api':
+        specifier: workspace:*
+        version: link:packages/benchsdk-api
       '@benchsdk/client':
         specifier: workspace:*
         version: link:packages/benchsdk
@@ -31,7 +34,7 @@ importers:
         version: link:packages/benchsdk-runner
       '@codesandbox/sdk':
         specifier: ^2.4.2
-        version: 2.4.2(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))(@xterm/xterm@5.5.0)(ink@7.1.1(bufferutil@4.1.0)(react@19.2.8)(utf-8-validate@6.0.6))
+        version: 2.4.2(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))(@xterm/xterm@5.5.0)(ink@7.1.1(bufferutil@4.1.0)(react@19.2.8)(utf-8-validate@6.0.6))
       '@computesdk/anchorbrowser':
         specifier: ^0.2.7
         version: 0.2.7(bufferutil@4.1.0)(utf-8-validate@6.0.6)
@@ -43,10 +46,10 @@ importers:
         version: 0.1.3(@computesdk/daytona@1.7.33(ws@8.21.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)))(@computesdk/e2b@1.7.53)(@computesdk/modal@1.9.5)(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@computesdk/beam':
         specifier: ^0.3.2
-        version: 0.3.2(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@6.0.6)
+        version: 0.3.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)
       '@computesdk/blaxel':
         specifier: ^1.6.19
-        version: 1.6.19(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+        version: 1.6.19(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@computesdk/browserbase':
         specifier: ^0.3.11
         version: 0.3.11
@@ -61,7 +64,7 @@ importers:
         version: 1.6.15(@xterm/xterm@5.5.0)
       '@computesdk/codesandbox':
         specifier: ^1.5.52
-        version: 1.5.52(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))(@xterm/xterm@5.5.0)(ink@7.1.1(bufferutil@4.1.0)(react@19.2.8)(utf-8-validate@6.0.6))
+        version: 1.5.52(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))(@xterm/xterm@5.5.0)(ink@7.1.1(bufferutil@4.1.0)(react@19.2.8)(utf-8-validate@6.0.6))
       '@computesdk/collimate':
         specifier: ^0.1.2
         version: 0.1.2
@@ -99,11 +102,11 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       '@computesdk/microsandbox':
-        specifier: ^0.1.1
-        version: 0.1.1
+        specifier: ^0.1.2
+        version: 0.1.2
       '@computesdk/miosa':
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.3
+        version: 1.0.3
       '@computesdk/modal':
         specifier: ^1.9.5
         version: 1.9.5
@@ -212,10 +215,10 @@ importers:
     devDependencies:
       '@changesets/cli':
         specifier: ^2.31.1
-        version: 2.31.1(@types/node@26.2.0)
+        version: 2.31.1(@types/node@20.19.43)
       '@types/node':
-        specifier: ^26.2.0
-        version: 26.2.0
+        specifier: ^20.0.0
+        version: 20.19.43
       '@types/pg':
         specifier: ^8.23.1
         version: 8.23.1
@@ -226,8 +229,8 @@ importers:
         specifier: ^4.23.12
         version: 4.23.12
       typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
+        specifier: ^5.0.0
+        version: 5.9.3
 
   packages/benchsdk:
     dependencies:
@@ -284,11 +287,42 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@20.19.43)(terser@5.50.0)
 
+  packages/benchsdk-cli:
+    dependencies:
+      '@benchsdk/api':
+        specifier: workspace:*
+        version: link:../benchsdk-api
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.43
+      '@vitest/coverage-v8':
+        specifier: ^1.0.0
+        version: 1.6.1(vitest@1.6.1(@types/node@20.19.43)(terser@5.50.0))
+      eslint:
+        specifier: ^8.37.0
+        version: 8.57.1
+      rimraf:
+        specifier: ^5.0.0
+        version: 5.0.10
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.21)(tsx@4.23.12)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.0.0
+        version: 1.6.1(@types/node@20.19.43)(terser@5.50.0)
+
   packages/benchsdk-runner:
     dependencies:
       '@benchsdk/api':
         specifier: workspace:*
         version: link:../benchsdk-api
+      '@benchsdk/cli':
+        specifier: workspace:*
+        version: link:../benchsdk-cli
       '@benchsdk/worker':
         specifier: workspace:*
         version: link:../benchsdk-worker
@@ -372,7 +406,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: ^26.2.0
-        version: 26.2.0
+        version: 26.3.0
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.31
@@ -856,12 +890,12 @@ packages:
   '@computesdk/lightning@1.0.3':
     resolution: {integrity: sha512-YVpN73kKQbivC9FefKRBjcwA6eO3o6kRfqJURx6yranel+/hVI4LCpu+0WsTcG4w/9D01ks7EiHOjIs9PiJKGg==}
 
-  '@computesdk/microsandbox@0.1.1':
-    resolution: {integrity: sha512-WgD9YUjCFTOONHQr+IR8X8vumO4EX69wckT5c3PM4bRfWrFXtPk88lP9ZjWr6sGvH6K1U6hFX4c69x3my/G0Yw==}
+  '@computesdk/microsandbox@0.1.2':
+    resolution: {integrity: sha512-UZExZDT9I5KU9nJeuWbVL88/00HM1WKPKnCkFlNCr4K4+/SdsT2aghwVOxyizq+47ufCSjjbtXFEP9+QS1ReBQ==}
     engines: {node: '>=22'}
 
-  '@computesdk/miosa@1.0.2':
-    resolution: {integrity: sha512-IHbQwtX2+sCDHqHIYvE1ZPDiGJU2FCCq7Fl1VtJqmebRLOIgGy1DC8NPK7gFdBF2wv7Of+hukF5h+L+UxEUyDg==}
+  '@computesdk/miosa@1.0.3':
+    resolution: {integrity: sha512-htd05N0KOfdesjqnf5UPMj+liUw4RX7IgVUPpEKRG3MZsOvRQbm0pNNH3LZ8OjrgX6jvH6JeLVHtcB7eqfRxpw==}
 
   '@computesdk/modal@1.9.5':
     resolution: {integrity: sha512-WTZZwN73htUFrkRTkCEtNofxS4tmYQwzPPYvdQ4MysjLwq2nZP8gYZk6awloV051o/dG1miZDPBnRHfz9gw/vA==}
@@ -2989,8 +3023,8 @@ packages:
   '@types/node@26.1.1':
     resolution: {integrity: sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==}
 
-  '@types/node@26.2.0':
-    resolution: {integrity: sha512-5IviulTZeRNp2vAJ514cc/HUlY5nZ9fCbq9DMyC52BrhFZACo3nI0R7qBxhQmo/d27NFe96ur/b7Wwxklda+kg==}
+  '@types/node@26.3.0':
+    resolution: {integrity: sha512-L3fgrnchriRC2ExBflb8j4uZZURHZfQsmQeyVzhjcHW4kkwVyo8/0h1B2MVzMTrYUJYu6G7EWs14hW/L9putqw==}
 
   '@types/pg-pool@2.0.6':
     resolution: {integrity: sha512-TaAUE5rq2VQYxab5Ts7WZhKNmuN78Q6PiFonTDdpbx8a1H0M1vhy3rhiMjl+e2iHmogyMw7jZF4FrE6eJUy5HQ==}
@@ -7159,13 +7193,13 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@beamcloud/beam-js@1.0.17(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@6.0.6)':
+  '@beamcloud/beam-js@1.0.17(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)':
     dependencies:
       axios: 1.19.0
       commander: 12.1.0
       ignore: 7.0.6
       strip-ansi: 7.2.0
-      typescript: 6.0.3
+      typescript: 5.9.3
       ws: 8.21.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       yazl: 3.3.1
     transitivePeerDependencies:
@@ -7174,9 +7208,9 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@blaxel/core@0.3.12(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
+  '@blaxel/core@0.3.12(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
     dependencies:
-      '@hey-api/client-fetch': 0.10.2(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))
+      '@hey-api/client-fetch': 0.10.2(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))
       '@modelcontextprotocol/sdk': 1.30.0(zod@4.4.3)
       archiver: 7.0.1
       axios: 1.19.0
@@ -7265,7 +7299,7 @@ snapshots:
     dependencies:
       '@changesets/types': 6.1.0
 
-  '@changesets/cli@2.31.1(@types/node@26.2.0)':
+  '@changesets/cli@2.31.1(@types/node@20.19.43)':
     dependencies:
       '@changesets/apply-release-plan': 7.1.1
       '@changesets/assemble-release-plan': 6.0.10
@@ -7281,7 +7315,7 @@ snapshots:
       '@changesets/should-skip-package': 0.1.2
       '@changesets/types': 6.1.0
       '@changesets/write': 0.4.0
-      '@inquirer/external-editor': 1.0.3(@types/node@26.2.0)
+      '@inquirer/external-editor': 1.0.3(@types/node@20.19.43)
       '@manypkg/get-packages': 1.1.3
       ansi-colors: 4.1.3
       enquirer: 2.4.1
@@ -7388,9 +7422,9 @@ snapshots:
     optionalDependencies:
       '@xterm/xterm': 5.5.0
 
-  '@codesandbox/sdk@2.4.2(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))(@xterm/xterm@5.5.0)(ink@7.1.1(bufferutil@4.1.0)(react@19.2.8)(utf-8-validate@6.0.6))':
+  '@codesandbox/sdk@2.4.2(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))(@xterm/xterm@5.5.0)(ink@7.1.1(bufferutil@4.1.0)(react@19.2.8)(utf-8-validate@6.0.6))':
     dependencies:
-      '@hey-api/client-fetch': 0.13.1(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))
+      '@hey-api/client-fetch': 0.13.1(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))
       '@inkjs/ui': 2.0.0(ink@7.1.1(bufferutil@4.1.0)(react@19.2.8)(utf-8-validate@6.0.6))
       '@opentelemetry/api': 1.9.1
       '@xterm/addon-serialize': 0.13.0(@xterm/xterm@5.5.0)
@@ -7448,9 +7482,9 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@computesdk/beam@0.3.2(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@6.0.6)':
+  '@computesdk/beam@0.3.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)':
     dependencies:
-      '@beamcloud/beam-js': 1.0.17(bufferutil@4.1.0)(typescript@6.0.3)(utf-8-validate@6.0.6)
+      '@beamcloud/beam-js': 1.0.17(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)
       '@computesdk/provider': 2.1.5
       computesdk: 4.1.4
     transitivePeerDependencies:
@@ -7460,9 +7494,9 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@computesdk/blaxel@1.6.19(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
+  '@computesdk/blaxel@1.6.19(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
     dependencies:
-      '@blaxel/core': 0.3.12(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      '@blaxel/core': 0.3.12(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@computesdk/provider': 2.1.5
       computesdk: 4.1.4
     transitivePeerDependencies:
@@ -7515,9 +7549,9 @@ snapshots:
 
   '@computesdk/cmd@0.4.1': {}
 
-  '@computesdk/codesandbox@1.5.52(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))(@xterm/xterm@5.5.0)(ink@7.1.1(bufferutil@4.1.0)(react@19.2.8)(utf-8-validate@6.0.6))':
+  '@computesdk/codesandbox@1.5.52(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))(@xterm/xterm@5.5.0)(ink@7.1.1(bufferutil@4.1.0)(react@19.2.8)(utf-8-validate@6.0.6))':
     dependencies:
-      '@codesandbox/sdk': 2.4.2(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))(@xterm/xterm@5.5.0)(ink@7.1.1(bufferutil@4.1.0)(react@19.2.8)(utf-8-validate@6.0.6))
+      '@codesandbox/sdk': 2.4.2(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))(@xterm/xterm@5.5.0)(ink@7.1.1(bufferutil@4.1.0)(react@19.2.8)(utf-8-validate@6.0.6))
       '@computesdk/provider': 2.1.5
       computesdk: 4.1.4
     transitivePeerDependencies:
@@ -7621,13 +7655,13 @@ snapshots:
       - debug
       - supports-color
 
-  '@computesdk/microsandbox@0.1.1':
+  '@computesdk/microsandbox@0.1.2':
     dependencies:
       '@computesdk/provider': 2.1.5
       computesdk: 4.1.4
       microsandbox: 0.6.12
 
-  '@computesdk/miosa@1.0.2':
+  '@computesdk/miosa@1.0.3':
     dependencies:
       '@computesdk/provider': 2.1.5
       computesdk: 4.1.4
@@ -8247,13 +8281,13 @@ snapshots:
       protobufjs: 7.6.5
       yargs: 17.7.3
 
-  '@hey-api/client-fetch@0.10.2(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))':
+  '@hey-api/client-fetch@0.10.2(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))':
     dependencies:
-      '@hey-api/openapi-ts': 0.99.0(magicast@0.3.5)(typescript@6.0.3)
+      '@hey-api/openapi-ts': 0.99.0(magicast@0.3.5)(typescript@5.9.3)
 
-  '@hey-api/client-fetch@0.13.1(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3))':
+  '@hey-api/client-fetch@0.13.1(@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3))':
     dependencies:
-      '@hey-api/openapi-ts': 0.99.0(magicast@0.3.5)(typescript@6.0.3)
+      '@hey-api/openapi-ts': 0.99.0(magicast@0.3.5)(typescript@5.9.3)
 
   '@hey-api/codegen-core@0.9.1(magicast@0.3.5)':
     dependencies:
@@ -8270,7 +8304,7 @@ snapshots:
       '@types/json-schema': 7.0.15
       js-yaml: 4.2.0
 
-  '@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@6.0.3)':
+  '@hey-api/openapi-ts@0.99.0(magicast@0.3.5)(typescript@5.9.3)':
     dependencies:
       '@hey-api/codegen-core': 0.9.1(magicast@0.3.5)
       '@hey-api/json-schema-ref-parser': 1.4.4
@@ -8282,7 +8316,7 @@ snapshots:
       color-support: 1.1.3
       commander: 15.0.0
       get-tsconfig: 4.14.0
-      typescript: 6.0.3
+      typescript: 5.9.3
     transitivePeerDependencies:
       - magicast
 
@@ -8356,12 +8390,12 @@ snapshots:
       figures: 6.1.0
       ink: 7.1.1(bufferutil@4.1.0)(react@19.2.8)(utf-8-validate@6.0.6)
 
-  '@inquirer/external-editor@1.0.3(@types/node@26.2.0)':
+  '@inquirer/external-editor@1.0.3(@types/node@20.19.43)':
     dependencies:
       chardet: 2.2.0
       iconv-lite: 0.7.3
     optionalDependencies:
-      '@types/node': 26.2.0
+      '@types/node': 20.19.43
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -9842,7 +9876,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 20.19.43
     optional: true
 
   '@types/dom-mediacapture-transform@0.1.12':
@@ -9867,12 +9901,12 @@ snapshots:
 
   '@types/mysql@2.15.26':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 20.19.43
     optional: true
 
   '@types/node-fetch@2.6.13':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 20.19.43
       form-data: 4.0.6
 
   '@types/node@12.20.55': {}
@@ -9894,7 +9928,7 @@ snapshots:
       undici-types: 8.3.0
     optional: true
 
-  '@types/node@26.2.0':
+  '@types/node@26.3.0':
     dependencies:
       undici-types: 8.3.0
 
@@ -9905,13 +9939,13 @@ snapshots:
 
   '@types/pg@8.23.1':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 20.19.43
       pg-protocol: 1.16.0
       pg-types: 2.2.0
 
   '@types/pg@8.6.1':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 20.19.43
       pg-protocol: 1.16.0
       pg-types: 2.2.0
     optional: true
@@ -9930,7 +9964,7 @@ snapshots:
   '@types/request@2.48.13':
     dependencies:
       '@types/caseless': 0.12.5
-      '@types/node': 26.2.0
+      '@types/node': 20.19.43
       '@types/tough-cookie': 4.0.5
       form-data: 2.5.6
 
@@ -9939,14 +9973,14 @@ snapshots:
 
   '@types/tedious@4.0.14':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 20.19.43
     optional: true
 
   '@types/tough-cookie@4.0.5': {}
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 20.19.43
 
   '@typespec/ts-http-runtime@0.3.8':
     dependencies:
@@ -11855,7 +11889,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.3.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -12638,7 +12672,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.2
-      '@types/node': 26.2.0
+      '@types/node': 20.19.43
       long: 5.3.2
 
   protobufjs@8.0.1:
@@ -12653,7 +12687,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.2
-      '@types/node': 26.2.0
+      '@types/node': 20.19.43
       long: 5.3.2
 
   proxy-addr@2.0.7:

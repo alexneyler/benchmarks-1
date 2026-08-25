@@ -34,7 +34,18 @@ describe('create-bench CLI', () => {
       fs.readFileSync(path.join(tempDir, 'package.json'), 'utf8'),
     );
 
-    expect(pkg.name).toBe(path.basename(tempDir));
+    expect(pkg.name).toBe(path.basename(tempDir).toLowerCase());
     expect(pkg.dependencies['@benchsdk/runner']).toBe('^0.2.0');
+  });
+
+  it('sanitizes project names into valid package.json names', async () => {
+    const target = path.join(tempDir, 'My Project!');
+    await createBench(target);
+
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(target, 'package.json'), 'utf8'),
+    );
+
+    expect(pkg.name).toBe('my-project');
   });
 });

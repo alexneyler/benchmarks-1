@@ -4,8 +4,14 @@ export type JsonObject = { [key: string]: JsonValue };
 export interface BenchmarkClientConfig {
   /** API base URL. Defaults to https://platform.computesdk.com/api/v1. */
   baseUrl?: string;
-  /** Bearer token. Defaults to process.env.COMPUTESDK_ADMIN_API_KEY, then process.env.COMPUTESDK_API_KEY. */
+  /** Bearer token. Defaults to BENCHMARKS_PLATFORM_API_KEY, then COMPUTESDK_API_KEY. */
   apiKey?: string;
+  /** OAuth/session token. Takes precedence over apiKey when both are set. */
+  token?: string;
+  /** Explicit organization slug for OAuth requests. Sent as the X-Org-Slug header. */
+  orgSlug?: string;
+  /** Explicit organization id for OAuth requests. Sent as the X-Organization-Id header (orgSlug takes precedence). */
+  orgId?: string;
   /** Custom fetch implementation, mostly useful for tests. */
   fetch?: typeof fetch;
 }
@@ -235,8 +241,17 @@ export interface BenchmarkArtifact {
   objectKey?: string;
   uploadUrl?: string;
   uploadUrlExpiresAt?: string;
+  /** Presigned GET URL for reading an artifact, returned by single-artifact lookups. */
+  downloadUrl?: string;
+  downloadUrlExpiresAt?: string;
   metadata?: JsonObject;
   createdAt?: string;
+}
+
+export interface BenchmarkArtifactDownload {
+  artifact: BenchmarkArtifact;
+  downloadUrl: string;
+  downloadUrlExpiresAt?: string;
 }
 
 export interface CreateWorkerArtifactResponse {
@@ -245,6 +260,19 @@ export interface CreateWorkerArtifactResponse {
   uploadUrl?: string;
   uploadUrlExpiresAt?: string;
   objectKey?: string;
+}
+
+export type BenchmarkLogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+export interface BenchmarkLogOptions {
+  level?: BenchmarkLogLevel;
+  meta?: JsonObject;
+}
+
+export interface BenchmarkStepOutcome {
+  stdout?: string;
+  stderr?: string;
+  error?: string;
 }
 
 export interface BenchmarkResultLatencySummary {
@@ -288,6 +316,7 @@ export interface BenchmarkStepResultSummary {
 
 export interface BenchmarkResultsOverviewInput {
   limit?: number;
+  offset?: number;
 }
 
 export type BenchmarkAnalyticsReadiness = 'ready' | 'complete' | 'partial' | 'pending' | 'unavailable' | 'failed';
@@ -538,8 +567,12 @@ export interface RunWorkerContext {
    * the platform — step return values are control flow and are never recorded.
    */
   measure(data: JsonObject): void;
-  /** Appends a line to the worker log, uploaded as an artifact when the worker finishes. */
-  log(message: string, meta?: JsonObject): void;
+  /**
+   * Appends a structured line to the worker log. `metaOrOptions` can be a
+   * metadata JSON object, or `{ level, meta }` to set a log level. Levels are
+   * filtered by the worker's configured `logLevel` (defaults to `info`).
+   */
+  log(message: string, metaOrOptions?: JsonObject | BenchmarkLogOptions): void;
 }
 
 export interface WorkerFinishContext {
@@ -565,6 +598,11 @@ export interface DefineStepOptions {
   readyPollIntervalMs?: number;
   /** Maximum time to wait for readiness. Defaults to no timeout. */
   readyTimeoutMs?: number;
+  /**
+   * When true (default), a step that returns a `BenchmarkStepOutcome` with
+   * `stdout`, `stderr`, or `error` strings writes those to the worker log.
+   */
+  captureOutput?: boolean;
 }
 
 /**
@@ -594,6 +632,14 @@ export interface RunWorkerOptions {
   onResult?: (record: TaskResultRecord) => void;
   /** Runs once after final result flush and before worker completion/failure is reported. */
   onFinish?: (context: WorkerFinishContext) => Promise<void> | void;
+  /** Minimum log level to record. Defaults to `BENCHMARK_LOG_LEVEL` env or `info`. */
+  logLevel?: BenchmarkLogLevel;
+  /** Maximum worker log lines before truncation. Defaults to 100,000. */
+  maxLogLines?: number;
+  /** Interval in ms to upload accumulated logs as artifacts mid-run. `0` disables. Defaults to `BENCHMARK_LOG_FLUSH_INTERVAL_MS` env or `0`. */
+  logFlushIntervalMs?: number;
+  /** Compress worker log artifacts with `gzip`. Defaults to `BENCHMARK_LOG_COMPRESSION` env or `false`. */
+  logCompression?: 'gzip' | false;
   task: TaskFunction;
 }
 
@@ -642,14 +688,14 @@ export interface BenchmarkClient {
   upsertBenchmark(slug: string, input: UpsertBenchmarkInput): Promise<BenchmarkResource>;
   updateBenchmark(slug: string, input: UpdateBenchmarkInput): Promise<BenchmarkResource>;
   getBenchmark(slug: string): Promise<BenchmarkResource>;
-  listBenchmarks(): Promise<BenchmarkResource[]>;
+  listBenchmarks(options?: { limit?: number; offset?: number }): Promise<BenchmarkResource[]>;
   createRun(benchmarkSlug: string, input: CreateRunInput): Promise<{
     run: BenchmarkRun;
     participants: BenchmarkParticipant[];
     /** The slug of the org the run was attributed to, resolved server-side from the caller's API key. */
     organizationSlug: string;
   }>;
-  listRuns(benchmarkSlug: string): Promise<BenchmarkRun[]>;
+  listRuns(benchmarkSlug: string, options?: { limit?: number; offset?: number }): Promise<BenchmarkRun[]>;
   getRun(benchmarkSlug: string, runId: string): Promise<BenchmarkRun>;
   updateRun(benchmarkSlug: string, runId: string, input: UpdateRunInput): Promise<BenchmarkRun>;
   upsertParticipant(
@@ -727,8 +773,21 @@ export interface BenchmarkClient {
     workerId: string,
     input: UploadWorkerArtifactInput,
   ): Promise<CreateWorkerArtifactResponse>;
-  listRunArtifacts(benchmarkSlug: string, runId: string): Promise<BenchmarkArtifact[]>;
-  listWorkerArtifacts(benchmarkSlug: string, runId: string, workerId: string): Promise<BenchmarkArtifact[]>;
+  listRunArtifacts(benchmarkSlug: string, runId: string, options?: { limit?: number; offset?: number }): Promise<BenchmarkArtifact[]>;
+  listWorkerArtifacts(benchmarkSlug: string, runId: string, workerId: string, options?: { limit?: number; offset?: number }): Promise<BenchmarkArtifact[]>;
+  getWorkerArtifact(
+    benchmarkSlug: string,
+    runId: string,
+    workerId: string,
+    artifactId: string,
+  ): Promise<BenchmarkArtifactDownload>;
+  downloadArtifact(url: string, options?: { contentType?: string; decompress?: boolean }): Promise<string>;
+  downloadWorkerArtifact(
+    benchmarkSlug: string,
+    runId: string,
+    workerId: string,
+    artifactId: string,
+  ): Promise<string>;
   getBenchmarkResults(benchmarkSlug: string, input?: BenchmarkResultsOverviewInput): Promise<BenchmarkResultsOverview>;
   getRunResults(benchmarkSlug: string, runId: string): Promise<BenchmarkRunResults>;
   getRunTaskResults(

@@ -4,11 +4,22 @@ import path from 'node:path';
 import readline from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 
+function toValidPackageName(input: string): string {
+  const name = input
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/^[^a-z]+/, '')
+    .replace(/-+/g, '-')
+    .replace(/^-+/, '');
+  return name || 'bench';
+}
+
 function scaffold(targetDir: string, projectName: string): void {
   fs.mkdirSync(targetDir, { recursive: true });
 
   const packageJson = {
-    name: projectName,
+    name: toValidPackageName(projectName),
     version: '0.0.0',
     private: true,
     type: 'module',

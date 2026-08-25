@@ -1,7 +1,7 @@
 import { mkdirSync, copyFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParticipantRecords } from '@benchsdk/runner';
-import type { TaskResultRecord } from '@benchsdk/client';
+import type { TaskResultRecord } from '@benchsdk/api';
 import { byTaskIndex } from '../src/util/records.js';
 import { computeStats } from '../src/util/stats.js';
 import { computeCompositeScores } from './scoring.js';
@@ -55,12 +55,12 @@ export function recordsToSandboxResults(
   return participants.map((participant) => {
     const records = byTaskIndex(participant.records);
     const iterations = records.map((r) => {
-      const ttiMs = typeof r.data?.ttiMs === 'number' ? r.data.ttiMs : 0;
+      const ttiMs = typeof r.data?.ttiMs === 'number' ? r.data.ttiMs : undefined;
       return r.status === 'error'
-        ? { ttiMs, error: r.errorCode ?? 'error' }
+        ? { error: r.errorCode ?? 'error' }
         : { ttiMs };
     });
-    const successful = iterations.filter((i) => !i.error);
+    const successful = iterations.filter((i): i is { ttiMs: number } => !i.error && i.ttiMs != null);
     const summary = {
       ttiMs:
         successful.length > 0

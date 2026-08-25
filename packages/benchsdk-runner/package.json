@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@benchsdk/api": "workspace:*",
+    "@benchsdk/cli": "workspace:*",
     "@benchsdk/worker": "workspace:*"
   },
   "devDependencies": {

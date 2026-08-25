@@ -1,4 +1,4 @@
-import type { TaskResultRecord } from '@benchsdk/client';
+import type { TaskResultRecord } from '@benchsdk/api';
 
 /**
  * Platform records arrive in completion order, while the legacy result files

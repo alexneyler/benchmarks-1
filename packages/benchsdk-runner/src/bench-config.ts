@@ -31,6 +31,7 @@
  * recorded.
  */
 import type {
+  BenchmarkLogOptions,
   DefineStepOptions,
   JsonObject,
   TaskResultRecord,
@@ -127,8 +128,11 @@ export interface TaskContext<T extends BaseParticipant = BaseParticipant> {
    * that step's data; at task top-level it lands on the task record's data.
    */
   measure(data: JsonObject): void;
-  /** Appends a line to the worker log, uploaded as an artifact when the worker finishes. */
-  log(message: string, meta?: JsonObject): void;
+  /**
+   * Appends a line to the worker log, uploaded as an artifact when the worker finishes.
+   * `metaOrOptions` can be a metadata JSON object, or `{ level, meta }` to set a log level.
+   */
+  log(message: string, metaOrOptions?: JsonObject | BenchmarkLogOptions): void;
 }
 
 export type BenchmarkTask<T extends BaseParticipant = BaseParticipant> = (
@@ -256,6 +260,12 @@ export interface BenchmarkConfig<T extends BaseParticipant = BaseParticipant> {
    * The platform can recompute `compositeScore` from the same spec at read time.
    */
   scoring?: BenchmarkScoringConfig;
+  /**
+   * Custom CLI flags this benchmark reads from `process.argv` (e.g. `--file-size`).
+   * Declaring them lets the runner distinguish intentional pass-through flags
+   * from typos and report unknown flags accurately.
+   */
+  customCliFlags?: readonly string[];
 }
 
 function assertPositiveInt(value: number | undefined, field: string): void {
@@ -391,6 +401,11 @@ export function defineBenchmarkConfig<T extends BaseParticipant = BaseParticipan
   }
   if (config.scoring !== undefined) {
     validateBenchmarkScoringConfig(config.scoring);
+  }
+  if (config.customCliFlags !== undefined) {
+    if (!Array.isArray(config.customCliFlags) || !config.customCliFlags.every((f) => typeof f === 'string' && f.startsWith('--'))) {
+      throw new Error('customCliFlags must be an array of strings starting with "--"');
+    }
   }
   return config;
 }

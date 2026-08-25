@@ -88,8 +88,12 @@ function percentile(sortedValues: number[], p: number): number {
 function ttiPercentiles(r: any): { median: number; p95: number; p99: number } {
   const { median, p95, p99 } = r.summary.ttiMs;
   if (p95 != null && p99 != null) return { median, p95, p99 };
-  // Old format: compute from raw iterations
-  const values = (r.iterations as any[]).map((it: any) => it.ttiMs as number).sort((a, b) => a - b);
+  // Old format: compute from raw iterations; skip failed iterations that
+  // were previously emitted as `ttiMs: 0`.
+  const values = (r.iterations as any[])
+    .filter((it: any) => !it.error && typeof it.ttiMs === 'number')
+    .map((it: any) => it.ttiMs as number)
+    .sort((a, b) => a - b);
   return {
     median,
     p95: percentile(values, 95),

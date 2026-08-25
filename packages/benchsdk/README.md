@@ -22,7 +22,7 @@ import { createBenchmarkClient } from '@benchsdk/client';
 import { compute } from 'computesdk';
 
 const client = createBenchmarkClient({
-  apiKey: process.env.COMPUTESDK_ADMIN_API_KEY,
+  apiKey: process.env.BENCHMARKS_PLATFORM_API_KEY,
 });
 
 // `task` is a raw function; declare named steps imperatively via `step(...)`,
@@ -62,7 +62,7 @@ Task results are flushed to the platform in batches of 1,000 records by default.
 import { createBenchmarkClient } from '@benchsdk/client';
 
 const client = createBenchmarkClient({
-  apiKey: process.env.COMPUTESDK_ADMIN_API_KEY,
+  apiKey: process.env.BENCHMARKS_PLATFORM_API_KEY,
 });
 
 await client.upsertBenchmark('scale', {
