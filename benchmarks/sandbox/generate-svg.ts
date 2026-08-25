@@ -72,14 +72,10 @@ function formatSeconds(ms: number): string {
   return (ms / 1000).toFixed(2) + 's';
 }
 
-// Providers routed through the ComputeSDK orchestrator
-const GATEWAY_PROVIDERS = ['render'];
-
 function formatProviderName(s: string): string {
   if (s.toLowerCase() === 'e2b') return 'E2B';
   if (s.toLowerCase() === 'opencomputer') return 'OpenComputer';
-  const name = s.charAt(0).toUpperCase() + s.slice(1);
-  return GATEWAY_PROVIDERS.includes(s.toLowerCase()) ? name + '*' : name;
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function isConcurrent(r: BenchmarkResult): r is ConcurrentBenchmarkResult {
@@ -105,7 +101,7 @@ function buildFootnote(results: BenchmarkResult[], mode: string): string {
     }
     return 'Staggered mode: sandboxes launched with delay between each';
   }
-  return '* Uses ComputeSDK orchestrator';
+  return '';
 }
 
 function generateSVG(results: BenchmarkResult[], timestamp: string, mode: string): string {

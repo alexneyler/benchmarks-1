@@ -157,7 +157,7 @@ export const config = defineBenchmarkConfig({
   benchmarkName: 'AI Gateway Latency',
   iterations: 20,
   groupBy: 'round',
-  participants: gatewayProviders,
+  participants: providers,
   scoring: { /* ... */ },
 });
 ```
