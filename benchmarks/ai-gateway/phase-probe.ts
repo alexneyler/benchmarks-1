@@ -145,11 +145,18 @@ function extractOutputTokens(wireFormat: AIGatewayWireFormat, buf: string): numb
     return m.length > 0 ? Number(m[m.length - 1][1]) : undefined;
   }
   if (wireFormat === 'gemini') {
-    // Gemini streams cumulative usage under `usageMetadata.candidatesTokenCount`
-    // on each chunk (mirroring Anthropic's message_start/message_delta
-    // pattern) — take the last match, same rationale as the openai branch above.
-    const m = [...buf.matchAll(/"usageMetadata"\s*:\s*\{[^}]*"candidatesTokenCount"\s*:\s*(\d+)/g)];
-    return m.length > 0 ? Number(m[m.length - 1][1]) : undefined;
+    // Gemini streams cumulative usage under `usageMetadata` on each chunk
+    // (mirroring Anthropic's message_start/message_delta pattern) — take the
+    // last match, same rationale as the openai branch above. Thinking models
+    // split output into `candidatesTokenCount` (visible answer tokens) and
+    // `thoughtsTokenCount` (internal reasoning tokens); report the total.
+    const m = [...buf.matchAll(/"usageMetadata"\s*:\s*\{([^}]*)\}/g)];
+    if (m.length === 0) return undefined;
+    const usage = m[m.length - 1][1];
+    const candidates = usage.match(/"candidatesTokenCount"\s*:\s*(\d+)/)?.[1];
+    const thoughts = usage.match(/"thoughtsTokenCount"\s*:\s*(\d+)/)?.[1];
+    const total = (candidates ? Number(candidates) : 0) + (thoughts ? Number(thoughts) : 0);
+    return total > 0 ? total : undefined;
   }
   // Anthropic and the Responses API both stream cumulative usage under a
   // "usage" object keyed by "output_tokens" (Anthropic: message_start/
