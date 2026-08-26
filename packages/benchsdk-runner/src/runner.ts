@@ -86,7 +86,15 @@ function sleep(ms: number): Promise<void> {
 }
 
 function getErrorCode(error: unknown): string {
-  return error instanceof Error && error.name ? error.name : 'ERROR';
+  if (error instanceof Error && 'code' in error && typeof (error as { code: unknown }).code === 'string' && (error as { code: string }).code) {
+    return (error as { code: string }).code;
+  }
+  if (error instanceof Error && error.name) return error.name;
+  return 'ERROR';
+}
+
+function isTaskError(error: unknown): error is TaskError {
+  return error instanceof Error && (error instanceof TaskError || error.name === 'TaskError');
 }
 
 const STEP_OUTCOME_KEYS = new Set(['stdout', 'stderr', 'error', 'exitCode', 'code', 'signal', 'pid']);
@@ -399,9 +407,7 @@ function defaultOnResult(record: TaskResultRecord, meta: { iterations: number; p
 
 function resolvePlatform(): { baseUrl: string; apiKey: string } {
   const root = (process.env.BENCHMARKS_PLATFORM_URL || DEFAULT_PLATFORM_URL).replace(/\/+$/, '');
-  const apiKey =
-    process.env.BENCHMARKS_PLATFORM_API_KEY ??
-    process.env.COMPUTESDK_API_KEY;
+  const apiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
   if (!apiKey) {
     throw new Error(
       'An API key is required. Set BENCHMARKS_PLATFORM_API_KEY in your environment. Create an org-scoped API key in your ' +
@@ -775,7 +781,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
         } catch (error) {
           // Mirrors the 'round' path: a TaskError's domain data is preserved on
           // the failure record instead of being dropped for the error message.
-          if (error instanceof TaskError && error.data) ctx.measure(error.data);
+          if (isTaskError(error) && error.data) ctx.measure(error.data);
           throw error;
         }
       },
@@ -973,7 +979,7 @@ async function runTaskRecord<T extends BaseParticipant>(
         return result as C extends 1 ? R : R[];
       } catch (error) {
         stepRecord.status = 'error';
-        stepRecord.errorCode = error instanceof TaskError ? error.code ?? error.name : getErrorCode(error);
+        stepRecord.errorCode = isTaskError(error) ? error.code ?? error.name : getErrorCode(error);
         logBuffer.step(taskIndex, name, { error: error instanceof Error ? error.message : String(error) });
         throw error;
       } finally {
@@ -1001,7 +1007,7 @@ async function runTaskRecord<T extends BaseParticipant>(
     record.data = mergeData({ ...taskMeasures, ...(result?.data ?? {}) }, phase);
   } catch (error) {
     record.status = 'error';
-    if (error instanceof TaskError) {
+    if (isTaskError(error)) {
       record.errorCode = error.code ?? error.name;
       record.data = mergeData({ ...taskMeasures, ...(error.data ?? {}) }, phase);
       if (error.steps?.length) frameworkSteps.push(...error.steps);

@@ -34,10 +34,11 @@ export const config = defineBenchmarkConfig({
 });
 
 export const task = defineTask(async ({ participant, step, measure, log }) => {
-  log(`creating sandbox on ${participant.name}`);
+  log('creating sandbox', { level: 'info', meta: { participant: participant.name } });
   // Named steps via `ctx.step`: values flow between steps with closures and
   // cleanup runs in a `finally`. Each step is a first-class platform record
-  // with its own timing/status.
+  // with its own timing/status. A step returning `{ stdout, stderr, exitCode }`
+  // writes that output to the worker log unless `captureOutput: false` is passed.
   const sandbox = await step('create', () => participant.createCompute().sandbox.create());
   try {
     const t0 = performance.now();
@@ -65,9 +66,28 @@ tsx node_modules/@benchsdk/runner/dist/bin.js run sandbox-tti.bench.ts
 
 Inside a task the context exposes three separate channels:
 
-- **`step(name, fn, options?)`** — returns `fn`'s value to your code (thread live objects between steps); records the step's timing/status on the platform. Return values are never auto-recorded as data.
+- **`step(name, fn, options?)`** — returns `fn`'s value to your code (thread live objects between steps); records the step's timing/status on the platform. Return values are never auto-recorded as data. Set `captureOutput: false` to return an outcome-shaped object (`stdout`, `stderr`, `exitCode`, ...) without writing it to the worker log.
 - **`measure(data)`** — explicit metric channel. Called inside a `step()` it merges into that step's data; called at task top-level it merges into the task record. A task with no explicit steps is recorded as one implicit `'task'` step carrying its measurements.
-- **`log(message, meta?)`** — human-readable narration to the run timeline.
+- **`log(message, metaOrOptions?)`** — human-readable narration to the run timeline. `metaOrOptions` can be a metadata JSON object or `{ level: 'debug' | 'info' | 'warn' | 'error', meta?: JsonObject }`.
+
+## Platform data commands
+
+`bench` is a unified CLI. Besides `bench run`, it can authenticate and query the platform:
+
+```sh
+bench auth login
+bench benchmarks list
+bench runs list <slug>
+bench results <slug> --run <runId>
+bench artifacts list <slug> <runId>
+bench export <slug> --out ./exports
+```
+
+See the [benchsdk-cli skill](../../.agents/skills/benchsdk-cli/SKILL.md) for the full CLI reference, OAuth device-code login, config/credentials files, and CI use.
+
+## Examples and full guide
+
+For a step-by-step authoring guide and runnable examples covering every capability, see [`WRITING_BENCHMARKS.md`](../../WRITING_BENCHMARKS.md) and the [`examples/`](../../examples) directory.
 
 ## License
 

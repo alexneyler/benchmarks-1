@@ -38,8 +38,8 @@ import type { ProviderConfig } from './types.js';
 /**
  * All provider benchmark configurations.
  *
- * Direct mode providers use ComputeSDK's open source package directly (no ComputeSDK API key).
- * Automatic mode providers route through the ComputeSDK gateway (requires COMPUTESDK_API_KEY).
+ * Direct mode providers use ComputeSDK's open source package directly.
+ * Automatic mode providers route through the ComputeSDK gateway.
  */
 export const providers: ProviderConfig[] = [
   // --- Direct mode (provider SDK packages) ---
