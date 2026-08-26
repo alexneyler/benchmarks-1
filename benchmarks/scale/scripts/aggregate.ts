@@ -75,7 +75,7 @@ function usage(): string {
     '  --help, -h             Print this help',
     '',
     'Required env:',
-    '  BENCHMARKS_PLATFORM_API_KEY                        Bench API token',
+    '  BENCHMARKS_PLATFORM_API_KEY or COMPUTESDK_API_KEY    Bench API token',
   ].join('\n');
 }
 
@@ -105,7 +105,7 @@ const args = parseArgs();
 
 const client = createBenchmarkClient({
   baseUrl: 'https://platform.computesdk.com/api/v1',
-  apiKey: process.env.BENCHMARKS_PLATFORM_API_KEY,
+  apiKey: process.env.BENCHMARKS_PLATFORM_API_KEY ?? process.env.COMPUTESDK_API_KEY,
 });
 
 // Some analytics endpoints lag the run (events still importing) — degrade to a
