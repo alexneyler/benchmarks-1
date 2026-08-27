@@ -145,6 +145,10 @@ async function runStepInvocations<R>(
   options: TaskStepOptions | undefined,
   participantSlug?: string,
 ): Promise<R | R[]> {
+  if (options?.concurrency !== undefined) {
+    console.warn(`[benchsdk] step "${name}" option "concurrency" is deprecated; use "parallelInvocations"`);
+  }
+
   const requestedParallelism = options?.parallelInvocations ?? options?.concurrency;
   if (requestedParallelism !== undefined && (!Number.isInteger(requestedParallelism) || requestedParallelism < 1)) {
     throw new Error(`step "${name}" parallelInvocations must be an integer >= 1 (got ${requestedParallelism})`);
