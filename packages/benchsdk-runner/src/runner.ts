@@ -36,7 +36,7 @@ import type {
   TaskStepRecord,
 } from '@benchsdk/api';
 import type { BaseParticipant } from '@benchsdk/worker';
-import { TaskError } from './bench-config.js';
+import { TaskError, defineBenchmarkConfig } from './bench-config.js';
 import type {
   BenchmarkConfig,
   BenchmarkRunOutcome,
@@ -108,12 +108,24 @@ function isStepOutcome(value: unknown): value is BenchmarkStepOutcome {
   return typeof o.stdout === 'string' || typeof o.stderr === 'string' || typeof o.error === 'string';
 }
 
-function withTimeout<T>(promise: Promise<T>, ms: number, name: string): Promise<T> {
+interface TimeoutContext {
+  stepName: string;
+  timeoutMs: number;
+  participantSlug?: string;
+}
+
+function withTimeout<T>(promise: Promise<T>, { stepName, timeoutMs, participantSlug }: TimeoutContext): Promise<T> {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(
-      () => reject(new TaskError(`Step "${name}" timed out after ${ms}ms`, { code: 'step_timeout' })),
-      ms,
-    );
+    const timer = setTimeout(() => {
+      const participant = participantSlug ? ` for participant "${participantSlug}"` : '';
+      reject(
+        new TaskError(`Step "${stepName}" timed out after ${timeoutMs}ms${participant}`, {
+          code: 'step_timeout',
+          step: stepName,
+          timeoutMs,
+        }),
+      );
+    }, timeoutMs);
     promise.then(
       (value) => {
         clearTimeout(timer);
@@ -131,21 +143,22 @@ async function runStepInvocations<R>(
   name: string,
   fn: () => Promise<R> | R,
   options: TaskStepOptions | undefined,
+  participantSlug?: string,
 ): Promise<R | R[]> {
-  const requestedConcurrency = options?.concurrency;
-  if (requestedConcurrency !== undefined && (!Number.isInteger(requestedConcurrency) || requestedConcurrency < 1)) {
-    throw new Error(`step "${name}" concurrency must be an integer >= 1 (got ${requestedConcurrency})`);
+  const requestedParallelism = options?.parallelInvocations ?? options?.concurrency;
+  if (requestedParallelism !== undefined && (!Number.isInteger(requestedParallelism) || requestedParallelism < 1)) {
+    throw new Error(`step "${name}" parallelInvocations must be an integer >= 1 (got ${requestedParallelism})`);
   }
   const timeoutMs = options?.timeoutMs;
   if (timeoutMs !== undefined && (!Number.isFinite(timeoutMs) || timeoutMs < 0)) {
     throw new Error(`step "${name}" timeoutMs must be a number >= 0 (got ${timeoutMs})`);
   }
 
-  const count = requestedConcurrency ?? 1;
+  const count = requestedParallelism ?? 1;
   const invocations = Array.from({ length: count }, () => {
     const promise = Promise.resolve().then(() => fn());
     if (timeoutMs === undefined) return promise;
-    return withTimeout(promise, timeoutMs, name);
+    return withTimeout(promise, { stepName: name, timeoutMs, participantSlug });
   });
 
   if (count === 1) {
@@ -170,15 +183,16 @@ async function runStepWithClient<R, C extends number = 1>(
   clientStep: RunWorkerContext['step'],
   name: string,
   fn: () => Promise<R> | R,
-  options?: TaskStepOptions & { concurrency?: C },
+  options?: TaskStepOptions & { parallelInvocations?: C; concurrency?: C },
+  participantSlug?: string,
 ): Promise<C extends 1 ? R : R[]> {
-  const { concurrency: runnerConcurrency, timeoutMs, ...clientOptions } = options ?? {};
+  const { parallelInvocations: runnerParallelism, concurrency: deprecatedConcurrency, timeoutMs, ...clientOptions } = options ?? {};
   const clientStepOptions: DefineStepOptions = {
     ...clientOptions,
     timeoutMs,
-    stepConcurrency: runnerConcurrency,
+    stepConcurrency: runnerParallelism ?? deprecatedConcurrency,
   };
-  const result = await clientStep(name, () => runStepInvocations(name, fn, options), clientStepOptions);
+  const result = await clientStep(name, () => runStepInvocations(name, fn, options, participantSlug), clientStepOptions);
   return result as C extends 1 ? R : R[];
 }
 
@@ -663,6 +677,44 @@ export async function runBenchmark<T extends BaseParticipant>(
   return outcome;
 }
 
+export interface RunBenchmarkWorkerOptions<T extends BaseParticipant = BaseParticipant> {
+  benchmarkSlug: string;
+  benchmarkName?: string;
+  runKey?: string;
+  participant: T;
+  task: BenchmarkTask<T>;
+  iterations?: number;
+  concurrency?: number;
+  staggerDelayMs?: number;
+  groupBy?: GroupBy;
+  noIngest?: boolean;
+}
+
+/**
+ * One-shot helper: run a single participant's worker for a benchmark without
+ * creating a `*.bench.ts` file. This is a convenience wrapper around
+ * `runBenchmark` that builds a minimal `BenchmarkConfig` from the supplied
+ * options.
+ */
+export async function runBenchmarkWorker<T extends BaseParticipant>(
+  options: RunBenchmarkWorkerOptions<T>,
+): Promise<BenchmarkRunOutcome> {
+  const config = defineBenchmarkConfig({
+    benchmarkSlug: options.benchmarkSlug,
+    benchmarkName: options.benchmarkName ?? options.benchmarkSlug,
+    participants: [options.participant],
+    iterations: options.iterations ?? 1,
+    concurrency: options.concurrency ?? 1,
+    staggerDelayMs: options.staggerDelayMs ?? 0,
+    groupBy: options.groupBy ?? 'participant',
+    defaultProviders: [options.participant.name],
+  });
+  const argv: string[] = [];
+  if (options.runKey) argv.push('--run-key', options.runKey);
+  if (options.noIngest) argv.push('--dry-run');
+  return runBenchmark(config, options.task, argv);
+}
+
 function getGitSha(): string | undefined {
   if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA;
   try {
@@ -773,7 +825,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
             participant,
             taskIndex: scheduleIndex,
             phase: slot.phase,
-            step: (name, fn, options) => runStepWithClient(ctx.step, name, fn, options),
+            step: (name, fn, options) => runStepWithClient(ctx.step, name, fn, options, participant.name),
             measure: ctx.measure,
             log: ctx.log,
           });
@@ -955,7 +1007,7 @@ async function runTaskRecord<T extends BaseParticipant>(
     async step<R, C extends number = 1>(
       name: string,
       fn: () => Promise<R> | R,
-      options?: TaskStepOptions & { concurrency?: C },
+      options?: TaskStepOptions & { parallelInvocations?: C; concurrency?: C },
     ): Promise<C extends 1 ? R : R[]> {
       const stepStartedAtMs = Date.now();
       const stepRecord: TaskStepRecord = {
@@ -965,12 +1017,13 @@ async function runTaskRecord<T extends BaseParticipant>(
         completedAt: new Date(stepStartedAtMs).toISOString(),
         latencyMs: 0,
       };
-      if (options?.concurrency !== undefined) stepRecord.concurrency = options.concurrency;
+      const requestedParallelism = options?.parallelInvocations ?? options?.concurrency;
+      if (requestedParallelism !== undefined) stepRecord.concurrency = requestedParallelism;
       if (options?.timeoutMs !== undefined) stepRecord.timeoutMs = options.timeoutMs;
       const previousStep = activeStep;
       activeStep = stepRecord;
       try {
-        const result = await runStepInvocations<R>(name, fn, options);
+        const result = await runStepInvocations<R>(name, fn, options, participant.name);
         const outcome: BenchmarkStepOutcome =
           options?.captureOutput !== false && !Array.isArray(result) && isStepOutcome(result)
             ? (result as BenchmarkStepOutcome)

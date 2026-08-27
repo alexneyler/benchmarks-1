@@ -30,11 +30,11 @@ describe('defineBenchmarkConfig', () => {
   });
 
   it('requires benchmarkSlug', () => {
-    expect(() => defineBenchmarkConfig({ benchmarkSlug: '', benchmarkName: 'n', participants })).toThrow('benchmarkSlug is required');
+    expect(() => defineBenchmarkConfig({ benchmarkSlug: '', benchmarkName: 'n', participants })).toThrow(/benchmarkSlug.*is required/);
   });
 
   it('requires benchmarkName', () => {
-    expect(() => defineBenchmarkConfig({ benchmarkSlug: 's', benchmarkName: '', participants })).toThrow('benchmarkName is required');
+    expect(() => defineBenchmarkConfig({ benchmarkSlug: 's', benchmarkName: '', participants })).toThrow(/benchmarkName.*is required/);
   });
 
   it('rejects non-integer or < 1 iterations', () => {
