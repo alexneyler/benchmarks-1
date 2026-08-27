@@ -99,10 +99,11 @@ export async function runCheck(argv: string[]): Promise<void> {
 
   const providerArg = getFlag(flags, 'provider');
   const providerNames = providerArg ? providerArg.split(',').map((p) => p.trim()).filter(Boolean) : undefined;
+  const effectiveProviderNames = providerNames ?? cfg.defaultProviders;
 
   let selected: BaseParticipant[];
   try {
-    selected = selectParticipants(cfg.participants, providerNames);
+    selected = selectParticipants(cfg.participants, effectiveProviderNames);
   } catch (err) {
     throw new Error(`Participant selection failed: ${err instanceof Error ? err.message : err}`);
   }
