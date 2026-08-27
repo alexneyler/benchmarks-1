@@ -14,9 +14,9 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const nextProviders = providers.slice(5, 10);
   const remainingOthers = Math.max(0, providers.length - 10);
 
-  const REVEAL_START = 60; // 2s
-  const REVEAL_GAP = 60; // 2s between each row fade-in
-  const REVEAL_DURATION = 45; // 1.5s fade
+  const REVEAL_START = 30; // 1s
+  const REVEAL_GAP = 36; // 1.2s between each row fade-in
+  const REVEAL_DURATION = 20; // 0.67s fade
 
   const TOP = 220;
   const ROW_HEIGHT = 104;
