@@ -45,7 +45,15 @@ export class LogBuffer {
       ? { level: metaOrOptions.level ?? 'info', meta: metaOrOptions.meta }
       : { level: 'info', meta: metaOrOptions };
     const suffix = opts.meta && Object.keys(opts.meta).length > 0 ? ` ${JSON.stringify(opts.meta)}` : '';
-    this.lines.push(`${new Date().toISOString()} ${message} [${opts.level}]${suffix}`);
+    // The runner's ctx.log passes a leading `[task N]` prefix; place the level
+    // between the task tag and the message to match `@benchsdk/worker` and the
+    // platform's worker-logs parser.
+    const taskMatch = message.match(/^(\[task \d+\])\s*(.*)$/);
+    if (taskMatch) {
+      this.lines.push(`${new Date().toISOString()} ${taskMatch[1]} [${opts.level}] ${taskMatch[2]}${suffix}`);
+    } else {
+      this.lines.push(`${new Date().toISOString()} [${opts.level}] ${message}${suffix}`);
+    }
   }
 
   isEmpty(): boolean {
