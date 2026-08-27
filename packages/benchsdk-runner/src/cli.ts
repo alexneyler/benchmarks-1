@@ -123,12 +123,12 @@ export async function runCheck(argv: string[]): Promise<void> {
   const missingEnv = dryRun
     ? []
     : [
-        ['BENCHMARKS_PLATFORM_URL', process.env.BENCHMARKS_PLATFORM_URL],
-        ['BENCHMARKS_PLATFORM_API_KEY', process.env.BENCHMARKS_PLATFORM_API_KEY],
+        ['BENCHMARKS_PLATFORM_URL', baseUrl],
+        ['BENCHMARKS_PLATFORM_API_KEY', apiKey],
       ].filter(([, v]) => !v);
 
   for (const [name] of missingEnv) {
-    console.warn(`[benchsdk] env var ${name} is not set`);
+    console.warn(`[benchsdk] ${name} is not set`);
   }
 
   const report = {
