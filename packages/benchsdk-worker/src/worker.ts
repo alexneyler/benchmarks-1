@@ -368,8 +368,9 @@ export async function runWorker(client: BenchmarkClient, options: RunWorkerOptio
         // Only remove the lines that were uploaded; lines appended during the
         // upload remain buffered for the next flush.
         workerLogLines.splice(0, snapshot.length);
-      } catch {
+      } catch (error) {
         // Log upload is best-effort; never fail the run over it.
+        handleTelemetryError(options.onTelemetryError, 'logUpload', error);
       }
     })();
 
