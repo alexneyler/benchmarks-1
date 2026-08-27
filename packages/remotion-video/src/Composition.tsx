@@ -14,9 +14,9 @@ export const Leaderboard: FC<LeaderboardData> = ({
   const nextProviders = providers.slice(5, 10);
   const remainingOthers = Math.max(0, providers.length - 10);
 
-  const REVEAL_START = 30; // 1s
-  const REVEAL_GAP = 36; // 1.2s between each row fade-in
-  const REVEAL_DURATION = 20; // 0.67s fade
+  const REVEAL_START = 15; // 0.5s
+  const REVEAL_GAP = 20; // 0.67s between each row fade-in
+  const REVEAL_DURATION = 12; // 0.4s fade
 
   const TOP = 220;
   const ROW_HEIGHT = 104;
@@ -109,7 +109,14 @@ export const Leaderboard: FC<LeaderboardData> = ({
         const y = TOP + (provider.rank - 1) * ROW_HEIGHT;
         const start = REVEAL_START + provider.rank * REVEAL_GAP;
         const rowOpacity = rowOpacityFor(start);
-        const barWidth = (provider.score / 100) * 1760;
+        const maxBarWidth = (provider.score / 100) * 1760;
+        const barProgress = interpolate(
+          frame,
+          [start, start + REVEAL_DURATION],
+          [0, 1],
+          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+        );
+        const barWidth = maxBarWidth * barProgress;
 
         return (
           <div
