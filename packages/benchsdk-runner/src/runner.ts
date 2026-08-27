@@ -209,7 +209,7 @@ async function runStepWithClient<R, C extends number = 1>(
  * `process.argv` itself; the runner validates and skips them without choking on
  * their values.
  */
-export function parseCliArgs(argv: string[], allowedCustomFlags?: readonly string[]): CliArgs {
+export function parseCliArgs(argv: string[], allowedCustomFlags?: readonly string[], defaults: Partial<CliArgs> = {}): CliArgs {
   const args: CliArgs = {};
   const unknown: string[] = [];
   const allowed = new Set(allowedCustomFlags ?? []);
@@ -341,6 +341,19 @@ export function parseCliArgs(argv: string[], allowedCustomFlags?: readonly strin
   if (!args.noIngest && isEnvNoIngest()) {
     args.noIngest = true;
   }
+
+  // Apply project-level config defaults where the CLI did not provide a value.
+  args.noIngest ??= defaults.noIngest;
+  args.iterations ??= defaults.iterations;
+  args.concurrency ??= defaults.concurrency;
+  args.staggerDelayMs ??= defaults.staggerDelayMs;
+  args.groupBy ??= defaults.groupBy;
+  args.shape ??= defaults.shape;
+  args.runKey ??= defaults.runKey;
+  args.benchmark ??= defaults.benchmark;
+  args.name ??= defaults.name;
+  args.providers ??= defaults.providers;
+
   return args;
 }
 
@@ -423,9 +436,18 @@ function defaultOnResult(record: TaskResultRecord, meta: { iterations: number; p
   }
 }
 
-function resolvePlatform(): { baseUrl: string; apiKey: string } {
-  const root = (process.env.BENCHMARKS_PLATFORM_URL || DEFAULT_PLATFORM_URL).replace(/\/+$/, '');
-  const apiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
+export interface PlatformConfig {
+  baseUrl?: string;
+  apiKey?: string;
+}
+
+export interface RunBenchmarkOptions extends PlatformConfig {
+  cliArgs?: Partial<CliArgs>;
+}
+
+function resolvePlatform(overrides: PlatformConfig = {}): { baseUrl: string; apiKey: string } {
+  const root = (overrides.baseUrl ?? process.env.BENCHMARKS_PLATFORM_URL ?? DEFAULT_PLATFORM_URL).replace(/\/+$/, '');
+  const apiKey = overrides.apiKey ?? process.env.BENCHMARKS_PLATFORM_API_KEY;
   if (!apiKey) {
     throw new Error(
       'An API key is required. Set BENCHMARKS_PLATFORM_API_KEY in your environment. Create an org-scoped API key in your ' +
@@ -543,8 +565,9 @@ export async function runBenchmark<T extends BaseParticipant>(
   fileConfig: BenchmarkConfig<T>,
   task: BenchmarkTask<T>,
   argv: string[] = [],
+  options: RunBenchmarkOptions = {},
 ): Promise<BenchmarkRunOutcome> {
-  const args = parseCliArgs(argv, fileConfig.customCliFlags);
+  const args = parseCliArgs(argv, fileConfig.customCliFlags, options.cliArgs);
   const noIngest = args.noIngest ?? isEnvNoIngest();
   const shaped = applyShape(fileConfig, resolveShape(fileConfig, args.shape));
   const config = applyIdentityOverrides(shaped, args);
@@ -555,7 +578,7 @@ export async function runBenchmark<T extends BaseParticipant>(
   let apiKey = '';
   let client: BenchmarkClient | null = null;
   if (!noIngest) {
-    ({ baseUrl, apiKey } = resolvePlatform());
+    ({ baseUrl, apiKey } = resolvePlatform(options));
     client = createBenchmarkClient({ baseUrl, apiKey });
   }
 

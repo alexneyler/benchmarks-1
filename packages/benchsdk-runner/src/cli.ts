@@ -15,11 +15,13 @@
  * it can be unit-tested by calling `runBenchmarkFile` directly.
  */
 import { resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { run as runPlatformCli } from '@benchsdk/cli';
 import { createBenchmarkClient, type BenchmarkClientConfig } from '@benchsdk/api';
 import { filterParticipantsByEnv, selectParticipants } from '@benchsdk/worker';
-import { parseCliArgs, runBenchmark } from './runner.js';
+import { parseCliArgs, runBenchmark, type CliArgs } from './runner.js';
 import { NoAvailableParticipantsError } from './no-available-participants.js';
 import { validateBenchmarkConfig, BenchmarkConfigError, type BenchmarkConfig as TypedBenchmarkConfig } from './bench-config.js';
 import { scoringConfigToSpec, validateScoringSpec } from './scoring.js';
@@ -31,8 +33,8 @@ const USAGE =
   '  bench run <file.bench.ts> [--shape name] [--provider a,b] [--run-key key]\n' +
   '      [--benchmark slug] [--name "My benchmark"]\n' +
   '      [--iterations N] [--concurrency N] [--stagger-delay-ms N] [--group-by participant|round]\n' +
-  '      [--no-ingest | --dry-run]\n' +
-  '  bench check <file.bench.ts> [--base-url <url>] [--api-key <key>]';
+  '      [--no-ingest | --dry-run] [--check] [--config <file>]\n' +
+  '  bench check <file.bench.ts> [--base-url <url>] [--api-key <key>] [--config <file>]';
 
 /** A benchmark module is expected to export `config` and `task`. */
 interface BenchmarkModule {
@@ -54,12 +56,95 @@ function getFlag(argv: string[], name: string): string | undefined {
   return value?.startsWith('--') ? undefined : value;
 }
 
+/** Project-level CLI config defaults. */
+export interface BenchSdkConfig {
+  baseUrl?: string;
+  apiKey?: string;
+  /** Environment variable name to read the API key from. */
+  apiKeyEnv?: string;
+  providers?: string[];
+  iterations?: number;
+  concurrency?: number;
+  staggerDelayMs?: number;
+  groupBy?: 'participant' | 'round';
+  shape?: string;
+  runKey?: string;
+  benchmark?: string;
+  name?: string;
+  dryRun?: boolean;
+}
+
+const DEFAULT_CONFIG_NAMES = ['bench.config.ts', 'bench.config.js', 'bench.config.json', '.benchrc', '.benchrc.js', '.benchrc.json'];
+
+function shiftConfigFlag(argv: string[]): { configPath?: string; argv: string[] } {
+  const result: string[] = [];
+  let configPath: string | undefined;
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--config') {
+      configPath = argv[++i];
+      if (!configPath) throw new Error(USAGE);
+      continue;
+    }
+    if (arg.startsWith('--config=')) {
+      configPath = arg.slice('--config='.length);
+      if (!configPath) throw new Error(USAGE);
+      continue;
+    }
+    result.push(arg);
+  }
+  return { configPath, argv: result };
+}
+
+async function loadConfigFile(fullPath: string): Promise<BenchSdkConfig> {
+  if (fullPath.endsWith('.json')) {
+    const raw = await readFile(fullPath, 'utf-8');
+    return JSON.parse(raw) as BenchSdkConfig;
+  }
+  const mod = (await import(pathToFileURL(fullPath).href)) as { default?: BenchSdkConfig; config?: BenchSdkConfig };
+  return (mod.default ?? mod.config ?? {}) as BenchSdkConfig;
+}
+
+async function resolveProjectConfig(argv: string[], cwd: string): Promise<{ config: BenchSdkConfig; argv: string[] }> {
+  const { configPath, argv: cleanArgv } = shiftConfigFlag(argv);
+  if (configPath) {
+    return { config: await loadConfigFile(resolve(cwd, configPath)), argv: cleanArgv };
+  }
+  for (const name of DEFAULT_CONFIG_NAMES) {
+    const full = resolve(cwd, name);
+    if (existsSync(full)) {
+      return { config: await loadConfigFile(full), argv: cleanArgv };
+    }
+  }
+  return { config: {}, argv: cleanArgv };
+}
+
+function cliDefaultsFromConfig(config: BenchSdkConfig): Partial<CliArgs> {
+  const defaults: Partial<CliArgs> = {};
+  if (config.iterations !== undefined) defaults.iterations = config.iterations;
+  if (config.concurrency !== undefined) defaults.concurrency = config.concurrency;
+  if (config.staggerDelayMs !== undefined) defaults.staggerDelayMs = config.staggerDelayMs;
+  if (config.groupBy !== undefined) defaults.groupBy = config.groupBy;
+  if (config.shape !== undefined) defaults.shape = config.shape;
+  if (config.runKey !== undefined) defaults.runKey = config.runKey;
+  if (config.benchmark !== undefined) defaults.benchmark = config.benchmark;
+  if (config.name !== undefined) defaults.name = config.name;
+  if (config.providers !== undefined) defaults.providers = config.providers;
+  if (config.dryRun !== undefined) defaults.noIngest = config.dryRun;
+  return defaults;
+}
+
+function resolveApiKey(config: BenchSdkConfig): string | undefined {
+  return config.apiKey ?? (config.apiKeyEnv ? process.env[config.apiKeyEnv] : undefined);
+}
+
 /**
  * Validates environment, API connectivity, participant availability, and scoring
  * weights for a `*.bench.ts` module without executing any tasks.
  */
 export async function runCheck(argv: string[]): Promise<void> {
-  const [command, ...rest] = argv;
+  const { config: projectConfig, argv: cleanArgv } = await resolveProjectConfig(argv, process.cwd());
+  const [command, ...rest] = cleanArgv;
   const [file, ...flags] = rest;
   if (command !== 'check' || !file || file.startsWith('-')) throw new Error(USAGE);
 
@@ -75,14 +160,14 @@ export async function runCheck(argv: string[]): Promise<void> {
     throw new BenchmarkConfigError(configIssues);
   }
 
-  const baseUrl = getFlag(flags, 'base-url') ?? process.env.BENCHMARKS_PLATFORM_URL;
-  const apiKey = getFlag(flags, 'api-key') ?? process.env.BENCHMARKS_PLATFORM_API_KEY;
+  const baseUrl = getFlag(flags, 'base-url') ?? projectConfig.baseUrl ?? process.env.BENCHMARKS_PLATFORM_URL;
+  const apiKey = getFlag(flags, 'api-key') ?? resolveApiKey(projectConfig) ?? process.env.BENCHMARKS_PLATFORM_API_KEY;
 
   const apiConfig: BenchmarkClientConfig = {};
   if (baseUrl) apiConfig.baseUrl = baseUrl;
   if (apiKey) apiConfig.apiKey = apiKey;
 
-  const dryRun = flags.includes('--dry-run') || flags.includes('--no-ingest');
+  const dryRun = flags.includes('--dry-run') || flags.includes('--no-ingest') || projectConfig.dryRun;
 
   const client = createBenchmarkClient(apiConfig);
 
@@ -99,7 +184,7 @@ export async function runCheck(argv: string[]): Promise<void> {
 
   const providerArg = getFlag(flags, 'provider');
   const providerNames = providerArg ? providerArg.split(',').map((p) => p.trim()).filter(Boolean) : undefined;
-  const effectiveProviderNames = providerNames ?? cfg.defaultProviders;
+  const effectiveProviderNames = providerNames ?? projectConfig.providers ?? cfg.defaultProviders;
 
   let selected: BaseParticipant[];
   try {
@@ -159,9 +244,16 @@ export async function runCheck(argv: string[]): Promise<void> {
  * exit. Does not call `process.exit`.
  */
 export async function runBenchmarkFile(argv: string[]): Promise<void> {
-  const [command, ...rest] = argv;
+  const { config: projectConfig, argv: cleanArgv } = await resolveProjectConfig(argv, process.cwd());
+  const [command, ...rest] = cleanArgv;
   const [file, ...flags] = rest;
   if (command !== 'run' || !file || file.startsWith('-')) throw new Error(USAGE);
+
+  const check = flags.includes('--check') || flags.includes('--validate');
+  const runnerFlags = flags.filter((f) => f !== '--check' && f !== '--validate' && !f.startsWith('--config'));
+  if (check) {
+    return runCheck(['check', file, ...runnerFlags]);
+  }
 
   const mod = (await import(pathToFileURL(resolve(process.cwd(), file)).href)) as BenchmarkModule;
   const config = mod.config;
@@ -174,7 +266,16 @@ export async function runBenchmarkFile(argv: string[]): Promise<void> {
     throw new Error(`${file} must export a \`task\` created with defineTask.`);
   }
 
-  await runBenchmark(config as BenchmarkConfig<BaseParticipant>, task as BenchmarkTask<BaseParticipant>, flags);
+  const baseUrl = getFlag(flags, 'base-url') ?? projectConfig.baseUrl;
+  const apiKey = getFlag(flags, 'api-key') ?? resolveApiKey(projectConfig);
+  const cliDefaults = cliDefaultsFromConfig(projectConfig);
+
+  await runBenchmark(
+    config as BenchmarkConfig<BaseParticipant>,
+    task as BenchmarkTask<BaseParticipant>,
+    runnerFlags,
+    { baseUrl, apiKey, cliArgs: cliDefaults },
+  );
 }
 
 /** Executable entry: dispatches to benchmark execution or platform data commands. */
@@ -197,7 +298,7 @@ export async function run(argv: string[]): Promise<void> {
       console.log(err.message);
       process.exit(0);
     }
-    console.error('Benchmark failed:', err instanceof Error ? err.message : err);
+    console.error('Benchmark failed:', String(err));
     process.exit(1);
   }
 }

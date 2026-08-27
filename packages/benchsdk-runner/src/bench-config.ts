@@ -118,6 +118,20 @@ export class TaskError extends Error {
     this.step = opts?.step;
     this.timeoutMs = opts?.timeoutMs;
   }
+
+  override toString(): string {
+    let s = `[${this.name}${this.code ? ` (${this.code})` : ''}] ${this.message}`;
+    if (this.step) {
+      s += `\n  step: ${this.step}`;
+    }
+    if (this.timeoutMs !== undefined) {
+      s += `\n  timeoutMs: ${this.timeoutMs}`;
+    }
+    if (this.data && Object.keys(this.data).length > 0) {
+      s += `\n  data: ${JSON.stringify(this.data, null, 2)}`;
+    }
+    return s;
+  }
 }
 
 /** Context handed to a benchmark `task` for a single iteration. */
@@ -292,9 +306,14 @@ export interface BenchmarkConfigErrorItem {
 export class BenchmarkConfigError extends Error {
   readonly issues: BenchmarkConfigErrorItem[];
   constructor(issues: BenchmarkConfigErrorItem[]) {
-    super(`Invalid benchmark config:\n${issues.map((i) => `  - ${i.field}: ${i.message}`).join('\n')}`);
+    super(BenchmarkConfigError.formatIssues(issues));
     this.name = 'BenchmarkConfigError';
     this.issues = issues;
+  }
+
+  private static formatIssues(issues: BenchmarkConfigErrorItem[]): string {
+    const lines = issues.map((i) => `  - ${i.field}: ${i.message}`);
+    return `Invalid benchmark config:\n${lines.join('\n')}\n\nFix the fields above and try again.`;
   }
 }
 

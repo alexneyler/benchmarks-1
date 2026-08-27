@@ -140,4 +140,13 @@ describe('TaskError', () => {
     expect(err.data).toBeUndefined();
     expect(err.steps).toBeUndefined();
   });
+
+  it('renders a formatted toString with code, step, and timeout', () => {
+    const err = new TaskError('timed out', { code: 'step_timeout', step: 'create', timeoutMs: 5000, data: { participant: 'local' } });
+    const text = err.toString();
+    expect(text).toContain('[TaskError (step_timeout)] timed out');
+    expect(text).toContain('step: create');
+    expect(text).toContain('timeoutMs: 5000');
+    expect(text).toContain('"local"');
+  });
 });
