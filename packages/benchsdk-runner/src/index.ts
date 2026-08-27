@@ -86,6 +86,7 @@ export type {
   BenchmarkRunTaskResultsInput,
   BenchmarkRunTimeline,
   BenchmarkRunTimelineInput,
+  BenchmarkRunWorker,
   BenchmarkStepResultSummary,
   BenchmarkTaskBucket,
   BenchmarkWorkerAttempt,
