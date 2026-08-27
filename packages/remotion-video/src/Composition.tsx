@@ -39,6 +39,15 @@ export const Leaderboard: FC<LeaderboardData> = ({
       extrapolateRight: 'clamp',
     });
 
+  const lastRevealEnd =
+    REVEAL_START + topProviders.length * REVEAL_GAP + REVEAL_DURATION;
+  const evenMoreOpacity = interpolate(
+    frame,
+    [lastRevealEnd, lastRevealEnd + 30],
+    [0, 1],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+  );
+
   const SPONSOR_LOGO_WIDTH = 130;
   const SPONSOR_LOGO_HEIGHT = 40;
   const SPONSOR_GAP = 50;
@@ -234,6 +243,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
             paddingLeft: 80,
             paddingRight: 80,
             boxSizing: 'border-box',
+            opacity: evenMoreOpacity,
           }}
         >
           <span
