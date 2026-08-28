@@ -1,13 +1,13 @@
 {
   "version": "1.0",
-  "timestamp": "2026-08-28T14:16:50.580Z",
+  "timestamp": "2026-08-28T16:18:00.201Z",
   "environment": {
     "node": "v24.20.0",
     "platform": "linux",
     "arch": "x64"
   },
   "config": {
-    "iterations": 40,
+    "iterations": 20,
     "timeoutMs": 45000
   },
   "results": [
@@ -18,573 +18,313 @@
       "iterations": [
         {
           "mode": "cold",
-          "dnsMs": 30.47,
-          "tcpMs": 1.75,
-          "tlsMs": 5.68,
-          "ttfbMs": 1797.36,
-          "ttftMs": 1884.53,
-          "coldE2eMs": 1922.43,
+          "dnsMs": 26.63,
+          "tcpMs": 1.82,
+          "tlsMs": 5.76,
+          "ttfbMs": 1811.2,
+          "ttftMs": 1811.81,
+          "coldE2eMs": 1846.02,
           "outputTokens": 196,
-          "outputTokensPerSec": 100.26,
+          "outputTokensPerSec": 104.69,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323abb509b790f9-IAD"
+            "cf-ray": "a3248c15bc9ec06c-IAD"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 7.37,
-          "tcpMs": 1.08,
-          "tlsMs": 2.9,
-          "ttfbMs": 1559.19,
-          "ttftMs": 1563.19,
-          "coldE2eMs": 1574.55,
+          "dnsMs": 0.87,
+          "tcpMs": 1.19,
+          "tlsMs": 5.26,
+          "ttfbMs": 1728.47,
+          "ttftMs": 1781.33,
+          "coldE2eMs": 1788.65,
           "outputTokens": 196,
-          "outputTokensPerSec": 124.17,
+          "outputTokensPerSec": 107.41,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323ad335a0e778a-IAD"
+            "cf-ray": "a3248ca02eb13985-IAD"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.88,
+          "dnsMs": 0.84,
           "tcpMs": 1.11,
-          "tlsMs": 3.8,
-          "ttfbMs": 1800.18,
-          "ttftMs": 1906.38,
-          "coldE2eMs": 1912.18,
+          "tlsMs": 4.58,
+          "ttfbMs": 1557.19,
+          "ttftMs": 1640.03,
+          "coldE2eMs": 1646.56,
           "outputTokens": 196,
-          "outputTokensPerSec": 99.27,
+          "outputTokensPerSec": 117.96,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323ae96eefa7ce6-IAD"
+            "cf-ray": "a3248d274b5cae23-IAD"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.86,
-          "tcpMs": 0.94,
-          "tlsMs": 2.75,
-          "ttfbMs": 1601.53,
-          "ttftMs": 1914.27,
-          "coldE2eMs": 1918.82,
+          "dnsMs": 16.84,
+          "tcpMs": 1.5,
+          "tlsMs": 3.42,
+          "ttfbMs": 1645.69,
+          "ttftMs": 1698.61,
+          "coldE2eMs": 1720.37,
           "outputTokens": 196,
-          "outputTokensPerSec": 101.62,
+          "outputTokensPerSec": 114.18,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323af224fc2f28b-IAD"
+            "cf-ray": "a3248e563a27ecd2-IAD"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 12.48,
-          "tcpMs": 1.07,
-          "tlsMs": 3.16,
-          "ttfbMs": 1404.41,
-          "ttftMs": 1677.82,
-          "coldE2eMs": 1694.54,
-          "outputTokens": 196,
-          "outputTokensPerSec": 115.06,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323b07d8f1feb4a-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.91,
-          "tcpMs": 0.87,
-          "tlsMs": 3.91,
-          "ttfbMs": 1735.12,
-          "ttftMs": 1871.55,
-          "coldE2eMs": 1877.24,
-          "outputTokens": 196,
-          "outputTokensPerSec": 102.59,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323b11b2adaf278-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 17.92,
-          "tcpMs": 1.72,
-          "tlsMs": 5.32,
-          "ttfbMs": 1763.11,
-          "ttftMs": 1904.95,
-          "coldE2eMs": 1929.91,
-          "outputTokens": 196,
-          "outputTokensPerSec": 100.24,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323b20d2967d32b-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.8,
-          "tcpMs": 0.88,
-          "tlsMs": 4.92,
-          "ttfbMs": 1542.35,
-          "ttftMs": 1550.59,
-          "coldE2eMs": 1557.19,
-          "outputTokens": 196,
-          "outputTokensPerSec": 126.27,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323b292d9c2d6f0-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 1.22,
-          "tcpMs": 1.17,
-          "tlsMs": 3.85,
-          "ttfbMs": 1811.7,
-          "ttftMs": 1824.62,
-          "coldE2eMs": 1830.86,
-          "outputTokens": 196,
-          "outputTokensPerSec": 106.63,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323b3485ce75e2d-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 6.65,
-          "tcpMs": 1.72,
-          "tlsMs": 5.52,
-          "ttfbMs": 1700.39,
-          "ttftMs": 1700.62,
-          "coldE2eMs": 1714.52,
-          "outputTokens": 196,
-          "outputTokensPerSec": 114.48,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323b4edbf537cb0-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 1.41,
-          "tcpMs": 1.13,
-          "tlsMs": 2.97,
-          "ttfbMs": 1814.21,
-          "ttftMs": 1816.41,
-          "coldE2eMs": 1821.92,
-          "outputTokens": 196,
-          "outputTokensPerSec": 106.46,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323b57eb91718ea-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 25.12,
-          "tcpMs": 1.1,
-          "tlsMs": 3.22,
-          "ttfbMs": 1592.23,
-          "ttftMs": 1706.56,
-          "coldE2eMs": 1735.99,
-          "outputTokens": 196,
-          "outputTokensPerSec": 113.87,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323b68adc558bc3-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.82,
-          "tcpMs": 1.13,
-          "tlsMs": 3.18,
-          "ttfbMs": 1443.38,
-          "ttftMs": 1554.44,
-          "coldE2eMs": 1559.58,
-          "outputTokens": 196,
-          "outputTokensPerSec": 123.52,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323b73a58d0e53f-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 23.2,
-          "tcpMs": 1.55,
-          "tlsMs": 3.46,
-          "ttfbMs": 1897.93,
-          "ttftMs": 1934.01,
-          "coldE2eMs": 1962.22,
-          "outputTokens": 196,
-          "outputTokensPerSec": 98.91,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323b90a6a1dd4c1-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.83,
+          "dnsMs": 0.97,
           "tcpMs": 1.27,
+          "tlsMs": 4.41,
+          "ttfbMs": 1772.7,
+          "ttftMs": 1852.39,
+          "coldE2eMs": 1859.05,
+          "outputTokens": 196,
+          "outputTokensPerSec": 91.7,
+          "resolvedProvider": "Google AI Studio",
+          "receipts": {
+            "cf-ray": "a3248f0b3bbc966d-IAD"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 0.94,
+          "tcpMs": 0.86,
           "tlsMs": 3.07,
-          "ttfbMs": 1551.32,
-          "ttftMs": 1740.59,
-          "coldE2eMs": 1745.77,
+          "ttfbMs": 1625.58,
+          "ttftMs": 1627.86,
+          "coldE2eMs": 1632.74,
           "outputTokens": 196,
-          "outputTokensPerSec": 108.76,
+          "outputTokensPerSec": 119.68,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323b9e9add37b0d-IAD"
+            "cf-ray": "a3248f9438a7d701-IAD"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 8.49,
-          "tcpMs": 1.06,
+          "dnsMs": 0.77,
+          "tcpMs": 1.34,
           "tlsMs": 3.92,
-          "ttfbMs": 1986.41,
-          "ttftMs": 2283.84,
-          "coldE2eMs": 2297.31,
+          "ttfbMs": 1708.13,
+          "ttftMs": 1904.04,
+          "coldE2eMs": 1910.08,
           "outputTokens": 196,
-          "outputTokensPerSec": 85.14,
+          "outputTokensPerSec": 101.95,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323bb96effd9bd3-IAD"
+            "cf-ray": "a324906e4ad34a55-IAD"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.83,
-          "tcpMs": 1.28,
-          "tlsMs": 3.95,
-          "ttfbMs": 1719.52,
-          "ttftMs": 1727.02,
-          "coldE2eMs": 1733.08,
+          "dnsMs": 20.49,
+          "tcpMs": 1.33,
+          "tlsMs": 5.52,
+          "ttfbMs": 1727.6,
+          "ttftMs": 1921.75,
+          "coldE2eMs": 1949.08,
           "outputTokens": 196,
-          "outputTokensPerSec": 113.38,
+          "outputTokensPerSec": 98.57,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323bc29cf1e45a9-IAD"
+            "cf-ray": "a324910cce401b5c-IAD"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.93,
-          "tcpMs": 1.3,
-          "tlsMs": 3.46,
-          "ttfbMs": 1726.67,
-          "ttftMs": 1971.1,
-          "coldE2eMs": 1976.79,
+          "dnsMs": 2.07,
+          "tcpMs": 1.67,
+          "tlsMs": 6.59,
+          "ttfbMs": 1749.45,
+          "ttftMs": 1927.15,
+          "coldE2eMs": 1937.49,
           "outputTokens": 196,
-          "outputTokensPerSec": 98.59,
+          "outputTokensPerSec": 100.56,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323bcb5cee44b20-IAD"
+            "cf-ray": "a324919f3cc6ef60-IAD"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 20.61,
-          "tcpMs": 0.8,
-          "tlsMs": 2.76,
-          "ttfbMs": 1783.1,
-          "ttftMs": 2124.64,
-          "coldE2eMs": 2148.82,
+          "dnsMs": 1.55,
+          "tcpMs": 1.1,
+          "tlsMs": 3.37,
+          "ttfbMs": 2019.2,
+          "ttftMs": 2132.59,
+          "coldE2eMs": 2138.6,
           "outputTokens": 196,
-          "outputTokensPerSec": 91.47,
+          "outputTokensPerSec": 90.75,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323bd69bca3d69d-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 5.56,
-          "tcpMs": 0.92,
-          "tlsMs": 3.7,
-          "ttfbMs": 1581.93,
-          "ttftMs": 1671.82,
-          "coldE2eMs": 1682,
-          "outputTokens": 196,
-          "outputTokensPerSec": 114.08,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323bef15cb923d0-IAD"
+            "cf-ray": "a32492221e1bd6db-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1939.77,
-          "ttftMs": 1940.93,
+          "ttfbMs": 1325.74,
+          "ttftMs": 1750.38,
           "outputTokens": 196,
-          "outputTokensPerSec": 98.56,
+          "outputTokensPerSec": 110.11,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323c01d5e8d0c59-IAD"
+            "cf-ray": "a324933f7ff41e0d-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1456.24,
-          "ttftMs": 1692.22,
+          "ttfbMs": 1765.74,
+          "ttftMs": 2346.13,
           "outputTokens": 196,
-          "outputTokensPerSec": 114.71,
+          "outputTokensPerSec": 81.63,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323c2f32dcd09e5-IAD"
+            "cf-ray": "a32494b9c97cae0c-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1633.82,
-          "ttftMs": 1955.89,
+          "ttfbMs": 1816.76,
+          "ttftMs": 1857.95,
           "outputTokens": 196,
-          "outputTokensPerSec": 98.73,
+          "outputTokensPerSec": 105.46,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323c577794e286e-IAD"
+            "cf-ray": "a32495e739b02064-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1723.56,
-          "ttftMs": 1791.72,
+          "ttfbMs": 1744.47,
+          "ttftMs": 2314.57,
           "outputTokens": 196,
-          "outputTokensPerSec": 108.34,
+          "outputTokensPerSec": 83.8,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323c7976b397d04-IAD"
+            "cf-ray": "a32497332be76108-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1749.53,
-          "ttftMs": 1754.31,
+          "ttfbMs": 1824.27,
+          "ttftMs": 1878.39,
           "outputTokens": 196,
-          "outputTokensPerSec": 109.91,
+          "outputTokensPerSec": 102.78,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323c911ebb66d05-IAD"
+            "cf-ray": "a32498b0ed1abe47-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1563.79,
-          "ttftMs": 1700.93,
+          "ttfbMs": 1576.12,
+          "ttftMs": 1948.74,
           "outputTokens": 196,
-          "outputTokensPerSec": 112.85,
+          "outputTokensPerSec": 99.88,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323ccfc9bd173f7-IAD"
+            "cf-ray": "a32499d0dde9d6c8-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2033.81,
-          "ttftMs": 2260.91,
+          "ttfbMs": 1437.64,
+          "ttftMs": 1669.92,
           "outputTokens": 196,
-          "outputTokensPerSec": 84.87,
+          "outputTokensPerSec": 114.19,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323cf01194116de-IAD"
+            "cf-ray": "a3249be7582a2015-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1717.01,
-          "ttftMs": 2038.73,
+          "ttfbMs": 1857.13,
+          "ttftMs": 2217.75,
           "outputTokens": 196,
-          "outputTokensPerSec": 95.42,
+          "outputTokensPerSec": 86.98,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323d2bc8bf4d69d-IAD"
+            "cf-ray": "a3249d10fccbc3b9-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1802.15,
-          "ttftMs": 1803.04,
+          "ttfbMs": 2044.91,
+          "ttftMs": 2054.06,
           "outputTokens": 196,
-          "outputTokensPerSec": 108.25,
+          "outputTokensPerSec": 95.37,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323d45de837841f-IAD"
+            "cf-ray": "a3249e55bad0f9b8-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1339.95,
-          "ttftMs": 1783.65,
+          "ttfbMs": 1632.14,
+          "ttftMs": 1930.57,
           "outputTokens": 196,
-          "outputTokensPerSec": 108.61,
+          "outputTokensPerSec": 99.94,
           "resolvedProvider": "Google AI Studio",
           "receipts": {
-            "cf-ray": "a323d79f2f02bb25-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1781,
-          "ttftMs": 1788.97,
-          "outputTokens": 196,
-          "outputTokensPerSec": 108.66,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323d8f6e80511cc-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1567.17,
-          "ttftMs": 1839.53,
-          "outputTokens": 196,
-          "outputTokensPerSec": 105.43,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323db1bcd3672f2-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1843.02,
-          "ttftMs": 2180.14,
-          "outputTokens": 196,
-          "outputTokensPerSec": 87.88,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323dd3888bd0570-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1529.1,
-          "ttftMs": 1548.01,
-          "outputTokens": 196,
-          "outputTokensPerSec": 125.3,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323dfd0a8be500d-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1831.94,
-          "ttftMs": 2031.21,
-          "outputTokens": 196,
-          "outputTokensPerSec": 95.75,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323e2dbb9c81d4c-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1928.12,
-          "ttftMs": 1928.32,
-          "outputTokens": 196,
-          "outputTokensPerSec": 98.67,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323e432bf785946-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1620.35,
-          "ttftMs": 1620.56,
-          "outputTokens": 196,
-          "outputTokensPerSec": 118.87,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323e6973c5a3287-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2032.14,
-          "ttftMs": 2116.63,
-          "outputTokens": 196,
-          "outputTokensPerSec": 88.42,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323e9860f6f7a77-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1551.29,
-          "ttftMs": 1919.12,
-          "outputTokens": 196,
-          "outputTokensPerSec": 101.03,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323eaee38505263-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1608.58,
-          "ttftMs": 1692.08,
-          "outputTokens": 196,
-          "outputTokensPerSec": 114.54,
-          "resolvedProvider": "Google AI Studio",
-          "receipts": {
-            "cf-ray": "a323ed31af8615e4-IAD"
+            "cf-ray": "a3249f7c4b1e5d0d-IAD"
           }
         }
       ],
       "summary": {
         "dnsMs": {
-          "median": 3.49,
-          "p95": 25.12,
-          "p99": 25.12
+          "median": 1.26,
+          "p95": 26.63,
+          "p99": 26.63
         },
         "tcpMs": {
-          "median": 1.12,
-          "p95": 1.72,
-          "p99": 1.72
+          "median": 1.3,
+          "p95": 1.82,
+          "p99": 1.82
         },
         "tlsMs": {
-          "median": 3.58,
-          "p95": 5.52,
-          "p99": 5.52
+          "median": 4.5,
+          "p95": 6.59,
+          "p99": 6.59
         },
         "coldTtfbMs": {
-          "median": 1723.1,
-          "p95": 1897.93,
-          "p99": 1897.93
+          "median": 1728.04,
+          "p95": 2019.2,
+          "p99": 2019.2
         },
         "coldTtftMs": {
-          "median": 1820.51,
-          "p95": 2124.64,
-          "p99": 2124.64
+          "median": 1832.1,
+          "p95": 2132.59,
+          "p99": 2132.59
         },
         "coldE2eMs": {
-          "median": 1826.39,
-          "p95": 2148.82,
-          "p99": 2148.82
+          "median": 1852.53,
+          "p95": 2138.6,
+          "p99": 2138.6
         },
         "warmTtfbMs": {
-          "median": 1720.28,
-          "p95": 2032.14,
-          "p99": 2032.14
+          "median": 1755.1,
+          "p95": 2044.91,
+          "p99": 2044.91
         },
         "warmTtftMs": {
-          "median": 1821.29,
-          "p95": 2180.14,
-          "p99": 2180.14
+          "median": 1939.65,
+          "p95": 2346.13,
+          "p99": 2346.13
         },
         "outputTokensPerSec": {
-          "median": 106.54,
-          "p95": 123.52,
-          "p99": 124.17
+          "median": 101.25,
+          "p95": 117.96,
+          "p99": 117.96
         }
       },
-      "compositeScore": 86.49,
+      "compositeScore": 85.88,
       "successRate": 1
     },
     {
@@ -594,573 +334,313 @@
       "iterations": [
         {
           "mode": "cold",
-          "dnsMs": 25.82,
-          "tcpMs": 0.82,
-          "tlsMs": 4.96,
-          "ttfbMs": 1984.59,
-          "ttftMs": 1992.97,
-          "coldE2eMs": 2024.59,
+          "dnsMs": 29.16,
+          "tcpMs": 1.09,
+          "tlsMs": 5.9,
+          "ttfbMs": 1766.07,
+          "ttftMs": 1773.34,
+          "coldE2eMs": 1809.5,
           "outputTokens": 196,
-          "outputTokensPerSec": 98,
+          "outputTokensPerSec": 110.5,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::wlflq-1787923830251-2ed9bf73190c"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 7.68,
-          "tcpMs": 0.9,
-          "tlsMs": 5.21,
-          "ttfbMs": 2179.58,
-          "ttftMs": 2182.42,
-          "coldE2eMs": 2196.21,
-          "outputTokens": 196,
-          "outputTokensPerSec": 89.68,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::vrcpb-1787923891221-c3ff78595095"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 24.5,
-          "tcpMs": 5.93,
-          "tlsMs": 21.83,
-          "ttfbMs": 2293.93,
-          "ttftMs": 2295.08,
-          "coldE2eMs": 2347.34,
-          "outputTokens": 196,
-          "outputTokensPerSec": 85.23,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::6dhpp-1787923948326-78bb2e7cd5e1"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.94,
-          "tcpMs": 0.87,
-          "tlsMs": 4.83,
-          "ttfbMs": 3669.48,
-          "ttftMs": 3673.63,
-          "coldE2eMs": 3680.27,
-          "outputTokens": 196,
-          "outputTokensPerSec": 53.16,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::gncsd-1787923970458-25943c6df057"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 19.66,
-          "tcpMs": 5.72,
-          "tlsMs": 21.67,
-          "ttfbMs": 2809,
-          "ttftMs": 2809.18,
-          "coldE2eMs": 2856.23,
-          "outputTokens": 196,
-          "outputTokensPerSec": 69.68,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::w6px9-1787924025799-ce1fe48dd6ab"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.84,
-          "tcpMs": 5.73,
-          "tlsMs": 21.6,
-          "ttfbMs": 1869.66,
-          "ttftMs": 1876.14,
-          "coldE2eMs": 1904.31,
-          "outputTokens": 196,
-          "outputTokensPerSec": 104.11,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::456k8-1787924051212-f827add441cd"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 21.17,
-          "tcpMs": 0.83,
-          "tlsMs": 5.67,
-          "ttfbMs": 2148.36,
-          "ttftMs": 2148.48,
-          "coldE2eMs": 2176.15,
-          "outputTokens": 196,
-          "outputTokensPerSec": 90.26,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::vstr7-1787924089970-9a74a862a6a7"
+            "x-vercel-id": "iad1::iad1::l6z2s-1787933020588-0c4ea23460cc"
           }
         },
         {
           "mode": "cold",
           "dnsMs": 0.78,
-          "tcpMs": 1.1,
-          "tlsMs": 5.03,
-          "ttfbMs": 1783.14,
-          "ttftMs": 1788.34,
-          "coldE2eMs": 1795.26,
+          "tcpMs": 6.03,
+          "tlsMs": 21.64,
+          "ttfbMs": 2037.68,
+          "ttftMs": 2040.61,
+          "coldE2eMs": 2069.06,
           "outputTokens": 196,
-          "outputTokensPerSec": 109.33,
+          "outputTokensPerSec": 96.04,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::zt7ln-1787924110959-df36d3109f50"
+            "x-vercel-id": "iad1::iad1::pv96r-1787933042675-9972e860408a"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 4.68,
-          "tcpMs": 5.73,
-          "tlsMs": 21.54,
-          "ttfbMs": 2142.37,
-          "ttftMs": 2142.51,
-          "coldE2eMs": 2174.46,
+          "dnsMs": 0.74,
+          "tcpMs": 0.97,
+          "tlsMs": 5.12,
+          "ttfbMs": 1792.3,
+          "ttftMs": 1800.63,
+          "coldE2eMs": 1807.47,
           "outputTokens": 196,
-          "outputTokensPerSec": 91.36,
+          "outputTokensPerSec": 108.84,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::cqf4l-1787924140304-2ebdecbc4d4a"
+            "x-vercel-id": "iad1::iad1::x5ctx-1787933064242-e85ad21d1baf"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 5.64,
-          "tcpMs": 5.73,
-          "tlsMs": 21.69,
-          "ttfbMs": 2569.56,
-          "ttftMs": 2576.38,
-          "coldE2eMs": 2609.45,
+          "dnsMs": 18.92,
+          "tcpMs": 0.88,
+          "tlsMs": 5.08,
+          "ttfbMs": 1882.44,
+          "ttftMs": 1891,
+          "coldE2eMs": 1915.89,
           "outputTokens": 196,
-          "outputTokensPerSec": 75.97,
+          "outputTokensPerSec": 103.63,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::tbgpq-1787924207584-35f166cc3e89"
+            "x-vercel-id": "iad1::iad1::7tvn5-1787933112609-9f92fe92c440"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.75,
-          "tcpMs": 5.69,
-          "tlsMs": 21.3,
-          "ttfbMs": 1825.37,
-          "ttftMs": 1825.54,
-          "coldE2eMs": 1853.28,
+          "dnsMs": 1.14,
+          "tcpMs": 5.87,
+          "tlsMs": 20.97,
+          "ttfbMs": 1754.65,
+          "ttftMs": 1758.66,
+          "coldE2eMs": 1786.63,
           "outputTokens": 196,
-          "outputTokensPerSec": 107.36,
+          "outputTokensPerSec": 111.43,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::dcvdp-1787924230910-977896bf623a"
+            "x-vercel-id": "iad1::iad1::zzmqq-1787933142009-70ef21aa790e"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 18.56,
-          "tcpMs": 6.32,
-          "tlsMs": 21.95,
-          "ttfbMs": 2288.86,
-          "ttftMs": 2291.91,
-          "coldE2eMs": 2338.74,
+          "dnsMs": 17.49,
+          "tcpMs": 0.81,
+          "tlsMs": 5.56,
+          "ttfbMs": 1879.08,
+          "ttftMs": 1879.25,
+          "coldE2eMs": 1903.1,
           "outputTokens": 196,
-          "outputTokensPerSec": 85.37,
+          "outputTokensPerSec": 104.29,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::x846w-1787924273709-d0f7da2965d9"
+            "x-vercel-id": "iad1::iad1::mcmww-1787933163530-6ddae7e61951"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 19.76,
-          "tcpMs": 5.69,
-          "tlsMs": 21.35,
-          "ttfbMs": 16543.84,
-          "ttftMs": 16554.1,
-          "coldE2eMs": 16600.91,
+          "dnsMs": 20.22,
+          "tcpMs": 0.83,
+          "tlsMs": 5.04,
+          "ttfbMs": 1740.93,
+          "ttftMs": 1750.29,
+          "coldE2eMs": 1776.38,
           "outputTokens": 196,
-          "outputTokensPerSec": 11.84,
+          "outputTokensPerSec": 111.79,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::kdxcj-1787924301680-5b703757eacf"
+            "x-vercel-id": "iad1::iad1::s82tg-1787933198707-ebb467d092b2"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 21.23,
-          "tcpMs": 1,
-          "tlsMs": 5.25,
-          "ttfbMs": 1859.33,
-          "ttftMs": 1860.14,
-          "coldE2eMs": 1887.62,
+          "dnsMs": 14.2,
+          "tcpMs": 1.24,
+          "tlsMs": 5.59,
+          "ttfbMs": 1951.43,
+          "ttftMs": 1960.64,
+          "coldE2eMs": 1981.67,
           "outputTokens": 196,
-          "outputTokensPerSec": 105.11,
+          "outputTokensPerSec": 99.66,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::ddmrg-1787924376992-976e863e7865"
+            "x-vercel-id": "iad1::iad1::94crz-1787933224000-885ff3fa1d4e"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 3.01,
-          "tcpMs": 6,
-          "tlsMs": 21.37,
-          "ttfbMs": 4058,
-          "ttftMs": 4063.72,
-          "coldE2eMs": 4094.1,
+          "dnsMs": 1.34,
+          "tcpMs": 1.2,
+          "tlsMs": 7.24,
+          "ttfbMs": 1715.33,
+          "ttftMs": 1726.26,
+          "coldE2eMs": 1736.04,
           "outputTokens": 196,
-          "outputTokensPerSec": 48.15,
+          "outputTokensPerSec": 113.52,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::gh4p9-1787924412690-70c0f2080373"
+            "x-vercel-id": "iad1::iad1::bxmcw-1787933247392-ef1a18e9c453"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 26.22,
-          "tcpMs": 5.72,
-          "tlsMs": 22.73,
-          "ttfbMs": 2599.75,
-          "ttftMs": 2599.94,
-          "coldE2eMs": 2654.61,
+          "dnsMs": 0.93,
+          "tcpMs": 0.89,
+          "tlsMs": 6.48,
+          "ttfbMs": 2009.21,
+          "ttftMs": 2018.46,
+          "coldE2eMs": 2026.76,
           "outputTokens": 196,
-          "outputTokensPerSec": 75.19,
+          "outputTokensPerSec": 97.08,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::d59bq-1787924481078-ecfa2f2861e2"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 13.62,
-          "tcpMs": 0.8,
-          "tlsMs": 4.94,
-          "ttfbMs": 2639.24,
-          "ttftMs": 2639.73,
-          "coldE2eMs": 2659.1,
-          "outputTokens": 196,
-          "outputTokensPerSec": 74.15,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::m4jtf-1787924503952-f2b255cb2712"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 1.09,
-          "tcpMs": 5.89,
-          "tlsMs": 20.2,
-          "ttfbMs": 8039.38,
-          "ttftMs": 8043.15,
-          "coldE2eMs": 8070.34,
-          "outputTokens": 196,
-          "outputTokensPerSec": 24.35,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::f87l7-1787924526561-863044c77ea6"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 2.65,
-          "tcpMs": 5.72,
-          "tlsMs": 20.36,
-          "ttfbMs": 4924.29,
-          "ttftMs": 4926.68,
-          "coldE2eMs": 4955.4,
-          "outputTokens": 196,
-          "outputTokensPerSec": 39.72,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::wcq5s-1787924555726-db3aec397888"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 1.95,
-          "tcpMs": 1.05,
-          "tlsMs": 5.13,
-          "ttfbMs": 5217.35,
-          "ttftMs": 5219.17,
-          "coldE2eMs": 5227.31,
-          "outputTokens": 196,
-          "outputTokensPerSec": 37.5,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::mrp8w-1787924617819-398e2db700ee"
+            "x-vercel-id": "iad1::iad1::4wnxb-1787933268961-80e1f341e260"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 3715.34,
-          "ttftMs": 3727.27,
+          "ttfbMs": 1572.39,
+          "ttftMs": 1579.55,
           "outputTokens": 196,
-          "outputTokensPerSec": 52.4,
+          "outputTokensPerSec": 122.34,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::6g4sz-1787924673105-16b4a237f208"
+            "x-vercel-id": "iad1::iad1::wdrc2-1787933316514-3bb142eab21b"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 4077.32,
-          "ttftMs": 4077.49,
+          "ttfbMs": 1879.75,
+          "ttftMs": 1880.38,
           "outputTokens": 196,
-          "outputTokensPerSec": 48,
+          "outputTokensPerSec": 104.23,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::qpm7f-1787924809480-55ac338e1cc8"
+            "x-vercel-id": "iad1::iad1::bp2zq-1787933376717-c5fe10850aaf"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2432.84,
-          "ttftMs": 2432.97,
+          "ttfbMs": 1754.26,
+          "ttftMs": 1761.25,
           "outputTokens": 196,
-          "outputTokensPerSec": 80.56,
+          "outputTokensPerSec": 111.28,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::spxwl-1787924903943-46459e15db22"
+            "x-vercel-id": "iad1::iad1::xdhqq-1787933424747-2c42b8164cb2"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 18117.6,
-          "ttftMs": 18124.46,
+          "ttfbMs": 1599.98,
+          "ttftMs": 1603.14,
           "outputTokens": 196,
-          "outputTokensPerSec": 10.79,
+          "outputTokensPerSec": 122.25,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::pscm9-1787924974438-9d37bf24cae1"
+            "x-vercel-id": "iad1::iad1::8p8rv-1787933478920-c50337e18999"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 31171.45,
-          "ttftMs": 31180.35,
+          "ttfbMs": 1844.92,
+          "ttftMs": 1851.2,
           "outputTokens": 196,
-          "outputTokensPerSec": 6.28,
+          "outputTokensPerSec": 105.87,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::ttsqt-1787925035487-d8f423c56689"
+            "x-vercel-id": "iad1::iad1::sdpj8-1787933538717-3882d2f4ae82"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 6769.63,
-          "ttftMs": 6780.89,
+          "ttfbMs": 2016.65,
+          "ttftMs": 2038.19,
           "outputTokens": 196,
-          "outputTokensPerSec": 28.88,
+          "outputTokensPerSec": 95.67,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::dl542-1787925195986-056321fae239"
+            "x-vercel-id": "iad1::iad1::6fmkg-1787933584797-0862a79ccb04"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 6465.7,
-          "ttftMs": 6471.81,
+          "ttfbMs": 1637.07,
+          "ttftMs": 1646.34,
           "outputTokens": 196,
-          "outputTokensPerSec": 30.25,
+          "outputTokensPerSec": 119,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::mrssf-1787925285873-85ef687ac8d2"
+            "x-vercel-id": "iad1::iad1::827p2-1787933670104-9dc28245571b"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1847.47,
-          "ttftMs": 1848.85,
+          "ttfbMs": 1739.79,
+          "ttftMs": 1742.82,
           "outputTokens": 196,
-          "outputTokensPerSec": 105.61,
+          "outputTokensPerSec": 112.46,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::xhkzh-1787925449794-3516579baa84"
+            "x-vercel-id": "iad1::iad1::twkmr-1787933718357-724ba5b76d70"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1612.52,
-          "ttftMs": 1613.35,
+          "ttfbMs": 2111.65,
+          "ttftMs": 2121.81,
           "outputTokens": 196,
-          "outputTokensPerSec": 119.87,
+          "outputTokensPerSec": 90.8,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::p4hlf-1787925497790-dbe4da2930dd"
+            "x-vercel-id": "iad1::iad1::hm4k4-1787933770241-e643d0658e72"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 6324.65,
-          "ttftMs": 6329.88,
+          "ttfbMs": 1644.98,
+          "ttftMs": 1653.05,
           "outputTokens": 196,
-          "outputTokensPerSec": 30.94,
+          "outputTokensPerSec": 118.56,
           "resolvedProvider": "google",
           "receipts": {
-            "x-vercel-id": "iad1::iad1::pvbdr-1787925631166-ef9dbc94837f"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2130.48,
-          "ttftMs": 2130.69,
-          "outputTokens": 196,
-          "outputTokensPerSec": 91.11,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::8hlzb-1787925686410-1db62ff1a777"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 11039.36,
-          "ttftMs": 11045.34,
-          "outputTokens": 196,
-          "outputTokensPerSec": 17.74,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::7r8g5-1787925807285-a9d99c005261"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 11435.43,
-          "ttftMs": 11445.93,
-          "outputTokens": 196,
-          "outputTokensPerSec": 17.05,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::sdtcf-1787925879184-d8ce111f2ee1"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 10380.92,
-          "ttftMs": 10387.59,
-          "outputTokens": 196,
-          "outputTokensPerSec": 18.86,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::vjrd5-1787925994464-eb8d3a41598f"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 6759.13,
-          "ttftMs": 6766.93,
-          "outputTokens": 196,
-          "outputTokensPerSec": 28.92,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::4dlc2-1787926094925-d8ee093195ef"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 23116.46,
-          "ttftMs": 23116.56,
-          "outputTokens": 196,
-          "outputTokensPerSec": 8.48,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::w7dcl-1787926165950-5522829070fc"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 12560.92,
-          "ttftMs": 12566.82,
-          "outputTokens": 196,
-          "outputTokensPerSec": 15.59,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::7hsfq-1787926252176-409e32534942"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 11310.49,
-          "ttftMs": 11314.56,
-          "outputTokens": 196,
-          "outputTokensPerSec": 17.32,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::6nfzr-1787926365680-dd7bd3a9a117"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 5543.79,
-          "ttftMs": 5550.64,
-          "outputTokens": 196,
-          "outputTokensPerSec": 35.21,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::lx6s4-1787926430994-5e6902713dec"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 17929.53,
-          "ttftMs": 17933.32,
-          "outputTokens": 196,
-          "outputTokensPerSec": 10.89,
-          "resolvedProvider": "google",
-          "receipts": {
-            "x-vercel-id": "iad1::iad1::rmcnr-1787926517541-6272708c3997"
+            "x-vercel-id": "iad1::iad1::mcv2q-1787933817025-4ec4c705d3db"
           }
         }
       ],
       "summary": {
         "dnsMs": {
-          "median": 6.66,
-          "p95": 25.82,
-          "p99": 25.82
+          "median": 7.77,
+          "p95": 29.16,
+          "p99": 29.16
         },
         "tcpMs": {
-          "median": 5.7,
-          "p95": 6,
-          "p99": 6
+          "median": 1.03,
+          "p95": 6.03,
+          "p99": 6.03
         },
         "tlsMs": {
-          "median": 20.83,
-          "p95": 21.95,
-          "p99": 21.95
+          "median": 5.75,
+          "p95": 21.64,
+          "p99": 21.64
         },
         "coldTtfbMs": {
-          "median": 2431.74,
-          "p95": 8039.38,
-          "p99": 8039.38
+          "median": 1835.69,
+          "p95": 2037.68,
+          "p99": 2037.68
         },
         "coldTtftMs": {
-          "median": 2435.73,
-          "p95": 8043.15,
-          "p99": 8043.15
+          "median": 1839.94,
+          "p95": 2040.61,
+          "p99": 2040.61
         },
         "coldE2eMs": {
-          "median": 2478.39,
-          "p95": 8070.34,
-          "p99": 8070.34
+          "median": 1856.3,
+          "p95": 2069.06,
+          "p99": 2069.06
         },
         "warmTtfbMs": {
-          "median": 6764.38,
-          "p95": 23116.46,
-          "p99": 23116.46
+          "median": 1747.02,
+          "p95": 2111.65,
+          "p99": 2111.65
         },
         "warmTtftMs": {
-          "median": 6773.91,
-          "p95": 23116.56,
-          "p99": 23116.56
+          "median": 1752.03,
+          "p95": 2121.81,
+          "p99": 2121.81
         },
         "outputTokensPerSec": {
-          "median": 50.28,
-          "p95": 105.61,
-          "p99": 107.36
+          "median": 109.67,
+          "p95": 122.25,
+          "p99": 122.25
         }
       },
-      "compositeScore": 57.39,
+      "compositeScore": 86.81,
       "successRate": 1
     },
     {
@@ -1170,533 +650,293 @@
       "iterations": [
         {
           "mode": "cold",
-          "dnsMs": 16.5,
-          "tcpMs": 1.23,
-          "tlsMs": 5.9,
-          "ttfbMs": 1972.69,
-          "ttftMs": 1972.9,
-          "coldE2eMs": 1996.53,
+          "dnsMs": 32.82,
+          "tcpMs": 1.11,
+          "tlsMs": 6.1,
+          "ttfbMs": 1829.55,
+          "ttftMs": 1829.76,
+          "coldE2eMs": 1869.79,
           "outputTokens": 196,
-          "outputTokensPerSec": 99.05,
+          "outputTokensPerSec": 107,
           "receipts": {
-            "cf-ray": "a323abd0998b1ffe-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 34.2,
-          "tcpMs": 0.93,
-          "tlsMs": 4.92,
-          "ttfbMs": 1764.98,
-          "ttftMs": 1765.07,
-          "coldE2eMs": 1805.13,
-          "outputTokens": 196,
-          "outputTokensPerSec": 111.03,
-          "receipts": {
-            "cf-ray": "a323ad4edee3d658-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.81,
-          "tcpMs": 0.95,
-          "tlsMs": 6.95,
-          "ttfbMs": 1822.38,
-          "ttftMs": 1822.51,
-          "coldE2eMs": 1831.22,
-          "outputTokens": 196,
-          "outputTokensPerSec": 107.52,
-          "receipts": {
-            "cf-ray": "a323aeb41e41d91c-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.86,
-          "tcpMs": 0.89,
-          "tlsMs": 6.01,
-          "ttfbMs": 2383.69,
-          "ttftMs": 2384.12,
-          "coldE2eMs": 2391.87,
-          "outputTokens": 196,
-          "outputTokensPerSec": 81.08,
-          "receipts": {
-            "cf-ray": "a323af48abde5985-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 14.72,
-          "tcpMs": 0.89,
-          "tlsMs": 10.42,
-          "ttfbMs": 1967.96,
-          "ttftMs": 1968.08,
-          "coldE2eMs": 1994.1,
-          "outputTokens": 196,
-          "outputTokensPerSec": 99.53,
-          "receipts": {
-            "cf-ray": "a323b09b896d1734-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.75,
-          "tcpMs": 0.73,
-          "tlsMs": 3.88,
-          "ttfbMs": 2304.91,
-          "ttftMs": 2305.03,
-          "coldE2eMs": 2310.39,
-          "outputTokens": 196,
-          "outputTokensPerSec": 82.69,
-          "receipts": {
-            "cf-ray": "a323b1348accd6a3-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 32.67,
-          "tcpMs": 0.94,
-          "tlsMs": 9.09,
-          "ttfbMs": 1873.53,
-          "ttftMs": 1873.61,
-          "coldE2eMs": 1916.31,
-          "outputTokens": 196,
-          "outputTokensPerSec": 103.7,
-          "receipts": {
-            "cf-ray": "a323b2294ccbb90a-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.88,
-          "tcpMs": 0.98,
-          "tlsMs": 6.54,
-          "ttfbMs": 1814,
-          "ttftMs": 1814.09,
-          "coldE2eMs": 1822.48,
-          "outputTokens": 196,
-          "outputTokensPerSec": 107.79,
-          "receipts": {
-            "cf-ray": "a323b2a9ab6c2902-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 2.88,
-          "tcpMs": 1.27,
-          "tlsMs": 4.41,
-          "ttfbMs": 2384.84,
-          "ttftMs": 2384.96,
-          "coldE2eMs": 2393.52,
-          "outputTokens": 196,
-          "outputTokensPerSec": 81.41,
-          "receipts": {
-            "cf-ray": "a323b362fcdad6e5-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 17.77,
-          "tcpMs": 0.88,
-          "tlsMs": 5.2,
-          "ttfbMs": 1871.44,
-          "ttftMs": 1871.51,
-          "coldE2eMs": 1895.36,
-          "outputTokens": 196,
-          "outputTokensPerSec": 104.53,
-          "receipts": {
-            "cf-ray": "a323b50ba8291216-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.75,
-          "tcpMs": 1.24,
-          "tlsMs": 5.01,
-          "ttfbMs": 1828.85,
-          "ttftMs": 1829.04,
-          "coldE2eMs": 1836.03,
-          "outputTokens": 196,
-          "outputTokensPerSec": 107.11,
-          "receipts": {
-            "cf-ray": "a323b597abec7560-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 33.86,
-          "tcpMs": 1.01,
-          "tlsMs": 11.54,
-          "ttfbMs": 2451.89,
-          "ttftMs": 2452.02,
-          "coldE2eMs": 2498.43,
-          "outputTokens": 196,
-          "outputTokensPerSec": 79.79,
-          "receipts": {
-            "cf-ray": "a323b6a659031316-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.57,
-          "tcpMs": 1,
-          "tlsMs": 6.28,
-          "ttfbMs": 2038.95,
-          "ttftMs": 2039.94,
-          "coldE2eMs": 2047.79,
-          "outputTokens": 196,
-          "outputTokensPerSec": 96.01,
-          "receipts": {
-            "cf-ray": "a323b7b1793d6887-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 19.78,
-          "tcpMs": 1.07,
-          "tlsMs": 9.46,
-          "ttfbMs": 1894.39,
-          "ttftMs": 1895.37,
-          "coldE2eMs": 1925.68,
-          "outputTokens": 196,
-          "outputTokensPerSec": 103.22,
-          "receipts": {
-            "cf-ray": "a323b92cf92913b1-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 2.49,
-          "tcpMs": 1.86,
-          "tlsMs": 6.06,
-          "ttfbMs": 1872.56,
-          "ttftMs": 1873.05,
-          "coldE2eMs": 1883.46,
-          "outputTokens": 196,
-          "outputTokensPerSec": 104.53,
-          "receipts": {
-            "cf-ray": "a323ba1a08be0fed-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 20.58,
-          "tcpMs": 1.16,
-          "tlsMs": 4.64,
-          "ttfbMs": 1892.27,
-          "ttftMs": 1892.36,
-          "coldE2eMs": 1918.75,
-          "outputTokens": 196,
-          "outputTokensPerSec": 103.38,
-          "receipts": {
-            "cf-ray": "a323bbb7db31f72b-IAD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.77,
-          "tcpMs": 0.9,
-          "tlsMs": 4.66,
-          "ttfbMs": 1979.38,
-          "ttftMs": 1979.46,
-          "coldE2eMs": 1985.79,
-          "outputTokens": 196,
-          "outputTokensPerSec": 99.01,
-          "receipts": {
-            "cf-ray": "a323bc46cffe7e51-IAD"
+            "cf-ray": "a3248c2f8ea9c578-IAD"
           }
         },
         {
           "mode": "cold",
           "dnsMs": 0.79,
-          "tcpMs": 0.81,
-          "tlsMs": 4.18,
-          "ttfbMs": 1925.57,
-          "ttftMs": 1925.87,
-          "coldE2eMs": 1931.64,
+          "tcpMs": 0.87,
+          "tlsMs": 6.95,
+          "ttfbMs": 1743.97,
+          "ttftMs": 1744.09,
+          "coldE2eMs": 1752.7,
           "outputTokens": 196,
-          "outputTokensPerSec": 101.63,
+          "outputTokensPerSec": 112.31,
           "receipts": {
-            "cf-ray": "a323bcf68a66e5f4-IAD"
+            "cf-ray": "a3248cba28e18e97-IAD"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.99,
-          "tcpMs": 1.09,
-          "tlsMs": 4.5,
-          "ttfbMs": 1743.68,
-          "ttftMs": 1743.79,
-          "coldE2eMs": 1750.37,
+          "dnsMs": 1.48,
+          "tcpMs": 1.55,
+          "tlsMs": 4.82,
+          "ttfbMs": 2152.12,
+          "ttftMs": 2152.21,
+          "coldE2eMs": 2160.06,
           "outputTokens": 196,
-          "outputTokensPerSec": 112.25,
+          "outputTokensPerSec": 89.94,
           "receipts": {
-            "cf-ray": "a323bd990839ff28-IAD"
+            "cf-ray": "a3248d4018dbd6d9-IAD"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 14.25,
-          "tcpMs": 0.94,
-          "tlsMs": 5.39,
-          "ttfbMs": 1934.02,
-          "ttftMs": 1934.11,
-          "coldE2eMs": 1954.68,
+          "dnsMs": 35.04,
+          "tcpMs": 1.12,
+          "tlsMs": 8.64,
+          "ttfbMs": 1740.94,
+          "ttftMs": 1741.33,
+          "coldE2eMs": 1786.13,
           "outputTokens": 196,
-          "outputTokensPerSec": 101.24,
+          "outputTokensPerSec": 112.31,
           "receipts": {
-            "cf-ray": "a323bf1fb8b79c7f-IAD"
+            "cf-ray": "a3248e6f4e0aa159-IAD"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 0.77,
+          "tcpMs": 1.03,
+          "tlsMs": 3.78,
+          "ttfbMs": 2456.43,
+          "ttftMs": 2456.52,
+          "coldE2eMs": 2462.09,
+          "outputTokens": 196,
+          "outputTokensPerSec": 79.62,
+          "receipts": {
+            "cf-ray": "a3248f2539def2d1-IAD"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 0.87,
+          "tcpMs": 1.08,
+          "tlsMs": 7.55,
+          "ttfbMs": 1752.09,
+          "ttftMs": 1752.17,
+          "coldE2eMs": 1761.67,
+          "outputTokens": 196,
+          "outputTokensPerSec": 111.85,
+          "receipts": {
+            "cf-ray": "a3248fad4abd8221-IAD"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 0.81,
+          "tcpMs": 0.78,
+          "tlsMs": 5.91,
+          "ttfbMs": 1856.77,
+          "ttftMs": 1856.89,
+          "coldE2eMs": 1864.39,
+          "outputTokens": 196,
+          "outputTokensPerSec": 105.45,
+          "receipts": {
+            "cf-ray": "a32490886a4155d0-IAD"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 32.12,
+          "tcpMs": 1.23,
+          "tlsMs": 19.89,
+          "ttfbMs": 2087.7,
+          "ttftMs": 2087.86,
+          "coldE2eMs": 2141.1,
+          "outputTokens": 196,
+          "outputTokensPerSec": 93.15,
+          "receipts": {
+            "cf-ray": "a3249127f97b5944-IAD"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 1.7,
+          "tcpMs": 1.33,
+          "tlsMs": 5.69,
+          "ttfbMs": 1932.34,
+          "ttftMs": 1932.57,
+          "coldE2eMs": 1941.3,
+          "outputTokens": 196,
+          "outputTokensPerSec": 101.38,
+          "receipts": {
+            "cf-ray": "a32491b8781cc98d-IAD"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 1.24,
+          "tcpMs": 1.46,
+          "tlsMs": 4.91,
+          "ttfbMs": 1954.74,
+          "ttftMs": 1954.88,
+          "coldE2eMs": 1962.49,
+          "outputTokens": 196,
+          "outputTokensPerSec": 100.23,
+          "receipts": {
+            "cf-ray": "a3249240fa0cd69c-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1730.63,
-          "ttftMs": 1730.72,
+          "ttfbMs": 1917.62,
+          "ttftMs": 1917.76,
           "outputTokens": 196,
-          "outputTokensPerSec": 113.2,
+          "outputTokensPerSec": 102.19,
           "receipts": {
-            "cf-ray": "a323c07f1bebdf73-IAD"
+            "cf-ray": "a3249373aafb2480-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2241.28,
-          "ttftMs": 2241.35,
+          "ttfbMs": 2181.41,
+          "ttftMs": 2181.53,
           "outputTokens": 196,
-          "outputTokensPerSec": 87.19,
+          "outputTokensPerSec": 89.73,
           "receipts": {
-            "cf-ray": "a323c3d56ed28663-IAD"
+            "cf-ray": "a32494ee9cc224ca-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1968.18,
-          "ttftMs": 1968.29,
+          "ttfbMs": 1723.54,
+          "ttftMs": 1723.67,
           "outputTokens": 196,
-          "outputTokensPerSec": 99.39,
+          "outputTokensPerSec": 112.47,
           "receipts": {
-            "cf-ray": "a323c617ef012539-IAD"
+            "cf-ray": "a32496177848492d-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2193.14,
-          "ttftMs": 2193.23,
+          "ttfbMs": 2289.31,
+          "ttftMs": 2289.48,
           "outputTokens": 196,
-          "outputTokensPerSec": 87.18,
+          "outputTokensPerSec": 84.28,
           "receipts": {
-            "cf-ray": "a323c833199c06e1-IAD"
+            "cf-ray": "a3249769980b2c58-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1866.28,
-          "ttftMs": 1866.37,
+          "ttfbMs": 1919.7,
+          "ttftMs": 1919.83,
           "outputTokens": 196,
-          "outputTokensPerSec": 105.01,
+          "outputTokensPerSec": 100.44,
           "receipts": {
-            "cf-ray": "a323ca00495fc94a-IAD"
+            "cf-ray": "a32498e0baac8eaa-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2246.7,
-          "ttftMs": 2246.89,
+          "ttfbMs": 1661.75,
+          "ttftMs": 1661.91,
           "outputTokens": 196,
-          "outputTokensPerSec": 87,
+          "outputTokensPerSec": 117.92,
           "receipts": {
-            "cf-ray": "a323cd528963ad56-IAD"
+            "cf-ray": "a3249a019ccf215a-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1771.6,
-          "ttftMs": 1771.68,
+          "ttfbMs": 1702.59,
+          "ttftMs": 1702.69,
           "outputTokens": 196,
-          "outputTokensPerSec": 110.41,
+          "outputTokensPerSec": 114.98,
           "receipts": {
-            "cf-ray": "a323cf826f431715-IAD"
+            "cf-ray": "a3249c157bea9c46-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1654.4,
-          "ttftMs": 1654.49,
+          "ttfbMs": 1828.68,
+          "ttftMs": 1828.83,
           "outputTokens": 196,
-          "outputTokensPerSec": 118.42,
+          "outputTokensPerSec": 105.7,
           "receipts": {
-            "cf-ray": "a323d364e93e0556-IAD"
+            "cf-ray": "a3249d43ec1a0576-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2073.78,
-          "ttftMs": 2073.96,
+          "ttfbMs": 1511.35,
+          "ttftMs": 1511.44,
           "outputTokens": 196,
-          "outputTokensPerSec": 93.45,
+          "outputTokensPerSec": 129.59,
           "receipts": {
-            "cf-ray": "a323d490ce9b21db-IAD"
+            "cf-ray": "a3249e8c0fe7884b-IAD"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1734.12,
-          "ttftMs": 1734.19,
+          "ttfbMs": 2171.62,
+          "ttftMs": 2171.71,
           "outputTokens": 196,
-          "outputTokensPerSec": 112.94,
+          "outputTokensPerSec": 88.21,
           "receipts": {
-            "cf-ray": "a323d7f0eda9c606-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1751.36,
-          "ttftMs": 1751.54,
-          "outputTokens": 196,
-          "outputTokensPerSec": 111.6,
-          "receipts": {
-            "cf-ray": "a323d92f38a90a0b-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1694.18,
-          "ttftMs": 1694.26,
-          "outputTokens": 196,
-          "outputTokensPerSec": 115.68,
-          "receipts": {
-            "cf-ray": "a323dc5b78b27afc-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2370.87,
-          "ttftMs": 2370.94,
-          "outputTokens": 196,
-          "outputTokensPerSec": 82.65,
-          "receipts": {
-            "cf-ray": "a323de207e66be47-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2152.85,
-          "ttftMs": 2153.28,
-          "outputTokens": 196,
-          "outputTokensPerSec": 90.78,
-          "receipts": {
-            "cf-ray": "a323e0e94d837b59-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1795.08,
-          "ttftMs": 1795.4,
-          "outputTokens": 196,
-          "outputTokensPerSec": 108.98,
-          "receipts": {
-            "cf-ray": "a323e3489a796060-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2321.7,
-          "ttftMs": 2321.82,
-          "outputTokens": 196,
-          "outputTokensPerSec": 83.3,
-          "receipts": {
-            "cf-ray": "a323e56a086bc651-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2519.86,
-          "ttftMs": 2520.07,
-          "outputTokens": 196,
-          "outputTokensPerSec": 77.36,
-          "receipts": {
-            "cf-ray": "a323e741ec0192a0-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1824.97,
-          "ttftMs": 1825.07,
-          "outputTokens": 196,
-          "outputTokensPerSec": 106.92,
-          "receipts": {
-            "cf-ray": "a323e9ff6bb2aee0-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2388.28,
-          "ttftMs": 2388.35,
-          "outputTokens": 196,
-          "outputTokensPerSec": 81.82,
-          "receipts": {
-            "cf-ray": "a323eb71ce6072e9-IAD"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1659.14,
-          "ttftMs": 1659.22,
-          "outputTokens": 196,
-          "outputTokensPerSec": 118.07,
-          "receipts": {
-            "cf-ray": "a323eddfdd56884c-IAD"
+            "cf-ray": "a3249fac0ceac59a-IAD"
           }
         }
       ],
       "summary": {
         "dnsMs": {
-          "median": 2.68,
-          "p95": 33.86,
-          "p99": 33.86
+          "median": 1.36,
+          "p95": 35.04,
+          "p99": 35.04
         },
         "tcpMs": {
-          "median": 0.97,
-          "p95": 1.27,
-          "p99": 1.27
+          "median": 1.11,
+          "p95": 1.55,
+          "p99": 1.55
         },
         "tlsMs": {
-          "median": 5.64,
-          "p95": 10.42,
-          "p99": 10.42
+          "median": 6.01,
+          "p95": 19.89,
+          "p99": 19.89
         },
         "coldTtfbMs": {
-          "median": 1909.98,
-          "p95": 2384.84,
-          "p99": 2384.84
+          "median": 1894.55,
+          "p95": 2456.43,
+          "p99": 2456.43
         },
         "coldTtftMs": {
-          "median": 1910.62,
-          "p95": 2384.96,
-          "p99": 2384.96
+          "median": 1894.73,
+          "p95": 2456.52,
+          "p99": 2456.52
         },
         "coldE2eMs": {
-          "median": 1928.66,
-          "p95": 2393.52,
-          "p99": 2393.52
+          "median": 1905.55,
+          "p95": 2462.09,
+          "p99": 2462.09
         },
         "warmTtfbMs": {
-          "median": 1917.23,
-          "p95": 2388.28,
-          "p99": 2388.28
+          "median": 1873.15,
+          "p95": 2289.31,
+          "p99": 2289.31
         },
         "warmTtftMs": {
-          "median": 1917.33,
-          "p95": 2388.35,
-          "p99": 2388.35
+          "median": 1873.3,
+          "p95": 2289.48,
+          "p99": 2289.48
         },
         "outputTokensPerSec": {
-          "median": 102.42,
-          "p95": 113.2,
-          "p99": 115.68
+          "median": 103.82,
+          "p95": 117.92,
+          "p99": 117.92
         }
       },
-      "compositeScore": 85.64,
+      "compositeScore": 85.84,
       "successRate": 1
     },
     {
@@ -1706,533 +946,293 @@
       "iterations": [
         {
           "mode": "cold",
-          "dnsMs": 24.1,
-          "tcpMs": 1.77,
-          "tlsMs": 5.98,
-          "ttfbMs": 114.17,
-          "ttftMs": 2324.35,
-          "coldE2eMs": 2356.2,
+          "dnsMs": 17.36,
+          "tcpMs": 2.01,
+          "tlsMs": 6.56,
+          "ttfbMs": 166.51,
+          "ttftMs": 1830.69,
+          "coldE2eMs": 1856.61,
           "outputTokens": 196,
-          "outputTokensPerSec": 81.75,
+          "outputTokensPerSec": 104.24,
           "receipts": {
-            "x-request-id": "2oe0Xcivjz26kgMjXZfrPDL1JeSGZQIcjbReOSSA"
+            "x-request-id": "iMfEkNfQO92C8mjJCdR5jduarR3JsYw8fZrdFIzD"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 10.22,
-          "tcpMs": 1.88,
-          "tlsMs": 5.58,
-          "ttfbMs": 142.8,
-          "ttftMs": 2030.31,
-          "coldE2eMs": 2047.98,
-          "outputTokens": 196,
-          "outputTokensPerSec": 96.5,
-          "receipts": {
-            "x-request-id": "qoGOUdUcaOnkykG3dNSqdFGvNlK0V2dY2yAQ30iR"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.88,
-          "tcpMs": 1.82,
-          "tlsMs": 5.04,
-          "ttfbMs": 172.68,
-          "ttftMs": 1902.61,
-          "coldE2eMs": 1910.34,
-          "outputTokens": 196,
-          "outputTokensPerSec": 102.41,
-          "receipts": {
-            "x-request-id": "qsx5KSlSabF6GLMkSRo1I8ggyX6jkEorm7KuVGw1"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.82,
-          "tcpMs": 1.68,
-          "tlsMs": 5.85,
-          "ttfbMs": 97.71,
-          "ttftMs": 1602.95,
-          "coldE2eMs": 1611.3,
-          "outputTokens": 196,
-          "outputTokensPerSec": 121.35,
-          "receipts": {
-            "x-request-id": "TGndSisZotVB6b4INs21lmHZpy6fZLe3OAw6zkz3"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 7.72,
-          "tcpMs": 1.73,
-          "tlsMs": 6.7,
-          "ttfbMs": 93.85,
-          "ttftMs": 2284.1,
-          "coldE2eMs": 2300.26,
-          "outputTokens": 196,
-          "outputTokensPerSec": 84.53,
-          "receipts": {
-            "x-request-id": "2xcxSFdUiyjbjTKHiHdQz5UeFjGVpIjadJWkIFNw"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 1.15,
-          "tcpMs": 1.8,
-          "tlsMs": 6.24,
-          "ttfbMs": 91.46,
-          "ttftMs": 1846.44,
-          "coldE2eMs": 1855.62,
-          "outputTokens": 196,
-          "outputTokensPerSec": 105.52,
-          "receipts": {
-            "x-request-id": "IfwG4z5HoZtBh5les2rkXYr3yZ0uHcj94r6vbleT"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 8.86,
-          "tcpMs": 1.68,
-          "tlsMs": 5.63,
-          "ttfbMs": 95.7,
-          "ttftMs": 2108.83,
-          "coldE2eMs": 2125.01,
-          "outputTokens": 196,
-          "outputTokensPerSec": 92.47,
-          "receipts": {
-            "x-request-id": "hMZOkPp11cpGwWeQOZQn19GWcwCJAUgyr9VwiIz5"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.98,
-          "tcpMs": 1.72,
-          "tlsMs": 5.01,
-          "ttfbMs": 78.23,
-          "ttftMs": 1950.5,
-          "coldE2eMs": 1958.21,
-          "outputTokens": 196,
-          "outputTokensPerSec": 99.89,
-          "receipts": {
-            "x-request-id": "9zK87FSir22q1eA5o2rlWtuXdacurjbJ9vtIU1Z2"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.8,
-          "tcpMs": 1.78,
-          "tlsMs": 5.5,
-          "ttfbMs": 94.58,
-          "ttftMs": 3730.52,
-          "coldE2eMs": 3738.6,
-          "outputTokens": 196,
-          "outputTokensPerSec": 51.93,
-          "receipts": {
-            "x-request-id": "NE3EM6UHiIbNWCsamnk4Oy3npq2J7YSbfFv1TML6"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 3.25,
-          "tcpMs": 1.62,
-          "tlsMs": 6.39,
-          "ttfbMs": 244.22,
-          "ttftMs": 2692.91,
-          "coldE2eMs": 2704.17,
-          "outputTokens": 196,
-          "outputTokensPerSec": 72.44,
-          "receipts": {
-            "x-request-id": "bSDYnZSgci8O0rVLw8mhD8WeXl1Nyy6j7CRFUeJD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.99,
-          "tcpMs": 1.78,
-          "tlsMs": 5.38,
-          "ttfbMs": 83.42,
-          "ttftMs": 1784.09,
-          "coldE2eMs": 1792.24,
-          "outputTokens": 196,
-          "outputTokensPerSec": 109.26,
-          "receipts": {
-            "x-request-id": "xAngnzwbnXEmvQR5sdjszzqzNatsqxHAOsZOUuMD"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 25.72,
-          "tcpMs": 1.8,
-          "tlsMs": 10.21,
-          "ttfbMs": 130.18,
-          "ttftMs": 2138.25,
-          "coldE2eMs": 2175.99,
-          "outputTokens": 196,
-          "outputTokensPerSec": 90.21,
-          "receipts": {
-            "x-request-id": "OIg3aYIUgkTEavSjbGVkmqqubYbXbkRKZPbLMlv2"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.72,
-          "tcpMs": 1.02,
-          "tlsMs": 4.48,
-          "ttfbMs": 382.05,
-          "ttftMs": 2341.48,
-          "coldE2eMs": 2347.71,
-          "outputTokens": 196,
-          "outputTokensPerSec": 83.57,
-          "receipts": {
-            "x-request-id": "wzylTxduV0R71Uo3W1WevT8y0yhSAZYl80xlWFbb"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 14,
-          "tcpMs": 2.7,
-          "tlsMs": 6.24,
-          "ttfbMs": 109.03,
-          "ttftMs": 2857.97,
-          "coldE2eMs": 2880.91,
-          "outputTokens": 196,
-          "outputTokensPerSec": 68.09,
-          "receipts": {
-            "x-request-id": "U27LfnIZsTNEDK8GRzExmBsbB45QVafUfD12MhYt"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.77,
-          "tcpMs": 1.77,
-          "tlsMs": 5.8,
-          "ttfbMs": 131.14,
-          "ttftMs": 2280.5,
-          "coldE2eMs": 2288.84,
-          "outputTokens": 196,
-          "outputTokensPerSec": 84.94,
-          "receipts": {
-            "x-request-id": "anQ9iJLd7f9iuzyqy07rOtBYzcTP1Q5Hc3MRVffq"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 26.1,
-          "tcpMs": 1.49,
-          "tlsMs": 4.71,
-          "ttfbMs": 111.17,
-          "ttftMs": 1789.79,
-          "coldE2eMs": 1822.09,
-          "outputTokens": 196,
-          "outputTokensPerSec": 108.68,
-          "receipts": {
-            "x-request-id": "gMm7AJPYZZxZNGI9BUFQ9PI6HBfiJZGGQSNXUo7r"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.79,
+          "dnsMs": 0.86,
           "tcpMs": 1.48,
-          "tlsMs": 5.01,
-          "ttfbMs": 96.03,
-          "ttftMs": 2333.02,
-          "coldE2eMs": 2340.3,
+          "tlsMs": 4.85,
+          "ttfbMs": 154.32,
+          "ttftMs": 1722.94,
+          "coldE2eMs": 1730.12,
           "outputTokens": 196,
-          "outputTokensPerSec": 83.6,
+          "outputTokensPerSec": 112.4,
           "receipts": {
-            "x-request-id": "AYcs3kwOAwuOLQGFD9HgZBB1e3Btvjohk0i6lWsL"
+            "x-request-id": "4JxUwpWAaDNvB6Camv4K2b1m8pAxoFaHwDTuPDyX"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.98,
+          "dnsMs": 0.76,
+          "tcpMs": 1.95,
+          "tlsMs": 6.21,
+          "ttfbMs": 150.62,
+          "ttftMs": 2164.19,
+          "coldE2eMs": 2173.11,
+          "outputTokens": 196,
+          "outputTokensPerSec": 90.22,
+          "receipts": {
+            "x-request-id": "FSxlHhghzpugpGN0pVkFVtCPUrdMEa7ArdkRyTg2"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 21.9,
+          "tcpMs": 2.52,
+          "tlsMs": 5.41,
+          "ttfbMs": 208.55,
+          "ttftMs": 1871.02,
+          "coldE2eMs": 1900.85,
+          "outputTokens": 196,
+          "outputTokensPerSec": 103.9,
+          "receipts": {
+            "x-request-id": "80KhCsswQ7VxK7wvm6XmlMZLnbUOaVTBJbOBKx1X"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 0.97,
           "tcpMs": 1.81,
-          "tlsMs": 6.6,
-          "ttfbMs": 134.44,
-          "ttftMs": 2418.24,
-          "coldE2eMs": 2427.64,
+          "tlsMs": 5.69,
+          "ttfbMs": 126.84,
+          "ttftMs": 1752.56,
+          "coldE2eMs": 1761.03,
           "outputTokens": 196,
-          "outputTokensPerSec": 79.71,
+          "outputTokensPerSec": 110.98,
           "receipts": {
-            "x-request-id": "ZmBKNdy6Chj7BD9AmJFAW3d1BPOlK9vJ69cS3vTO"
+            "x-request-id": "p7pzhK5TSc8MpKPgVaoV3gryCfMUC4at3rtkWzpe"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.89,
-          "tcpMs": 1.47,
-          "tlsMs": 5.49,
-          "ttfbMs": 95.49,
-          "ttftMs": 1846.05,
-          "coldE2eMs": 1853.9,
+          "dnsMs": 0.67,
+          "tcpMs": 1.83,
+          "tlsMs": 5.72,
+          "ttfbMs": 95.91,
+          "ttftMs": 2238.77,
+          "coldE2eMs": 2246.99,
           "outputTokens": 196,
-          "outputTokensPerSec": 105.52,
+          "outputTokensPerSec": 87.04,
           "receipts": {
-            "x-request-id": "UV42yn8AvQ5oQP4DIVJW1snqvhnqmKX8DQmEyLxX"
+            "x-request-id": "W0fz1vHbHNLvsnX2YznPETvDwaNuBl2zgneovdpM"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 3.1,
-          "tcpMs": 1.79,
-          "tlsMs": 6.75,
-          "ttfbMs": 101.64,
-          "ttftMs": 2301.31,
-          "coldE2eMs": 2312.96,
+          "dnsMs": 0.67,
+          "tcpMs": 1.73,
+          "tlsMs": 5.35,
+          "ttfbMs": 152.46,
+          "ttftMs": 2573.92,
+          "coldE2eMs": 2581.66,
           "outputTokens": 196,
-          "outputTokensPerSec": 84.69,
+          "outputTokensPerSec": 75.76,
           "receipts": {
-            "x-request-id": "fCBFU6pn3gJzfYhiFth1YNuBavlIl50eGVN428tj"
+            "x-request-id": "EDAWiw3BMpuzCYLT57bJlhpMrhnMOSExN5B7YQnV"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 24.08,
+          "tcpMs": 2.01,
+          "tlsMs": 6.18,
+          "ttfbMs": 184.83,
+          "ttftMs": 2251.9,
+          "coldE2eMs": 2284.18,
+          "outputTokens": 196,
+          "outputTokensPerSec": 86.38,
+          "receipts": {
+            "x-request-id": "fHCr34w851KPsuk72GVmlJBJGS2NrjRhyWGjflXc"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 0.95,
+          "tcpMs": 1.78,
+          "tlsMs": 4.69,
+          "ttfbMs": 252.57,
+          "ttftMs": 1932.25,
+          "coldE2eMs": 1939.68,
+          "outputTokens": 196,
+          "outputTokensPerSec": 101,
+          "receipts": {
+            "x-request-id": "Vw8pR2UFTiVVRdO4ojMcopTjCmlCfZFBSMav6Hke"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 1.03,
+          "tcpMs": 1.58,
+          "tlsMs": 5.52,
+          "ttfbMs": 169.42,
+          "ttftMs": 2174.18,
+          "coldE2eMs": 2182.3,
+          "outputTokens": 196,
+          "outputTokensPerSec": 86.97,
+          "receipts": {
+            "x-request-id": "IZ9LvQcxSJ4N7rvH50HTCawGDBrk42HjeIGMi81Z"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 69.58,
-          "ttftMs": 2226.68,
+          "ttfbMs": 130.89,
+          "ttftMs": 1931.26,
           "outputTokens": 196,
-          "outputTokensPerSec": 86.86,
+          "outputTokensPerSec": 100.73,
           "receipts": {
-            "x-request-id": "yP8sfl9gVzZvfk1E8UmEq5UPD2i75R7mkosIQtiT"
+            "x-request-id": "ibZm6KQ0k7f0WAtSffjGBraZq4LGUhVFXBuzv5Jo"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 75.44,
-          "ttftMs": 2242.48,
+          "ttfbMs": 124.74,
+          "ttftMs": 1887.36,
           "outputTokens": 196,
-          "outputTokensPerSec": 86.98,
+          "outputTokensPerSec": 102.99,
           "receipts": {
-            "x-request-id": "vDxwyvwfjo1jYt5GJKk84FeTO95LPsMVRxactj5z"
+            "x-request-id": "RhjcvmoLdorwD5BaBUxhI3lFLfyc8YHrnKTYETbX"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 69.12,
-          "ttftMs": 2443.14,
+          "ttfbMs": 116.24,
+          "ttftMs": 2353.99,
           "outputTokens": 196,
-          "outputTokensPerSec": 79.08,
+          "outputTokensPerSec": 82.76,
           "receipts": {
-            "x-request-id": "JRnIThzzenDQDweORkeO5iWcQneHPUqY49mHuhp1"
+            "x-request-id": "mSDQVmxqFrakJSZjhr1YZyuybOP7DYw0LlzDa06L"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 80.79,
-          "ttftMs": 2611.29,
+          "ttfbMs": 78.53,
+          "ttftMs": 2383.21,
           "outputTokens": 196,
-          "outputTokensPerSec": 74.93,
+          "outputTokensPerSec": 81.37,
           "receipts": {
-            "x-request-id": "p8Fd80ZSxpcvuvxVXTUAn3hknLvgByaHmEroywKt"
+            "x-request-id": "RRvsdX4a3EpXMEBZUqqnoXqWshkfjb7DI2zleZaW"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 76.69,
-          "ttftMs": 2157.36,
+          "ttfbMs": 90.3,
+          "ttftMs": 2200.99,
           "outputTokens": 196,
-          "outputTokensPerSec": 89.52,
+          "outputTokensPerSec": 87.18,
           "receipts": {
-            "x-request-id": "Ij6VIS0bhxVAmShNb1GlGyfSEmWPgISTC4pgK3Gh"
+            "x-request-id": "arYRDqaLenXuBBWvqlCx8gC8ZegcGTWsXN2zzWWl"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 69.47,
-          "ttftMs": 1578.68,
+          "ttfbMs": 76.97,
+          "ttftMs": 2029.22,
           "outputTokens": 196,
-          "outputTokensPerSec": 123.28,
+          "outputTokensPerSec": 94.61,
           "receipts": {
-            "x-request-id": "O6X2Hej0k0Np6bOhN7fFEXqsLu3Vv1K9W4Q4aryJ"
+            "x-request-id": "WQKNmT4PzkOu5DYMooazJBGcsLAt3fQwdseJ24jk"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 72.17,
-          "ttftMs": 2330.11,
+          "ttfbMs": 1977.35,
+          "ttftMs": 3409.41,
           "outputTokens": 196,
-          "outputTokensPerSec": 83.16,
+          "outputTokensPerSec": 57.48,
           "receipts": {
-            "x-request-id": "zCMywuJEH0gXGPsVbPOmGqSF66haQVTkBffOyeWx"
+            "x-request-id": "nIJgObTlyVyIxn9VuCHrzVKfgmawYfFhwOCcpPjo"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 79.27,
-          "ttftMs": 2165.57,
+          "ttfbMs": 126.19,
+          "ttftMs": 1807.5,
           "outputTokens": 196,
-          "outputTokensPerSec": 87.88,
+          "outputTokensPerSec": 107.63,
           "receipts": {
-            "x-request-id": "SfVwyiU93bTkLCcSwl0CNBuCAs4J3mRjC95T4egv"
+            "x-request-id": "6ZkUBNG7bJt2BrjC2H5CJ9mRABspTAzu7u4RhVcV"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 69.86,
-          "ttftMs": 2203.29,
+          "ttfbMs": 132.79,
+          "ttftMs": 1832.3,
           "outputTokens": 196,
-          "outputTokensPerSec": 88.42,
+          "outputTokensPerSec": 106.03,
           "receipts": {
-            "x-request-id": "78ioa9gg58kNTGtGWV1wg9LCYHsmZpfQnyW3ZcrR"
+            "x-request-id": "KPR3dkgBfZNF84obrX3EjK1jbr7mofx36K1yEgjG"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 66.13,
-          "ttftMs": 2165.7,
+          "ttfbMs": 115.04,
+          "ttftMs": 1563.32,
           "outputTokens": 196,
-          "outputTokensPerSec": 89.58,
+          "outputTokensPerSec": 124.24,
           "receipts": {
-            "x-request-id": "mTXjoK0ePCfHG9Ll2B4EBQKehEfBusfYaeX7yp2Y"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 81.53,
-          "ttftMs": 2369.45,
-          "outputTokens": 196,
-          "outputTokensPerSec": 80.89,
-          "receipts": {
-            "x-request-id": "jp9t1voNnxroOlyEVwXq2wiLdxGTb0WzUCjiqdQT"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 74.44,
-          "ttftMs": 2160.79,
-          "outputTokens": 196,
-          "outputTokensPerSec": 89.83,
-          "receipts": {
-            "x-request-id": "juCjL8QmcLcy9yiRtus5nZGcvQ7sW5dl2UYPpuGI"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 142.95,
-          "ttftMs": 2542.56,
-          "outputTokens": 196,
-          "outputTokensPerSec": 76.78,
-          "receipts": {
-            "x-request-id": "haYGBpR19FDXgUHivQSAJb1LYx2axXJ54qoHGPVr"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 91.86,
-          "ttftMs": 1806.36,
-          "outputTokens": 196,
-          "outputTokensPerSec": 107.81,
-          "receipts": {
-            "x-request-id": "iDUAPym1r0nkXDGBEiB8EXffrNSFUB1XQXKl23AW"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 80.85,
-          "ttftMs": 2396.07,
-          "outputTokens": 196,
-          "outputTokensPerSec": 80.56,
-          "receipts": {
-            "x-request-id": "I9nwt7e4oTJPeWW80i3q77b0tw0i5YmFhjE1QTSK"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 74.12,
-          "ttftMs": 2182.76,
-          "outputTokens": 196,
-          "outputTokensPerSec": 88.07,
-          "receipts": {
-            "x-request-id": "hyope46wNXq4MfDIz8VnLDHCSCgojJGasMIzai5m"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 87.79,
-          "ttftMs": 2062.81,
-          "outputTokens": 196,
-          "outputTokensPerSec": 94.49,
-          "receipts": {
-            "x-request-id": "nB6BGaIQgmDHNRM8PUyRgSGoBZOn7Zw7oTHJ79pL"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 69.68,
-          "ttftMs": 1910.18,
-          "outputTokens": 196,
-          "outputTokensPerSec": 102.01,
-          "receipts": {
-            "x-request-id": "KOTS907GVi2vG02nTVZ3WcI7cCyrMQHXvYLFD1IP"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 71.75,
-          "ttftMs": 1865.66,
-          "outputTokens": 196,
-          "outputTokensPerSec": 104.48,
-          "receipts": {
-            "x-request-id": "Aj44XhtHbE7M1w3Y20o69rhKo8fcWVbWFxSDT02x"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 70.51,
-          "ttftMs": 1905.26,
-          "outputTokens": 196,
-          "outputTokensPerSec": 102.15,
-          "receipts": {
-            "x-request-id": "6hMb9Tz3uEdxP13LBTsQiowD6PiobcOimTGNe3Fo"
+            "x-request-id": "YAvPCbjZD6Si3tSkMrW68WwV880Q7gOouWOuPH0h"
           }
         }
       ],
       "summary": {
         "dnsMs": {
-          "median": 1.07,
-          "p95": 25.72,
-          "p99": 25.72
+          "median": 0.96,
+          "p95": 24.08,
+          "p99": 24.08
         },
         "tcpMs": {
-          "median": 1.77,
-          "p95": 1.88,
-          "p99": 1.88
+          "median": 1.82,
+          "p95": 2.52,
+          "p99": 2.52
         },
         "tlsMs": {
-          "median": 5.71,
-          "p95": 6.75,
-          "p99": 6.75
+          "median": 5.61,
+          "p95": 6.56,
+          "p99": 6.56
         },
         "coldTtfbMs": {
-          "median": 105.34,
-          "p95": 244.22,
-          "p99": 244.22
+          "median": 160.42,
+          "p95": 252.57,
+          "p99": 252.57
         },
         "coldTtftMs": {
-          "median": 2209.38,
-          "p95": 2857.97,
-          "p99": 2857.97
+          "median": 2048.22,
+          "p95": 2573.92,
+          "p99": 2573.92
         },
         "coldE2eMs": {
-          "median": 2232.42,
-          "p95": 2880.91,
-          "p99": 2880.91
+          "median": 2056.39,
+          "p95": 2581.66,
+          "p99": 2581.66
         },
         "warmTtfbMs": {
-          "median": 74.28,
-          "p95": 91.86,
-          "p99": 91.86
+          "median": 120.49,
+          "p95": 1977.35,
+          "p99": 1977.35
         },
         "warmTtftMs": {
-          "median": 2174.23,
-          "p95": 2542.56,
-          "p99": 2542.56
+          "median": 1980.24,
+          "p95": 3409.41,
+          "p99": 3409.41
         },
         "outputTokensPerSec": {
-          "median": 88.24,
-          "p95": 108.68,
-          "p99": 109.26
+          "median": 97.67,
+          "p95": 112.4,
+          "p99": 112.4
         }
       },
-      "compositeScore": 83.59,
+      "compositeScore": 84.2,
       "successRate": 1
     },
     {
@@ -2242,573 +1242,313 @@
       "iterations": [
         {
           "mode": "cold",
-          "dnsMs": 24.68,
-          "tcpMs": 1.54,
-          "tlsMs": 9.9,
-          "ttfbMs": 1858.59,
-          "ttftMs": 2002.38,
-          "coldE2eMs": 2038.5,
-          "outputTokens": 196,
-          "outputTokensPerSec": 92.42,
-          "receipts": {
-            "cf-ray": "a323abee0a39a561-IAD",
-            "x-request-id": "adad33d9-0c1e-4012-a5b8-d71053959364"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 25.4,
-          "tcpMs": 1.5,
-          "tlsMs": 8.21,
-          "ttfbMs": 1792.94,
-          "ttftMs": 2054.84,
-          "coldE2eMs": 2089.95,
-          "outputTokens": 196,
-          "outputTokensPerSec": 87.54,
-          "receipts": {
-            "cf-ray": "a323ad68fcac7fdc-IAD",
-            "x-request-id": "d6632da4-55f5-405c-bcba-f34978af5eab"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.78,
-          "tcpMs": 0.85,
-          "tlsMs": 6.19,
-          "ttfbMs": 2047.04,
-          "ttftMs": 2047.19,
-          "coldE2eMs": 2055.01,
-          "outputTokens": 196,
-          "outputTokensPerSec": 82.88,
-          "receipts": {
-            "cf-ray": "a323aecd1f1ee61f-IAD",
-            "x-request-id": "8ae50495-1f8b-4712-9be6-917a93868ce8"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.9,
-          "tcpMs": 0.98,
-          "tlsMs": 3.79,
-          "ttfbMs": 1720.61,
-          "ttftMs": 1840.02,
-          "coldE2eMs": 1845.7,
-          "outputTokens": 196,
-          "outputTokensPerSec": 97.85,
-          "receipts": {
-            "cf-ray": "a323af642c30379e-IAD",
-            "x-request-id": "7298de20-a4b1-4bb3-9d83-82ec9acea17f"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 9.05,
+          "dnsMs": 232.46,
           "tcpMs": 1.11,
-          "tlsMs": 5.56,
-          "ttfbMs": 1610.26,
-          "ttftMs": 1929.19,
-          "coldE2eMs": 1944.92,
+          "tlsMs": 8.85,
+          "ttfbMs": 2002.17,
+          "ttftMs": 2114.87,
+          "coldE2eMs": 2357.29,
           "outputTokens": 196,
-          "outputTokensPerSec": 93.69,
+          "outputTokensPerSec": 85.12,
           "receipts": {
-            "cf-ray": "a323b0b84f1129bb-IAD",
-            "x-request-id": "01679cea-b8f9-4905-aae5-de491b7ab5ef"
+            "cf-ray": "a3248c4a4ce2d708-IAD",
+            "x-request-id": "fd58161f-8a86-4e88-be8e-dcfb87ca5140"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.72,
-          "tcpMs": 0.77,
-          "tlsMs": 5.81,
-          "ttfbMs": 1587.03,
-          "ttftMs": 2031.98,
-          "coldE2eMs": 2039.29,
+          "dnsMs": 0.86,
+          "tcpMs": 1.16,
+          "tlsMs": 5.2,
+          "ttfbMs": 1720.5,
+          "ttftMs": 2066.64,
+          "coldE2eMs": 2073.87,
           "outputTokens": 196,
-          "outputTokensPerSec": 91.37,
+          "outputTokensPerSec": 89.96,
           "receipts": {
-            "cf-ray": "a323b150be99d687-IAD",
-            "x-request-id": "ff77d4e6-6d84-4035-ba9e-8d5062c47ea7"
+            "cf-ray": "a3248cd19d63e762-IAD",
+            "x-request-id": "0cd0afc7-d559-4def-abe9-946d33afd773"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 30.25,
-          "tcpMs": 0.97,
-          "tlsMs": 5.88,
-          "ttfbMs": 1637.99,
-          "ttftMs": 2044.33,
-          "coldE2eMs": 2081.42,
+          "dnsMs": 0.84,
+          "tcpMs": 1.05,
+          "tlsMs": 4.91,
+          "ttfbMs": 1880.52,
+          "ttftMs": 2119.58,
+          "coldE2eMs": 2126.38,
           "outputTokens": 196,
-          "outputTokensPerSec": 93.76,
+          "outputTokensPerSec": 86.82,
           "receipts": {
-            "cf-ray": "a323b2449a9962a0-IAD",
-            "x-request-id": "8f13b1de-8932-4ab6-8739-3d36d7d7df34"
+            "cf-ray": "a3248d5cf8ef292b-IAD",
+            "x-request-id": "e5677a7a-26d9-4ac5-90d8-059ec27f8ff3"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.96,
-          "tcpMs": 0.9,
-          "tlsMs": 7.63,
-          "ttfbMs": 1675.09,
-          "ttftMs": 1860.45,
-          "coldE2eMs": 1869.95,
+          "dnsMs": 27.09,
+          "tcpMs": 0.94,
+          "tlsMs": 5.12,
+          "ttfbMs": 1760.22,
+          "ttftMs": 2106.98,
+          "coldE2eMs": 2140.13,
           "outputTokens": 196,
-          "outputTokensPerSec": 87.51,
+          "outputTokensPerSec": 82.98,
           "receipts": {
-            "cf-ray": "a323b2c42b8655eb-IAD",
-            "x-request-id": "166a8290-5468-495b-af23-1fb2a98ca479"
+            "cf-ray": "a3248e88fae3ef62-IAD",
+            "x-request-id": "96251639-187a-4647-84d9-04ed087e52a8"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.87,
-          "tcpMs": 1.29,
-          "tlsMs": 7.03,
-          "ttfbMs": 1881.94,
-          "ttftMs": 2055.33,
-          "coldE2eMs": 2064.53,
+          "dnsMs": 0.83,
+          "tcpMs": 1.42,
+          "tlsMs": 5.6,
+          "ttfbMs": 1967.27,
+          "ttftMs": 2151.15,
+          "coldE2eMs": 2159.01,
           "outputTokens": 196,
-          "outputTokensPerSec": 92.72,
+          "outputTokensPerSec": 84.47,
           "receipts": {
-            "cf-ray": "a323b38b482c5df7-IAD",
-            "x-request-id": "4c4ae692-fe20-4662-8f10-0e264edd1ce2"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 20.93,
-          "tcpMs": 1.34,
-          "tlsMs": 10.79,
-          "ttfbMs": 1704,
-          "ttftMs": 1912.22,
-          "coldE2eMs": 1945.29,
-          "outputTokens": 196,
-          "outputTokensPerSec": 90.92,
-          "receipts": {
-            "cf-ray": "a323b52a4e1b72e1-IAD",
-            "x-request-id": "4f8b2682-d519-4a42-a71c-e7e5f856f704"
+            "cf-ray": "a3248f41b96aa5f8-IAD",
+            "x-request-id": "3f274562-d558-4198-87cf-e737cf026a8a"
           }
         },
         {
           "mode": "cold",
           "dnsMs": 0.77,
-          "tcpMs": 0.99,
-          "tlsMs": 7.33,
-          "ttfbMs": 1541.16,
-          "ttftMs": 1805.93,
-          "coldE2eMs": 1815.03,
+          "tcpMs": 0.89,
+          "tlsMs": 4.64,
+          "ttfbMs": 1818.85,
+          "ttftMs": 2132.79,
+          "coldE2eMs": 2139.09,
           "outputTokens": 196,
-          "outputTokensPerSec": 104.03,
+          "outputTokensPerSec": 87.15,
           "receipts": {
-            "cf-ray": "a323b5aff88f2060-IAD",
-            "x-request-id": "3cdc3fd4-19b0-42a9-b46f-676bb284a622"
+            "cf-ray": "a3248fc81c48ad56-IAD",
+            "x-request-id": "a9cb2f70-4cec-4bd7-a146-0fe3937ea0dd"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 20.67,
-          "tcpMs": 1.2,
-          "tlsMs": 6.65,
-          "ttfbMs": 1772.11,
-          "ttftMs": 2064.09,
-          "coldE2eMs": 2092.62,
+          "dnsMs": 0.76,
+          "tcpMs": 1.08,
+          "tlsMs": 4.94,
+          "ttfbMs": 1893.27,
+          "ttftMs": 2184.74,
+          "coldE2eMs": 2191.53,
           "outputTokens": 196,
-          "outputTokensPerSec": 85.24,
+          "outputTokensPerSec": 82.95,
           "receipts": {
-            "cf-ray": "a323b6d10920f508-IAD",
-            "x-request-id": "81b2c185-c80a-460c-b940-b41f1bf71b4a"
+            "cf-ray": "a32490a5cc87cba9-IAD",
+            "x-request-id": "80d1de44-e5bf-47f7-a2d9-fa3e68cb0fcc"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.73,
-          "tcpMs": 1.11,
-          "tlsMs": 5.12,
-          "ttfbMs": 1596.26,
-          "ttftMs": 1834.25,
-          "coldE2eMs": 1841.22,
+          "dnsMs": 34.16,
+          "tcpMs": 1.43,
+          "tlsMs": 7.04,
+          "ttfbMs": 2491.26,
+          "ttftMs": 2884.68,
+          "coldE2eMs": 2927.31,
           "outputTokens": 196,
-          "outputTokensPerSec": 92.93,
+          "outputTokensPerSec": 66.85,
           "receipts": {
-            "cf-ray": "a323b7d41e1025d1-IAD",
-            "x-request-id": "229a14c7-ca6c-4903-b1bc-40de62e27d2b"
+            "cf-ray": "a3249144ebd7d637-IAD",
+            "x-request-id": "aae0b026-fa27-47e8-8f95-8c4440e05f64"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 18.05,
-          "tcpMs": 1.37,
-          "tlsMs": 6.59,
-          "ttfbMs": 1781.92,
-          "ttftMs": 1949.62,
-          "coldE2eMs": 1975.63,
+          "dnsMs": 2.18,
+          "tcpMs": 1.71,
+          "tlsMs": 6.09,
+          "ttfbMs": 2194.29,
+          "ttftMs": 2560.21,
+          "coldE2eMs": 2570.19,
           "outputTokens": 196,
-          "outputTokensPerSec": 89.98,
+          "outputTokensPerSec": 74.28,
           "receipts": {
-            "cf-ray": "a323b954781892aa-IAD",
-            "x-request-id": "42e354d5-9cdd-402e-bc8b-6c351ec8bdc0"
+            "cf-ray": "a32491d259b3e99a-IAD",
+            "x-request-id": "8f7049b8-aaf2-4aed-8c14-be927c7eed53"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.72,
-          "tcpMs": 1.34,
-          "tlsMs": 7.26,
-          "ttfbMs": 1834.61,
-          "ttftMs": 1995.84,
-          "coldE2eMs": 2005.15,
+          "dnsMs": 1.03,
+          "tcpMs": 0.88,
+          "tlsMs": 5.24,
+          "ttfbMs": 19621.89,
+          "ttftMs": 20255.33,
+          "coldE2eMs": 20262.48,
           "outputTokens": 196,
-          "outputTokensPerSec": 91.3,
+          "outputTokensPerSec": 9.62,
           "receipts": {
-            "cf-ray": "a323ba3f89de7cb0-IAD",
-            "x-request-id": "0917c4e0-7adb-4342-bdfa-3edd6fd53898"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 20.2,
-          "tcpMs": 1.17,
-          "tlsMs": 8.52,
-          "ttfbMs": 1542.76,
-          "ttftMs": 1927.07,
-          "coldE2eMs": 1956.97,
-          "outputTokens": 196,
-          "outputTokensPerSec": 92.93,
-          "receipts": {
-            "cf-ray": "a323bbd0ebb357ea-IAD",
-            "x-request-id": "845aa580-594a-44fa-8825-93f7131ca5ef"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.87,
-          "tcpMs": 1.26,
-          "tlsMs": 5.33,
-          "ttfbMs": 1598.1,
-          "ttftMs": 1904.33,
-          "coldE2eMs": 1911.79,
-          "outputTokens": 196,
-          "outputTokensPerSec": 100.38,
-          "receipts": {
-            "cf-ray": "a323bc631cee8b1a-IAD",
-            "x-request-id": "4b23442f-ec20-41dd-b3cd-54889ccd78bc"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.87,
-          "tcpMs": 1.58,
-          "tlsMs": 8.59,
-          "ttfbMs": 1717.84,
-          "ttftMs": 1932.33,
-          "coldE2eMs": 1943.38,
-          "outputTokens": 196,
-          "outputTokensPerSec": 93.45,
-          "receipts": {
-            "cf-ray": "a323bd142c323bd1-IAD",
-            "x-request-id": "d6274e5f-b958-4abf-8998-b2604717d091"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.96,
-          "tcpMs": 0.9,
-          "tlsMs": 8.09,
-          "ttfbMs": 1559.33,
-          "ttftMs": 1713.38,
-          "coldE2eMs": 1723.33,
-          "outputTokens": 196,
-          "outputTokensPerSec": 99.1,
-          "receipts": {
-            "cf-ray": "a323bdb19ba05292-IAD",
-            "x-request-id": "dcd20181-265b-4d41-9104-a8d70534c6a8"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 2.91,
-          "tcpMs": 0.92,
-          "tlsMs": 6.34,
-          "ttfbMs": 1795.11,
-          "ttftMs": 2290.56,
-          "coldE2eMs": 2300.73,
-          "outputTokens": 196,
-          "outputTokensPerSec": 80.77,
-          "receipts": {
-            "cf-ray": "a323bf3beabfd683-IAD",
-            "x-request-id": "dfb5c4a9-8b1d-46ef-892b-f2b7a2ae9ad0"
+            "cf-ray": "a324925ccbf2d6bc-IAD",
+            "x-request-id": "d5fe5b61-ba13-41cd-a087-5fb234b79896"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1689.04,
-          "ttftMs": 1905.42,
+          "ttfbMs": 2154.81,
+          "ttftMs": 2299.41,
           "outputTokens": 196,
-          "outputTokensPerSec": 94.48,
+          "outputTokensPerSec": 79.31,
           "receipts": {
-            "cf-ray": "a323c0b29e925fa4-IAD",
-            "x-request-id": "616fa1ea-c9a2-4029-9604-6f0ec9ac1761"
+            "cf-ray": "a32493b80f544ff8-IAD",
+            "x-request-id": "112417d4-1d74-47d0-b092-6ad1b578e9de"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1598.37,
-          "ttftMs": 2047.14,
+          "ttfbMs": 5498.77,
+          "ttftMs": 5753.41,
           "outputTokens": 196,
-          "outputTokensPerSec": 93.33,
+          "outputTokensPerSec": 33.68,
           "receipts": {
-            "cf-ray": "a323c40d9f53b58e-IAD",
-            "x-request-id": "95df0677-b711-4d3d-a12d-34243830bc65"
+            "cf-ray": "a32495440eb9d647-IAD",
+            "x-request-id": "a47e3736-aae2-4b56-8e3e-a5449d066f0a"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1443.57,
-          "ttftMs": 1790.42,
+          "ttfbMs": 5756.06,
+          "ttftMs": 6026.25,
           "outputTokens": 196,
-          "outputTokensPerSec": 105.98,
+          "outputTokensPerSec": 32.09,
           "receipts": {
-            "cf-ray": "a323c6548924a5ff-IAD",
-            "x-request-id": "dbfe113c-1a35-4232-bebf-5ae92726eddc"
+            "cf-ray": "a324964fba0b9c43-IAD",
+            "x-request-id": "027459c9-fc68-4c89-83bf-3650667ed6d6"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1474.05,
-          "ttftMs": 1777.8,
+          "ttfbMs": 1711.18,
+          "ttftMs": 2067.21,
           "outputTokens": 196,
-          "outputTokensPerSec": 98.97,
+          "outputTokensPerSec": 87.12,
           "receipts": {
-            "cf-ray": "a323c8751fc35008-IAD",
-            "x-request-id": "73d183b8-cde4-435d-a16f-aeae9e71d6fa"
+            "cf-ray": "a32497ae9db7b135-IAD",
+            "x-request-id": "cb771d8f-f202-46ce-beff-344257de6253"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 8194.12,
-          "ttftMs": 8416.71,
+          "ttfbMs": 1788.1,
+          "ttftMs": 2089.61,
           "outputTokens": 196,
-          "outputTokensPerSec": 23.11,
+          "outputTokensPerSec": 87.23,
           "receipts": {
-            "cf-ray": "a323ca36490f824b-IAD",
-            "x-request-id": "8f449613-e84c-4311-92c4-aedd211b545d"
+            "cf-ray": "a324992d880433bd-IAD",
+            "x-request-id": "fcf8c322-8f60-48d4-a882-1ca8ff0a5416"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1727.36,
-          "ttftMs": 2224.14,
+          "ttfbMs": 22925.61,
+          "ttftMs": 23505.19,
           "outputTokens": 196,
-          "outputTokensPerSec": 84.74,
+          "outputTokensPerSec": 8.24,
           "receipts": {
-            "cf-ray": "a323cd84de1b7d5c-IAD",
-            "x-request-id": "ee8e10f6-a5a5-425e-a104-b8c82866c885"
+            "cf-ray": "a3249a65dc45d6ad-IAD",
+            "x-request-id": "e7e3b03b-7ad8-4103-ac54-48143534ab27"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1468.95,
-          "ttftMs": 2477.12,
+          "ttfbMs": 1563.28,
+          "ttftMs": 2017.55,
           "outputTokens": 196,
-          "outputTokensPerSec": 77.3,
+          "outputTokensPerSec": 94.42,
           "receipts": {
-            "cf-ray": "a323cfbced900618-IAD",
-            "x-request-id": "07cc61ed-b2c7-47fe-8465-52383dea2820"
+            "cf-ray": "a3249c5d483286d6-IAD",
+            "x-request-id": "28fafa3a-2e61-43ed-9653-7af0b5c89762"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1534.01,
-          "ttftMs": 1725.97,
+          "ttfbMs": 11541.12,
+          "ttftMs": 11932.64,
           "outputTokens": 196,
-          "outputTokensPerSec": 100.98,
+          "outputTokensPerSec": 16.34,
           "receipts": {
-            "cf-ray": "a323d39cedadaf8c-IAD",
-            "x-request-id": "08d49274-75de-42de-b906-9c2680aead9a"
+            "cf-ray": "a3249d772d7fc975-IAD",
+            "x-request-id": "f6c5d2dc-2e0e-4ce5-be08-a51990bd6b99"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1546.29,
-          "ttftMs": 1843.67,
+          "ttfbMs": 1565.02,
+          "ttftMs": 1859.45,
           "outputTokens": 196,
-          "outputTokensPerSec": 104.45,
+          "outputTokensPerSec": 96.73,
           "receipts": {
-            "cf-ray": "a323d4c4da7aadd0-IAD",
-            "x-request-id": "4be0f456-36f1-4d94-a221-0d1814283d07"
+            "cf-ray": "a3249edafda9c6d5-IAD",
+            "x-request-id": "9ea7cee0-434d-455e-9687-2a4b6f6034a5"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1620.49,
-          "ttftMs": 1734.13,
+          "ttfbMs": 3239.22,
+          "ttftMs": 3509.41,
           "outputTokens": 196,
-          "outputTokensPerSec": 105.31,
+          "outputTokensPerSec": 51.89,
           "receipts": {
-            "cf-ray": "a323d8282d0f185d-IAD",
-            "x-request-id": "24b91928-14e2-4592-9b24-cf6b3962b909"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1304.72,
-          "ttftMs": 1549.55,
-          "outputTokens": 196,
-          "outputTokensPerSec": 122.49,
-          "receipts": {
-            "cf-ray": "a323d9679b70e5fc-IAD",
-            "x-request-id": "bd135e7f-e577-4baf-aeda-ddb6571563b1"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1493.62,
-          "ttftMs": 1780.9,
-          "outputTokens": 196,
-          "outputTokensPerSec": 105.67,
-          "receipts": {
-            "cf-ray": "a323dc91fdb9d6f7-IAD",
-            "x-request-id": "0e687dac-c74d-47b1-b4a2-223c945e346b"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1363.57,
-          "ttftMs": 1532.37,
-          "outputTokens": 196,
-          "outputTokensPerSec": 115.74,
-          "receipts": {
-            "cf-ray": "a323de5a1cb88ee2-IAD",
-            "x-request-id": "4ec17c8f-a52b-44fb-8989-4fe08ef88ad6"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1508.92,
-          "ttftMs": 1705.5,
-          "outputTokens": 196,
-          "outputTokensPerSec": 105.22,
-          "receipts": {
-            "cf-ray": "a323e11dab661741-IAD",
-            "x-request-id": "fca5f01b-675a-4409-a819-9c1f08a3f4b4"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1510.82,
-          "ttftMs": 1618.14,
-          "outputTokens": 196,
-          "outputTokensPerSec": 107.28,
-          "receipts": {
-            "cf-ray": "a323e38349c5e6f2-IAD",
-            "x-request-id": "d9d7bcb9-76d4-4fea-b16f-7c7d994f5be2"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1659.49,
-          "ttftMs": 2104.79,
-          "outputTokens": 196,
-          "outputTokensPerSec": 89.04,
-          "receipts": {
-            "cf-ray": "a323e5a48a5b3210-IAD",
-            "x-request-id": "8bac178d-dd10-4c4d-87df-7cb10506c03d"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1515.91,
-          "ttftMs": 1825.9,
-          "outputTokens": 196,
-          "outputTokensPerSec": 97.37,
-          "receipts": {
-            "cf-ray": "a323e7792f09731a-IAD",
-            "x-request-id": "e76ee444-96a1-4df2-aafd-7ce72bf6db32"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1790.73,
-          "ttftMs": 2025.13,
-          "outputTokens": 196,
-          "outputTokensPerSec": 85.79,
-          "receipts": {
-            "cf-ray": "a323ea35f85e5fa4-IAD",
-            "x-request-id": "b45a6b64-9a2f-4263-bb11-cf9924388f89"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1386.89,
-          "ttftMs": 1704.14,
-          "outputTokens": 196,
-          "outputTokensPerSec": 106.66,
-          "receipts": {
-            "cf-ray": "a323eba7bd38e625-IAD",
-            "x-request-id": "8f669eee-1ece-44c0-9a4a-f9a648a0d486"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1539.06,
-          "ttftMs": 1781.55,
-          "outputTokens": 196,
-          "outputTokensPerSec": 101.14,
-          "receipts": {
-            "cf-ray": "a323ee13a872f3c2-IAD",
-            "x-request-id": "91489a80-f45f-45a8-a2bd-81847a1db1df"
+            "cf-ray": "a3249fdf9ced99c1-IAD",
+            "x-request-id": "b394c521-9ed0-4e24-9f19-3d52a78fa77e"
           }
         }
       ],
       "summary": {
         "dnsMs": {
-          "median": 0.96,
-          "p95": 25.4,
-          "p99": 25.4
+          "median": 0.95,
+          "p95": 232.46,
+          "p99": 232.46
         },
         "tcpMs": {
-          "median": 1.14,
-          "p95": 1.54,
-          "p99": 1.54
+          "median": 1.1,
+          "p95": 1.71,
+          "p99": 1.71
         },
         "tlsMs": {
-          "median": 6.84,
-          "p95": 9.9,
-          "p99": 9.9
+          "median": 5.22,
+          "p95": 8.85,
+          "p99": 8.85
         },
         "coldTtfbMs": {
-          "median": 1710.92,
-          "p95": 1881.94,
-          "p99": 1881.94
+          "median": 1930.27,
+          "p95": 19621.89,
+          "p99": 19621.89
         },
         "coldTtftMs": {
-          "median": 1940.97,
-          "p95": 2064.09,
-          "p99": 2064.09
+          "median": 2141.97,
+          "p95": 20255.33,
+          "p99": 20255.33
         },
         "coldE2eMs": {
-          "median": 1966.3,
-          "p95": 2092.62,
-          "p99": 2092.62
+          "median": 2175.27,
+          "p95": 20262.48,
+          "p99": 20262.48
         },
         "warmTtfbMs": {
-          "median": 1524.96,
-          "p95": 1790.73,
-          "p99": 1790.73
+          "median": 2697.01,
+          "p95": 22925.61,
+          "p99": 22925.61
         },
         "warmTtftMs": {
-          "median": 1785.99,
-          "p95": 2477.12,
-          "p99": 2477.12
+          "median": 2904.41,
+          "p95": 23505.19,
+          "p99": 23505.19
         },
         "outputTokensPerSec": {
-          "median": 93.57,
-          "p95": 106.66,
-          "p99": 107.28
+          "median": 82.97,
+          "p95": 94.42,
+          "p99": 94.42
         }
       },
-      "compositeScore": 85.49,
+      "compositeScore": 56.38,
       "successRate": 1
     },
     {
@@ -2818,533 +1558,293 @@
       "iterations": [
         {
           "mode": "cold",
-          "dnsMs": 35.44,
-          "tcpMs": 13.6,
-          "tlsMs": 30.26,
-          "ttfbMs": 1792.76,
-          "ttftMs": 1792.98,
-          "coldE2eMs": 1872.27,
+          "dnsMs": 32.53,
+          "tcpMs": 14.18,
+          "tlsMs": 30.8,
+          "ttfbMs": 2213.16,
+          "ttftMs": 2213.61,
+          "coldE2eMs": 2291.11,
           "outputTokens": 196,
-          "outputTokensPerSec": 102.9,
+          "outputTokensPerSec": 80.69,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-602247"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 23.68,
-          "tcpMs": 13.31,
-          "tlsMs": 28.31,
-          "ttfbMs": 1818.1,
-          "ttftMs": 1818.18,
-          "coldE2eMs": 1883.47,
-          "outputTokens": 196,
-          "outputTokensPerSec": 99.12,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-602268"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.9,
-          "tcpMs": 12.92,
-          "tlsMs": 27.56,
-          "ttfbMs": 1639.87,
-          "ttftMs": 1639.95,
-          "coldE2eMs": 1681.32,
-          "outputTokens": 196,
-          "outputTokensPerSec": 110.04,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-602345"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.86,
-          "tcpMs": 13.31,
-          "tlsMs": 27.96,
-          "ttfbMs": 1926.8,
-          "ttftMs": 1926.88,
-          "coldE2eMs": 1969.01,
-          "outputTokens": 196,
-          "outputTokensPerSec": 92.43,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-602370"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 69.37,
-          "tcpMs": 13.35,
-          "tlsMs": 28.4,
-          "ttfbMs": 1873.28,
-          "ttftMs": 1873.38,
-          "coldE2eMs": 1984.51,
-          "outputTokens": 196,
-          "outputTokensPerSec": 101.96,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-602421"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-609857"
           }
         },
         {
           "mode": "cold",
           "dnsMs": 0.81,
-          "tcpMs": 13.36,
-          "tlsMs": 28.17,
-          "ttfbMs": 1665.5,
-          "ttftMs": 1665.59,
-          "coldE2eMs": 1707.93,
+          "tcpMs": 13.82,
+          "tlsMs": 28.78,
+          "ttfbMs": 1989.77,
+          "ttftMs": 1989.87,
+          "coldE2eMs": 2033.29,
           "outputTokens": 196,
-          "outputTokensPerSec": 99.06,
+          "outputTokensPerSec": 92.49,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-602413"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-609883"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 7.5,
-          "tcpMs": 11.61,
-          "tlsMs": 24.98,
-          "ttfbMs": 1753.43,
-          "ttftMs": 1753.49,
-          "coldE2eMs": 1797.57,
+          "dnsMs": 0.76,
+          "tcpMs": 14.11,
+          "tlsMs": 29.46,
+          "ttfbMs": 1911.98,
+          "ttftMs": 1912.07,
+          "coldE2eMs": 1956.4,
           "outputTokens": 196,
-          "outputTokensPerSec": 109.01,
+          "outputTokensPerSec": 100.38,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-602442"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-609916"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.73,
-          "tcpMs": 16.18,
-          "tlsMs": 34.24,
-          "ttfbMs": 1682.82,
-          "ttftMs": 1682.9,
-          "coldE2eMs": 1734.04,
+          "dnsMs": 88.15,
+          "tcpMs": 14.11,
+          "tlsMs": 29.79,
+          "ttfbMs": 7179.19,
+          "ttftMs": 7179.29,
+          "coldE2eMs": 7311.33,
           "outputTokens": 196,
-          "outputTokensPerSec": 107.62,
+          "outputTokensPerSec": 26.93,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-602490"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-609989"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 1.12,
-          "tcpMs": 9.75,
-          "tlsMs": 21.18,
-          "ttfbMs": 1870.39,
-          "ttftMs": 1870.48,
-          "coldE2eMs": 1902.53,
+          "dnsMs": 0.78,
+          "tcpMs": 16.19,
+          "tlsMs": 34.43,
+          "ttfbMs": 2010.74,
+          "ttftMs": 2010.83,
+          "coldE2eMs": 2062.22,
           "outputTokens": 196,
-          "outputTokensPerSec": 102.95,
+          "outputTokensPerSec": 89.65,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-602518"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-610020"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 10.63,
-          "tcpMs": 11.48,
-          "tlsMs": 24.9,
-          "ttfbMs": 1803.99,
-          "ttftMs": 1804.09,
-          "coldE2eMs": 1851.1,
+          "dnsMs": 1.01,
+          "tcpMs": 14,
+          "tlsMs": 29.41,
+          "ttfbMs": 2263.72,
+          "ttftMs": 2263.81,
+          "coldE2eMs": 2308.23,
           "outputTokens": 196,
-          "outputTokensPerSec": 101.97,
+          "outputTokensPerSec": 81.96,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-602545"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-610047"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.66,
-          "tcpMs": 11.62,
-          "tlsMs": 24.74,
-          "ttfbMs": 1574.69,
-          "ttftMs": 1574.74,
-          "coldE2eMs": 1611.76,
+          "dnsMs": 0.7,
+          "tcpMs": 15.75,
+          "tlsMs": 33.09,
+          "ttfbMs": 1904.09,
+          "ttftMs": 1904.17,
+          "coldE2eMs": 1953.71,
           "outputTokens": 196,
-          "outputTokensPerSec": 114.48,
+          "outputTokensPerSec": 92.58,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-602596"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-610078"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 38.3,
-          "tcpMs": 13.94,
-          "tlsMs": 29.22,
-          "ttfbMs": 1868.27,
-          "ttftMs": 1868.36,
-          "coldE2eMs": 1949.82,
+          "dnsMs": 67.73,
+          "tcpMs": 13.25,
+          "tlsMs": 27.66,
+          "ttfbMs": 1948.13,
+          "ttftMs": 1948.37,
+          "coldE2eMs": 2057.01,
           "outputTokens": 196,
-          "outputTokensPerSec": 91.36,
+          "outputTokensPerSec": 90.35,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-602607"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-610100"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.82,
-          "tcpMs": 9.61,
-          "tlsMs": 20.57,
-          "ttfbMs": 1860.83,
-          "ttftMs": 1860.91,
-          "coldE2eMs": 1891.92,
+          "dnsMs": 1.21,
+          "tcpMs": 13.53,
+          "tlsMs": 28.08,
+          "ttfbMs": 1847.35,
+          "ttftMs": 1847.48,
+          "coldE2eMs": 1890.3,
           "outputTokens": 196,
-          "outputTokensPerSec": 103.04,
+          "outputTokensPerSec": 103.81,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-602673"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-610088"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 28.32,
-          "tcpMs": 14.82,
-          "tlsMs": 31.27,
-          "ttfbMs": 1827.32,
-          "ttftMs": 1827.4,
-          "coldE2eMs": 1901.81,
+          "dnsMs": 23.63,
+          "tcpMs": 13.73,
+          "tlsMs": 29.08,
+          "ttfbMs": 1876.7,
+          "ttftMs": 1876.82,
+          "coldE2eMs": 1943.26,
           "outputTokens": 196,
-          "outputTokensPerSec": 95.12,
+          "outputTokensPerSec": 95.9,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-602702"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 11.15,
-          "tcpMs": 12.75,
-          "tlsMs": 26.95,
-          "ttfbMs": 2002.95,
-          "ttftMs": 2003.04,
-          "coldE2eMs": 2053.89,
-          "outputTokens": 196,
-          "outputTokensPerSec": 96.48,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-602766"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 26.97,
-          "tcpMs": 16.57,
-          "tlsMs": 34.29,
-          "ttfbMs": 1549.18,
-          "ttftMs": 1549.29,
-          "coldE2eMs": 1627.11,
-          "outputTokens": 196,
-          "outputTokensPerSec": 112.8,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-602789"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.72,
-          "tcpMs": 12.47,
-          "tlsMs": 26.39,
-          "ttfbMs": 1604.09,
-          "ttftMs": 1604.19,
-          "coldE2eMs": 1643.76,
-          "outputTokens": 196,
-          "outputTokensPerSec": 108.04,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-602839"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.74,
-          "tcpMs": 13.7,
-          "tlsMs": 28.82,
-          "ttfbMs": 1959.44,
-          "ttftMs": 1959.52,
-          "coldE2eMs": 2002.78,
-          "outputTokens": 196,
-          "outputTokensPerSec": 93.04,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-602835"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 31.52,
-          "tcpMs": 13.66,
-          "tlsMs": 28.4,
-          "ttfbMs": 1781.03,
-          "ttftMs": 1781.17,
-          "coldE2eMs": 1854.75,
-          "outputTokens": 196,
-          "outputTokensPerSec": 99.96,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-602857"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 21.18,
-          "tcpMs": 11.34,
-          "tlsMs": 24.38,
-          "ttfbMs": 1961.13,
-          "ttftMs": 1961.22,
-          "coldE2eMs": 2018.11,
-          "outputTokens": 196,
-          "outputTokensPerSec": 88.56,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-602908"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-610153"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1830.21,
-          "ttftMs": 1830.31,
+          "ttfbMs": 1853.59,
+          "ttftMs": 1853.68,
           "outputTokens": 196,
-          "outputTokensPerSec": 95.92,
+          "outputTokensPerSec": 100.11,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-602992"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-610164"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1517.2,
-          "ttftMs": 1517.28,
+          "ttfbMs": 1824.8,
+          "ttftMs": 1824.9,
           "outputTokens": 196,
-          "outputTokensPerSec": 118.32,
+          "outputTokensPerSec": 104.62,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-603099"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-610220"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1703.16,
-          "ttftMs": 1703.23,
+          "ttfbMs": 1927.19,
+          "ttftMs": 1927.29,
           "outputTokens": 196,
-          "outputTokensPerSec": 106.54,
+          "outputTokensPerSec": 95.39,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-603169"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-610304"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1751.52,
-          "ttftMs": 1751.6,
+          "ttfbMs": 1861.22,
+          "ttftMs": 1861.38,
           "outputTokens": 196,
-          "outputTokensPerSec": 109.88,
+          "outputTokensPerSec": 103.76,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-603252"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-610348"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1726.95,
-          "ttftMs": 1727.02,
+          "ttfbMs": 1798.21,
+          "ttftMs": 1798.32,
           "outputTokens": 196,
-          "outputTokensPerSec": 107.25,
+          "outputTokensPerSec": 100.7,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-603309"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-610406"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1602.59,
-          "ttftMs": 1602.69,
+          "ttfbMs": 5787.42,
+          "ttftMs": 5787.5,
           "outputTokens": 196,
-          "outputTokensPerSec": 114.69,
+          "outputTokensPerSec": 33.04,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-603413"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-610462"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1530.23,
-          "ttftMs": 1530.34,
+          "ttfbMs": 2106.17,
+          "ttftMs": 2106.24,
           "outputTokens": 196,
-          "outputTokensPerSec": 120.62,
+          "outputTokensPerSec": 91.37,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-603482"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-610538"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1646.33,
-          "ttftMs": 1646.41,
+          "ttfbMs": 2633.52,
+          "ttftMs": 2633.6,
           "outputTokens": 196,
-          "outputTokensPerSec": 105.82,
+          "outputTokensPerSec": 70.34,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-603575"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-610585"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1876.61,
-          "ttftMs": 1876.8,
+          "ttfbMs": 1738.09,
+          "ttftMs": 1738.18,
           "outputTokens": 196,
-          "outputTokensPerSec": 97.55,
+          "outputTokensPerSec": 106.68,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-603615"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-610593"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 1702.15,
-          "ttftMs": 1702.24,
+          "ttfbMs": 1764.87,
+          "ttftMs": 1764.95,
           "outputTokens": 196,
-          "outputTokensPerSec": 112.74,
+          "outputTokensPerSec": 105.98,
           "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-603721"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1942.29,
-          "ttftMs": 1942.36,
-          "outputTokens": 196,
-          "outputTokensPerSec": 95.55,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-603760"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1740.62,
-          "ttftMs": 1740.71,
-          "outputTokens": 196,
-          "outputTokensPerSec": 106.29,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-603896"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1709.33,
-          "ttftMs": 1709.4,
-          "outputTokens": 196,
-          "outputTokensPerSec": 100.13,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-603953"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1840.73,
-          "ttftMs": 1840.8,
-          "outputTokens": 196,
-          "outputTokensPerSec": 96.85,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-604046"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1781.8,
-          "ttftMs": 1782.12,
-          "outputTokens": 196,
-          "outputTokensPerSec": 101.66,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-604122"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1866.66,
-          "ttftMs": 1866.75,
-          "outputTokens": 196,
-          "outputTokensPerSec": 97.99,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-604157"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1900.9,
-          "ttftMs": 1901.11,
-          "outputTokens": 196,
-          "outputTokensPerSec": 91.33,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-604244"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1649.09,
-          "ttftMs": 1649.23,
-          "outputTokens": 196,
-          "outputTokensPerSec": 108.29,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-604330"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1840.75,
-          "ttftMs": 1840.87,
-          "outputTokens": 196,
-          "outputTokensPerSec": 101.73,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-604347"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1728.19,
-          "ttftMs": 1728.28,
-          "outputTokens": 196,
-          "outputTokensPerSec": 108.1,
-          "receipts": {
-            "x-request-id": "neon-platform-aigateway-7f885bb848-77ltv/XmKAM9t911-604427"
+            "x-request-id": "neon-platform-aigateway-7f885bb848-75b9z/9Kzr4VyDfk-610661"
           }
         }
       ],
       "summary": {
         "dnsMs": {
-          "median": 9.07,
-          "p95": 38.3,
-          "p99": 38.3
+          "median": 1.11,
+          "p95": 88.15,
+          "p99": 88.15
         },
         "tcpMs": {
-          "median": 13.31,
-          "p95": 16.18,
-          "p99": 16.18
+          "median": 14.05,
+          "p95": 16.19,
+          "p99": 16.19
         },
         "tlsMs": {
-          "median": 28.06,
-          "p95": 34.24,
-          "p99": 34.24
+          "median": 29.43,
+          "p95": 34.43,
+          "p99": 34.43
         },
         "coldTtfbMs": {
-          "median": 1811.05,
-          "p95": 1961.13,
-          "p99": 1961.13
+          "median": 1968.95,
+          "p95": 7179.19,
+          "p99": 7179.19
         },
         "coldTtftMs": {
-          "median": 1811.13,
-          "p95": 1961.22,
-          "p99": 1961.22
+          "median": 1969.12,
+          "p95": 7179.29,
+          "p99": 7179.29
         },
         "coldE2eMs": {
-          "median": 1877.87,
-          "p95": 2018.11,
-          "p99": 2018.11
+          "median": 2045.15,
+          "p95": 7311.33,
+          "p99": 7311.33
         },
         "warmTtfbMs": {
-          "median": 1734.41,
-          "p95": 1900.9,
-          "p99": 1900.9
+          "median": 1857.41,
+          "p95": 5787.42,
+          "p99": 5787.42
         },
         "warmTtftMs": {
-          "median": 1734.5,
-          "p95": 1901.11,
-          "p99": 1901.11
+          "median": 1857.53,
+          "p95": 5787.5,
+          "p99": 5787.5
         },
         "outputTokensPerSec": {
-          "median": 102.44,
-          "p95": 114.48,
-          "p99": 114.69
+          "median": 93.98,
+          "p95": 105.98,
+          "p99": 105.98
         }
       },
-      "compositeScore": 86.64,
+      "compositeScore": 78.89,
       "successRate": 1
     },
     {
@@ -3354,406 +1854,217 @@
       "iterations": [
         {
           "mode": "cold",
-          "dnsMs": 30.09,
-          "tcpMs": 16.83,
-          "tlsMs": 19.26,
-          "ttfbMs": 39900.96,
-          "ttftMs": 39901.06,
-          "coldE2eMs": 39967.23,
-          "outputTokens": 216,
-          "outputTokensPerSec": 5.41
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 69.91,
-          "tcpMs": 15.8,
-          "tlsMs": 18.35,
-          "ttfbMs": 36806.28,
-          "ttftMs": 36806.42,
-          "coldE2eMs": 36910.48,
+          "dnsMs": 53.71,
+          "tcpMs": 16.33,
+          "tlsMs": 18.84,
+          "ttfbMs": 1905.72,
+          "ttftMs": 1905.85,
+          "coldE2eMs": 1994.73,
           "outputTokens": 196,
-          "outputTokensPerSec": 5.32
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 32.9,
-          "tcpMs": 16.79,
-          "tlsMs": 19,
-          "ttfbMs": 2539.18,
-          "ttftMs": 2539.27,
-          "coldE2eMs": 2607.95,
-          "outputTokens": 196,
-          "outputTokensPerSec": 77.17
+          "outputTokensPerSec": 102.32
         },
         {
           "mode": "cold",
           "dnsMs": 0.88,
-          "tcpMs": 13.47,
-          "tlsMs": 15.96,
-          "ttfbMs": 33734.56,
-          "ttftMs": 33734.65,
-          "coldE2eMs": 33764.95,
+          "tcpMs": 13.39,
+          "tlsMs": 15.45,
+          "ttfbMs": 2895.56,
+          "ttftMs": 2895.65,
+          "coldE2eMs": 2925.37,
           "outputTokens": 196,
-          "outputTokensPerSec": 5.81
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 22.51,
-          "tcpMs": 11.91,
-          "tlsMs": 14.03,
-          "ttfbMs": 2174.54,
-          "ttftMs": 2174.68,
-          "coldE2eMs": 2223.13,
-          "outputTokens": 196,
-          "outputTokensPerSec": 88.16
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.91,
-          "tcpMs": 16.27,
-          "tlsMs": 18.73,
-          "ttfbMs": 1699.06,
-          "ttftMs": 1699.17,
-          "coldE2eMs": 1735.09,
-          "outputTokens": 196,
-          "outputTokensPerSec": 113.89
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 48.13,
-          "tcpMs": 13.58,
-          "tlsMs": 75.13,
-          "ttfbMs": 2381.65,
-          "ttftMs": 2381.72,
-          "coldE2eMs": 2518.56,
-          "outputTokens": 196,
-          "outputTokensPerSec": 81.65
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.84,
-          "tcpMs": 15.76,
-          "tlsMs": 17.96,
-          "ttfbMs": 2284.89,
-          "ttftMs": 2284.98,
-          "coldE2eMs": 2319.53,
-          "outputTokens": 196,
-          "outputTokensPerSec": 84.45
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.94,
-          "tcpMs": 13.36,
-          "tlsMs": 15.69,
-          "ttfbMs": 2390.97,
-          "ttftMs": 2391.07,
-          "coldE2eMs": 2421.06,
-          "outputTokens": 196,
-          "outputTokensPerSec": 81.68
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 26.51,
-          "tcpMs": 12.9,
-          "tlsMs": 15.32,
-          "ttfbMs": 1847.53,
-          "ttftMs": 1847.63,
-          "coldE2eMs": 1902.36,
-          "outputTokens": 196,
-          "outputTokensPerSec": 105.99
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.74,
-          "tcpMs": 12,
-          "tlsMs": 14.09,
-          "ttfbMs": 24017.16,
-          "ttftMs": 24017.24,
-          "coldE2eMs": 24044.06,
-          "outputTokens": 196,
-          "outputTokensPerSec": 8.16
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 10.88,
-          "tcpMs": 16.65,
-          "tlsMs": 18.99,
-          "ttfbMs": 3032.59,
-          "ttftMs": 3032.68,
-          "coldE2eMs": 3079.2,
-          "outputTokens": 196,
-          "outputTokensPerSec": 64.35
+          "outputTokensPerSec": 67.62
         },
         {
           "mode": "cold",
           "ttfbMs": 0,
           "ttftMs": 0,
-          "coldE2eMs": 2374,
+          "coldE2eMs": 28519,
           "error": "Stream ended with no content token observed"
         },
         {
           "mode": "cold",
-          "dnsMs": 33.31,
-          "tcpMs": 11.31,
-          "tlsMs": 13.46,
-          "ttfbMs": 5305.22,
-          "ttftMs": 5305.32,
-          "coldE2eMs": 5363.4,
-          "outputTokens": 196,
-          "outputTokensPerSec": 36.84
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.78,
-          "tcpMs": 14.72,
-          "tlsMs": 16.82,
-          "ttfbMs": 26371.04,
-          "ttftMs": 26371.14,
-          "coldE2eMs": 26403.46,
-          "outputTokens": 196,
-          "outputTokensPerSec": 7.42
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 33.17,
-          "tcpMs": 15.68,
-          "tlsMs": 17.97,
-          "ttfbMs": 2311.25,
-          "ttftMs": 2311.33,
-          "coldE2eMs": 2378.16,
-          "outputTokens": 196,
-          "outputTokensPerSec": 82.62
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.78,
-          "tcpMs": 11.57,
-          "tlsMs": 13.75,
-          "ttfbMs": 2155.38,
-          "ttftMs": 2155.46,
-          "coldE2eMs": 2181.55,
-          "outputTokens": 196,
-          "outputTokensPerSec": 90.89
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.86,
-          "tcpMs": 11.49,
-          "tlsMs": 13.61,
-          "ttfbMs": 2367.6,
-          "ttftMs": 2367.69,
-          "coldE2eMs": 2393.65,
-          "outputTokens": 196,
-          "outputTokensPerSec": 82.74
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 1.5,
-          "tcpMs": 16.59,
-          "tlsMs": 18.98,
-          "ttfbMs": 40224.19,
-          "ttftMs": 40224.27,
-          "coldE2eMs": 40261.34,
-          "outputTokens": 196,
-          "outputTokensPerSec": 4.87
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 28.46,
-          "tcpMs": 13.59,
-          "tlsMs": 15.91,
-          "ttfbMs": 2468.11,
-          "ttftMs": 2468.21,
-          "coldE2eMs": 2526.18,
-          "outputTokens": 196,
-          "outputTokensPerSec": 78.89
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 31665.84,
-          "ttftMs": 31665.91,
-          "outputTokens": 196,
-          "outputTokensPerSec": 6.19
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1780.08,
-          "ttftMs": 1780.18,
-          "outputTokens": 196,
-          "outputTokensPerSec": 110.03
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1683.72,
-          "ttftMs": 1683.8,
-          "outputTokens": 196,
-          "outputTokensPerSec": 116.34
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2187.6,
-          "ttftMs": 2187.68,
-          "outputTokens": 196,
-          "outputTokensPerSec": 87.61
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 41481.05,
-          "ttftMs": 41481.14,
-          "outputTokens": 196,
-          "outputTokensPerSec": 4.72
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 36363.09,
-          "ttftMs": 36363.18,
-          "outputTokens": 196,
-          "outputTokensPerSec": 5.39
-        },
-        {
-          "mode": "warm",
           "ttfbMs": 0,
           "ttftMs": 0,
-          "error": "AI gateway request timed out"
+          "coldE2eMs": 3741,
+          "error": "Stream ended with no content token observed"
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 0.95,
+          "tcpMs": 16,
+          "tlsMs": 18.52,
+          "ttfbMs": 1825.33,
+          "ttftMs": 1825.48,
+          "coldE2eMs": 1860.95,
+          "outputTokens": 196,
+          "outputTokensPerSec": 107.32
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 0.82,
+          "tcpMs": 12.87,
+          "tlsMs": 14.9,
+          "ttfbMs": 2165.83,
+          "ttftMs": 2165.93,
+          "coldE2eMs": 2194.52,
+          "outputTokens": 196,
+          "outputTokensPerSec": 88.9
+        },
+        {
+          "mode": "cold",
+          "ttfbMs": 0,
+          "ttftMs": 0,
+          "coldE2eMs": 5221,
+          "error": "Stream ended with no content token observed"
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 2.03,
+          "tcpMs": 14.52,
+          "tlsMs": 16.71,
+          "ttfbMs": 1858.95,
+          "ttftMs": 1859.07,
+          "coldE2eMs": 1892.33,
+          "outputTokens": 196,
+          "outputTokensPerSec": 104.99
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 1.14,
+          "tcpMs": 16.63,
+          "tlsMs": 20.44,
+          "ttfbMs": 2049.4,
+          "ttftMs": 2049.51,
+          "coldE2eMs": 2087.72,
+          "outputTokens": 196,
+          "outputTokensPerSec": 95.4
+        },
+        {
+          "mode": "cold",
+          "ttfbMs": 0,
+          "ttftMs": 0,
+          "coldE2eMs": 2635,
+          "error": "Stream ended with no content token observed"
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 4851.39,
+          "ttftMs": 4851.61,
+          "outputTokens": 196,
+          "outputTokensPerSec": 40.08
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 1733.24,
+          "ttftMs": 1733.33,
+          "outputTokens": 196,
+          "outputTokensPerSec": 112.96
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 1974.11,
+          "ttftMs": 1974.23,
+          "outputTokens": 196,
+          "outputTokensPerSec": 99.26
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 1942.25,
+          "ttftMs": 1942.36,
+          "outputTokens": 196,
+          "outputTokensPerSec": 98.84
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 2392.42,
+          "ttftMs": 2392.51,
+          "outputTokens": 196,
+          "outputTokensPerSec": 80.19
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 5425.52,
+          "ttftMs": 5425.61,
+          "outputTokens": 196,
+          "outputTokensPerSec": 36.12
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 1895.24,
+          "ttftMs": 1895.33,
+          "outputTokens": 196,
+          "outputTokensPerSec": 103.35
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 2161.85,
+          "ttftMs": 2161.94,
+          "outputTokens": 196,
+          "outputTokensPerSec": 90.61
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 1694.2,
+          "ttftMs": 1694.37,
+          "outputTokens": 196,
+          "outputTokensPerSec": 115.66
         },
         {
           "mode": "warm",
           "ttfbMs": 0,
           "ttftMs": 0,
           "error": "Stream ended with no content token observed"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 44497.46,
-          "ttftMs": 44497.53,
-          "outputTokens": 196,
-          "outputTokensPerSec": 4.4
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 0,
-          "ttftMs": 0,
-          "error": "Stream ended with no content token observed"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2022.96,
-          "ttftMs": 2023.03,
-          "outputTokens": 196,
-          "outputTokensPerSec": 96.47
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2118.46,
-          "ttftMs": 2118.54,
-          "outputTokens": 196,
-          "outputTokensPerSec": 92.17
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 13389.67,
-          "ttftMs": 13389.74,
-          "outputTokens": 196,
-          "outputTokensPerSec": 14.64
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 0,
-          "ttftMs": 0,
-          "error": "AI gateway request timed out"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 4050.33,
-          "ttftMs": 4050.57,
-          "outputTokens": 196,
-          "outputTokensPerSec": 48.16
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 5045.92,
-          "ttftMs": 5046,
-          "outputTokens": 196,
-          "outputTokensPerSec": 38.77
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 18677.2,
-          "ttftMs": 18677.34,
-          "outputTokens": 196,
-          "outputTokensPerSec": 10.49
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2264.31,
-          "ttftMs": 2264.4,
-          "outputTokens": 196,
-          "outputTokensPerSec": 85.46
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1832.32,
-          "ttftMs": 1832.41,
-          "outputTokens": 196,
-          "outputTokensPerSec": 106.84
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 13285.01,
-          "ttftMs": 13285.09,
-          "outputTokens": 196,
-          "outputTokensPerSec": 14.75
         }
       ],
       "summary": {
         "dnsMs": {
-          "median": 10.88,
-          "p95": 69.91,
-          "p99": 69.91
+          "median": 1.05,
+          "p95": 53.71,
+          "p99": 53.71
         },
         "tcpMs": {
-          "median": 13.59,
-          "p95": 16.83,
-          "p99": 16.83
+          "median": 15.26,
+          "p95": 16.63,
+          "p99": 16.63
         },
         "tlsMs": {
-          "median": 16.82,
-          "p95": 75.13,
-          "p99": 75.13
+          "median": 17.61,
+          "p95": 20.44,
+          "p99": 20.44
         },
         "coldTtfbMs": {
-          "median": 2468.11,
-          "p95": 40224.19,
-          "p99": 40224.19
+          "median": 1977.56,
+          "p95": 2895.56,
+          "p99": 2895.56
         },
         "coldTtftMs": {
-          "median": 2468.21,
-          "p95": 40224.27,
-          "p99": 40224.27
+          "median": 1977.68,
+          "p95": 2895.65,
+          "p99": 2895.65
         },
         "coldE2eMs": {
-          "median": 2526.18,
-          "p95": 40261.34,
-          "p99": 40261.34
+          "median": 2041.23,
+          "p95": 2925.37,
+          "p99": 2925.37
         },
         "warmTtfbMs": {
-          "median": 4548.12,
-          "p95": 44497.46,
-          "p99": 44497.46
+          "median": 1974.11,
+          "p95": 5425.52,
+          "p99": 5425.52
         },
         "warmTtftMs": {
-          "median": 4548.28,
-          "p95": 44497.53,
-          "p99": 44497.53
+          "median": 1974.23,
+          "p95": 5425.61,
+          "p99": 5425.61
         },
         "outputTokensPerSec": {
-          "median": 77.17,
-          "p95": 110.03,
-          "p99": 113.89
+          "median": 98.84,
+          "p95": 115.66,
+          "p99": 115.66
         }
       },
-      "compositeScore": 46.45,
-      "successRate": 0.88
+      "compositeScore": 61.89,
+      "successRate": 0.75
     },
     {
       "provider": "llmapi",
@@ -3762,533 +2073,293 @@
       "iterations": [
         {
           "mode": "cold",
-          "dnsMs": 17.89,
-          "tcpMs": 85.71,
-          "tlsMs": 89.34,
-          "ttfbMs": 2650.56,
-          "ttftMs": 2650.67,
-          "coldE2eMs": 2843.62,
+          "dnsMs": 33.96,
+          "tcpMs": 83.99,
+          "tlsMs": 85.41,
+          "ttfbMs": 2577.3,
+          "ttftMs": 2577.42,
+          "coldE2eMs": 2780.78,
           "outputTokens": 196,
-          "outputTokensPerSec": 73.86,
+          "outputTokensPerSec": 75.98,
           "receipts": {
-            "x-request-id": "req_20260828133122_2bb962db"
+            "x-request-id": "req_20260828160354_43f6a403"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 28.57,
-          "tcpMs": 86.02,
-          "tlsMs": 87.03,
-          "ttfbMs": 2488.63,
-          "ttftMs": 2488.78,
-          "coldE2eMs": 2690.41,
+          "dnsMs": 0.86,
+          "tcpMs": 86,
+          "tlsMs": 87.38,
+          "ttfbMs": 2464.65,
+          "ttftMs": 2464.74,
+          "coldE2eMs": 2638.98,
           "outputTokens": 196,
-          "outputTokensPerSec": 78.73,
+          "outputTokensPerSec": 79.5,
           "receipts": {
-            "x-request-id": "req_20260828133219_a89e6bd8"
+            "x-request-id": "req_20260828160416_29d9c6f1"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.87,
+          "dnsMs": 24.59,
+          "tcpMs": 84.11,
+          "tlsMs": 105.24,
+          "ttfbMs": 2678.11,
+          "ttftMs": 2678.22,
+          "coldE2eMs": 2892.16,
+          "outputTokens": 196,
+          "outputTokensPerSec": 72.86,
+          "receipts": {
+            "x-request-id": "req_20260828160504_dd1a0298"
+          }
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 1.04,
           "tcpMs": 88.86,
-          "tlsMs": 90.6,
-          "ttfbMs": 2404.62,
-          "ttftMs": 2404.71,
-          "coldE2eMs": 2585.05,
+          "tlsMs": 90.31,
+          "ttfbMs": 2854.82,
+          "ttftMs": 2854.98,
+          "coldE2eMs": 3035.19,
           "outputTokens": 196,
-          "outputTokensPerSec": 81.49,
+          "outputTokensPerSec": 68.64,
           "receipts": {
-            "x-request-id": "req_20260828133242_c9fea128"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 21.6,
-          "tcpMs": 83.96,
-          "tlsMs": 85.81,
-          "ttfbMs": 2809.09,
-          "ttftMs": 2809.17,
-          "coldE2eMs": 3000.55,
-          "outputTokens": 196,
-          "outputTokensPerSec": 69.76,
-          "receipts": {
-            "x-request-id": "req_20260828133337_89e0d9aa"
+            "x-request-id": "req_20260828160532_8c0bcceb"
           }
         },
         {
           "mode": "cold",
           "dnsMs": 0.88,
-          "tcpMs": 84.09,
-          "tlsMs": 85.68,
-          "ttfbMs": 2857.66,
-          "ttftMs": 2857.78,
-          "coldE2eMs": 3028.43,
+          "tcpMs": 84.21,
+          "tlsMs": 85.34,
+          "ttfbMs": 2423.37,
+          "ttftMs": 2423.46,
+          "coldE2eMs": 2593.9,
           "outputTokens": 196,
-          "outputTokensPerSec": 67.84,
+          "outputTokensPerSec": 80.87,
           "receipts": {
-            "x-request-id": "req_20260828133400_bf56d632"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.85,
-          "tcpMs": 87.94,
-          "tlsMs": 89.08,
-          "ttfbMs": 2431.33,
-          "ttftMs": 2431.45,
-          "coldE2eMs": 2609.32,
-          "outputTokens": 196,
-          "outputTokensPerSec": 80.59,
-          "receipts": {
-            "x-request-id": "req_20260828133424_6c6f609e"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 30.33,
-          "tcpMs": 84.11,
-          "tlsMs": 86.66,
-          "ttfbMs": 2160.76,
-          "ttftMs": 2160.83,
-          "coldE2eMs": 2361.93,
-          "outputTokens": 196,
-          "outputTokensPerSec": 90.7,
-          "receipts": {
-            "x-request-id": "req_20260828133503_2dc140b3"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.84,
-          "tcpMs": 88.57,
-          "tlsMs": 90.29,
-          "ttfbMs": 2688.07,
-          "ttftMs": 2688.17,
-          "coldE2eMs": 2867.87,
-          "outputTokens": 196,
-          "outputTokensPerSec": 71.96,
-          "receipts": {
-            "x-request-id": "req_20260828133524_fc6600d6"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.94,
-          "tcpMs": 85.62,
-          "tlsMs": 86.92,
-          "ttfbMs": 2811.21,
-          "ttftMs": 2811.45,
-          "coldE2eMs": 2984.93,
-          "outputTokens": 196,
-          "outputTokensPerSec": 69.7,
-          "receipts": {
-            "x-request-id": "req_20260828133556_cfcdbe26"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 28.92,
-          "tcpMs": 88.32,
-          "tlsMs": 91.03,
-          "ttfbMs": 2781.04,
-          "ttftMs": 2781.16,
-          "coldE2eMs": 2989.43,
-          "outputTokens": 196,
-          "outputTokensPerSec": 69.6,
-          "receipts": {
-            "x-request-id": "req_20260828133701_66d3d29a"
+            "x-request-id": "req_20260828160555_6d43c17e"
           }
         },
         {
           "mode": "cold",
           "dnsMs": 0.87,
-          "tcpMs": 86.13,
-          "tlsMs": 87.38,
-          "ttfbMs": 2646.21,
-          "ttftMs": 2646.32,
-          "coldE2eMs": 2820.7,
+          "tcpMs": 87.9,
+          "tlsMs": 89.08,
+          "ttfbMs": 2518.57,
+          "ttftMs": 2518.66,
+          "coldE2eMs": 2696.52,
           "outputTokens": 196,
-          "outputTokensPerSec": 74.02,
+          "outputTokensPerSec": 77.81,
           "receipts": {
-            "x-request-id": "req_20260828133745_6527eb2e"
+            "x-request-id": "req_20260828160617_53fb1678"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 29.01,
-          "tcpMs": 84.26,
-          "tlsMs": 85.67,
-          "ttfbMs": 2387.14,
-          "ttftMs": 2387.23,
-          "coldE2eMs": 2586.18,
+          "dnsMs": 28.11,
+          "tcpMs": 88.98,
+          "tlsMs": 90.7,
+          "ttfbMs": 2576.1,
+          "ttftMs": 2576.24,
+          "coldE2eMs": 2784.04,
           "outputTokens": 196,
-          "outputTokensPerSec": 81.72,
+          "outputTokensPerSec": 76.07,
           "receipts": {
-            "x-request-id": "req_20260828133812_91c1407c"
+            "x-request-id": "req_20260828160655_c151340e"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.7,
-          "tcpMs": 87.82,
-          "tlsMs": 89.51,
-          "ttfbMs": 2515.66,
-          "ttftMs": 2515.74,
-          "coldE2eMs": 2693.77,
+          "dnsMs": 29.57,
+          "tcpMs": 84.9,
+          "tlsMs": 86.26,
+          "ttfbMs": 2160.04,
+          "ttftMs": 2160.23,
+          "coldE2eMs": 2360.96,
           "outputTokens": 196,
-          "outputTokensPerSec": 77.9,
+          "outputTokensPerSec": 90.72,
           "receipts": {
-            "x-request-id": "req_20260828133853_0bf97189"
+            "x-request-id": "req_20260828160718_cef13dfd"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 17.07,
-          "tcpMs": 85.4,
-          "tlsMs": 86.66,
-          "ttfbMs": 2577.5,
-          "ttftMs": 2577.59,
-          "coldE2eMs": 2766.72,
+          "dnsMs": 1.45,
+          "tcpMs": 88.85,
+          "tlsMs": 89.93,
+          "ttfbMs": 2560.77,
+          "ttftMs": 2560.95,
+          "coldE2eMs": 2741.19,
           "outputTokens": 196,
-          "outputTokensPerSec": 75.74,
+          "outputTokensPerSec": 76.5,
           "receipts": {
-            "x-request-id": "req_20260828133958_13bf4e28"
+            "x-request-id": "req_20260828160740_9ff8cc18"
           }
         },
         {
           "mode": "cold",
-          "dnsMs": 0.79,
-          "tcpMs": 87.98,
-          "tlsMs": 89.42,
-          "ttfbMs": 2300.94,
-          "ttftMs": 2301.09,
-          "coldE2eMs": 2479.28,
+          "dnsMs": 29.64,
+          "tcpMs": 86.39,
+          "tlsMs": 87.69,
+          "ttfbMs": 2537.32,
+          "ttftMs": 2537.58,
+          "coldE2eMs": 2741.3,
           "outputTokens": 196,
-          "outputTokensPerSec": 85.12,
+          "outputTokensPerSec": 77.23,
           "receipts": {
-            "x-request-id": "req_20260828134055_d1bd3de9"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 12.94,
-          "tcpMs": 84.28,
-          "tlsMs": 85.65,
-          "ttfbMs": 2904.48,
-          "ttftMs": 2904.59,
-          "coldE2eMs": 3087.47,
-          "outputTokens": 196,
-          "outputTokensPerSec": 67.47,
-          "receipts": {
-            "x-request-id": "req_20260828134134_651e61ee"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 12.77,
-          "tcpMs": 85.5,
-          "tlsMs": 87.08,
-          "ttfbMs": 2499.97,
-          "ttftMs": 2500.14,
-          "coldE2eMs": 2685.48,
-          "outputTokens": 196,
-          "outputTokensPerSec": 78.39,
-          "receipts": {
-            "x-request-id": "req_20260828134157_2c690c4b"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.72,
-          "tcpMs": 85.74,
-          "tlsMs": 87.09,
-          "ttfbMs": 2448.1,
-          "ttftMs": 2448.19,
-          "coldE2eMs": 2621.74,
-          "outputTokens": 196,
-          "outputTokensPerSec": 79.37,
-          "receipts": {
-            "x-request-id": "req_20260828134226_99f43464"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 16.25,
-          "tcpMs": 88.87,
-          "tlsMs": 90.16,
-          "ttfbMs": 2568.93,
-          "ttftMs": 2569.03,
-          "coldE2eMs": 2764.32,
-          "outputTokens": 196,
-          "outputTokensPerSec": 76.27,
-          "receipts": {
-            "x-request-id": "req_20260828134329_d2b9ed73"
-          }
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 29.38,
-          "tcpMs": 84.45,
-          "tlsMs": 85.47,
-          "ttfbMs": 2335.18,
-          "ttftMs": 2335.31,
-          "coldE2eMs": 2534.62,
-          "outputTokens": 196,
-          "outputTokensPerSec": 83.91,
-          "receipts": {
-            "x-request-id": "req_20260828134355_f92bbe97"
+            "x-request-id": "req_20260828160821_ce2efd59"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2110.05,
-          "ttftMs": 2110.14,
+          "ttfbMs": 2251.12,
+          "ttftMs": 2251.33,
           "outputTokens": 196,
-          "outputTokensPerSec": 92.88,
+          "outputTokensPerSec": 87.04,
           "receipts": {
-            "x-request-id": "req_20260828134530_df8e18d3"
+            "x-request-id": "req_20260828160921_8641ce30"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2062.89,
-          "ttftMs": 2063,
+          "ttfbMs": 1994.34,
+          "ttftMs": 1994.5,
           "outputTokens": 196,
-          "outputTokensPerSec": 95,
+          "outputTokensPerSec": 98.26,
           "receipts": {
-            "x-request-id": "req_20260828134718_34829cbd"
+            "x-request-id": "req_20260828161010_d5b669f4"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2047.58,
-          "ttftMs": 2047.65,
+          "ttfbMs": 2322.34,
+          "ttftMs": 2322.48,
           "outputTokens": 196,
-          "outputTokensPerSec": 95.71,
+          "outputTokensPerSec": 84.3,
           "receipts": {
-            "x-request-id": "req_20260828134851_bc5c950f"
+            "x-request-id": "req_20260828161054_6432c097"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2739.11,
-          "ttftMs": 2739.19,
+          "ttfbMs": 2440.82,
+          "ttftMs": 2440.93,
           "outputTokens": 196,
-          "outputTokensPerSec": 71.38,
+          "outputTokensPerSec": 80.27,
           "receipts": {
-            "x-request-id": "req_20260828135018_66f94bbd"
+            "x-request-id": "req_20260828161147_642f34d1"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2487.68,
-          "ttftMs": 2487.8,
+          "ttfbMs": 2339.04,
+          "ttftMs": 2339.12,
           "outputTokens": 196,
-          "outputTokensPerSec": 78.68,
+          "outputTokensPerSec": 83.75,
           "receipts": {
-            "x-request-id": "req_20260828135216_6fa095f9"
+            "x-request-id": "req_20260828161249_dd18bae2"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2114.12,
-          "ttftMs": 2114.21,
+          "ttfbMs": 2681.23,
+          "ttftMs": 2681.32,
           "outputTokens": 196,
-          "outputTokensPerSec": 92.7,
+          "outputTokensPerSec": 73.1,
           "receipts": {
-            "x-request-id": "req_20260828135421_7e6fa3db"
+            "x-request-id": "req_20260828161410_1f335c42"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2693.91,
-          "ttftMs": 2693.98,
+          "ttfbMs": 2499.62,
+          "ttftMs": 2499.73,
           "outputTokens": 196,
-          "outputTokensPerSec": 72.46,
+          "outputTokensPerSec": 78.07,
           "receipts": {
-            "x-request-id": "req_20260828135600_189fd9c5"
+            "x-request-id": "req_20260828161500_c3179578"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2324.25,
-          "ttftMs": 2324.32,
+          "ttfbMs": 2501.49,
+          "ttftMs": 2501.57,
           "outputTokens": 196,
-          "outputTokensPerSec": 84.29,
+          "outputTokensPerSec": 78.33,
           "receipts": {
-            "x-request-id": "req_20260828135756_05cec689"
+            "x-request-id": "req_20260828161554_ce13fb97"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2784.84,
-          "ttftMs": 2784.94,
+          "ttfbMs": 2248.83,
+          "ttftMs": 2248.98,
           "outputTokens": 196,
-          "outputTokensPerSec": 70.35,
+          "outputTokensPerSec": 87.1,
           "receipts": {
-            "x-request-id": "req_20260828135926_0e232510"
+            "x-request-id": "req_20260828161639_b5b29537"
           }
         },
         {
           "mode": "warm",
-          "ttfbMs": 2800.77,
-          "ttftMs": 2800.85,
+          "ttfbMs": 2158.71,
+          "ttftMs": 2158.82,
           "outputTokens": 196,
-          "outputTokensPerSec": 69.9,
+          "outputTokensPerSec": 89.81,
           "receipts": {
-            "x-request-id": "req_20260828140108_d0245a45"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2825.33,
-          "ttftMs": 2825.43,
-          "outputTokens": 196,
-          "outputTokensPerSec": 69.36,
-          "receipts": {
-            "x-request-id": "req_20260828140152_86708d63"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2675.35,
-          "ttftMs": 2675.67,
-          "outputTokens": 196,
-          "outputTokensPerSec": 72.85,
-          "receipts": {
-            "x-request-id": "req_20260828140403_63bd95d6"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 3083.1,
-          "ttftMs": 3083.19,
-          "outputTokens": 196,
-          "outputTokensPerSec": 62.94,
-          "receipts": {
-            "x-request-id": "req_20260828140527_bfc4e367"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2025.47,
-          "ttftMs": 2025.6,
-          "outputTokens": 196,
-          "outputTokensPerSec": 96.59,
-          "receipts": {
-            "x-request-id": "req_20260828140754_a797ff96"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2190.07,
-          "ttftMs": 2190.19,
-          "outputTokens": 196,
-          "outputTokensPerSec": 89.47,
-          "receipts": {
-            "x-request-id": "req_20260828140850_5d62c8a8"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2690.99,
-          "ttftMs": 2691.07,
-          "outputTokens": 196,
-          "outputTokensPerSec": 72.13,
-          "receipts": {
-            "x-request-id": "req_20260828141026_70a872aa"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2956.78,
-          "ttftMs": 2956.9,
-          "outputTokens": 196,
-          "outputTokensPerSec": 65.47,
-          "receipts": {
-            "x-request-id": "req_20260828141146_effc86fc"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2729.89,
-          "ttftMs": 2729.97,
-          "outputTokens": 196,
-          "outputTokensPerSec": 70.58,
-          "receipts": {
-            "x-request-id": "req_20260828141322_20c9b14e"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2630.86,
-          "ttftMs": 2630.93,
-          "outputTokens": 196,
-          "outputTokensPerSec": 74.29,
-          "receipts": {
-            "x-request-id": "req_20260828141442_0089e1e0"
-          }
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2242.03,
-          "ttftMs": 2242.11,
-          "outputTokens": 196,
-          "outputTokensPerSec": 87.4,
-          "receipts": {
-            "x-request-id": "req_20260828141623_f2bfc212"
+            "x-request-id": "req_20260828161723_71420de2"
           }
         }
       ],
       "summary": {
         "dnsMs": {
-          "median": 12.86,
-          "p95": 29.38,
-          "p99": 29.38
+          "median": 13.02,
+          "p95": 33.96,
+          "p99": 33.96
         },
         "tcpMs": {
-          "median": 85.73,
-          "p95": 88.86,
-          "p99": 88.86
+          "median": 86.2,
+          "p95": 88.98,
+          "p99": 88.98
         },
         "tlsMs": {
-          "median": 87.08,
-          "p95": 90.6,
-          "p99": 90.6
+          "median": 88.39,
+          "p95": 105.24,
+          "p99": 105.24
         },
         "coldTtfbMs": {
-          "median": 2542.3,
-          "p95": 2857.66,
-          "p99": 2857.66
+          "median": 2549.05,
+          "p95": 2854.82,
+          "p99": 2854.82
         },
         "coldTtftMs": {
-          "median": 2542.39,
-          "p95": 2857.78,
-          "p99": 2857.78
+          "median": 2549.26,
+          "p95": 2854.98,
+          "p99": 2854.98
         },
         "coldE2eMs": {
-          "median": 2729.04,
-          "p95": 3028.43,
-          "p99": 3028.43
+          "median": 2741.24,
+          "p95": 3035.19,
+          "p99": 3035.19
         },
         "warmTtfbMs": {
-          "median": 2653.1,
-          "p95": 2956.78,
-          "p99": 2956.78
+          "median": 2330.69,
+          "p95": 2681.23,
+          "p99": 2681.23
         },
         "warmTtftMs": {
-          "median": 2653.3,
-          "p95": 2956.9,
-          "p99": 2956.9
+          "median": 2330.8,
+          "p95": 2681.32,
+          "p99": 2681.32
         },
         "outputTokensPerSec": {
-          "median": 76.01,
-          "p95": 92.88,
-          "p99": 95
+          "median": 78.92,
+          "p95": 90.72,
+          "p99": 90.72
         }
       },
-      "compositeScore": 81.08,
+      "compositeScore": 81.9,
       "successRate": 1
     },
     {
@@ -4298,445 +2369,254 @@
       "iterations": [
         {
           "mode": "cold",
-          "dnsMs": 26.94,
-          "tcpMs": 1.41,
-          "tlsMs": 3.63,
-          "ttfbMs": 899.05,
-          "ttftMs": 899.3,
-          "coldE2eMs": 931.28,
-          "outputTokens": 48,
-          "outputTokensPerSec": 36.66,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 9.47,
-          "tcpMs": 1.03,
-          "tlsMs": 3.21,
-          "ttfbMs": 998.34,
-          "ttftMs": 998.54,
-          "coldE2eMs": 1012.26,
-          "outputTokens": 64,
-          "outputTokensPerSec": 42.08,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 29.91,
-          "tcpMs": 1.1,
-          "tlsMs": 2.99,
-          "ttfbMs": 905.54,
-          "ttftMs": 905.73,
-          "coldE2eMs": 939.72,
-          "outputTokens": 59,
-          "outputTokensPerSec": 44.98,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 14.29,
-          "tcpMs": 1.89,
-          "tlsMs": 2.71,
-          "ttfbMs": 1045.63,
-          "ttftMs": 1045.73,
-          "coldE2eMs": 1064.62,
-          "outputTokens": 46,
-          "outputTokensPerSec": 36.38,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 7.77,
-          "tcpMs": 1.16,
-          "tlsMs": 4.32,
-          "ttfbMs": 2246.18,
-          "ttftMs": 2246.36,
-          "coldE2eMs": 2259.61,
-          "outputTokens": 55,
-          "outputTokensPerSec": 20.75,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 13.8,
-          "tcpMs": 1.77,
-          "tlsMs": 3.1,
-          "ttfbMs": 18834.22,
-          "ttftMs": 18834.35,
-          "coldE2eMs": 18853.02,
-          "outputTokens": 47,
-          "outputTokensPerSec": 2.46,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 26.77,
-          "tcpMs": 1.61,
-          "tlsMs": 2.94,
-          "ttfbMs": 941.33,
-          "ttftMs": 941.41,
-          "coldE2eMs": 972.72,
-          "outputTokens": 50,
-          "outputTokensPerSec": 35.64,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 18.56,
-          "tcpMs": 2.64,
-          "tlsMs": 3.27,
-          "ttfbMs": 8112.8,
-          "ttftMs": 8112.93,
-          "coldE2eMs": 8137.4,
-          "outputTokens": 56,
-          "outputTokensPerSec": 6.56,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "ttfbMs": 0,
-          "ttftMs": 0,
-          "coldE2eMs": 45042,
-          "error": "AI gateway request timed out"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 9.94,
-          "tcpMs": 1.39,
-          "tlsMs": 3.25,
-          "ttfbMs": 1638.26,
-          "ttftMs": 1638.43,
-          "coldE2eMs": 1653.01,
-          "outputTokens": 47,
-          "outputTokensPerSec": 24.59,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 13.72,
-          "tcpMs": 1.27,
+          "dnsMs": 42.89,
+          "tcpMs": 1.59,
           "tlsMs": 3.52,
-          "ttfbMs": 1147.97,
-          "ttftMs": 1148.14,
-          "coldE2eMs": 1166.65,
-          "outputTokens": 55,
-          "outputTokensPerSec": 37.92,
+          "ttfbMs": 1087.25,
+          "ttftMs": 1087.52,
+          "coldE2eMs": 1135.52,
+          "outputTokens": 49,
+          "outputTokensPerSec": 32.53,
           "resolvedProvider": "google"
         },
         {
           "mode": "cold",
-          "dnsMs": 8.22,
-          "tcpMs": 2.52,
+          "dnsMs": 46.63,
+          "tcpMs": 1.55,
+          "tlsMs": 3.19,
+          "ttfbMs": 797.18,
+          "ttftMs": 797.32,
+          "coldE2eMs": 848.69,
+          "outputTokens": 57,
+          "outputTokensPerSec": 46.85,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 29.38,
+          "tcpMs": 1.5,
+          "tlsMs": 3.26,
+          "ttfbMs": 1169.58,
+          "ttftMs": 1169.76,
+          "coldE2eMs": 1203.9,
+          "outputTokens": 48,
+          "outputTokensPerSec": 31.98,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 24.75,
+          "tcpMs": 1.21,
+          "tlsMs": 4.36,
+          "ttfbMs": 983.88,
+          "ttftMs": 984.04,
+          "coldE2eMs": 1014.35,
+          "outputTokens": 59,
+          "outputTokensPerSec": 43.6,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 17.87,
+          "tcpMs": 1.3,
+          "tlsMs": 2.96,
+          "ttfbMs": 1179.35,
+          "ttftMs": 1179.51,
+          "coldE2eMs": 1201.63,
+          "outputTokens": 49,
+          "outputTokensPerSec": 33.08,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 39.94,
+          "tcpMs": 1.34,
           "tlsMs": 3.36,
-          "ttfbMs": 1347.26,
-          "ttftMs": 1347.4,
-          "coldE2eMs": 1361.49,
-          "outputTokens": 51,
-          "outputTokensPerSec": 30.01,
+          "ttfbMs": 13596.73,
+          "ttftMs": 13596.81,
+          "coldE2eMs": 13641.45,
+          "outputTokens": 55,
+          "outputTokensPerSec": 3.77,
           "resolvedProvider": "google"
         },
         {
           "mode": "cold",
-          "dnsMs": 26.93,
-          "tcpMs": 2.19,
-          "tlsMs": 3.43,
-          "ttfbMs": 2017.37,
-          "ttftMs": 2017.58,
-          "coldE2eMs": 2050.14,
-          "outputTokens": 60,
-          "outputTokensPerSec": 1.72,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 35.84,
-          "tcpMs": 1.63,
-          "tlsMs": 3.29,
-          "ttfbMs": 4103.35,
-          "ttftMs": 4103.46,
-          "coldE2eMs": 4144.21,
-          "outputTokens": 49,
-          "outputTokensPerSec": 10.66,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 26.99,
-          "tcpMs": 2.16,
-          "tlsMs": 2.98,
-          "ttfbMs": 17877.16,
-          "ttftMs": 17877.36,
-          "coldE2eMs": 17909.48,
-          "outputTokens": 57,
-          "outputTokensPerSec": 3.17,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 26.69,
-          "tcpMs": 1.2,
-          "tlsMs": 2.88,
-          "ttfbMs": 1547.41,
-          "ttftMs": 1547.53,
-          "coldE2eMs": 1578.31,
-          "outputTokens": 49,
-          "outputTokensPerSec": 25.33,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 31.37,
-          "tcpMs": 1.06,
-          "tlsMs": 3.31,
-          "ttfbMs": 1318.4,
-          "ttftMs": 1318.56,
-          "coldE2eMs": 1354.3,
-          "outputTokens": 51,
-          "outputTokensPerSec": 30.82,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 27.38,
-          "tcpMs": 0.91,
-          "tlsMs": 3.11,
-          "ttfbMs": 1409.59,
-          "ttftMs": 1409.76,
-          "coldE2eMs": 1441.17,
+          "dnsMs": 11.83,
+          "tcpMs": 2.55,
+          "tlsMs": 4.23,
+          "ttfbMs": 727.48,
+          "ttftMs": 727.64,
+          "coldE2eMs": 746.25,
           "outputTokens": 59,
-          "outputTokensPerSec": 34,
+          "outputTokensPerSec": 44.59,
           "resolvedProvider": "google"
         },
         {
           "mode": "cold",
-          "dnsMs": 15.57,
-          "tcpMs": 1.68,
-          "tlsMs": 4.2,
-          "ttfbMs": 1091.02,
-          "ttftMs": 1091.23,
-          "coldE2eMs": 1112.68,
-          "outputTokens": 53,
-          "outputTokensPerSec": 36.59,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 9.75,
-          "tcpMs": 1.16,
-          "tlsMs": 3.16,
-          "ttfbMs": 21502.49,
-          "ttftMs": 21502.62,
-          "coldE2eMs": 21516.69,
-          "outputTokens": 48,
-          "outputTokensPerSec": 2.19,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 9708.36,
-          "ttftMs": 9708.49,
-          "outputTokens": 53,
-          "outputTokensPerSec": 5.2,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 34214.19,
-          "ttftMs": 34214.32,
-          "outputTokens": 56,
-          "outputTokensPerSec": 1.62,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1180.95,
-          "ttftMs": 1181.09,
-          "outputTokens": 58,
-          "outputTokensPerSec": 37.05,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 544.57,
-          "ttftMs": 544.79,
-          "outputTokens": 53,
-          "outputTokensPerSec": 60.3,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 0,
-          "ttftMs": 0,
-          "error": "AI gateway request timed out"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1289.29,
-          "ttftMs": 1289.44,
-          "outputTokens": 57,
-          "outputTokensPerSec": 38.85,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 0,
-          "ttftMs": 0,
-          "error": "AI gateway request timed out"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 4968.46,
-          "ttftMs": 4968.66,
-          "outputTokens": 56,
-          "outputTokensPerSec": 10.27,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 27187.02,
-          "ttftMs": 27187.21,
-          "outputTokens": 48,
-          "outputTokensPerSec": 1.73,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 628.44,
-          "ttftMs": 628.56,
-          "outputTokens": 48,
-          "outputTokensPerSec": 45.28,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 32923.31,
-          "ttftMs": 32923.44,
-          "outputTokens": 48,
-          "outputTokensPerSec": 1.45,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1284.65,
-          "ttftMs": 1284.78,
-          "outputTokens": 42,
-          "outputTokensPerSec": 25.64,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 11106.49,
-          "ttftMs": 11106.67,
-          "outputTokens": 48,
-          "outputTokensPerSec": 4.22,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1524.83,
-          "ttftMs": 1525.06,
-          "outputTokens": 55,
-          "outputTokensPerSec": 30.23,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 804.32,
-          "ttftMs": 804.51,
-          "outputTokens": 51,
-          "outputTokensPerSec": 43.53,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1046.72,
-          "ttftMs": 1046.87,
-          "outputTokens": 55,
-          "outputTokensPerSec": 38.27,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 40325.07,
-          "ttftMs": 40325.23,
-          "outputTokens": 61,
-          "outputTokensPerSec": 1.5,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1256.83,
-          "ttftMs": 1256.99,
-          "outputTokens": 54,
-          "outputTokensPerSec": 33.6,
-          "resolvedProvider": "google"
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1501.68,
-          "ttftMs": 1501.79,
+          "dnsMs": 19.05,
+          "tcpMs": 2.66,
+          "tlsMs": 4,
+          "ttfbMs": 1615.87,
+          "ttftMs": 1616.15,
+          "coldE2eMs": 1641.86,
           "outputTokens": 47,
-          "outputTokensPerSec": 26.44,
+          "outputTokensPerSec": 23.8,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 27.42,
+          "tcpMs": 1.67,
+          "tlsMs": 4.31,
+          "ttfbMs": 933.82,
+          "ttftMs": 934.09,
+          "coldE2eMs": 967.5,
+          "outputTokens": 50,
+          "outputTokensPerSec": 40.9,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 19.63,
+          "tcpMs": 2.65,
+          "tlsMs": 5.96,
+          "ttfbMs": 3762.13,
+          "ttftMs": 3762.3,
+          "coldE2eMs": 3790.53,
+          "outputTokens": 54,
+          "outputTokensPerSec": 13.2,
           "resolvedProvider": "google"
         },
         {
           "mode": "warm",
-          "ttfbMs": 6146.46,
-          "ttftMs": 6146.6,
+          "ttfbMs": 796.28,
+          "ttftMs": 796.46,
+          "outputTokens": 51,
+          "outputTokensPerSec": 40.95,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 746.81,
+          "ttftMs": 747.1,
+          "outputTokens": 50,
+          "outputTokensPerSec": 45.6,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 1839.77,
+          "ttftMs": 1840.08,
+          "outputTokens": 55,
+          "outputTokensPerSec": 26.32,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 2090.63,
+          "ttftMs": 2090.95,
+          "outputTokens": 48,
+          "outputTokensPerSec": 19.54,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 1972.06,
+          "ttftMs": 1972.19,
+          "outputTokens": 51,
+          "outputTokensPerSec": 23.03,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 855.02,
+          "ttftMs": 855.17,
+          "outputTokens": 51,
+          "outputTokensPerSec": 39.58,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 2968.06,
+          "ttftMs": 2968.19,
+          "outputTokens": 54,
+          "outputTokensPerSec": 16.16,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 863.91,
+          "ttftMs": 864.08,
+          "outputTokens": 60,
+          "outputTokensPerSec": 45.16,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 1266.88,
+          "ttftMs": 1267.02,
+          "outputTokens": 47,
+          "outputTokensPerSec": 29.23,
+          "resolvedProvider": "google"
+        },
+        {
+          "mode": "warm",
+          "ttfbMs": 885.1,
+          "ttftMs": 885.19,
           "outputTokens": 59,
-          "outputTokensPerSec": 9.09,
+          "outputTokensPerSec": 41.53,
           "resolvedProvider": "google"
         }
       ],
       "summary": {
         "dnsMs": {
-          "median": 18.56,
-          "p95": 35.84,
-          "p99": 35.84
+          "median": 26.08,
+          "p95": 46.63,
+          "p99": 46.63
         },
         "tcpMs": {
-          "median": 1.41,
-          "p95": 2.64,
-          "p99": 2.64
+          "median": 1.57,
+          "p95": 2.66,
+          "p99": 2.66
         },
         "tlsMs": {
-          "median": 3.25,
-          "p95": 4.32,
-          "p99": 4.32
+          "median": 3.76,
+          "p95": 5.96,
+          "p99": 5.96
         },
         "coldTtfbMs": {
-          "median": 1409.59,
-          "p95": 21502.49,
-          "p99": 21502.49
+          "median": 1128.42,
+          "p95": 13596.73,
+          "p99": 13596.73
         },
         "coldTtftMs": {
-          "median": 1409.76,
-          "p95": 21502.62,
-          "p99": 21502.62
+          "median": 1128.64,
+          "p95": 13596.81,
+          "p99": 13596.81
         },
         "coldE2eMs": {
-          "median": 1441.17,
-          "p95": 21516.69,
-          "p99": 21516.69
+          "median": 1168.58,
+          "p95": 13641.45,
+          "p99": 13641.45
         },
         "warmTtfbMs": {
-          "median": 1513.26,
-          "p95": 40325.07,
-          "p99": 40325.07
+          "median": 1075.99,
+          "p95": 2968.06,
+          "p99": 2968.06
         },
         "warmTtftMs": {
-          "median": 1513.42,
-          "p95": 40325.23,
-          "p99": 40325.23
+          "median": 1076.1,
+          "p95": 2968.19,
+          "p99": 2968.19
         },
         "outputTokensPerSec": {
-          "median": 26.44,
-          "p95": 44.98,
-          "p99": 45.28
+          "median": 32.8,
+          "p95": 45.6,
+          "p99": 45.6
         }
       },
-      "compositeScore": 52.42,
-      "successRate": 0.93
+      "compositeScore": 75.6,
+      "successRate": 1
     },
     {
       "provider": "gemini-direct",
@@ -4745,413 +2625,233 @@
       "iterations": [
         {
           "mode": "cold",
-          "dnsMs": 15.41,
-          "tcpMs": 1.95,
-          "tlsMs": 3.56,
-          "ttfbMs": 2858.16,
-          "ttftMs": 2858.26,
-          "coldE2eMs": 2879.18,
+          "dnsMs": 15.34,
+          "tcpMs": 1.87,
+          "tlsMs": 7.13,
+          "ttfbMs": 1959.22,
+          "ttftMs": 1959.33,
+          "coldE2eMs": 1983.66,
           "outputTokens": 196,
-          "outputTokensPerSec": 68.52
+          "outputTokensPerSec": 99.67
         },
         {
           "mode": "cold",
-          "dnsMs": 0.79,
-          "tcpMs": 1.5,
-          "tlsMs": 3.17,
-          "ttfbMs": 2368.42,
-          "ttftMs": 2368.51,
-          "coldE2eMs": 2373.97,
+          "dnsMs": 0.83,
+          "tcpMs": 7.07,
+          "tlsMs": 16.22,
+          "ttfbMs": 1823.58,
+          "ttftMs": 1823.66,
+          "coldE2eMs": 1847.77,
           "outputTokens": 196,
-          "outputTokensPerSec": 82.62
+          "outputTokensPerSec": 107.46
         },
         {
           "mode": "cold",
-          "dnsMs": 0.78,
-          "tcpMs": 6.82,
-          "tlsMs": 20.03,
-          "ttfbMs": 2033.81,
-          "ttftMs": 2033.92,
-          "coldE2eMs": 2061.54,
-          "outputTokens": 196,
-          "outputTokensPerSec": 96.25
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 3.88,
-          "tcpMs": 6.64,
-          "tlsMs": 13.8,
-          "ttfbMs": 2189.44,
-          "ttftMs": 2189.52,
-          "coldE2eMs": 2213.85,
-          "outputTokens": 196,
-          "outputTokensPerSec": 89.35
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.91,
-          "tcpMs": 6.83,
-          "tlsMs": 14.15,
-          "ttfbMs": 3098.55,
-          "ttftMs": 3098.64,
-          "coldE2eMs": 3120.54,
-          "outputTokens": 196,
-          "outputTokensPerSec": 63.23
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 16,
-          "tcpMs": 1.84,
-          "tlsMs": 4.53,
-          "ttfbMs": 1803.33,
-          "ttftMs": 1803.41,
-          "coldE2eMs": 1825.79,
-          "outputTokens": 196,
-          "outputTokensPerSec": 108.28
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 1.17,
-          "tcpMs": 6.78,
-          "tlsMs": 15.08,
-          "ttfbMs": 1734.86,
-          "ttftMs": 1734.97,
-          "coldE2eMs": 1758,
-          "outputTokens": 196,
-          "outputTokensPerSec": 112.83
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.78,
+          "dnsMs": 12.69,
           "tcpMs": 1.35,
-          "tlsMs": 6.46,
-          "ttfbMs": 2666.32,
-          "ttftMs": 2666.44,
-          "coldE2eMs": 2675.02,
+          "tlsMs": 2.98,
+          "ttfbMs": 1745.51,
+          "ttftMs": 1745.58,
+          "coldE2eMs": 1762.59,
           "outputTokens": 196,
-          "outputTokensPerSec": 73.24
+          "outputTokensPerSec": 111.68
         },
         {
           "mode": "cold",
-          "dnsMs": 4.8,
-          "tcpMs": 1.61,
-          "tlsMs": 3.77,
-          "ttfbMs": 1541.84,
-          "ttftMs": 1541.94,
-          "coldE2eMs": 1552.12,
+          "dnsMs": 0.78,
+          "tcpMs": 1.51,
+          "tlsMs": 3.42,
+          "ttfbMs": 2266.12,
+          "ttftMs": 2266.22,
+          "coldE2eMs": 2271.92,
           "outputTokens": 196,
-          "outputTokensPerSec": 126.78
+          "outputTokensPerSec": 86.48
         },
         {
           "mode": "cold",
-          "dnsMs": 0.71,
-          "tcpMs": 1.22,
-          "tlsMs": 2.65,
-          "ttfbMs": 2013.89,
-          "ttftMs": 2013.96,
-          "coldE2eMs": 2018.54,
+          "dnsMs": 1.05,
+          "tcpMs": 1.43,
+          "tlsMs": 2.83,
+          "ttfbMs": 1810.81,
+          "ttftMs": 1810.89,
+          "coldE2eMs": 1816.19,
           "outputTokens": 196,
-          "outputTokensPerSec": 95.3
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 4.32,
-          "tcpMs": 7.57,
-          "tlsMs": 17.51,
-          "ttfbMs": 1958.04,
-          "ttftMs": 1958.2,
-          "coldE2eMs": 1987.6,
-          "outputTokens": 196,
-          "outputTokensPerSec": 100.03
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.91,
-          "tcpMs": 7.2,
-          "tlsMs": 14.39,
-          "ttfbMs": 1757.03,
-          "ttftMs": 1757.1,
-          "coldE2eMs": 1779.61,
-          "outputTokens": 196,
-          "outputTokensPerSec": 111.5
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 3.45,
-          "tcpMs": 6.89,
-          "tlsMs": 14.81,
-          "ttfbMs": 1744.08,
-          "ttftMs": 1744.15,
-          "coldE2eMs": 1769.29,
-          "outputTokens": 196,
-          "outputTokensPerSec": 112.2
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 4.23,
-          "tcpMs": 6.81,
-          "tlsMs": 15.27,
-          "ttfbMs": 1811.05,
-          "ttftMs": 1811.13,
-          "coldE2eMs": 1837.45,
-          "outputTokens": 196,
-          "outputTokensPerSec": 107.95
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 12.86,
-          "tcpMs": 2,
-          "tlsMs": 3.23,
-          "ttfbMs": 1686.28,
-          "ttftMs": 1686.36,
-          "coldE2eMs": 1704.45,
-          "outputTokens": 196,
-          "outputTokensPerSec": 115.73
-        },
-        {
-          "mode": "cold",
-          "dnsMs": 0.82,
-          "tcpMs": 7.33,
-          "tlsMs": 16.12,
-          "ttfbMs": 2106.92,
-          "ttftMs": 2107,
-          "coldE2eMs": 2131.26,
-          "outputTokens": 196,
-          "outputTokensPerSec": 92.65
+          "outputTokensPerSec": 107.96
         },
         {
           "mode": "cold",
           "dnsMs": 0.74,
-          "tcpMs": 6.77,
-          "tlsMs": 15.17,
-          "ttfbMs": 1842.86,
-          "ttftMs": 1842.92,
-          "coldE2eMs": 1865.6,
+          "tcpMs": 1.54,
+          "tlsMs": 2.92,
+          "ttfbMs": 1548.8,
+          "ttftMs": 1548.87,
+          "coldE2eMs": 1554.07,
           "outputTokens": 196,
-          "outputTokensPerSec": 105.98
+          "outputTokensPerSec": 126.07
         },
         {
           "mode": "cold",
-          "dnsMs": 18.6,
-          "tcpMs": 1.72,
-          "tlsMs": 3.78,
-          "ttfbMs": 1755.88,
-          "ttftMs": 1755.95,
-          "coldE2eMs": 1780.06,
+          "dnsMs": 13.28,
+          "tcpMs": 7.94,
+          "tlsMs": 16.56,
+          "ttfbMs": 1774.98,
+          "ttftMs": 1775.16,
+          "coldE2eMs": 1812.94,
           "outputTokens": 196,
-          "outputTokensPerSec": 110.06
+          "outputTokensPerSec": 110.4
         },
         {
           "mode": "cold",
-          "dnsMs": 4.01,
-          "tcpMs": 1.7,
-          "tlsMs": 3.7,
-          "ttfbMs": 1548.27,
-          "ttftMs": 1548.45,
-          "coldE2eMs": 1557.85,
+          "dnsMs": 2.23,
+          "tcpMs": 7.37,
+          "tlsMs": 15.13,
+          "ttfbMs": 2411.8,
+          "ttftMs": 2411.9,
+          "coldE2eMs": 2436.63,
           "outputTokens": 196,
-          "outputTokensPerSec": 126.55
+          "outputTokensPerSec": 81.22
         },
         {
           "mode": "cold",
-          "dnsMs": 0.89,
-          "tcpMs": 1.46,
-          "tlsMs": 3.55,
-          "ttfbMs": 2093.11,
-          "ttftMs": 2093.19,
-          "coldE2eMs": 2099.09,
+          "dnsMs": 1.37,
+          "tcpMs": 7.23,
+          "tlsMs": 15.91,
+          "ttfbMs": 1529.63,
+          "ttftMs": 1529.77,
+          "coldE2eMs": 1554.29,
           "outputTokens": 196,
-          "outputTokensPerSec": 93.61
+          "outputTokensPerSec": 127.7
+        },
+        {
+          "mode": "cold",
+          "dnsMs": 23.61,
+          "tcpMs": 7.42,
+          "tlsMs": 16.55,
+          "ttfbMs": 1858.5,
+          "ttftMs": 1858.69,
+          "coldE2eMs": 1906.26,
+          "outputTokens": 196,
+          "outputTokensPerSec": 105.43
         },
         {
           "mode": "warm",
-          "ttfbMs": 2211.34,
-          "ttftMs": 2211.39,
+          "ttfbMs": 1785.89,
+          "ttftMs": 1786.04,
           "outputTokens": 196,
-          "outputTokensPerSec": 86.87
+          "outputTokensPerSec": 109.4
         },
         {
           "mode": "warm",
-          "ttfbMs": 2348.8,
-          "ttftMs": 2348.88,
+          "ttfbMs": 1868.57,
+          "ttftMs": 1868.75,
           "outputTokens": 196,
-          "outputTokensPerSec": 82.14
+          "outputTokensPerSec": 104.77
         },
         {
           "mode": "warm",
-          "ttfbMs": 2287.99,
-          "ttftMs": 2288.07,
+          "ttfbMs": 1664.78,
+          "ttftMs": 1664.87,
           "outputTokens": 196,
-          "outputTokensPerSec": 85.16
+          "outputTokensPerSec": 117.53
         },
         {
           "mode": "warm",
-          "ttfbMs": 1740.61,
-          "ttftMs": 1740.67,
+          "ttfbMs": 1706.06,
+          "ttftMs": 1706.17,
           "outputTokens": 196,
-          "outputTokensPerSec": 112.31
+          "outputTokensPerSec": 114.82
         },
         {
           "mode": "warm",
-          "ttfbMs": 1739.52,
-          "ttftMs": 1739.6,
+          "ttfbMs": 1646.19,
+          "ttftMs": 1646.27,
           "outputTokens": 196,
-          "outputTokensPerSec": 112.39
+          "outputTokensPerSec": 115.75
         },
         {
           "mode": "warm",
-          "ttfbMs": 2200.59,
-          "ttftMs": 2200.68,
+          "ttfbMs": 2031.78,
+          "ttftMs": 2031.86,
           "outputTokens": 196,
-          "outputTokensPerSec": 88.75
+          "outputTokensPerSec": 96.23
         },
         {
           "mode": "warm",
-          "ttfbMs": 1637.47,
-          "ttftMs": 1637.55,
+          "ttfbMs": 2075.08,
+          "ttftMs": 2075.17,
           "outputTokens": 196,
-          "outputTokensPerSec": 119.46
+          "outputTokensPerSec": 94.22
         },
         {
           "mode": "warm",
-          "ttfbMs": 2210.65,
-          "ttftMs": 2210.75,
+          "ttfbMs": 1901.43,
+          "ttftMs": 1901.52,
           "outputTokens": 196,
-          "outputTokensPerSec": 88.06
+          "outputTokensPerSec": 102.64
         },
         {
           "mode": "warm",
-          "ttfbMs": 2035.3,
-          "ttftMs": 2035.39,
+          "ttfbMs": 1634.06,
+          "ttftMs": 1634.14,
           "outputTokens": 196,
-          "outputTokensPerSec": 95.17
+          "outputTokensPerSec": 119.57
         },
         {
           "mode": "warm",
-          "ttfbMs": 2158,
-          "ttftMs": 2158.09,
+          "ttfbMs": 2217.79,
+          "ttftMs": 2217.87,
           "outputTokens": 196,
-          "outputTokensPerSec": 87.36
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2195.15,
-          "ttftMs": 2195.22,
-          "outputTokens": 196,
-          "outputTokensPerSec": 87.86
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1785.71,
-          "ttftMs": 1785.78,
-          "outputTokens": 196,
-          "outputTokensPerSec": 109.6
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1911.24,
-          "ttftMs": 1911.33,
-          "outputTokens": 196,
-          "outputTokensPerSec": 102.29
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2088.1,
-          "ttftMs": 2088.29,
-          "outputTokens": 196,
-          "outputTokensPerSec": 93.85
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1988.29,
-          "ttftMs": 1988.39,
-          "outputTokens": 196,
-          "outputTokensPerSec": 98.35
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1917.66,
-          "ttftMs": 1917.78,
-          "outputTokens": 196,
-          "outputTokensPerSec": 101.89
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1911.91,
-          "ttftMs": 1912.07,
-          "outputTokens": 196,
-          "outputTokensPerSec": 102.49
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1950.15,
-          "ttftMs": 1950.24,
-          "outputTokens": 196,
-          "outputTokensPerSec": 100.19
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 1772.47,
-          "ttftMs": 1772.56,
-          "outputTokens": 196,
-          "outputTokensPerSec": 110.49
-        },
-        {
-          "mode": "warm",
-          "ttfbMs": 2096.23,
-          "ttftMs": 2096.3,
-          "outputTokens": 196,
-          "outputTokensPerSec": 91.45
+          "outputTokensPerSec": 88.14
         }
       ],
       "summary": {
         "dnsMs": {
-          "median": 2.31,
-          "p95": 16,
-          "p99": 16
+          "median": 1.8,
+          "p95": 23.61,
+          "p99": 23.61
         },
         "tcpMs": {
-          "median": 4.32,
-          "p95": 7.33,
-          "p99": 7.33
+          "median": 4.47,
+          "p95": 7.94,
+          "p99": 7.94
         },
         "tlsMs": {
-          "median": 10.13,
-          "p95": 17.51,
-          "p99": 17.51
+          "median": 11.13,
+          "p95": 16.56,
+          "p99": 16.56
         },
         "coldTtfbMs": {
-          "median": 1900.45,
-          "p95": 2858.16,
-          "p99": 2858.16
+          "median": 1817.19,
+          "p95": 2411.8,
+          "p99": 2411.8
         },
         "coldTtftMs": {
-          "median": 1900.56,
-          "p95": 2858.26,
-          "p99": 2858.26
+          "median": 1817.27,
+          "p95": 2411.9,
+          "p99": 2411.9
         },
         "coldE2eMs": {
-          "median": 1926.6,
-          "p95": 2879.18,
-          "p99": 2879.18
+          "median": 1831.98,
+          "p95": 2436.63,
+          "p99": 2436.63
         },
         "warmTtfbMs": {
-          "median": 2011.8,
-          "p95": 2287.99,
-          "p99": 2287.99
+          "median": 1827.23,
+          "p95": 2217.79,
+          "p99": 2217.79
         },
         "warmTtftMs": {
-          "median": 2011.89,
-          "p95": 2288.07,
-          "p99": 2288.07
+          "median": 1827.39,
+          "p95": 2217.87,
+          "p99": 2217.87
         },
         "outputTokensPerSec": {
-          "median": 99.19,
-          "p95": 115.73,
-          "p99": 119.46
+          "median": 107.71,
+          "p95": 126.07,
+          "p99": 126.07
         }
       },
-      "compositeScore": 85.05,
+      "compositeScore": 86.29,
       "successRate": 1
     }
   ]
