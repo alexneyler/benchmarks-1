@@ -37,6 +37,9 @@ const BENCHMARK_TITLE = process.env.BENCHMARK_TITLE;
 const LOGO_VARIANT: LogoVariant = 'logo-dark';
 const LOGO_FORMAT: LogoFormat = 'normalized';
 
+// Benchmarks that should be ranked by time (lower totalMs = better/faster bar).
+const TIME_BASED_BENCHMARKS = new Set(['sandbox-dax']);
+
 const BENCHMARK_TITLES: Record<string, string> = {
   'burst_tti': 'Burst TTI Benchmarks',
   'sequential_tti': 'Sequential TTI Benchmarks',
@@ -235,41 +238,51 @@ async function main() {
   ]);
 
   const parsedResults = resultsRaw.results.filter((entry) => !entry.skipped);
+  const isTimeBased = TIME_BASED_BENCHMARKS.has(BENCHMARK);
 
-  const providersWithTime: { entry: ResultEntry; timeMs: number }[] = [];
-  const providersWithoutTime: ResultEntry[] = [];
+  let baseProviders: Omit<Provider, 'rank'>[];
 
-  for (const entry of parsedResults) {
-    const timeMs = getMedianTotalMs(entry);
-    if (timeMs !== null) {
-      providersWithTime.push({ entry, timeMs });
-    } else {
-      providersWithoutTime.push(entry);
+  if (isTimeBased) {
+    const providersWithTime: { entry: ResultEntry; timeMs: number }[] = [];
+    const providersWithoutTime: ResultEntry[] = [];
+
+    for (const entry of parsedResults) {
+      const timeMs = getMedianTotalMs(entry);
+      if (timeMs !== null) {
+        providersWithTime.push({ entry, timeMs });
+      } else {
+        providersWithoutTime.push(entry);
+      }
     }
+
+    const timeValues = providersWithTime.map((p) => p.timeMs);
+    const minTime = timeValues.length > 0 ? Math.min(...timeValues) : 0;
+    const maxTime = timeValues.length > 0 ? Math.max(...timeValues) : 0;
+
+    baseProviders = [
+      ...providersWithTime.map(({ entry, timeMs }) => ({
+        provider: entry.provider,
+        displayName: formatProviderName(entry.provider),
+        score: normalizeTimeScore(timeMs, minTime, maxTime),
+        displayValue: `${(timeMs / 1000).toFixed(1)}s`,
+        logoUrl: resolveProviderLogoUrl(entry.provider),
+      })),
+      ...providersWithoutTime.map((entry) => ({
+        provider: entry.provider,
+        displayName: formatProviderName(entry.provider),
+        score: 0,
+        displayValue: '—',
+        logoUrl: resolveProviderLogoUrl(entry.provider),
+      })),
+    ];
+  } else {
+    baseProviders = parsedResults.map((entry) => ({
+      provider: entry.provider,
+      displayName: formatProviderName(entry.provider),
+      score: computeScore(entry),
+      logoUrl: resolveProviderLogoUrl(entry.provider),
+    }));
   }
-
-  const timeValues = providersWithTime.map((p) => p.timeMs);
-  const minTime = timeValues.length > 0 ? Math.min(...timeValues) : 0;
-  const maxTime = timeValues.length > 0 ? Math.max(...timeValues) : 0;
-
-  const isTimeBased = providersWithTime.length > 0;
-
-  const baseProviders: Omit<Provider, 'rank'>[] = [
-    ...providersWithTime.map(({ entry, timeMs }) => ({
-      provider: entry.provider,
-      displayName: formatProviderName(entry.provider),
-      score: normalizeTimeScore(timeMs, minTime, maxTime),
-      displayValue: `${(timeMs / 1000).toFixed(1)}s`,
-      logoUrl: resolveProviderLogoUrl(entry.provider),
-    })),
-    ...providersWithoutTime.map((entry) => ({
-      provider: entry.provider,
-      displayName: formatProviderName(entry.provider),
-      score: isTimeBased ? 0 : computeScore(entry),
-      displayValue: isTimeBased ? '—' : undefined,
-      logoUrl: resolveProviderLogoUrl(entry.provider),
-    })),
-  ];
 
   const providers: Provider[] = baseProviders
     .sort((a, b) => b.score - a.score)
@@ -280,7 +293,7 @@ async function main() {
     updatedAt: resultsRaw.timestamp,
     providers,
     sponsors,
-    valueLabel: providersWithTime.length > 0 ? 'Total Time (s)' : undefined,
+    valueLabel: isTimeBased ? 'Total Time (s)' : undefined,
   };
 
   await fs.mkdir(path.dirname(DATA_PATH), { recursive: true });
