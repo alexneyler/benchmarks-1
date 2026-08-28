@@ -47,6 +47,7 @@ const LOGO_BRAND_ID_OVERRIDES: Record<string, string> = {
   'openai-direct': 'openai',
   'gemini-direct': 'google-gemini',
   'kimi-direct': 'kimi',
+  'gcs': 'google-cloud-storage',
 };
 
 export const MISSING_LOGO_BRAND_IDS = new Set<string>(['lightning-ai', 'sail']);
@@ -85,6 +86,7 @@ export function capitalize(s: string): string {
   if (s.toLowerCase() === 'e2b') return 'E2B';
   if (s.toLowerCase() === 'codesandbox') return 'CodeSandbox';
   if (s === 'just-bash' || s === 'justbash') return 'JustBash';
+  if (s === 'gcs') return 'GCS';
   if (s === 'aws-s3') return 'AWS S3';
   if (s === 'cloudflare-r2') return 'Cloudflare R2';
   if (s === 'tigris') return 'Tigris';
