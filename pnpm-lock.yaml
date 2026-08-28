@@ -123,8 +123,8 @@ importers:
         specifier: ^0.3.7
         version: 0.3.7(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       '@computesdk/opencomputer':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^1.0.4
+        version: 1.0.4
       '@computesdk/quilt':
         specifier: ^1.0.3
         version: 1.0.3
@@ -818,8 +818,8 @@ packages:
   '@computesdk/notte@0.3.7':
     resolution: {integrity: sha512-BRF+nlF0WkPQV/FTx8uBYuDfe0mYcIV4+J8+DlXMuuJk9avca9pKa2eJW8Jh4WwYloTG8lzJH9sfkYAdV8WBHw==}
 
-  '@computesdk/opencomputer@1.0.3':
-    resolution: {integrity: sha512-Y34k/HLwDmD46gY2XD1un0WChV2qriL1OHeU5ojongqWsJ3xDXdAC+26tMA3kjJfVg0NWJ4BLkHXLxiiCFsgAg==}
+  '@computesdk/opencomputer@1.0.4':
+    resolution: {integrity: sha512-il6kyMeoUaaLL69V7rM2dgZHPw5CC34uuL2zZm7ooVngVQBKW3VaKhmUbP63JWAWD+iruBaFglWkFuSrEkwQlA==}
 
   '@computesdk/provider@2.1.4':
     resolution: {integrity: sha512-abTZS8kpif4QpLZ7Jzo6hmlje2b3YB4VRC8hVkrb/tKXwt0QcU7Nao7tM1phRru0HxVrfHycb/vZtdJSlNFGeA==}
@@ -1624,8 +1624,8 @@ packages:
   '@onkernel/sdk@0.49.0':
     resolution: {integrity: sha512-nsq5OfkaNKxRTCdXQF8BSTj/Wl0iBIqyWoI/ATgQt15pV+59E22MsZ+IHPiVwwb33tXLtnOqUe5ffOxm7l3GHg==}
 
-  '@opencomputer/sdk@0.15.6':
-    resolution: {integrity: sha512-4FLK2Mjz1iqxWSloPXbDXoJLKnEk3rI1jcojzAEpAoR2hO8S7CjjL8yck0GHaaQjn7vob80doMFLWVUMsHzKgg==}
+  '@opencomputer/sdk@0.15.7':
+    resolution: {integrity: sha512-KbwjN0sYbLBnjWJmHpu9nEUIT0gS1Pad58y2bsZ5TP7itm4H5tMsflvkbNi38QjXIn1OdCuR0GyRNcejxyHnEA==}
     engines: {node: '>=18'}
 
   '@opentelemetry/api-logs@0.217.0':
@@ -6504,10 +6504,10 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@computesdk/opencomputer@1.0.3':
+  '@computesdk/opencomputer@1.0.4':
     dependencies:
       '@computesdk/provider': 2.1.5
-      '@opencomputer/sdk': 0.15.6
+      '@opencomputer/sdk': 0.15.7
       computesdk: 4.1.4
 
   '@computesdk/provider@2.1.4':
@@ -7265,7 +7265,7 @@ snapshots:
 
   '@onkernel/sdk@0.49.0': {}
 
-  '@opencomputer/sdk@0.15.6':
+  '@opencomputer/sdk@0.15.7':
     dependencies:
       undici: 7.29.0
 
