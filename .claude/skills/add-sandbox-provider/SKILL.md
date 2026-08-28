@@ -81,8 +81,6 @@ two spots, both commented like the `beam` lines:
 
 ## What you do NOT need to touch
 
-- `GATEWAY_PROVIDERS` in `benchmarks/sandbox/generate-svg.ts` — only for automatic-mode
-  providers routed through the ComputeSDK gateway (railway/render), not direct-mode SDKs.
 - A `bench:<name>` script in package.json is optional; CI invokes
   `--provider ${{ matrix.provider }}` directly. Skip it unless asked.
 - No tests enumerate providers.

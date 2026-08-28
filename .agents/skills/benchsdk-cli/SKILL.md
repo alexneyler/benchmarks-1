@@ -31,7 +31,7 @@ The CLI tries credentials in this order:
 
 1. `--api-key <key>`
 2. `BENCHMARKS_PLATFORM_TOKEN` (a better-auth session token — does not refresh)
-3. `BENCHMARKS_PLATFORM_API_KEY` or `COMPUTESDK_API_KEY` (an org-scoped `bp_...` key)
+3. `BENCHMARKS_PLATFORM_API_KEY` (an org-scoped `bp_...` key)
 4. OAuth tokens from `~/.benchsdk/credentials.json` (from `bench auth login`)
 
 API keys and tokens are useful for non-interactive environments. OAuth is
@@ -157,7 +157,7 @@ fails fast with an `AuthError`.
 ## Environment variables
 
 - `BENCHMARKS_PLATFORM_URL` — platform root URL (default: `https://platform.computesdk.com`)
-- `BENCHMARKS_PLATFORM_API_KEY` / `COMPUTESDK_API_KEY` — API key
+- `BENCHMARKS_PLATFORM_API_KEY` — API key
 - `BENCHMARKS_PLATFORM_TOKEN` — bearer/session token
 - `CI` — when set, the CLI avoids interactive prompts
 
