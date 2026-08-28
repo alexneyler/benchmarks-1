@@ -47,6 +47,7 @@ const BENCHMARK_TITLES: Record<string, string> = {
   'sandbox-dax': 'Dax Benchmarks',
   'browser': 'Browser Benchmarks',
   'browser-throughput': 'Browser Throughput Benchmarks',
+  'storage': 'Storage Benchmarks',
   'storage/1mb': 'Storage 1 MB Benchmarks',
   'storage/4mb': 'Storage 4 MB Benchmarks',
   'storage/10mb': 'Storage 10 MB Benchmarks',
@@ -127,6 +128,54 @@ function getResultPath(benchmark: string): string {
     throw new Error(`Invalid benchmark name: ${benchmark}`);
   }
   return resultPath;
+}
+
+async function loadResultFile(benchmark: string): Promise<ResultFile> {
+  const resultPath = getResultPath(benchmark);
+  const raw = await fs.readFile(resultPath, 'utf-8');
+  return JSON.parse(raw) as ResultFile;
+}
+
+async function loadCombinedStorageResults(): Promise<ResultFile> {
+  const sizes = ['1mb', '4mb', '10mb', '16mb'];
+  const files = await Promise.all(sizes.map((size) => loadResultFile(`storage/${size}`)));
+
+  const byProvider = new Map<
+    string,
+    { provider: string; scores: number[]; successRates: number[] }
+  >();
+
+  let latestTimestamp = '';
+  for (const file of files) {
+    if (file.timestamp > latestTimestamp) latestTimestamp = file.timestamp;
+    for (const r of file.results) {
+      if (r.skipped) continue;
+      if (!byProvider.has(r.provider)) {
+        byProvider.set(r.provider, { provider: r.provider, scores: [], successRates: [] });
+      }
+      const entry = byProvider.get(r.provider)!;
+      if (typeof r.compositeScore === 'number') entry.scores.push(r.compositeScore);
+      if (typeof r.successRate === 'number') entry.successRates.push(r.successRate);
+    }
+  }
+
+  const results: ResultEntry[] = [];
+  for (const { provider, scores, successRates } of byProvider.values()) {
+    const avgScore = scores.length > 0
+      ? scores.reduce((a, b) => a + b, 0) / scores.length
+      : 0;
+    const avgSuccess = successRates.length > 0
+      ? successRates.reduce((a, b) => a + b, 0) / successRates.length
+      : 0;
+
+    results.push({
+      provider,
+      compositeScore: avgScore,
+      successRate: avgSuccess,
+    });
+  }
+
+  return { timestamp: latestTimestamp, results };
 }
 
 function computeScore(entry: ResultEntry): number {
@@ -392,9 +441,10 @@ function getTimeBasedMetrics(entry: ResultEntry): TimeBasedMetrics {
 }
 
 async function main() {
-  const resultPath = getResultPath(BENCHMARK);
   const [resultsRaw, sponsors] = await Promise.all([
-    fs.readFile(resultPath, 'utf-8').then(JSON.parse) as Promise<ResultFile>,
+    BENCHMARK === 'storage'
+      ? loadCombinedStorageResults()
+      : loadResultFile(BENCHMARK),
     fetchSponsors(),
   ]);
 
