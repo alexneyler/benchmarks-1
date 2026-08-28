@@ -58,6 +58,7 @@ const BENCHMARK_TITLES: Record<string, string> = {
 interface Iteration {
   phasesCompleted?: number;
   phasesTotal?: number;
+  totalMs?: number;
   error?: string;
   [key: string]: unknown;
 }
@@ -81,12 +82,21 @@ interface Provider {
   provider: string;
   displayName: string;
   score: number;
+  displayValue?: string | number;
   logoUrl: string | null;
 }
 
 interface Sponsor {
   name: string;
   logoUrl: string;
+}
+
+interface LeaderboardData {
+  title: string;
+  updatedAt: string;
+  providers: Provider[];
+  sponsors: Sponsor[];
+  valueLabel?: string;
 }
 
 function humanizeBenchmark(raw: string): string {
@@ -142,6 +152,36 @@ function computeScore(entry: ResultEntry): number {
   return 0;
 }
 
+function getMedianTotalMs(entry: ResultEntry): number | null {
+  if (entry.successRate !== 1) return null;
+
+  const summary = entry.summary as { totalMs?: { median?: number } } | undefined;
+  const summaryMedian = summary?.totalMs?.median;
+  if (typeof summaryMedian === 'number' && !Number.isNaN(summaryMedian) && summaryMedian > 0) {
+    return summaryMedian;
+  }
+
+  const iterations = entry.iterations;
+  if (Array.isArray(iterations) && iterations.length > 0) {
+    const totals = iterations
+      .map((it) => (typeof it.totalMs === 'number' ? it.totalMs : NaN))
+      .filter((v) => !Number.isNaN(v) && v > 0)
+      .sort((a, b) => a - b);
+    if (totals.length === 0) return null;
+    const mid = Math.floor(totals.length / 2);
+    return totals.length % 2 !== 0
+      ? totals[mid]
+      : (totals[mid - 1] + totals[mid]) / 2;
+  }
+
+  return null;
+}
+
+function normalizeTimeScore(timeMs: number, minTime: number, maxTime: number): number {
+  if (maxTime <= minTime) return 100;
+  return Math.max(0, Math.min(100, ((maxTime - timeMs) / (maxTime - minTime)) * 100));
+}
+
 function resolveProviderLogoUrl(provider: string): string | null {
   const normalized = normalizeProvider(provider);
   const url = providerLogoUrl(normalized, LOGO_VARIANT, LOGO_FORMAT);
@@ -194,22 +234,53 @@ async function main() {
     fetchSponsors(),
   ]);
 
-  const providers: Provider[] = resultsRaw.results
-    .filter((entry) => !entry.skipped)
-    .map((entry) => ({
+  const parsedResults = resultsRaw.results.filter((entry) => !entry.skipped);
+
+  const providersWithTime: { entry: ResultEntry; timeMs: number }[] = [];
+  const providersWithoutTime: ResultEntry[] = [];
+
+  for (const entry of parsedResults) {
+    const timeMs = getMedianTotalMs(entry);
+    if (timeMs !== null) {
+      providersWithTime.push({ entry, timeMs });
+    } else {
+      providersWithoutTime.push(entry);
+    }
+  }
+
+  const timeValues = providersWithTime.map((p) => p.timeMs);
+  const minTime = timeValues.length > 0 ? Math.min(...timeValues) : 0;
+  const maxTime = timeValues.length > 0 ? Math.max(...timeValues) : 0;
+
+  const isTimeBased = providersWithTime.length > 0;
+
+  const baseProviders: Omit<Provider, 'rank'>[] = [
+    ...providersWithTime.map(({ entry, timeMs }) => ({
       provider: entry.provider,
       displayName: formatProviderName(entry.provider),
-      score: computeScore(entry),
+      score: normalizeTimeScore(timeMs, minTime, maxTime),
+      displayValue: `${(timeMs / 1000).toFixed(1)}s`,
       logoUrl: resolveProviderLogoUrl(entry.provider),
-    }))
+    })),
+    ...providersWithoutTime.map((entry) => ({
+      provider: entry.provider,
+      displayName: formatProviderName(entry.provider),
+      score: isTimeBased ? 0 : computeScore(entry),
+      displayValue: isTimeBased ? '—' : undefined,
+      logoUrl: resolveProviderLogoUrl(entry.provider),
+    })),
+  ];
+
+  const providers: Provider[] = baseProviders
     .sort((a, b) => b.score - a.score)
     .map((provider, index) => ({ ...provider, rank: index + 1 }));
 
-  const data = {
+  const data: LeaderboardData = {
     title: getBenchmarkTitle(BENCHMARK, BENCHMARK_TITLE),
     updatedAt: resultsRaw.timestamp,
     providers,
     sponsors,
+    valueLabel: providersWithTime.length > 0 ? 'Total Time (s)' : undefined,
   };
 
   await fs.mkdir(path.dirname(DATA_PATH), { recursive: true });

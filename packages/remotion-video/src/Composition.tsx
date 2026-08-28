@@ -8,6 +8,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
   title,
   providers,
   sponsors,
+  valueLabel,
 }) => {
   const frame = useCurrentFrame();
   const topProviders = providers.slice(0, 5);
@@ -197,7 +198,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                   lineHeight: 1,
                 }}
               >
-                {provider.score.toFixed(1)}
+                {provider.displayValue ?? provider.score.toFixed(1)}
               </span>
               <span
                 style={{
@@ -207,7 +208,7 @@ export const Leaderboard: FC<LeaderboardData> = ({
                   marginTop: 2,
                 }}
               >
-                Composite Score
+                {valueLabel ?? 'Composite Score'}
               </span>
             </div>
 

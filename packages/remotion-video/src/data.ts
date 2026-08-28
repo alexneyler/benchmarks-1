@@ -3,6 +3,7 @@ export interface Provider {
   provider: string;
   displayName: string;
   score: number;
+  displayValue?: string | number;
   logoUrl: string | null;
 }
 
@@ -16,4 +17,5 @@ export interface LeaderboardData {
   updatedAt: string;
   providers: Provider[];
   sponsors: Sponsor[];
+  valueLabel?: string;
 }
