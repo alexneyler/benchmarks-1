@@ -127,10 +127,15 @@ jobs:
       - name: Install dependencies
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            pnpm update
+            pnpm update --ignore-scripts
           else
-            pnpm install --frozen-lockfile
+            pnpm install --frozen-lockfile --ignore-scripts
           fi
+      - name: Build workspace packages
+        # The @benchsdk/* packages are built from source and dist/ is not
+        # committed. Build them in topological order so dependents like
+        # @benchsdk/client can resolve @benchsdk/worker during their own build.
+        run: pnpm -r --filter './packages/**' run build
       - name: Run AI gateway benchmark
         if: github.event_name != 'workflow_dispatch' || github.event.inputs.family == 'all' || github.event.inputs.family == '' || github.event.inputs.family == matrix.family.slug
         # Union of every family's vars is loaded regardless of which family
