@@ -1163,5 +1163,28 @@ describe('runBenchmark', () => {
       expect(fakeClient.createRun).not.toHaveBeenCalled();
       expect(outcome.runId).toBe('no-ingest');
     });
+
+    it('does not submit a run summary in dry-run even with scoring configured', async () => {
+      const onScore = vi.fn((lowerIsBetter) => ({
+        metrics: [lowerIsBetter('ttiMs', { unit: 'ms', ceiling: 1000, weights: { median: 1, p95: 0, p99: 0 } })],
+      }));
+      const onComplete = vi.fn();
+      const config: BenchmarkConfig<typeof participants[number]> = {
+        benchmarkSlug: 's',
+        benchmarkName: 'n',
+        iterations: 2,
+        participants: [participants[0]],
+        onScore,
+        onComplete,
+      };
+
+      const outcome = await runBenchmark(config, defineTask(async () => ({ data: { ttiMs: 100 } })), ['--no-ingest']);
+
+      expect(fakeClient.submitRunSummary).not.toHaveBeenCalled();
+      expect(onScore).not.toHaveBeenCalled();
+      expect(onComplete).toHaveBeenCalledTimes(1);
+      expect(onComplete).toHaveBeenCalledWith(outcome);
+      expect(outcome.runId).toBe('no-ingest');
+    });
   });
 });
