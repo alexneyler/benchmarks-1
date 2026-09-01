@@ -34,11 +34,6 @@ function apiKeyFromEnvironment(): string | undefined {
   return process.env.BENCHMARKS_PLATFORM_API_KEY;
 }
 
-function isNonInteractive(): boolean {
-  if (typeof process === 'undefined') return false;
-  return !!process.env.CI || process.stdin.isTTY === false;
-}
-
 function computeTokenExpiry(expiresInSeconds: number): number {
   return Date.now() + expiresInSeconds * 1000;
 }
@@ -157,11 +152,9 @@ export async function resolveAuth(override?: {
   }
 
   if (!auth.token && !auth.apiKey && !apiKeyFromEnvironment() && !tokenFromEnvironment()) {
-    if (isNonInteractive()) {
-      throw new AuthError(
-        'No credentials found in non-interactive mode. Set BENCHMARKS_PLATFORM_API_KEY or BENCHMARKS_PLATFORM_TOKEN.',
-      );
-    }
+    throw new AuthError(
+      'No credentials found. Set BENCHMARKS_PLATFORM_API_KEY or BENCHMARKS_PLATFORM_TOKEN.',
+    );
   }
 
   return auth;

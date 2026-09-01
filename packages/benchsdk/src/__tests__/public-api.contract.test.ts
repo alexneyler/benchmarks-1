@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import * as barrel from '../index';
 import {
@@ -193,6 +193,21 @@ type _PublicTypeSurface = [
 
 const BASE = 'https://platform.test/api/v1';
 const DEFAULT_BASE_URL = 'https://platform.computesdk.com/api/v1';
+
+let originalApiKey: string | undefined;
+
+beforeAll(() => {
+  originalApiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
+  process.env.BENCHMARKS_PLATFORM_API_KEY = 'k';
+});
+
+afterAll(() => {
+  if (originalApiKey === undefined) {
+    delete process.env.BENCHMARKS_PLATFORM_API_KEY;
+  } else {
+    process.env.BENCHMARKS_PLATFORM_API_KEY = originalApiKey;
+  }
+});
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

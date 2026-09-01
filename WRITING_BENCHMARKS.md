@@ -29,9 +29,12 @@ pnpm exec bench run examples/01-hello.bench.ts --dry-run
 
 ## Platform credentials
 
-To report results to the platform instead of running dry, set:
+To report results to the platform instead of running dry, authenticate with one of:
 
-- `BENCHMARKS_PLATFORM_API_KEY` — a ComputeSDK benchmarks platform API key.
+- `BENCHMARKS_PLATFORM_API_KEY` — a ComputeSDK benchmarks platform API key (required by the runner; an org-scoped `bp_...` key).
+- `BENCHMARKS_PLATFORM_TOKEN` — an OAuth session/bearer token (used by the CLI and low-level client).
+
+You can also log in interactively with `bench auth login` to store an OAuth token in `~/.benchsdk/credentials.json`.
 
 To point at a different platform endpoint (for example, a staging environment or local development proxy), also set `BENCHMARKS_PLATFORM_URL` to the root URL (no `/api/v1` suffix; the runner appends it). The default is `https://platform.computesdk.com`.
 
