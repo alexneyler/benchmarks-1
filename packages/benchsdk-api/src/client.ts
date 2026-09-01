@@ -177,7 +177,7 @@ export function createBenchmarkClient(config: BenchmarkClientConfig = {}): Bench
   const authToken = getAuthToken(config);
   if (!authToken) {
     throw new Error(
-      'A platform API key or OAuth token is required. Set BENCHMARKS_PLATFORM_API_KEY or BENCHMARKS_PLATFORM_TOKEN in your environment, or pass apiKey/token to createBenchmarkClient.'
+      'A platform API key or OAuth token is required. Set BENCHMARKS_PLATFORM_API_KEY or BENCHMARKS_PLATFORM_TOKEN in your environment, or pass apiKey/token to createBenchmarkClient. Create an API key at https://platform.computesdk.com in your organization settings (Settings → API keys).'
     );
   }
 

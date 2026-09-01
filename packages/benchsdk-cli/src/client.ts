@@ -153,7 +153,7 @@ export async function resolveAuth(override?: {
 
   if (!auth.token && !auth.apiKey && !apiKeyFromEnvironment() && !tokenFromEnvironment()) {
     throw new AuthError(
-      'No credentials found. Set BENCHMARKS_PLATFORM_API_KEY or BENCHMARKS_PLATFORM_TOKEN.',
+      'No credentials found. Set BENCHMARKS_PLATFORM_API_KEY or BENCHMARKS_PLATFORM_TOKEN, or run `bench auth login` for OAuth. Create an API key at https://platform.computesdk.com in your organization settings (Settings → API keys).',
     );
   }
 

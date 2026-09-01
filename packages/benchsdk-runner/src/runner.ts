@@ -410,8 +410,8 @@ function resolvePlatform(): { baseUrl: string; apiKey: string } {
   const apiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
   if (!apiKey) {
     throw new Error(
-      'An API key is required. Set BENCHMARKS_PLATFORM_API_KEY in your environment. Create an org-scoped API key in your ' +
-        'organization settings on the platform.'
+      'An API key is required. Set BENCHMARKS_PLATFORM_API_KEY in your environment. Create an org-scoped API key at ' +
+        `${root} in your organization settings (Settings → API keys).`
     );
   }
   return {
