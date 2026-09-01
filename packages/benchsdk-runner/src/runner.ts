@@ -17,6 +17,7 @@
 import { execSync } from 'node:child_process';
 import os from 'node:os';
 import { createBenchmarkClient } from '@benchsdk/api';
+import { resolveAuth } from '@benchsdk/cli';
 import {
   BenchmarkReporter,
   filterParticipantsByEnv,
@@ -71,10 +72,6 @@ export interface CliArgs {
   /** When true, run locally and do not ingest/report to the platform. */
   noIngest?: boolean;
 }
-
-// Matches @benchsdk/api's DEFAULT_BASE_URL origin. `resolvePlatform()`
-// appends `/api/v1`. Override for local development via BENCHMARKS_PLATFORM_URL.
-const DEFAULT_PLATFORM_URL = 'https://platform.computesdk.com';
 
 function isEnvNoIngest(): boolean {
   const v = process.env.BENCHSDK_NO_INGEST;
@@ -405,21 +402,6 @@ function defaultOnResult(record: TaskResultRecord, meta: { iterations: number; p
   }
 }
 
-function resolvePlatform(): { baseUrl: string; apiKey: string } {
-  const root = (process.env.BENCHMARKS_PLATFORM_URL || DEFAULT_PLATFORM_URL).replace(/\/+$/, '');
-  const apiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      'An API key is required. Set BENCHMARKS_PLATFORM_API_KEY in your environment. Create an org-scoped API key in your ' +
-        'organization settings on the platform.'
-    );
-  }
-  return {
-    baseUrl: `${root}/api/v1`,
-    apiKey,
-  };
-}
-
 /**
  * Resolves `--shape <name>` against the config's declared `shapes`. Throws with
  * the known names if the shape is unknown, so a typo fails loudly instead of
@@ -531,15 +513,17 @@ export async function runBenchmark<T extends BaseParticipant>(
   const shaped = applyShape(fileConfig, resolveShape(fileConfig, args.shape));
   const config = applyIdentityOverrides(shaped, args);
   const resolved = mergeConfig(config, args);
-  const available = resolveParticipants(config, resolved);
 
-  let baseUrl = '';
-  let apiKey = '';
-  let client: BenchmarkClient | null = null;
-  if (!noIngest) {
-    ({ baseUrl, apiKey } = resolvePlatform());
-    client = createBenchmarkClient({ baseUrl, apiKey });
-  }
+  const auth = await resolveAuth();
+  const client = createBenchmarkClient({
+    baseUrl: auth.apiBaseUrl,
+    apiKey: auth.apiKey,
+    token: auth.token,
+    orgSlug: auth.orgSlug,
+    orgId: auth.orgId,
+  });
+
+  const available = resolveParticipants(config, resolved);
 
   const schedule = buildSchedule(config, resolved, task);
   const totalTasks = schedule.length;
@@ -595,7 +579,7 @@ export async function runBenchmark<T extends BaseParticipant>(
         config: runConfig,
       });
       runId = run.id;
-      dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
+      dashboardUrl = dashboardUrlFor(auth.apiBaseUrl, organizationSlug, config.benchmarkSlug, run.id);
       for (const participant of available) {
         await client!.upsertParticipant(config.benchmarkSlug, runId, participant.name, { totalTasks });
       }
@@ -609,7 +593,7 @@ export async function runBenchmark<T extends BaseParticipant>(
         config: runConfig,
       });
       runId = run.id;
-      dashboardUrl = dashboardUrlFor(baseUrl, organizationSlug, config.benchmarkSlug, run.id);
+      dashboardUrl = dashboardUrlFor(auth.apiBaseUrl, organizationSlug, config.benchmarkSlug, run.id);
       console.log(`Run created: ${run.name} (${runId})`);
       console.log(`View at: ${dashboardUrl}\n`);
     }
@@ -619,9 +603,9 @@ export async function runBenchmark<T extends BaseParticipant>(
 
   let participantRecords: ParticipantRecords[];
   if (resolved.groupBy === 'round') {
-    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, runId, baseUrl, apiKey, onResult, noIngest);
+    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, runId, auth.apiBaseUrl, auth.apiKey, auth.token, auth.orgSlug, auth.orgId, onResult, noIngest);
   } else {
-    participantRecords = await runGroupedByParticipant(config, schedule, available, resolved, client, runId, onResult);
+    participantRecords = await runGroupedByParticipant(config, schedule, available, resolved, client, runId, onResult, noIngest);
   }
 
   console.log(`All done. ${noIngest ? 'No platform run created.' : `View at: ${dashboardUrl}`}`);
@@ -631,7 +615,7 @@ export async function runBenchmark<T extends BaseParticipant>(
     participants: participantRecords,
     config: resolved,
   };
-  if (client && (config.onScore || config.scoring)) {
+  if (!noIngest && (config.onScore || config.scoring)) {
     try {
       const spec = config.onScore
         ? await config.onScore(lowerIsBetter, higherIsBetter)
@@ -697,6 +681,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
   client: BenchmarkClient | null,
   runId: string,
   onResult: OnResult,
+  noIngest: boolean,
 ): Promise<ParticipantRecords[]> {
   const participantRecords: ParticipantRecords[] = [];
   for (const participant of available) {
@@ -705,7 +690,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
     console.log('='.repeat(70));
 
     // When running without platform ingest, execute the schedule locally.
-    if (!client) {
+    if (noIngest || !client) {
       const records: TaskResultRecord[] = [];
       let rampStartMs: number | undefined;
       let nextIndex = 0;
@@ -816,7 +801,10 @@ async function runGroupedByRound<T extends BaseParticipant>(
   client: BenchmarkClient | null,
   runId: string,
   baseUrl: string,
-  apiKey: string,
+  apiKey: string | undefined,
+  token: string | undefined,
+  orgSlug: string | undefined,
+  orgId: string | undefined,
   onResult: OnResult,
   noIngest: boolean = false,
 ): Promise<ParticipantRecords[]> {
@@ -845,6 +833,9 @@ async function runGroupedByRound<T extends BaseParticipant>(
       reporter = await BenchmarkReporter.claim({
         baseUrl,
         apiKey,
+        token,
+        orgSlug,
+        orgId,
         benchmarkSlug: config.benchmarkSlug,
         runId: runId,
         participantSlug: participant.name,

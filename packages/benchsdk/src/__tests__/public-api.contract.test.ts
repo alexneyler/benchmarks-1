@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import * as barrel from '../index';
 import {
@@ -193,6 +193,21 @@ type _PublicTypeSurface = [
 
 const BASE = 'https://platform.test/api/v1';
 const DEFAULT_BASE_URL = 'https://platform.computesdk.com/api/v1';
+
+let originalApiKey: string | undefined;
+
+beforeAll(() => {
+  originalApiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
+  process.env.BENCHMARKS_PLATFORM_API_KEY = 'k';
+});
+
+afterAll(() => {
+  if (originalApiKey === undefined) {
+    delete process.env.BENCHMARKS_PLATFORM_API_KEY;
+  } else {
+    process.env.BENCHMARKS_PLATFORM_API_KEY = originalApiKey;
+  }
+});
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -1335,6 +1350,23 @@ describe('BenchmarkReporter', () => {
       expect(calls.filter((c) => c.url.endsWith('/events'))).toHaveLength(0);
     } finally {
       vi.useRealTimers();
+    }
+  });
+
+  it('returns null instead of rejecting when credentials are missing', async () => {
+    const prevApiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
+    const prevToken = process.env.BENCHMARKS_PLATFORM_TOKEN;
+    try {
+      delete process.env.BENCHMARKS_PLATFORM_API_KEY;
+      delete process.env.BENCHMARKS_PLATFORM_TOKEN;
+      const { fetchMock } = recordingClient(() => jsonResponse({ assignment: makeAssignment() }));
+      const reporter = await BenchmarkReporter.claim({ ...reporterConfig, fetch: fetchMock });
+      expect(reporter).toBeNull();
+    } finally {
+      if (prevApiKey === undefined) delete process.env.BENCHMARKS_PLATFORM_API_KEY;
+      else process.env.BENCHMARKS_PLATFORM_API_KEY = prevApiKey;
+      if (prevToken === undefined) delete process.env.BENCHMARKS_PLATFORM_TOKEN;
+      else process.env.BENCHMARKS_PLATFORM_TOKEN = prevToken;
     }
   });
 });
