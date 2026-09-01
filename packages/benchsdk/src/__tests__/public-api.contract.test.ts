@@ -1352,6 +1352,23 @@ describe('BenchmarkReporter', () => {
       vi.useRealTimers();
     }
   });
+
+  it('returns null instead of rejecting when credentials are missing', async () => {
+    const prevApiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
+    const prevToken = process.env.BENCHMARKS_PLATFORM_TOKEN;
+    try {
+      delete process.env.BENCHMARKS_PLATFORM_API_KEY;
+      delete process.env.BENCHMARKS_PLATFORM_TOKEN;
+      const { fetchMock } = recordingClient(() => jsonResponse({ assignment: makeAssignment() }));
+      const reporter = await BenchmarkReporter.claim({ ...reporterConfig, fetch: fetchMock });
+      expect(reporter).toBeNull();
+    } finally {
+      if (prevApiKey === undefined) delete process.env.BENCHMARKS_PLATFORM_API_KEY;
+      else process.env.BENCHMARKS_PLATFORM_API_KEY = prevApiKey;
+      if (prevToken === undefined) delete process.env.BENCHMARKS_PLATFORM_TOKEN;
+      else process.env.BENCHMARKS_PLATFORM_TOKEN = prevToken;
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
