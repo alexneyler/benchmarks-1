@@ -405,18 +405,20 @@ function defaultOnResult(record: TaskResultRecord, meta: { iterations: number; p
   }
 }
 
-function resolvePlatform(): { baseUrl: string; apiKey: string } {
+function resolvePlatform(): { baseUrl: string; apiKey?: string; token?: string } {
   const root = (process.env.BENCHMARKS_PLATFORM_URL || DEFAULT_PLATFORM_URL).replace(/\/+$/, '');
   const apiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
-  if (!apiKey) {
+  const token = process.env.BENCHMARKS_PLATFORM_TOKEN;
+  if (!apiKey && !token) {
     throw new Error(
-      'An API key is required. Set BENCHMARKS_PLATFORM_API_KEY in your environment. Create an org-scoped API key at ' +
+      'A platform API key or OAuth token is required. Set BENCHMARKS_PLATFORM_API_KEY or BENCHMARKS_PLATFORM_TOKEN in your environment. Create an org-scoped API key at ' +
         `${root} in your organization settings (Settings → API keys).`
     );
   }
   return {
     baseUrl: `${root}/api/v1`,
-    apiKey,
+    ...(apiKey ? { apiKey } : {}),
+    ...(token ? { token } : {}),
   };
 }
 
@@ -533,13 +535,8 @@ export async function runBenchmark<T extends BaseParticipant>(
   const resolved = mergeConfig(config, args);
   const available = resolveParticipants(config, resolved);
 
-  let baseUrl = '';
-  let apiKey = '';
-  let client: BenchmarkClient | null = null;
-  if (!noIngest) {
-    ({ baseUrl, apiKey } = resolvePlatform());
-    client = createBenchmarkClient({ baseUrl, apiKey });
-  }
+  const { baseUrl, apiKey, token } = resolvePlatform();
+  const client = createBenchmarkClient({ baseUrl, apiKey, token });
 
   const schedule = buildSchedule(config, resolved, task);
   const totalTasks = schedule.length;
@@ -619,9 +616,9 @@ export async function runBenchmark<T extends BaseParticipant>(
 
   let participantRecords: ParticipantRecords[];
   if (resolved.groupBy === 'round') {
-    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, runId, baseUrl, apiKey, onResult, noIngest);
+    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, runId, baseUrl, apiKey, token, onResult, noIngest);
   } else {
-    participantRecords = await runGroupedByParticipant(config, schedule, available, resolved, client, runId, onResult);
+    participantRecords = await runGroupedByParticipant(config, schedule, available, resolved, client, runId, onResult, noIngest);
   }
 
   console.log(`All done. ${noIngest ? 'No platform run created.' : `View at: ${dashboardUrl}`}`);
@@ -697,6 +694,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
   client: BenchmarkClient | null,
   runId: string,
   onResult: OnResult,
+  noIngest: boolean,
 ): Promise<ParticipantRecords[]> {
   const participantRecords: ParticipantRecords[] = [];
   for (const participant of available) {
@@ -705,7 +703,7 @@ async function runGroupedByParticipant<T extends BaseParticipant>(
     console.log('='.repeat(70));
 
     // When running without platform ingest, execute the schedule locally.
-    if (!client) {
+    if (noIngest || !client) {
       const records: TaskResultRecord[] = [];
       let rampStartMs: number | undefined;
       let nextIndex = 0;
@@ -816,7 +814,8 @@ async function runGroupedByRound<T extends BaseParticipant>(
   client: BenchmarkClient | null,
   runId: string,
   baseUrl: string,
-  apiKey: string,
+  apiKey: string | undefined,
+  token: string | undefined,
   onResult: OnResult,
   noIngest: boolean = false,
 ): Promise<ParticipantRecords[]> {
@@ -845,6 +844,7 @@ async function runGroupedByRound<T extends BaseParticipant>(
       reporter = await BenchmarkReporter.claim({
         baseUrl,
         apiKey,
+        token,
         benchmarkSlug: config.benchmarkSlug,
         runId: runId,
         participantSlug: participant.name,

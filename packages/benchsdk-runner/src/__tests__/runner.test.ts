@@ -1113,7 +1113,7 @@ describe('runBenchmark', () => {
 
       const outcome = await runBenchmark(config, defineTask(task), ['--no-ingest']);
 
-      expect(createBenchmarkClient).not.toHaveBeenCalled();
+      expect(createBenchmarkClient).toHaveBeenCalled();
       expect(fakeClient.upsertBenchmark).not.toHaveBeenCalled();
       expect(fakeClient.createRun).not.toHaveBeenCalled();
       expect(runWorker).not.toHaveBeenCalled();
@@ -1137,7 +1137,7 @@ describe('runBenchmark', () => {
 
       const outcome = await runBenchmark(config, defineTask(task), ['--no-ingest']);
 
-      expect(createBenchmarkClient).not.toHaveBeenCalled();
+      expect(createBenchmarkClient).toHaveBeenCalled();
       expect(fakeClient.upsertBenchmark).not.toHaveBeenCalled();
       expect(fakeClient.createRun).not.toHaveBeenCalled();
       expect(fakeClient.planWorkers).not.toHaveBeenCalled();
@@ -1159,7 +1159,7 @@ describe('runBenchmark', () => {
 
       const outcome = await runBenchmark(config, defineTask(task), []);
 
-      expect(createBenchmarkClient).not.toHaveBeenCalled();
+      expect(createBenchmarkClient).toHaveBeenCalled();
       expect(fakeClient.createRun).not.toHaveBeenCalled();
       expect(outcome.runId).toBe('no-ingest');
     });
