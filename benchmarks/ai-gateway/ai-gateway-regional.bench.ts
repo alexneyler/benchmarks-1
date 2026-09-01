@@ -49,7 +49,7 @@ if (!region) {
   throw new Error('A region is required. Set BENCH_REGION or pass --ai-gateway-region <region>.');
 }
 
-const phases = resolveAIGatewayRegionalPhases(['--ai-gateway-regions', region]);
+const phases = resolveAIGatewayRegionalPhases([...process.argv.slice(2), '--ai-gateway-regions', region]);
 if (phases.length === 0) {
   console.log('No regional phases to run.');
   process.exit(0);
