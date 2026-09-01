@@ -119,18 +119,18 @@ export async function resolveAuth(override?: {
     platformUrl = getPlatformBaseUrl(override.baseUrl ?? config.baseUrl);
     orgSlug = override.org ?? config.org;
     orgId = undefined;
-  } else if (envApiKey) {
-    apiKey = envApiKey;
-    token = undefined;
-    refreshToken = undefined;
-    platformUrl = getPlatformBaseUrl(mergedConfig.baseUrl);
-    orgSlug = mergedConfig.org;
-    orgId = undefined;
   } else if (envToken) {
     token = envToken;
     refreshToken = undefined;
     tokenExpiresAt = undefined;
     refreshExpiresAt = undefined;
+    platformUrl = getPlatformBaseUrl(mergedConfig.baseUrl);
+    orgSlug = mergedConfig.org;
+    orgId = undefined;
+  } else if (envApiKey) {
+    apiKey = envApiKey;
+    token = undefined;
+    refreshToken = undefined;
     platformUrl = getPlatformBaseUrl(mergedConfig.baseUrl);
     orgSlug = mergedConfig.org;
     orgId = undefined;

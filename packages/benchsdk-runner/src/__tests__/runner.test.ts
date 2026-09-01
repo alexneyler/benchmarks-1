@@ -24,9 +24,19 @@ vi.mock('@benchsdk/worker', () => ({
   selectParticipants: (all: any[], names?: string[]) => (names ? all.filter((p) => names.includes(p.name)) : all),
 }));
 
+vi.mock('@benchsdk/cli', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@benchsdk/cli')>();
+  return {
+    ...original,
+    resolveAuth: vi.fn(),
+  };
+});
+
 import { parseCliArgs, mergeConfig, runBenchmark } from '../runner';
 import { TaskError, defineTask } from '../bench-config';
 import { NoAvailableParticipantsError } from '../no-available-participants';
+import { resolveAuth, AuthError } from '@benchsdk/cli';
+import type { CliAuth } from '@benchsdk/cli';
 import type { BenchmarkConfig } from '../bench-config';
 import type { TaskResultRecord } from '@benchsdk/api';
 
@@ -265,12 +275,32 @@ describe('runBenchmark', () => {
       return { assignment, records };
     });
     createBenchmarkClient.mockReturnValue(fakeClient);
+    vi.mocked(resolveAuth).mockImplementation(async () => {
+      const token = process.env.BENCHMARKS_PLATFORM_TOKEN;
+      const apiKey = process.env.BENCHMARKS_PLATFORM_API_KEY;
+      if (!token && !apiKey) {
+        throw new AuthError('No credentials found');
+      }
+      return {
+        apiBaseUrl: 'https://platform.computesdk.com/api/v1',
+        baseUrl: 'https://platform.computesdk.com',
+        authBaseUrl: 'https://platform.computesdk.com/auth',
+        format: 'table',
+        apiKey: token ? undefined : apiKey,
+        token: token || undefined,
+        orgSlug: process.env.BENCHMARKS_TEST_ORG_SLUG,
+        orgId: process.env.BENCHMARKS_TEST_ORG_ID,
+      } as CliAuth;
+    });
   });
 
   afterEach(() => {
     delete process.env.E2B_API_KEY;
     delete process.env.MODAL_TOKEN;
     delete process.env.BENCHMARKS_PLATFORM_API_KEY;
+    delete process.env.BENCHMARKS_PLATFORM_TOKEN;
+    delete process.env.BENCHMARKS_TEST_ORG_SLUG;
+    delete process.env.BENCHMARKS_TEST_ORG_ID;
     delete process.env.BENCHSDK_NO_INGEST;
   });
 
@@ -546,7 +576,20 @@ describe('runBenchmark', () => {
       { name: 'e2b', missing: ['E2B_API_KEY'] },
       { name: 'modal', missing: ['MODAL_TOKEN'] },
     ]);
-    expect(createBenchmarkClient).not.toHaveBeenCalled();
+    expect(createBenchmarkClient).toHaveBeenCalled();
+  });
+
+  it('throws AuthError before checking participants when no platform credentials are set', async () => {
+    delete process.env.BENCHMARKS_PLATFORM_API_KEY;
+    delete process.env.BENCHMARKS_PLATFORM_TOKEN;
+
+    const err = await runBenchmark(
+      { benchmarkSlug: 's', benchmarkName: 'n', participants },
+      defineTask(async () => ({})),
+      [],
+    ).catch((e: unknown) => e);
+
+    expect(err).toBeInstanceOf(AuthError);
   });
 
   it('participant mode: tags data.phase from the schedule via measure', async () => {
@@ -1186,5 +1229,38 @@ describe('runBenchmark', () => {
       expect(onComplete).toHaveBeenCalledWith(outcome);
       expect(outcome.runId).toBe('no-ingest');
     });
+  });
+
+  it('propagates resolved orgSlug and orgId to round-mode reporter claims', async () => {
+    process.env.BENCHMARKS_PLATFORM_TOKEN = 'oauth-token';
+    process.env.BENCHMARKS_TEST_ORG_SLUG = 'my-org';
+    process.env.BENCHMARKS_TEST_ORG_ID = 'my-org-id';
+    delete process.env.BENCHMARKS_PLATFORM_API_KEY;
+
+    const task = vi.fn(async () => ({ data: { ok: true } }));
+    const config: BenchmarkConfig<typeof participants[number]> = {
+      benchmarkSlug: 's',
+      benchmarkName: 'n',
+      iterations: 1,
+      groupBy: 'round',
+      participants: [participants[0]],
+    };
+
+    await runBenchmark(config, defineTask(task), []);
+
+    expect(createBenchmarkClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        token: 'oauth-token',
+        orgSlug: 'my-org',
+        orgId: 'my-org-id',
+      }),
+    );
+    expect(reporterClaim).toHaveBeenCalledWith(
+      expect.objectContaining({
+        token: 'oauth-token',
+        orgSlug: 'my-org',
+        orgId: 'my-org-id',
+      }),
+    );
   });
 });

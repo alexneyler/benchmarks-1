@@ -84,6 +84,7 @@ function getApiKey(input?: string): string | undefined {
 
 function getAuthToken(config: BenchmarkClientConfig): string | undefined {
   if (config.token) return config.token;
+  if (config.apiKey) return config.apiKey;
   if (typeof process !== 'undefined' && process.env.BENCHMARKS_PLATFORM_TOKEN) {
     return process.env.BENCHMARKS_PLATFORM_TOKEN;
   }

@@ -513,7 +513,6 @@ export async function runBenchmark<T extends BaseParticipant>(
   const shaped = applyShape(fileConfig, resolveShape(fileConfig, args.shape));
   const config = applyIdentityOverrides(shaped, args);
   const resolved = mergeConfig(config, args);
-  const available = resolveParticipants(config, resolved);
 
   const auth = await resolveAuth();
   const client = createBenchmarkClient({
@@ -523,6 +522,8 @@ export async function runBenchmark<T extends BaseParticipant>(
     orgSlug: auth.orgSlug,
     orgId: auth.orgId,
   });
+
+  const available = resolveParticipants(config, resolved);
 
   const schedule = buildSchedule(config, resolved, task);
   const totalTasks = schedule.length;
@@ -602,7 +603,7 @@ export async function runBenchmark<T extends BaseParticipant>(
 
   let participantRecords: ParticipantRecords[];
   if (resolved.groupBy === 'round') {
-    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, runId, auth.apiBaseUrl, auth.apiKey, auth.token, onResult, noIngest);
+    participantRecords = await runGroupedByRound(config, schedule, available, resolved, client, runId, auth.apiBaseUrl, auth.apiKey, auth.token, auth.orgSlug, auth.orgId, onResult, noIngest);
   } else {
     participantRecords = await runGroupedByParticipant(config, schedule, available, resolved, client, runId, onResult, noIngest);
   }
@@ -802,6 +803,8 @@ async function runGroupedByRound<T extends BaseParticipant>(
   baseUrl: string,
   apiKey: string | undefined,
   token: string | undefined,
+  orgSlug: string | undefined,
+  orgId: string | undefined,
   onResult: OnResult,
   noIngest: boolean = false,
 ): Promise<ParticipantRecords[]> {
@@ -831,6 +834,8 @@ async function runGroupedByRound<T extends BaseParticipant>(
         baseUrl,
         apiKey,
         token,
+        orgSlug,
+        orgId,
         benchmarkSlug: config.benchmarkSlug,
         runId: runId,
         participantSlug: participant.name,

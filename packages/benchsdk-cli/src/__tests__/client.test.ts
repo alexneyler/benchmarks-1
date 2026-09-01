@@ -96,6 +96,18 @@ describe('resolveAuth', () => {
     expect(auth.orgId).toBeUndefined();
   });
 
+  it('prefers BENCHMARKS_PLATFORM_TOKEN over BENCHMARKS_PLATFORM_API_KEY when both are set', async () => {
+    process.env.BENCHMARKS_PLATFORM_TOKEN = 'env-token';
+    process.env.BENCHMARKS_PLATFORM_API_KEY = 'env-api-key';
+    vi.spyOn(config, 'loadConfig').mockResolvedValue({});
+    vi.spyOn(config, 'loadCredentials').mockResolvedValue(null);
+
+    const auth = await resolveAuth();
+
+    expect(auth.token).toBe('env-token');
+    expect(auth.apiKey).toBeUndefined();
+  });
+
   it('uses explicit config and overrides over saved credentials', async () => {
     vi.spyOn(config, 'loadConfig').mockResolvedValue({
       baseUrl: 'https://config.example.com',
