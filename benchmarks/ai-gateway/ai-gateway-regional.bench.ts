@@ -1,14 +1,16 @@
 /**
- * Regional AI Gateway benchmark — Anthropic family. Mirrors the standard
- * latency benchmark but adds a `region` dimension so each run compares the
- * same gateways across multiple regions. Each region runs the usual cold/warm
- * phase pair; the task parses `<region>:<mode>` from `ctx.phase`, routes to a
- * per-region endpoint when the provider declares one, and tags the record with
- * `region` so `scoring.groupBy: 'region'` breaks out the summary by region.
+ * Regional AI Gateway benchmark — Anthropic family. This is the same cold/warm
+ * latency benchmark run from a single runner region. The region is supplied once
+ * per run (via `BENCH_REGION` or `--ai-gateway-region`) and every record is
+ * tagged with `region` so the platform can compare runs by region.
+ *
+ * The benchmark intentionally hits each provider's normal endpoint; different
+ * regions are achieved by running the same file from different CI runner
+ * locations, not by routing to provider-specific regional endpoints.
  *
  * Run:
- *   bench run benchmarks/ai-gateway/ai-gateway-regional.bench.ts
- *   bench run benchmarks/ai-gateway/ai-gateway-regional.bench.ts --ai-gateway-regions us-east-1,eu-west-1
+ *   BENCH_REGION=us-east-1 bench run benchmarks/ai-gateway/ai-gateway-regional.bench.ts
+ *   bench run benchmarks/ai-gateway/ai-gateway-regional.bench.ts --ai-gateway-region us-east-1
  */
 import '../src/env.js';
 import path from 'node:path';
@@ -23,7 +25,31 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MAX_TOKENS = 200;
 const TIMEOUT_MS = 45_000;
 
-const phases = resolveAIGatewayRegionalPhases(process.argv.slice(2));
+function parseRegionFlag(argv: string[]): string | undefined {
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--ai-gateway-region') {
+      if (i + 1 >= argv.length) throw new Error('--ai-gateway-region requires a value');
+      const value = argv[i + 1];
+      if (!value || value.startsWith('-')) {
+        throw new Error(`--ai-gateway-region requires a non-empty region (got "${value}")`);
+      }
+      return value;
+    }
+    if (argv[i].startsWith('--ai-gateway-region=')) {
+      const value = argv[i].slice('--ai-gateway-region='.length);
+      if (!value) throw new Error('--ai-gateway-region= requires a non-empty value');
+      return value;
+    }
+  }
+  return undefined;
+}
+
+const region = process.env.BENCH_REGION ?? parseRegionFlag(process.argv.slice(2));
+if (!region) {
+  throw new Error('A region is required. Set BENCH_REGION or pass --ai-gateway-region <region>.');
+}
+
+const phases = resolveAIGatewayRegionalPhases(['--ai-gateway-regions', region]);
 if (phases.length === 0) {
   console.log('No regional phases to run.');
   process.exit(0);
@@ -35,7 +61,7 @@ export const config = defineBenchmarkConfig({
   phases,
   groupBy: 'round',
   participants: providers,
-  customCliFlags: ['--ai-gateway-regions', '--ai-gateway-iterations-cold', '--ai-gateway-iterations-warm'],
+  customCliFlags: ['--ai-gateway-region', '--ai-gateway-iterations-cold', '--ai-gateway-iterations-warm'],
   scoring: {
     groupBy: 'region',
     metrics: [
@@ -52,35 +78,10 @@ export const config = defineBenchmarkConfig({
     ],
   },
   onComplete: async (outcome) => {
-    const regions = Array.from(
-      new Set(
-        outcome.participants
-          .flatMap((p) => p.records)
-          .map((r) => (r.data as { region?: string } | undefined)?.region)
-          .filter((r): r is string => typeof r === 'string'),
-      ),
-    );
-    if (regions.length === 0) {
-      await writeAIGatewayLegacyResults(outcome.participants, {
-        resultsDir: path.resolve(__dirname, '../../results/ai-gateway-latency/regional/anthropic'),
-        providers,
-      });
-      return;
-    }
-    await Promise.all(
-      regions.map(async (region) => {
-        const regionParticipants = outcome.participants.map((p) => ({
-          ...p,
-          records: p.records.filter(
-            (r) => (r.data as { region?: string } | undefined)?.region === region,
-          ),
-        }));
-        await writeAIGatewayLegacyResults(regionParticipants, {
-          resultsDir: path.resolve(__dirname, `../../results/ai-gateway-latency/regional/anthropic/${region}`),
-          providers,
-        });
-      }),
-    );
+    await writeAIGatewayLegacyResults(outcome.participants, {
+      resultsDir: path.resolve(__dirname, `../../results/ai-gateway-latency/regional/anthropic/${region}`),
+      providers,
+    });
   },
 });
 
