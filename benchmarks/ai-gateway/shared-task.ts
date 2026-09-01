@@ -171,20 +171,13 @@ function parsePhase(phase: string | undefined): { region?: string; mode: 'cold' 
   return { mode: phase === 'warm' ? 'warm' : 'cold' };
 }
 
-function resolveProviderForRegion(provider: AIGatewayProviderConfig, region?: string): AIGatewayProviderConfig {
-  if (!region || !provider.regionalEndpoints?.[region]) return provider;
-  const endpoint = provider.regionalEndpoints[region];
-  return { ...provider, host: endpoint.host, path: endpoint.path ?? provider.path };
-}
-
 export function makeAIGatewayTask(maxTokens: number, timeoutMs: number) {
   return async function aiGatewayTask(ctx: TaskContext<AIGatewayProviderConfig>): Promise<TaskResult> {
     const { region, mode } = parsePhase(ctx.phase);
     const isCold = mode === 'cold';
-    const provider = resolveProviderForRegion(ctx.participant, region);
     const result = isCold
-      ? await runColdProbe(provider, PROMPT, maxTokens, timeoutMs)
-      : await runWarmProbe(provider, PROMPT, maxTokens, timeoutMs);
+      ? await runColdProbe(ctx.participant, PROMPT, maxTokens, timeoutMs)
+      : await runWarmProbe(ctx.participant, PROMPT, maxTokens, timeoutMs);
 
     const steps = phaseSteps(result);
 

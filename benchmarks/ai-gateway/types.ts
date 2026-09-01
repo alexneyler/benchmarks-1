@@ -1,12 +1,5 @@
 export type AIGatewayWireFormat = 'openai' | 'anthropic' | 'responses' | 'gemini';
 
-export interface RegionalEndpoint {
-  /** Hostname to connect to over TLS (port 443). */
-  host: string;
-  /** Request path override. Falls back to the provider's default `path` when omitted. */
-  path?: string;
-}
-
 export interface AIGatewayProviderConfig {
   /** Provider name */
   name: string;
@@ -20,12 +13,6 @@ export interface AIGatewayProviderConfig {
   host: string;
   /** Request path for a chat/message completion */
   path: string;
-  /**
-   * Per-region host/path overrides. A regional benchmark can route a provider to
-   * a region-specific endpoint by selecting the entry matching the current phase's
-   * region; when absent, the provider's default `host`/`path` is used.
-   */
-  regionalEndpoints?: Record<string, RegionalEndpoint>;
   /** Auth (and any gateway-specific) headers. Evaluated per-request so env vars can be read lazily. */
   buildHeaders: () => Record<string, string>;
   /**
