@@ -99,6 +99,9 @@ function parseRegions(argv: string[]): string[] {
  */
 export function resolveAIGatewayRegionalPhases(argv: string[]): Array<{ name: string; iterations: number }> {
   const iterationsOverride = parseIntFlag(argv, '--iterations');
+  if (iterationsOverride !== undefined && iterationsOverride <= 0) {
+    throw new Error('--iterations must be a positive integer');
+  }
   const iterationsCold = parseIntFlag(argv, '--ai-gateway-iterations-cold') ?? iterationsOverride ?? 5;
   const iterationsWarm = parseIntFlag(argv, '--ai-gateway-iterations-warm') ?? iterationsOverride ?? 5;
   const regions = parseRegions(argv);

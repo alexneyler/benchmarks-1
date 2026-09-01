@@ -51,8 +51,7 @@ if (!region) {
 
 const phases = resolveAIGatewayRegionalPhases([...process.argv.slice(2), '--ai-gateway-regions', region]);
 if (phases.length === 0) {
-  console.log('No regional phases to run.');
-  process.exit(0);
+  throw new Error('No regional phases to run. Check --iterations / --ai-gateway-iterations-* values.');
 }
 
 export const config = defineBenchmarkConfig({
