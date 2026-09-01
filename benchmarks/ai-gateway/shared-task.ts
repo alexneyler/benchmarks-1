@@ -75,10 +75,18 @@ function parseStringFlag(argv: string[], flag: string): string | undefined {
 function parseRegions(argv: string[]): string[] {
   const regions: string[] = [];
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i] === '--ai-gateway-regions' && i + 1 < argv.length) {
-      regions.push(...argv[i + 1].split(',').map((r) => r.trim()).filter(Boolean));
+    if (argv[i] === '--ai-gateway-regions') {
+      if (i + 1 >= argv.length) throw new Error('--ai-gateway-regions requires a value');
+      const value = argv[i + 1];
+      if (!value || value.startsWith('-')) {
+        throw new Error(`--ai-gateway-regions requires a non-empty region list (got "${value}")`);
+      }
+      regions.push(...value.split(',').map((r) => r.trim()).filter(Boolean));
+      i++;
     } else if (argv[i].startsWith('--ai-gateway-regions=')) {
-      regions.push(...argv[i].slice('--ai-gateway-regions='.length).split(',').map((r) => r.trim()).filter(Boolean));
+      const value = argv[i].slice('--ai-gateway-regions='.length);
+      if (!value) throw new Error('--ai-gateway-regions= requires a non-empty value');
+      regions.push(...value.split(',').map((r) => r.trim()).filter(Boolean));
     }
   }
   return regions.length > 0 ? regions : [...DEFAULT_REGIONS];
