@@ -31,7 +31,7 @@ jobs:
     # NOTE: Swap `namespace-profile-default` for region-specific Namespace
     # runner profiles/labels once they are configured. `BENCH_REGION` labels
     # the records, but it does not control where the job is scheduled.
-    runs-on: ${{ matrix.profile }}
+    runs-on: ${{ matrix.profile }};permissions.additional_grant=vault/object:*:list;permissions.additional_grant=vault/object:*:describe
     timeout-minutes: 120
     strategy:
       fail-fast: false
@@ -71,7 +71,7 @@ jobs:
         env:
           ITERATIONS: ${{ github.event.inputs.iterations }}
         run: |
-          . benchmarks/scripts/load-vault-secrets.sh '^(ANTHROPIC_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
+          . benchmarks/scripts/load-vault-secrets.sh '^(ANTHROPIC_API_KEY|OPENAI_API_KEY|GEMINI_API_KEY|KIMI_API_KEY|NOVITA_API_KEY|NEON_AI_GATEWAY_BASE_URL|NEON_AI_GATEWAY_TOKEN|NGROK_AI_GATEWAY_API_KEY|LLMAPI_API_KEY|CLOUDFLARE_AI_GATEWAY_ACCOUNT_ID|CLOUDFLARE_AI_GATEWAY_GATEWAY_ID|CLOUDFLARE_AI_GATEWAY_TOKEN|LLM_GATEWAY_API_KEY|OPENROUTER_API_KEY|PYDANTIC_AI_GATEWAY_API_KEY|VERCEL_AI_GATEWAY_API_KEY|CONCENTRATE_AI_GATEWAY_API_KEY|BLAZERAIL_API_KEY|BENCHMARKS_PLATFORM_API_KEY)'
 
           iterations_arg=()
           if [ -n "$ITERATIONS" ]; then
