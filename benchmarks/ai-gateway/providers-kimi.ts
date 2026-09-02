@@ -329,6 +329,22 @@ export const providers: AIGatewayProviderConfig[] = [
     reasoningCountsAsFirstToken: true,
   },
   {
+    name: 'github-copilot',
+    requiredEnvVars: ['GITHUB_COPILOT_API_KEY'],
+    wireFormat: 'openai',
+    model: 'kimi-k3',
+    host: 'api.githubcopilot.com',
+    path: '/chat/completions',
+    buildHeaders: () => ({
+      'X-GitHub-Api-Version': '2025-10-01',
+      Authorization: `Bearer ${process.env.GITHUB_COPILOT_API_KEY || ''}`,
+    }),
+    extraBody: {
+      temperature: undefined,
+    },
+    reasoningCountsAsFirstToken: true,
+  },
+  {
     // No-gateway baseline/control. Moonshot AI's Kimi API is itself
     // OpenAI-Chat-Completions-shaped (not a third-party compatibility shim —
     // that's Moonshot's own native API), so this is the most direct route

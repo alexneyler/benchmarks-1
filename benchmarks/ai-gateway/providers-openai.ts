@@ -240,6 +240,18 @@ export const providers: AIGatewayProviderConfig[] = [
       buf.match(/"model"\s*:\s*"([^"/]+)\/[^"]*"/)?.[1],
   },
   {
+    name: 'github-copilot',
+    requiredEnvVars: ['GITHUB_COPILOT_API_KEY'],
+    wireFormat: 'responses',
+    model: 'gpt-5.4-mini',
+    host: 'api.githubcopilot.com',
+    path: '/responses',
+    buildHeaders: () => ({
+      'X-GitHub-Api-Version': '2025-10-01',
+      Authorization: `Bearer ${process.env.GITHUB_COPILOT_API_KEY || ''}`,
+    }),
+  },
+  {
     // No-gateway baseline/control. OpenAI's own Responses API — its current
     // flagship endpoint (vs. the older Chat Completions surface) — is the
     // most direct route into OpenAI's own infrastructure.

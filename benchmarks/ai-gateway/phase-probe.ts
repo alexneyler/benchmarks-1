@@ -1,10 +1,12 @@
 import https from 'https';
 import type { TLSSocket } from 'tls';
+import { BENCHSDK_RUNNER_VERSION } from '@benchsdk/runner';
 import { withTimeout } from '../src/util/timeout.js';
 import { formatError } from '../src/util/error.js';
 import type { AIGatewayProviderConfig, AIGatewayWireFormat, PhaseProbeResult } from './types.js';
 
-const RECEIPT_HEADERS = ['x-vercel-id', 'cf-ray', 'x-request-id', 'request-id', 'anthropic-request-id'];
+const RECEIPT_HEADERS = ['x-vercel-id', 'cf-ray', 'x-request-id', 'request-id', 'anthropic-request-id', 'x-github-request-id'];
+const BENCHSDK_RUNNER_USER_AGENT = `benchsdk-runner/${BENCHSDK_RUNNER_VERSION}`;
 
 /**
  * Returns the regex that detects the first *visible* content token for a
@@ -60,7 +62,7 @@ const RECEIPT_HEADERS = ['x-vercel-id', 'cf-ray', 'x-request-id', 'request-id', 
 function contentRegexFor(wireFormat: AIGatewayWireFormat, includeReasoning: boolean): RegExp {
   if (wireFormat === 'openai') {
     return includeReasoning
-      ? /"(?:content|reasoning|reasoning_content)"\s*:\s*"[^"]/
+      ? /"(?:content|reasoning|reasoning_content|reasoning_text)"\s*:\s*"[^"]/
       : /"content"\s*:\s*"[^"]/;
   }
   if (wireFormat === 'responses') return /"delta"\s*:\s*"[^"]/;
@@ -244,6 +246,7 @@ function sendAndMeasure(
         'content-type': 'application/json',
         accept: 'text/event-stream',
         'content-length': Buffer.byteLength(body),
+        'User-Agent': BENCHSDK_RUNNER_USER_AGENT,
         ...config.buildHeaders(),
       },
     }, (res) => {

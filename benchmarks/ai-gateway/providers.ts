@@ -251,6 +251,19 @@ export const providers: AIGatewayProviderConfig[] = [
       buf.match(/"model"\s*:\s*"([^"/]+)\/[^"]*"/)?.[1],
   },
   {
+    name: 'github-copilot',
+    requiredEnvVars: ['GITHUB_COPILOT_API_KEY'],
+    wireFormat: 'anthropic',
+    model: 'claude-haiku-4.5',
+    host: 'api.githubcopilot.com',
+    path: '/v1/messages',
+    buildHeaders: () => ({
+      'X-GitHub-Api-Version': '2025-10-01',
+      Authorization: `Bearer ${process.env.GITHUB_COPILOT_API_KEY || ''}`,
+      'anthropic-version': '2023-06-01',
+    }),
+  },
+  {
     // No-gateway baseline/control.
     name: 'anthropic-direct',
     requiredEnvVars: ['ANTHROPIC_API_KEY'],

@@ -223,6 +223,18 @@ export const providers: AIGatewayProviderConfig[] = [
       buf.match(/"model"\s*:\s*"([^"/]+)\/[^"]*"/)?.[1],
   },
   {
+    name: 'github-copilot',
+    requiredEnvVars: ['GITHUB_COPILOT_API_KEY'],
+    wireFormat: 'openai',
+    model: 'gemini-3.6-flash',
+    host: 'api.githubcopilot.com',
+    path: '/chat/completions',
+    buildHeaders: () => ({
+      'X-GitHub-Api-Version': '2025-10-01',
+      Authorization: `Bearer ${process.env.GITHUB_COPILOT_API_KEY || ''}`,
+    }),
+  },
+  {
     // No-gateway baseline/control. Gemini's native `streamGenerateContent`
     // endpoint (not the OpenAI-compatibility shim Google also exposes) —
     // `contents`/`parts` request shape, `usageMetadata.candidatesTokenCount`

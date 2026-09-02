@@ -279,6 +279,9 @@
     "llmapi": [
       "LLMAPI_API_KEY"
     ],
+    "github-copilot": [
+      "GITHUB_COPILOT_API_KEY"
+    ],
     "anthropic-direct": [
       "ANTHROPIC_API_KEY"
     ]
@@ -318,6 +321,9 @@
     "llmapi": [
       "LLMAPI_API_KEY"
     ],
+    "github-copilot": [
+      "GITHUB_COPILOT_API_KEY"
+    ],
     "openai-direct": [
       "OPENAI_API_KEY"
     ]
@@ -353,6 +359,9 @@
     ],
     "blazerail": [
       "BLAZERAIL_API_KEY"
+    ],
+    "github-copilot": [
+      "GITHUB_COPILOT_API_KEY"
     ],
     "gemini-direct": [
       "GEMINI_API_KEY"
@@ -394,6 +403,9 @@
     ],
     "llmapi": [
       "LLMAPI_API_KEY"
+    ],
+    "github-copilot": [
+      "GITHUB_COPILOT_API_KEY"
     ],
     "kimi-direct": [
       "KIMI_API_KEY"
