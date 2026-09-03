@@ -360,9 +360,6 @@
     "blazerail": [
       "BLAZERAIL_API_KEY"
     ],
-    "github-copilot": [
-      "GITHUB_COPILOT_API_KEY"
-    ],
     "gemini-direct": [
       "GEMINI_API_KEY"
     ]
