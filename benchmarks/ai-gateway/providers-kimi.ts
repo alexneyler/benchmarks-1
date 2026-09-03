@@ -1,3 +1,4 @@
+import { BENCHSDK_RUNNER_VERSION } from '@benchsdk/runner';
 import type { AIGatewayProviderConfig } from './types.js';
 import { resolveNeonHost } from './neon-host.js';
 
@@ -337,6 +338,7 @@ export const providers: AIGatewayProviderConfig[] = [
     path: '/chat/completions',
     buildHeaders: () => ({
       'X-GitHub-Api-Version': '2025-10-01',
+      'User-Agent': `benchsdk-runner/${BENCHSDK_RUNNER_VERSION}`,
       Authorization: `Bearer ${process.env.GITHUB_COPILOT_API_KEY || ''}`,
     }),
     extraBody: {

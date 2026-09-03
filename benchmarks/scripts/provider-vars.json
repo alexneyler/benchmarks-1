@@ -39,6 +39,9 @@
     "e2b": [
       "E2B_API_KEY"
     ],
+    "freestyle": [
+      "FREESTYLE_API_KEY"
+    ],
     "hopx": [
       "HOPX_API_KEY"
     ],
